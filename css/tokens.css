@@ -14,7 +14,7 @@
   --primary-soft: rgba(14, 124, 134, 0.12);
   --on-primary: #FFFFFF;
   --accent: #E07A1F;
-  --accent-strong: #B95F10;
+  --accent-strong: #A84E0A;
   --accent-soft: rgba(224, 122, 31, 0.14);
   --on-accent: #FFFFFF;
   --green: #1F8A4C;
@@ -25,7 +25,40 @@
   --red-soft: rgba(192, 57, 43, 0.12);
   --stop: #7A1F16;
   --gold: #D4A72C;
+  --gold-soft: rgba(212, 167, 44, 0.16);
+  --gold-ink: #7A5C0A;
   --on-gold: #14181F;
+
+  /* Text-safe "ink" variants (≥ 4.5:1 on surface and on their -soft background) */
+  --primary-ink: #0A5C63;
+  --accent-ink: #9A4A08;
+  --green-ink: #17703D;
+  --yellow-ink: #8A5A0F;
+  --red-ink: #A8301F;
+  --stop-ink: #7A1F16;
+  --stop-soft: rgba(122, 31, 22, 0.12);
+
+  /* Pain scale ramp 0–10 (green → yellow → red) */
+  --pain-0: #1F8A4C; --pain-1: #2E9447; --pain-2: #4F9C3A;
+  --pain-3: #8A9A22; --pain-4: #A88A12; --pain-5: #B7791F;
+  --pain-6: #C9631C; --pain-7: #C9501F; --pain-8: #C0392B; --pain-9: #A82E25; --pain-10: #8E231C;
+  --on-pain: #FFFFFF;
+
+  /* Hero text on gradients */
+  --on-hero: #FFFFFF;
+  --on-hero-muted: rgba(255, 255, 255, 0.86);
+  --hero-glass: rgba(255, 255, 255, 0.14);
+  --hero-glass-strong: rgba(255, 255, 255, 0.22);
+
+  /* Charts */
+  --chart-grid: rgba(20, 24, 31, 0.08);
+  --chart-axis: #5B6573;
+  --chart-band-green: rgba(31, 138, 76, 0.08);
+  --chart-band-yellow: rgba(183, 121, 31, 0.10);
+  --chart-band-red: rgba(192, 57, 43, 0.08);
+  --chart-1: #0E7C86;
+  --chart-2: #E07A1F;
+  --chart-3: #6B5BD2;
 
   /* Section colors */
   --block-knee: var(--primary);
@@ -41,8 +74,11 @@
   --ring-line: rgba(0, 0, 0, 0.25);
 
   /* Gradients */
-  --grad-hero: linear-gradient(135deg, #0E7C86 0%, #0B6670 55%, #12505C 100%);
-  --grad-accent: linear-gradient(135deg, #F08A2C 0%, #E07A1F 50%, #C9661A 100%);
+  --grad-hero: radial-gradient(120% 140% at 100% 0%, rgba(63, 193, 201, 0.45) 0%, rgba(63, 193, 201, 0) 55%), linear-gradient(140deg, #0C7079 0%, #0A5E68 50%, #0B4552 100%);
+  --grad-accent: radial-gradient(120% 140% at 100% 0%, rgba(255, 190, 110, 0.40) 0%, rgba(255, 190, 110, 0) 55%), linear-gradient(140deg, #B9580D 0%, #A24C0A 55%, #843C08 100%);
+  --grad-primary-btn: linear-gradient(180deg, #11909B 0%, #0E7C86 100%);
+  --grad-accent-btn: linear-gradient(180deg, #B95A0E 0%, #A84E0A 100%);
+  --grad-xp: linear-gradient(90deg, #0E7C86 0%, #3FC1C9 60%, #D4A72C 100%);
   --grad-gold: linear-gradient(135deg, #E9C55A 0%, #D4A72C 100%);
   --grad-surface: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 100%);
 
@@ -53,7 +89,10 @@
   --radius-pill: 999px;
   --shadow-1: 0 1px 2px rgba(20, 24, 31, 0.06), 0 2px 8px rgba(20, 24, 31, 0.06);
   --shadow-2: 0 4px 12px rgba(20, 24, 31, 0.08), 0 12px 32px rgba(20, 24, 31, 0.10);
-  --focus-ring: 0 0 0 3px rgba(14, 124, 134, 0.45);
+  --shadow-hero: 0 10px 30px -8px rgba(11, 69, 82, 0.55);
+  --shadow-accent: 0 10px 30px -8px rgba(132, 60, 8, 0.5);
+  --shadow-cta: 0 8px 20px -6px rgba(14, 124, 134, 0.55);
+  --focus-ring: 0 0 0 3px var(--bg), 0 0 0 5px var(--primary);
 
   /* Spacing (4px scale) */
   --s-1: 4px;
@@ -75,11 +114,14 @@
   --fs-xl: 1.375rem;
   --fs-2xl: 1.75rem;
   --fs-3xl: 2.25rem;
+  --fs-4xl: 3rem;
   --fs-timer: clamp(72px, 22vw, 112px);
   --lh: 1.45;
   --fw-regular: 400;
   --fw-medium: 500;
+  --fw-semibold: 600;
   --fw-bold: 700;
+  --fw-black: 800;
 
   /* Sizing */
   --tap: 48px;
@@ -95,6 +137,8 @@
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --dur-fast: 150ms;
   --dur: 220ms;
+  --dur-slow: 600ms;
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -122,12 +166,39 @@
     --red-soft: rgba(255, 107, 94, 0.16);
     --stop: #FF9A90;
     --ring-line: rgba(255, 255, 255, 0.25);
-    --grad-hero: linear-gradient(135deg, #12464D 0%, #0F3A40 55%, #13262E 100%);
-    --grad-accent: linear-gradient(135deg, #8A4A14 0%, #6E3B10 100%);
+    --grad-hero: radial-gradient(120% 140% at 100% 0%, rgba(63, 193, 201, 0.28) 0%, rgba(63, 193, 201, 0) 55%), linear-gradient(140deg, #0F5961 0%, #0D3F48 55%, #0F2830 100%);
+    --grad-accent: radial-gradient(120% 140% at 100% 0%, rgba(242, 160, 78, 0.30) 0%, rgba(242, 160, 78, 0) 55%), linear-gradient(140deg, #8E4A12 0%, #6A360D 55%, #47250B 100%);
     --grad-surface: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%);
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.45);
-    --focus-ring: 0 0 0 3px rgba(63, 193, 201, 0.5);
+    --gold-soft: rgba(212, 167, 44, 0.18);
+    --gold-ink: #E9C55A;
+    --primary-ink: #6FD6DC;
+    --accent-ink: #F7BC80;
+    --green-ink: #4CC38A;
+    --yellow-ink: #F2C94C;
+    --red-ink: #FF8A80;
+    --stop-ink: #FFB0A8;
+    --stop-soft: rgba(255, 107, 94, 0.2);
+    --pain-0: #2F9E5E; --pain-1: #3E9F55; --pain-2: #5BA346;
+    --pain-3: #8E9C2A; --pain-4: #A88C1A; --pain-5: #B57A22;
+    --pain-6: #C2641F; --pain-7: #C65222; --pain-8: #C43E30; --pain-9: #AE3229; --pain-10: #952820;
+    --on-hero-muted: rgba(255, 255, 255, 0.82);
+    --chart-grid: rgba(255, 255, 255, 0.08);
+    --chart-axis: #9AA4B2;
+    --chart-band-green: rgba(76, 195, 138, 0.09);
+    --chart-band-yellow: rgba(242, 201, 76, 0.08);
+    --chart-band-red: rgba(255, 107, 94, 0.08);
+    --chart-1: #3FC1C9;
+    --chart-2: #F2A04E;
+    --chart-3: #A99CF2;
+    --grad-primary-btn: linear-gradient(180deg, #5ED0D7 0%, #3FC1C9 100%);
+    --grad-accent-btn: linear-gradient(180deg, #F6B26B 0%, #F2A04E 100%);
+    --grad-xp: linear-gradient(90deg, #2BA3AB 0%, #3FC1C9 55%, #E9C55A 100%);
+    --shadow-hero: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+    --shadow-accent: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+    --shadow-cta: 0 8px 22px -6px rgba(63, 193, 201, 0.35);
+    --focus-ring: 0 0 0 3px var(--bg), 0 0 0 5px var(--primary);
   }
 }
 
@@ -155,12 +226,39 @@
   --red-soft: rgba(255, 107, 94, 0.16);
   --stop: #FF9A90;
   --ring-line: rgba(255, 255, 255, 0.25);
-  --grad-hero: linear-gradient(135deg, #12464D 0%, #0F3A40 55%, #13262E 100%);
-  --grad-accent: linear-gradient(135deg, #8A4A14 0%, #6E3B10 100%);
+  --grad-hero: radial-gradient(120% 140% at 100% 0%, rgba(63, 193, 201, 0.28) 0%, rgba(63, 193, 201, 0) 55%), linear-gradient(140deg, #0F5961 0%, #0D3F48 55%, #0F2830 100%);
+  --grad-accent: radial-gradient(120% 140% at 100% 0%, rgba(242, 160, 78, 0.30) 0%, rgba(242, 160, 78, 0) 55%), linear-gradient(140deg, #8E4A12 0%, #6A360D 55%, #47250B 100%);
   --grad-surface: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%);
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.45);
-  --focus-ring: 0 0 0 3px rgba(63, 193, 201, 0.5);
+  --gold-soft: rgba(212, 167, 44, 0.18);
+  --gold-ink: #E9C55A;
+  --primary-ink: #6FD6DC;
+  --accent-ink: #F7BC80;
+  --green-ink: #4CC38A;
+  --yellow-ink: #F2C94C;
+  --red-ink: #FF8A80;
+  --stop-ink: #FFB0A8;
+  --stop-soft: rgba(255, 107, 94, 0.2);
+  --pain-0: #2F9E5E; --pain-1: #3E9F55; --pain-2: #5BA346;
+  --pain-3: #8E9C2A; --pain-4: #A88C1A; --pain-5: #B57A22;
+  --pain-6: #C2641F; --pain-7: #C65222; --pain-8: #C43E30; --pain-9: #AE3229; --pain-10: #952820;
+  --on-hero-muted: rgba(255, 255, 255, 0.82);
+  --chart-grid: rgba(255, 255, 255, 0.08);
+  --chart-axis: #9AA4B2;
+  --chart-band-green: rgba(76, 195, 138, 0.09);
+  --chart-band-yellow: rgba(242, 201, 76, 0.08);
+  --chart-band-red: rgba(255, 107, 94, 0.08);
+  --chart-1: #3FC1C9;
+  --chart-2: #F2A04E;
+  --chart-3: #A99CF2;
+  --grad-primary-btn: linear-gradient(180deg, #5ED0D7 0%, #3FC1C9 100%);
+  --grad-accent-btn: linear-gradient(180deg, #F6B26B 0%, #F2A04E 100%);
+  --grad-xp: linear-gradient(90deg, #2BA3AB 0%, #3FC1C9 55%, #E9C55A 100%);
+  --shadow-hero: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+  --shadow-accent: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+  --shadow-cta: 0 8px 22px -6px rgba(63, 193, 201, 0.35);
+  --focus-ring: 0 0 0 3px var(--bg), 0 0 0 5px var(--primary);
 }
 
 @media (prefers-reduced-motion: reduce) {
