@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "badges": [
+    { "id": "first-session", "name": "Erster Pfeil", "description": "Erste Einheit abgeschlossen.", "icon": "🏹", "rule": { "type": "sessionsCount", "n": 1 } },
+    { "id": "week-3", "name": "Volle Passe", "description": "3 Einheiten in einer Woche.", "icon": "🎯", "rule": { "type": "weekSessions", "n": 3 } },
+    { "id": "sessions-10", "name": "10 Einheiten", "description": "10 Einheiten geschafft.", "icon": "🥉", "rule": { "type": "sessionsCount", "n": 10 } },
+    { "id": "sessions-25", "name": "25 Einheiten", "description": "25 Einheiten geschafft.", "icon": "🥈", "rule": { "type": "sessionsCount", "n": 25 } },
+    { "id": "sessions-50", "name": "50 Einheiten", "description": "50 Einheiten geschafft.", "icon": "🥇", "rule": { "type": "sessionsCount", "n": 50 } },
+    { "id": "hold-5min", "name": "Eiserne Spannung", "description": "Insgesamt 5 Minuten gehalten.", "icon": "⏱️", "rule": { "type": "totalHoldSeconds", "n": 300 } },
+    { "id": "phase-done", "name": "Phase gemeistert", "description": "Eine Trainingsphase abgeschlossen.", "icon": "🏅", "rule": { "type": "phaseCompleted" } },
+    { "id": "green-week", "name": "Grüne Woche", "description": "Wochenziel erreicht – alles grün.", "icon": "🟢", "rule": { "type": "greenWeek" } },
+    { "id": "personal-record", "name": "Neuer Rekord", "description": "Einen persönlichen Rekord aufgestellt.", "icon": "⭐", "rule": { "type": "personalRecord" } },
+    { "id": "comeback", "name": "Comeback", "description": "Nach einer Pause wieder eingestiegen.", "icon": "🔄", "rule": { "type": "comeback", "n": 10 } }
+  ]
+}

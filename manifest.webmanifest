@@ -1,0 +1,15 @@
+{
+  "name": "Physiotraining – Knie & Bogen",
+  "short_name": "Physio",
+  "description": "Prehab-Trainingsbegleiter für Knie und Bogenschießen – offline.",
+  "lang": "de",
+  "start_url": "./#/heute",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F7F9",
+  "theme_color": "#0E7C86",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

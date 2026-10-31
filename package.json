@@ -1,0 +1,11 @@
+{
+  "name": "physiotraining",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Offline-PWA Trainingsbegleiter (Knie-Prehab + Bogenschießen). Keine Abhängigkeiten, kein Build.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 8000"
+  }
+}

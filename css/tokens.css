@@ -1,0 +1,168 @@
+/* Design tokens – see docs/SPEC.md §9. Complete set; other CSS must only use these variables. */
+:root {
+  color-scheme: light;
+
+  /* Colors – light */
+  --bg: #F6F7F9;
+  --surface: #FFFFFF;
+  --surface-2: #EEF1F4;
+  --text: #14181F;
+  --muted: #5B6573;
+  --border: #E1E5EA;
+  --primary: #0E7C86;
+  --primary-strong: #0A5C63;
+  --primary-soft: rgba(14, 124, 134, 0.12);
+  --on-primary: #FFFFFF;
+  --accent: #E07A1F;
+  --accent-strong: #B95F10;
+  --accent-soft: rgba(224, 122, 31, 0.14);
+  --on-accent: #FFFFFF;
+  --green: #1F8A4C;
+  --green-soft: rgba(31, 138, 76, 0.12);
+  --yellow: #B7791F;
+  --yellow-soft: rgba(183, 121, 31, 0.14);
+  --red: #C0392B;
+  --red-soft: rgba(192, 57, 43, 0.12);
+  --stop: #7A1F16;
+  --gold: #D4A72C;
+  --on-gold: #14181F;
+
+  /* Section colors */
+  --block-knee: var(--primary);
+  --block-archery: var(--accent);
+  --block-neutral: var(--muted);
+
+  /* Target face rings (World Archery colours) */
+  --ring-gold: #D4A72C;
+  --ring-red: #D9443B;
+  --ring-blue: #2F7FD6;
+  --ring-black: #1E2228;
+  --ring-white: #F4F4F2;
+  --ring-line: rgba(0, 0, 0, 0.25);
+
+  /* Gradients */
+  --grad-hero: linear-gradient(135deg, #0E7C86 0%, #0B6670 55%, #12505C 100%);
+  --grad-accent: linear-gradient(135deg, #F08A2C 0%, #E07A1F 50%, #C9661A 100%);
+  --grad-gold: linear-gradient(135deg, #E9C55A 0%, #D4A72C 100%);
+  --grad-surface: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 100%);
+
+  /* Shape & elevation */
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(20, 24, 31, 0.06), 0 2px 8px rgba(20, 24, 31, 0.06);
+  --shadow-2: 0 4px 12px rgba(20, 24, 31, 0.08), 0 12px 32px rgba(20, 24, 31, 0.10);
+  --focus-ring: 0 0 0 3px rgba(14, 124, 134, 0.45);
+
+  /* Spacing (4px scale) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 48px;
+
+  /* Typography */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 1.75rem;
+  --fs-3xl: 2.25rem;
+  --fs-timer: clamp(72px, 22vw, 112px);
+  --lh: 1.45;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 700;
+
+  /* Sizing */
+  --tap: 48px;
+  --tap-session: 60px;
+  --tabbar-h: 64px;
+  --content-max: 640px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur: 220ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0F1216;
+    --surface: #1A1F26;
+    --surface-2: #232A33;
+    --text: #E8ECF1;
+    --muted: #9AA4B2;
+    --border: #2C343E;
+    --primary: #3FC1C9;
+    --primary-strong: #6FD6DC;
+    --primary-soft: rgba(63, 193, 201, 0.16);
+    --on-primary: #0F1216;
+    --accent: #F2A04E;
+    --accent-strong: #F7BC80;
+    --accent-soft: rgba(242, 160, 78, 0.16);
+    --on-accent: #0F1216;
+    --green: #4CC38A;
+    --green-soft: rgba(76, 195, 138, 0.16);
+    --yellow: #F2C94C;
+    --yellow-soft: rgba(242, 201, 76, 0.16);
+    --red: #FF6B5E;
+    --red-soft: rgba(255, 107, 94, 0.16);
+    --stop: #FF9A90;
+    --ring-line: rgba(255, 255, 255, 0.25);
+    --grad-hero: linear-gradient(135deg, #12464D 0%, #0F3A40 55%, #13262E 100%);
+    --grad-accent: linear-gradient(135deg, #8A4A14 0%, #6E3B10 100%);
+    --grad-surface: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.45);
+    --focus-ring: 0 0 0 3px rgba(63, 193, 201, 0.5);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0F1216;
+  --surface: #1A1F26;
+  --surface-2: #232A33;
+  --text: #E8ECF1;
+  --muted: #9AA4B2;
+  --border: #2C343E;
+  --primary: #3FC1C9;
+  --primary-strong: #6FD6DC;
+  --primary-soft: rgba(63, 193, 201, 0.16);
+  --on-primary: #0F1216;
+  --accent: #F2A04E;
+  --accent-strong: #F7BC80;
+  --accent-soft: rgba(242, 160, 78, 0.16);
+  --on-accent: #0F1216;
+  --green: #4CC38A;
+  --green-soft: rgba(76, 195, 138, 0.16);
+  --yellow: #F2C94C;
+  --yellow-soft: rgba(242, 201, 76, 0.16);
+  --red: #FF6B5E;
+  --red-soft: rgba(255, 107, 94, 0.16);
+  --stop: #FF9A90;
+  --ring-line: rgba(255, 255, 255, 0.25);
+  --grad-hero: linear-gradient(135deg, #12464D 0%, #0F3A40 55%, #13262E 100%);
+  --grad-accent: linear-gradient(135deg, #8A4A14 0%, #6E3B10 100%);
+  --grad-surface: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.45);
+  --focus-ring: 0 0 0 3px rgba(63, 193, 201, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur: 0ms; }
+}

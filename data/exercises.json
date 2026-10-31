@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "exercises": [
+    {
+      "id": "heel-slides",
+      "name": "Fersengleiten",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": ["mat"],
+      "type": "reps",
+      "side": "left",
+      "instructions": [
+        "Rückenlage auf der Matte, Beine lang.",
+        "Linke Ferse langsam Richtung Gesäß gleiten lassen.",
+        "Nur so weit beugen, wie es angenehm ist.",
+        "Langsam wieder strecken."
+      ],
+      "cues": ["Ferse bleibt am Boden", "Ruhig atmen"],
+      "mistakes": ["In den Schmerz hineinbeugen", "Hüfte dreht nach außen"],
+      "kneeNote": "Bewegung im schmerzfreien Bereich. Ziehen ist ok, Stechen nicht.",
+      "levels": [
+        { "label": "Stufe 1", "sets": 1, "reps": 10, "tempo": "2-0-2", "band": null, "rest": 20 },
+        { "label": "Stufe 2", "sets": 2, "reps": 12, "tempo": "2-1-2", "band": null, "rest": 20 }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "figure": { "poses": ["lying-supine", "lying-heel-slide"], "props": ["mat"], "band": null, "mirror": false }
+    },
+    {
+      "id": "quad-set",
+      "name": "Quadrizeps anspannen (Quad Set)",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": ["mat"],
+      "type": "hold",
+      "side": "left",
+      "instructions": [
+        "Rückenlage, Beine lang.",
+        "Kleines Handtuch unter das linke Knie legen.",
+        "Kniekehle ins Handtuch drücken, Oberschenkel fest anspannen.",
+        "Halten, dann locker lassen."
+      ],
+      "cues": ["Kniescheibe zieht nach oben", "Zehen zu dir"],
+      "mistakes": ["Luft anhalten", "Gesäß hebt ab"],
+      "kneeNote": "Schmerzfrei bis leicht (≤ 2/10). Kein Durchdrücken mit Gewalt.",
+      "levels": [
+        { "label": "Stufe 1", "sets": 2, "reps": 10, "hold": 5, "tempo": null, "band": null, "rest": 30 },
+        { "label": "Stufe 2", "sets": 3, "reps": 10, "hold": 10, "tempo": null, "band": null, "rest": 30 }
+      ],
+      "regressTo": null,
+      "progressTo": "straight-leg-raise",
+      "phaseMin": "p1-basis",
+      "figure": { "poses": ["lying-supine", "lying-supine-quad"], "props": ["mat"], "band": null, "mirror": false }
+    },
+    {
+      "id": "straight-leg-raise",
+      "name": "Gestrecktes Beinheben",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": ["mat"],
+      "type": "reps",
+      "side": "left",
+      "instructions": [
+        "Rückenlage, rechtes Bein aufgestellt.",
+        "Linkes Bein strecken und Oberschenkel anspannen.",
+        "Gestrecktes Bein bis auf Höhe des rechten Knies anheben.",
+        "Langsam wieder absenken."
+      ],
+      "cues": ["Erst anspannen, dann heben", "Knie bleibt ganz gestreckt"],
+      "mistakes": ["Knie knickt beim Heben ein", "Hohlkreuz"],
+      "kneeNote": "Wenn das Knie nicht gestreckt bleibt: zurück zum Quad Set.",
+      "levels": [
+        { "label": "Stufe 1", "sets": 2, "reps": 8, "tempo": "2-1-3", "band": null, "rest": 45 },
+        { "label": "Stufe 2", "sets": 3, "reps": 10, "tempo": "2-1-3", "band": null, "rest": 45 },
+        { "label": "Stufe 3 (Loop)", "sets": 3, "reps": 10, "tempo": "2-1-3", "band": "loop-orange", "rest": 60 }
+      ],
+      "regressTo": "quad-set",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "figure": { "poses": ["lying-slr-down", "lying-slr-up"], "props": ["mat"], "band": null, "mirror": false }
+    },
+    {
+      "id": "band-pull-apart",
+      "name": "Band auseinanderziehen (Pull-Apart)",
+      "category": "haltung",
+      "block": "archery",
+      "equipment": ["theraband"],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Aufrecht stehen oder sitzen, Band schulterbreit vor dem Körper.",
+        "Arme gestreckt auf Schulterhöhe.",
+        "Band auseinanderziehen, Schulterblätter zusammenführen.",
+        "Kontrolliert zurück."
+      ],
+      "cues": ["Schultern tief", "Brustbein hoch – wie beim Vollauszug"],
+      "mistakes": ["Schultern zu den Ohren", "Hohlkreuz", "Schwung holen"],
+      "kneeNote": "Bei Kniebeschwerden im Sitzen auf dem Stuhl ausführen.",
+      "levels": [
+        { "label": "Gelb", "sets": 2, "reps": 12, "tempo": "2-1-2", "band": "yellow", "rest": 45 },
+        { "label": "Rot", "sets": 3, "reps": 12, "tempo": "2-1-2", "band": "red", "rest": 45 },
+        { "label": "Grün", "sets": 3, "reps": 12, "tempo": "2-1-3", "band": "green", "rest": 60 }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "figure": { "poses": ["front-arms-forward", "front-arms-apart"], "props": [], "band": { "from": "handL", "to": "handR" }, "mirror": false }
+    },
+    {
+      "id": "breathing-reset",
+      "name": "Atem-Reset in Rückenlage",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": ["mat"],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Rückenlage, Beine lang oder aufgestellt.",
+        "Hände auf den Bauch.",
+        "4 Sekunden ein, 6 Sekunden aus."
+      ],
+      "cues": ["Ausatmen länger als einatmen", "Schultern schwer"],
+      "mistakes": ["Brustatmung", "Pressen"],
+      "kneeNote": "",
+      "levels": [
+        { "label": "2 Minuten", "sets": 1, "seconds": 120, "tempo": null, "band": null, "rest": 0 }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "figure": { "poses": ["lying-supine"], "props": ["mat"], "band": null, "mirror": false }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "segments": { "trunk": 50, "thigh": 42, "shin": 42, "upperArm": 30, "forearm": 28, "head": 10, "foot": 10 },
+  "poses": {
+    "stand": { "view": "side", "ground": "standing", "root": { "x": 100, "y": 101 }, "trunk": 0, "hipL": 0, "hipR": 0, "kneeL": 0, "kneeR": 0, "shoulderL": 0, "shoulderR": 0, "elbowL": 10, "elbowR": 10 },
+    "front-arms-forward": { "view": "front", "ground": "standing", "root": { "x": 100, "y": 101 }, "trunk": 0, "hipL": 5, "hipR": 5, "kneeL": 0, "kneeR": 0, "shoulderL": 15, "shoulderR": 15, "elbowL": 0, "elbowR": 0 },
+    "front-arms-apart": { "view": "front", "ground": "standing", "root": { "x": 100, "y": 101 }, "trunk": 0, "hipL": 5, "hipR": 5, "kneeL": 0, "kneeR": 0, "shoulderL": 90, "shoulderR": 90, "elbowL": 0, "elbowR": 0 },
+    "lying-supine": { "view": "side", "ground": "lying", "root": { "x": 95, "y": 176 }, "trunk": -90, "hipL": 90, "hipR": 90, "kneeL": 0, "kneeR": 0, "shoulderL": 90, "shoulderR": 90, "elbowL": 0, "elbowR": 0 },
+    "lying-supine-quad": { "view": "side", "ground": "lying", "root": { "x": 95, "y": 176 }, "trunk": -90, "hipL": 92, "hipR": 90, "kneeL": -3, "kneeR": 0, "shoulderL": 90, "shoulderR": 90, "elbowL": 0, "elbowR": 0 },
+    "lying-slr-up": { "view": "side", "ground": "lying", "root": { "x": 95, "y": 176 }, "trunk": -90, "hipL": 130, "hipR": 135, "kneeL": 0, "kneeR": 90, "shoulderL": 90, "shoulderR": 90, "elbowL": 0, "elbowR": 0 },
+    "lying-slr-down": { "view": "side", "ground": "lying", "root": { "x": 95, "y": 176 }, "trunk": -90, "hipL": 90, "hipR": 135, "kneeL": 0, "kneeR": 90, "shoulderL": 90, "shoulderR": 90, "elbowL": 0, "elbowR": 0 },
+    "lying-heel-slide": { "view": "side", "ground": "lying", "root": { "x": 95, "y": 176 }, "trunk": -90, "hipL": 135, "hipR": 90, "kneeL": 90, "kneeR": 0, "shoulderL": 90, "shoulderR": 90, "elbowL": 0, "elbowR": 0 }
+  }
+}

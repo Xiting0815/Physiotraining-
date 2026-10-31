@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "phases": [
+    {
+      "id": "p1-basis",
+      "name": "Phase 1 – Basis",
+      "order": 1,
+      "description": "Reizarm aktivieren, Kontrolle und Routine aufbauen.",
+      "exitCriteria": [
+        "2 Wochen überwiegend grün",
+        "Quad Set 3 × 10 × 10 s schmerzfrei",
+        "Folgetag nie mehr als +1 über Ausgangswert"
+      ],
+      "workouts": { "A": "p1-a", "B": "p1-b", "C": "p1-c" }
+    },
+    {
+      "id": "p2-aufbau",
+      "name": "Phase 2 – Aufbau",
+      "order": 2,
+      "description": "Kraft und Stabilität steigern, Belastung dosiert erhöhen.",
+      "exitCriteria": [
+        "3 Wochen Wochenziel erreicht",
+        "Beinheben gestreckt 3 × 12 ohne Streckdefizit"
+      ],
+      "workouts": { "A": "p2-a", "B": "p2-b", "C": "p2-c" }
+    },
+    {
+      "id": "p3-op-vorbereitung",
+      "name": "Phase 3 – OP-Vorbereitung",
+      "order": 3,
+      "description": "Erreichtes sichern, Umfang reduzieren, fit in die OP.",
+      "exitCriteria": ["OP-Termin erreicht"],
+      "workouts": { "A": "p3-a", "B": "p3-b", "C": "p3-c" }
+    }
+  ]
+}

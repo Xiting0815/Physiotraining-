@@ -1,0 +1,62 @@
+/* Base styles (minimal, WP0). WP-Design extends this file. */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: var(--lh);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+img, svg { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--primary); }
+h1, h2, h3 { line-height: 1.2; margin: 0 0 var(--s-3); }
+h1 { font-size: var(--fs-2xl); }
+h2 { font-size: var(--fs-xl); }
+h3 { font-size: var(--fs-lg); }
+p { margin: 0 0 var(--s-3); }
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+.num, time { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.skip-link { position: absolute; left: -999px; top: 0; }
+.skip-link:focus { left: var(--s-2); top: var(--s-2); z-index: 100; background: var(--surface); padding: var(--s-2) var(--s-3); }
+
+/* Layout */
+.app-shell {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: calc(var(--s-4) + var(--safe-top)) calc(var(--s-4) + var(--safe-right)) calc(var(--tabbar-h) + var(--s-6) + var(--safe-bottom)) calc(var(--s-4) + var(--safe-left));
+}
+.app-main:focus { outline: none; box-shadow: none; }
+.app-loading { color: var(--muted); text-align: center; padding: var(--s-8) 0; }
+body.is-session .app-shell { padding-bottom: calc(var(--s-6) + var(--safe-bottom)); }
+
+/* Tab bar */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  height: calc(var(--tabbar-h) + var(--safe-bottom));
+  padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  border-top: 1px solid var(--border);
+}
+body.is-session .tabbar { display: none; }
+.tabbar__item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: var(--tap); text-decoration: none; color: var(--muted);
+  font-size: var(--fs-xs); font-weight: var(--fw-medium);
+}
+.tabbar__icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tabbar__item[aria-current="page"] { color: var(--primary); }

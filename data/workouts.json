@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "workouts": [
+    {
+      "id": "p1-a",
+      "name": "Training A",
+      "phaseId": "p1-basis",
+      "durationMin": 40,
+      "warmup": [{ "exerciseId": "heel-slides" }],
+      "blocks": [
+        { "id": "knee", "title": "Knie", "items": [
+          { "exerciseId": "quad-set", "note": "Linkes Bein" },
+          { "exerciseId": "straight-leg-raise", "note": "Linkes Bein" }
+        ] },
+        { "id": "archery", "title": "Bogen & Rücken", "items": [{ "exerciseId": "band-pull-apart" }] }
+      ],
+      "cooldown": [{ "exerciseId": "breathing-reset" }]
+    },
+    {
+      "id": "p1-b",
+      "name": "Training B",
+      "phaseId": "p1-basis",
+      "durationMin": 40,
+      "warmup": [{ "exerciseId": "heel-slides" }],
+      "blocks": [
+        { "id": "knee", "title": "Knie", "items": [{ "exerciseId": "quad-set" }] },
+        { "id": "archery", "title": "Bogen & Rücken", "items": [{ "exerciseId": "band-pull-apart", "note": "Langsam zurückführen" }] }
+      ],
+      "cooldown": [{ "exerciseId": "breathing-reset" }]
+    },
+    {
+      "id": "p1-c",
+      "name": "Training C",
+      "phaseId": "p1-basis",
+      "durationMin": 40,
+      "warmup": [{ "exerciseId": "heel-slides" }],
+      "blocks": [
+        { "id": "knee", "title": "Knie", "items": [{ "exerciseId": "straight-leg-raise" }] },
+        { "id": "archery", "title": "Bogen & Rücken", "items": [{ "exerciseId": "band-pull-apart" }] }
+      ],
+      "cooldown": [{ "exerciseId": "breathing-reset" }]
+    }
+  ]
+}
