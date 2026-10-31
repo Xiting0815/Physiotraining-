@@ -102,7 +102,44 @@ export function interpolatePose(a, b, t) {
     const d = LEN_KEYS.includes(k) ? 1 : 0;
     out[k] = num(a[k], d) + (num(b[k], d) - num(a[k], d)) * t;
   }
+  // Segments with an explicit length key are foreshortened (they move out of the image plane):
+  // interpolate their projected vector instead of their angle, so e.g. an arm sweeping toward
+  // the camera shrinks through the middle instead of swinging down.
+  for (const s of ['L', 'R']) {
+    projectLimb(a, b, t, out, 'shoulder' + s, 'elbow' + s, 'upperArmLen' + s, 'forearmLen' + s, 1);
+    projectLimb(a, b, t, out, 'hip' + s, 'knee' + s, 'thighLen' + s, 'shinLen' + s, -1);
+  }
   return out;
+}
+
+function lerpVec(absA, lenA, absB, lenB, t, fallback) {
+  const va = down(absA, lenA);
+  const vb = down(absB, lenB);
+  const v = { x: va.x + (vb.x - va.x) * t, y: va.y + (vb.y - va.y) * t };
+  const len = Math.hypot(v.x, v.y);
+  if (len < 1e-3) return [fallback, 0];
+  let ang = Math.atan2(v.x, v.y) / RAD;
+  ang += 360 * Math.round((fallback - ang) / 360);
+  return [ang, len];
+}
+
+function projectLimb(a, b, t, out, k1, k2, l1, l2, dir) {
+  const p1 = a[l1] !== undefined || b[l1] !== undefined;
+  const p2 = a[l2] !== undefined || b[l2] !== undefined;
+  if (!p1 && !p2) return;
+  const abs2 = (p) => num(p[k1]) + dir * num(p[k2]);
+  let abs1 = out[k1];
+  let o2 = out[k1] + dir * out[k2];
+  if (p1) {
+    const [ang, len] = lerpVec(num(a[k1]), num(a[l1], 1), num(b[k1]), num(b[l1], 1), t, abs1);
+    abs1 = ang; out[l1] = len;
+  }
+  if (p2) {
+    const [ang, len] = lerpVec(abs2(a), num(a[l2], 1), abs2(b), num(b[l2], 1), t, o2);
+    o2 = ang; out[l2] = len;
+  }
+  out[k1] = abs1;
+  out[k2] = dir * (o2 - abs1);
 }
 
 /** Parse "ecc-pause-con" seconds → ms. Default 2-0-2. */
