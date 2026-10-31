@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pose-Editor</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.4 var(--font, system-ui, sans-serif); background: var(--bg, #F6F7F9); color: var(--text, #14181F); }
+  header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 16px; background: var(--surface, #fff); border-bottom: 1px solid var(--border, #E1E5EA); position: sticky; top: 0; z-index: 2; }
+  header h1 { font-size: 16px; margin: 0 8px 0 0; }
+  select, input, button, textarea { font: inherit; color: inherit; }
+  select, input[type=text], input[type=number] { padding: 6px 8px; border: 1px solid var(--border, #E1E5EA); border-radius: 8px; background: var(--surface, #fff); }
+  button { padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border, #E1E5EA); background: var(--surface-2, #EEF1F4); cursor: pointer; }
+  button.primary { background: var(--primary, #0E7C86); color: var(--on-primary, #fff); border-color: transparent; }
+  main { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(280px, 380px); gap: 16px; padding: 16px; max-width: 1200px; margin: 0 auto; }
+  .card { background: var(--surface, #fff); border: 1px solid var(--border, #E1E5EA); border-radius: 16px; padding: 12px; }
+  .preview pt-figure { max-width: 560px; margin: 0 auto; }
+  .row { display: grid; grid-template-columns: 92px 1fr 52px; gap: 8px; align-items: center; margin: 4px 0; }
+  .row label { font-variant-numeric: tabular-nums; color: var(--muted, #5B6573); }
+  .row output { text-align: right; font-variant-numeric: tabular-nums; }
+  .row input[type=range] { width: 100%; }
+  fieldset { border: 0; padding: 0; margin: 0 0 10px; }
+  legend { font-weight: 600; margin-bottom: 4px; }
+  textarea { width: 100%; min-height: 120px; font: 12px/1.4 ui-monospace, monospace; border: 1px solid var(--border, #E1E5EA); border-radius: 8px; padding: 8px; background: var(--surface-2, #EEF1F4); }
+  .opts { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; padding: 16px; }
+  .gallery figure { margin: 0; background: var(--surface, #fff); border: 1px solid var(--border, #E1E5EA); border-radius: 12px; padding: 6px; }
+  .gallery figcaption { font: 12px ui-monospace, monospace; color: var(--muted, #5B6573); text-align: center; overflow-wrap: anywhere; }
+  .gallery figure.sel { outline: 2px solid var(--primary, #0E7C86); }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Pose-Editor</h1>
+  <select id="pose" aria-label="Pose"></select>
+  <button id="new">Neu (Kopie)</button>
+  <button id="copy" class="primary">JSON kopieren</button>
+  <button id="copyAll">Alle Posen kopieren</button>
+  <button id="toggleGallery">Galerie</button>
+  <label><input type="checkbox" id="animate"> Animation mit</label>
+  <select id="pose2" aria-label="Zweite Pose"></select>
+</header>
+<main id="editor">
+  <section class="card preview"><pt-figure id="fig"></pt-figure>
+    <div class="opts">
+      <label><input type="checkbox" id="mirror"> mirror</label>
+      <label>highlight <input type="text" id="highlight" value="" size="10" placeholder="legL,arms"></label>
+      <label>props <input type="text" id="props" value="" size="14" placeholder="mat,chair"></label>
+      <label>band <input type="text" id="band" value="" size="22" placeholder='{"from":"handR","to":"door","id":"red"}'></label>
+    </div>
+    <textarea id="json" spellcheck="false" aria-label="Pose JSON"></textarea>
+  </section>
+  <section class="card" id="sliders"></section>
+</main>
+<section class="gallery" id="gallery" hidden></section>
+<script type="module">
+import '../js/components/pt-figure.js';
+import { figureSvg, OPTIONAL_KEYS } from '../js/components/pt-figure.js';
+
+const file = await (await fetch(new URL('../data/poses.json', import.meta.url))).json();
+const poses = file.poses;
+const $ = (id) => document.getElementById(id);
+const RANGES = {
+  trunk: [-180, 180], hipL: [-180, 180], hipR: [-180, 180], kneeL: [-90, 160], kneeR: [-90, 160],
+  shoulderL: [-180, 280], shoulderR: [-180, 280], elbowL: [-180, 180], elbowR: [-180, 180],
+  ankleL: [-40, 90], ankleR: [-40, 90], headTilt: [-60, 60], twist: [-80, 80], reachL: [0, 12], reachR: [0, 12],
+};
+const ids = Object.keys(poses);
+for (const sel of [$('pose'), $('pose2')]) sel.innerHTML = ids.map((id) => `<option>${id}</option>`).join('');
+let cur = null;
+
+function load(id) {
+  cur = structuredClone(poses[id]);
+  $('pose').value = id;
+  buildSliders();
+  update();
+}
+
+function slider(key, val, min, max, step = 1) {
+  return `<div class="row"><label for="s-${key}">${key}</label><input type="range" id="s-${key}" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${val}"><output id="o-${key}">${val}</output></div>`;
+}
+
+function buildSliders() {
+  const p = cur;
+  let h = `<fieldset><legend>Ansicht</legend>
+    <div class="opts">
+      <select id="view">${['side', 'front'].map((v) => `<option ${p.view === v ? 'selected' : ''}>${v}</option>`).join('')}</select>
+      <select id="ground">${['standing', 'sitting', 'lying'].map((v) => `<option ${p.ground === v ? 'selected' : ''}>${v}</option>`).join('')}</select>
+      <select id="camera"><option value="">camera: normal</option><option value="top" ${p.camera === 'top' ? 'selected' : ''}>camera: top</option></select>
+    </div></fieldset>`;
+  h += `<fieldset><legend>Wurzel (Hüfte)</legend>${slider('root.x', p.root.x, 0, 200, 0.5)}${slider('root.y', p.root.y, 0, 200, 0.5)}</fieldset>`;
+  h += '<fieldset><legend>Gelenke (°)</legend>';
+  for (const k of ['trunk', 'hipL', 'hipR', 'kneeL', 'kneeR', 'shoulderL', 'shoulderR', 'elbowL', 'elbowR']) h += slider(k, p[k], ...RANGES[k]);
+  h += '</fieldset><fieldset><legend>Optional</legend>';
+  for (const k of OPTIONAL_KEYS) {
+    const isLen = k.includes('Len');
+    h += slider(k, p[k] ?? (isLen ? 1 : 0), ...(isLen ? [0, 1.2, 0.01] : RANGES[k] || [-90, 90]));
+  }
+  h += '</fieldset>';
+  $('sliders').innerHTML = h;
+}
+
+$('sliders').addEventListener('input', (e) => {
+  const t = e.target;
+  if (t.dataset.key) {
+    const v = parseFloat(t.value);
+    const k = t.dataset.key;
+    if (k.startsWith('root.')) cur.root[k.slice(5)] = v; else cur[k] = v;
+    $('o-' + k).textContent = v;
+  }
+  update();
+});
+$('sliders').addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.id === 'view' || t.id === 'ground') cur[t.id] = t.value;
+  if (t.id === 'camera') { if (t.value) cur.camera = t.value; else delete cur.camera; }
+  update();
+});
+
+function clean(p) {
+  const o = structuredClone(p);
+  for (const k of OPTIONAL_KEYS) if (o[k] === undefined || (k.includes('Len') ? o[k] === 1 : o[k] === 0) && poses[$('pose').value]?.[k] === undefined) delete o[k];
+  return o;
+}
+
+function update() {
+  const fig = $('fig');
+  const list = $('animate').checked ? [cur, poses[$('pose2').value]] : [cur];
+  fig.setAttribute('poses', JSON.stringify(list));
+  const props = $('props').value.trim();
+  props ? fig.setAttribute('props', JSON.stringify(props.split(/[\s,]+/))) : fig.removeAttribute('props');
+  const band = $('band').value.trim();
+  band ? fig.setAttribute('band', band) : fig.removeAttribute('band');
+  $('highlight').value ? fig.setAttribute('highlight', $('highlight').value) : fig.removeAttribute('highlight');
+  $('mirror').checked ? fig.setAttribute('mirror', '') : fig.removeAttribute('mirror');
+  $('json').value = `"${$('pose').value}": ${JSON.stringify(clean(cur))}`;
+}
+
+$('json').addEventListener('change', () => {
+  try {
+    const txt = $('json').value.trim().replace(/^"[^"]+"\s*:\s*/, '');
+    cur = JSON.parse(txt);
+    buildSliders(); update();
+  } catch { /* ignore invalid JSON while typing */ }
+});
+for (const id of ['mirror', 'highlight', 'props', 'band', 'animate', 'pose2']) $(id).addEventListener('input', update);
+$('pose').addEventListener('change', () => load($('pose').value));
+$('new').addEventListener('click', () => {
+  const name = prompt('Neue Pose-ID (kebab-case):', $('pose').value + '-2');
+  if (!name) return;
+  poses[name] = structuredClone(cur);
+  for (const sel of [$('pose'), $('pose2')]) sel.add(new Option(name));
+  load(name);
+});
+async function copy(text, btn) {
+  try { await navigator.clipboard.writeText(text); } catch { $('json').select(); document.execCommand('copy'); }
+  const t = btn.textContent; btn.textContent = 'Kopiert ✓'; setTimeout(() => { btn.textContent = t; }, 1200);
+}
+$('copy').addEventListener('click', (e) => copy($('json').value, e.target));
+$('copyAll').addEventListener('click', (e) => { poses[$('pose').value] = clean(cur); copy(JSON.stringify({ ...file, poses }, null, 2), e.target); });
+
+// gallery: every pose, statically rendered (?gallery=1 opens it directly)
+function renderGallery() {
+  $('gallery').innerHTML = ids.map((id) => `<figure data-id="${id}"><pt-figure static aria-label="${id}"></pt-figure><figcaption>${id}</figcaption></figure>`).join('');
+  for (const f of $('gallery').querySelectorAll('figure')) {
+    f.querySelector('pt-figure').innerHTML = figureSvg({ poses: [poses[f.dataset.id]], segments: file.segments }, { label: f.dataset.id });
+  }
+}
+function showGallery(on) {
+  $('gallery').hidden = !on;
+  $('editor').hidden = on;
+  if (on && !$('gallery').childElementCount) renderGallery();
+}
+$('toggleGallery').addEventListener('click', () => showGallery($('gallery').hidden));
+$('gallery').addEventListener('click', (e) => {
+  const f = e.target.closest('figure');
+  if (f) { showGallery(false); load(f.dataset.id); }
+});
+
+const params = new URLSearchParams(location.search);
+load(params.get('pose') && poses[params.get('pose')] ? params.get('pose') : ids[0]);
+if (params.has('gallery')) showGallery(true);
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>
