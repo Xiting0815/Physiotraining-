@@ -7,6 +7,7 @@ import { advanceWorkout, applyRecommendation } from '../logic/progression.js';
 import { xpFor, levelFor, evaluateBadges, sessionScore, XP } from '../logic/motivation.js';
 import { doneSessions, sessionLight, personalRecords, newRecords, dayOf } from '../logic/stats.js';
 import { todayISO, toISODate } from '../util/date.js';
+import { html, raw } from '../render.js';
 
 /** @typedef {import('../types.js').Session} Session */
 
@@ -373,6 +374,39 @@ export const bandInfo = (settings, id) => (settings?.bands || []).find((b) => b.
 export const sessionDay = (s) => dayOf(s);
 export const isoDay = (d) => toISODate(d);
 
+const ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+const CONSULT_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v9M12 17.5v.5"/></svg>';
+
+/**
+ * Recommendation cards (.rec) for a stored session – Annehmen/Ablehnen buttons carry
+ * data-act="rec-accept|rec-dismiss" and data-i (index into session.recommendations).
+ * @returns {import('../render.js').SafeHtml}
+ */
+export function recCardsHtml(session, content) {
+  const list = visibleRecommendations(session);
+  if (!list.length) {
+    const holds = (session?.recommendations || []).filter((r) => r.action === 'hold').length;
+    return html`<section class="card card--tight"><p class="mb-0"><strong>Alles bleibt, wie es ist.</strong> <span class="muted">${holds ? `${holds} Übungen: Stufe halten – Qualität sammeln.` : 'Keine Änderung nötig.'}</span></p></section>`;
+  }
+  return html`${list.map(({ rec, index }) => {
+    const t = recText(rec, content);
+    const consult = rec.action === 'consult';
+    const cls = consult ? 'rec--consult stop-card' : t.icon === 'regress' ? 'rec--regress' : '';
+    const status = rec.status === 'pending'
+      ? (consult
+        ? html`<div class="btn-row"><button type="button" class="btn btn--primary" data-act="rec-accept" data-i="${index}">Verstanden</button></div>`
+        : html`<div class="btn-row"><button type="button" class="btn btn--outline" data-act="rec-dismiss" data-i="${index}">Ablehnen</button><button type="button" class="btn btn--primary" data-act="rec-accept" data-i="${index}">Annehmen</button></div>`)
+      : html`<p class="ses-rec-status mb-0 ${rec.status === 'accepted' ? 'is-accepted' : ''}">${rec.status === 'accepted' ? (consult ? '✓ Zur Kenntnis genommen' : '✓ Übernommen') : 'Abgelehnt – Stufe bleibt'}</p>`;
+    return html`<section class="card rec ${cls}" data-rec="${index}">
+      <div class="rec__head"><span class="rec__arrow">${raw(consult ? CONSULT_ICON : ARROW)}</span>
+        <div><div class="rec__title">${t.title}${t.levels ? html`: <span class="rec__levels">${t.levels}</span>` : ''}</div>
+        <div class="rec__reason">${rec.reason}</div></div></div>
+      ${consult ? html`<p class="ses-consult mb-0">Bitte Knie-Training pausieren und ärztlich bzw. physiotherapeutisch abklären lassen. Oberkörper-Training ist weiterhin möglich – du entscheidest.</p>` : ''}
+      ${status}
+    </section>`;
+  })}`;
+}
+
 /* ------------------------------------------------------------------ DOM helpers (browser only) */
 
 /** Toast in the shared region (created on demand). kind: success | gold | accent | '' */
@@ -428,8 +462,8 @@ const CSS = `
 .session-progress>.is-neutral.is-current{background:color-mix(in srgb,var(--block-neutral) 45%,var(--surface-2))}
 .session-progress>.ses-gap{margin-left:5px}
 .session-progress>.is-skipped{background:repeating-linear-gradient(90deg,var(--border) 0 3px,transparent 3px 6px)}
-.ses-fig{margin:calc(-1*var(--s-2)) calc(-1*var(--s-2)) var(--s-3);border-radius:var(--radius-sm);background:var(--surface-2);overflow:hidden;display:grid;place-items:center;min-height:180px}
-.ses-fig pt-figure{display:block;width:100%;max-width:340px}
+.ses-fig{margin:calc(-1*var(--s-2)) calc(-1*var(--s-2)) var(--s-3);border-radius:var(--radius-sm);background:var(--surface-2);overflow:hidden;display:grid;place-items:center;min-height:160px}
+.ses-fig pt-figure{display:block;width:100%;max-width:330px}
 .ses-ex .card__title{font-size:var(--fs-xl);margin:0;line-height:1.15}
 .ses-note{color:var(--muted);font-size:var(--fs-sm);margin:var(--s-1) 0 0}
 .ses-meta{display:flex;flex-wrap:wrap;gap:var(--s-2);margin-top:var(--s-3)}
@@ -464,7 +498,7 @@ const CSS = `
 .ses-choices{display:flex;flex-direction:column;gap:var(--s-2);margin-top:var(--s-4)}
 .ses-choices .btn{min-height:60px;justify-content:flex-start;gap:var(--s-3);text-align:left}
 .ses-choices .btn small{display:block;font-weight:var(--fw-semibold);opacity:.8;font-size:var(--fs-xs)}
-.ses-reasons{margin:var(--s-3) 0;padding-left:1.2em;display:flex;flex-direction:column;gap:var(--s-1)}
+.ses-reasons{list-style:disc !important;margin:var(--s-3) 0;padding-left:1.2em !important;display:flex;flex-direction:column;gap:var(--s-1)}
 .ses-consult{padding:var(--s-3);border-radius:var(--radius-sm);background:var(--surface);font-weight:var(--fw-semibold)}
 .ses-summary .target{margin-top:var(--s-2)}
 .ses-summary .target-face{width:min(76vw,290px)}

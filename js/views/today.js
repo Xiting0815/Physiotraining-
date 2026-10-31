@@ -53,7 +53,8 @@ export function render(root, { store, content }) {
     const now = new Date();
     const today = todayISO(now);
     const phase = content.phases.find((p) => p.id === state.phaseId) ?? content.phases[0];
-    const w = nextWorkout(state, content.phases, content.workouts);
+    const active = state.activeSession;
+    const w = (active && content.workouts.find((x) => x.id === active.workoutId)) || nextWorkout(state, content.phases, content.workouts);
     const split = workoutSplit(w);
     const wk = weeklyProgress(sessions, settings.weeklyGoal, today);
     const st = streak(sessions, settings.weeklyGoal, today);
@@ -62,12 +63,11 @@ export function render(root, { store, content }) {
     const op = opCountdown(settings, today);
     const taper = taperActive(settings.surgeryDate, today);
     const nd = pendingNextDay(sessions, now);
-    const active = state.activeSession;
     const done = sessions.filter((s) => s.status === 'done');
     const last = done.at(-1);
     const lastLight = last ? sessionLight(last) : null;
     const reminder = reminderText(sessions, settings.weeklyGoal, today);
-    const recs = pendingRecommendations(sessions);
+    const recs = pendingRecommendations(sessions).filter((r) => !(taper && r.rec.action === 'progress'));
     const badgeEntries = Object.entries(state.badges || {}).sort((a, b) => (a[1] < b[1] ? 1 : -1));
     const recentBadge = badgeEntries.length ? content.badges.find((b) => b.id === badgeEntries[0][0]) : null;
     const recentBadgeAt = badgeEntries[0]?.[1];
@@ -77,15 +77,14 @@ export function render(root, { store, content }) {
     const opOver = op.stage === 'today' || op.stage === 'after';
 
     const opCard = op.stage === 'none'
-      ? html`<a class="card ring-card" href="#/mehr?focus=surgeryDate">
-          ${raw(progressRing({ value: 0, label: '?', unit: 'Tage', ariaLabel: 'Kein OP-Termin eingetragen' }))}
+      ? html`<a class="card" href="#/mehr?focus=surgeryDate"><div class="ring-card">
+          <span class="pv-ring-empty" aria-hidden="true">${raw(ICON.calendar)}</span>
           <div class="ring-card__body">
             <p class="eyebrow">OP-Countdown</p>
             <p class="ring-card__title">OP-Termin eintragen</p>
-            <p class="ring-card__sub">Dann zählen wir gemeinsam die Tage bis zur OP – und jede Einheit füllt den Ring.</p>
-            <span class="btn btn--soft btn--sm mt-2">${raw(ICON.calendar)} Termin festlegen</span>
+            <p class="ring-card__sub">Dann zählen wir gemeinsam die Tage bis zur OP – jede Einheit füllt den Ring.</p>
           </div>
-        </a>`
+        </div>        </a>`
       : opOver
         ? html`<section class="card card--hero ring-card">
             ${raw(progressRing({ value: 1, label: '🎯', variant: 'on-hero', ariaLabel: 'OP-Termin erreicht' }))}
@@ -219,8 +218,8 @@ export function render(root, { store, content }) {
           ${trafficPill(lastLight)}
         </a>` : ''}
 
-      ${recentBadge ? html`<h2 class="section-title">Zuletzt verdient <a href="#/verlauf#badges">Alle Abzeichen</a></h2>
-        <a class="card pv-badge-row" href="#/verlauf#badges">
+      ${recentBadge ? html`<h2 class="section-title">Zuletzt verdient <a href="#/verlauf?show=badges">Alle Abzeichen</a></h2>
+        <a class="card pv-badge-row" href="#/verlauf?show=badges">
           <span class="badge-tile__icon" aria-hidden="true">${recentBadge.icon}</span>
           <span class="grow"><span class="list-item__title">${recentBadge.name}</span>
           <span class="list-item__sub">${recentBadge.description}${recentBadgeAt ? ` · ${daysAgo(recentBadgeAt, today)}` : ''}</span></span>

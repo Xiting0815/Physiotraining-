@@ -332,6 +332,8 @@ const VIEW_CSS = `
 .pv-split-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .pv-hero-alt { margin-top: var(--s-3); text-align: center; font-size: var(--fs-sm); }
 .pv-hero-alt a { color: var(--on-hero); font-weight: var(--fw-semibold); }
+.pv-ring-empty { flex: none; width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center; border: 10px dashed var(--surface-2); color: var(--primary); }
+.pv-ring-empty svg { width: 40px; height: 40px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .pv-mini { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); text-align: center; height: 100%; justify-content: center; }
 .pv-mini .streak { flex-direction: column; gap: var(--s-1); text-align: center; }
 .pv-mini .streak__label { max-width: 14ch; }
@@ -415,7 +417,7 @@ a.card.pv-badge-row, .pv-badge-row { display: flex; align-items: center; gap: va
 .pv-link-card__n { font-weight: var(--fw-bold); line-height: 1.25; }
 .pv-month-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); margin-bottom: var(--s-3); }
 .pv-month-nav h3 { margin: 0; font-size: var(--fs-lg); }
-.pv-records { display: flex; flex-direction: column; gap: var(--s-2); }
+.pv-records { display: flex; flex-direction: column; gap: var(--s-4); }
 .pv-record { display: flex; align-items: center; gap: var(--s-3); }
 .pv-record__icon { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--gold-soft); font-size: 20px; }
 .pv-record__body { flex: 1; min-width: 0; }
@@ -445,10 +447,11 @@ a.card.pv-badge-row, .pv-badge-row { display: flex; align-items: center; gap: va
 .pv-eq.is-owned .card__title { color: var(--muted); }
 .pv-eq__price { flex: none; font-weight: var(--fw-black); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pv-eq__price small { display: block; font-size: var(--fs-xs); color: var(--muted); font-weight: var(--fw-semibold); text-align: right; white-space: normal; max-width: 14ch; }
+.pv-eq .chip { white-space: normal; max-width: 100%; }
 .pv-eq__why { color: var(--text); font-size: var(--fs-sm); margin: 0; }
 .pv-budget { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin-top: var(--s-3); }
-.pv-budget > div { background: rgba(255,255,255,0.14); border-radius: var(--radius-sm); padding: var(--s-2) var(--s-3); }
-.pv-budget__v { display: block; font-weight: var(--fw-black); font-size: var(--fs-lg); font-variant-numeric: tabular-nums; }
+.pv-budget > div { background: rgba(255,255,255,0.14); border-radius: var(--radius-sm); padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); min-width: 0; }
+.pv-budget__v { display: block; font-weight: var(--fw-black); font-size: var(--fs-md); white-space: nowrap; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .pv-budget__k { font-size: var(--fs-xs); font-weight: var(--fw-semibold); color: var(--on-hero-muted); }
 .pv-taper { margin-top: var(--s-3); }
 .pv-quote-wrap .quote { margin-bottom: var(--s-4); }
@@ -473,4 +476,15 @@ export function ensureViewStyles() {
   st.id = 'pv-styles';
   st.textContent = VIEW_CSS;
   document.head.appendChild(st);
+}
+
+/**
+ * Static single-pose thumbnail markup for an exercise (uses only the <pt-figure> contract
+ * attributes: poses, props, band, mirror, static). Shows the "working" (last) keyframe.
+ */
+export function figureThumb(ex) {
+  const f = ex?.figure;
+  if (!f?.poses?.length) return html`<span aria-hidden="true">🏋️</span>`;
+  const pose = f.poses[f.poses.length - 1];
+  return html`<pt-figure static poses="${JSON.stringify([pose])}" props="${JSON.stringify(f.props || [])}" ${f.band ? html`band="${JSON.stringify(f.band)}"` : ''} ${f.mirror ? 'mirror' : ''} aria-label="${ex.name}"></pt-figure>`;
 }
