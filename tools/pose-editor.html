@@ -167,7 +167,7 @@ $('copyAll').addEventListener('click', (e) => { poses[$('pose').value] = clean(c
 function renderGallery() {
   $('gallery').innerHTML = ids.map((id) => `<figure data-id="${id}"><pt-figure static aria-label="${id}"></pt-figure><figcaption>${id}</figcaption></figure>`).join('');
   for (const f of $('gallery').querySelectorAll('figure')) {
-    f.querySelector('pt-figure').innerHTML = figureSvg({ poses: [poses[f.dataset.id]], segments: file.segments }, { label: f.dataset.id });
+    f.querySelector('pt-figure').innerHTML = figureSvg({ poses: [poses[f.dataset.id]], segments: file.segments, props: poses[f.dataset.id].ground === 'lying' && poses[f.dataset.id].camera !== 'top' ? ['mat'] : [] }, { label: f.dataset.id });
   }
 }
 function showGallery(on) {

@@ -31,7 +31,7 @@ export function loadContent({ force = false } = {}) {
   if (pending && !force) return pending;
   pending = (async () => {
     const [exercises, workouts, phases, poses, badges] = await Promise.all(FILES.map(fetchJson));
-    const equipment = await fetchOptional('equipment');
+    const [equipment, quotes] = await Promise.all([fetchOptional('equipment'), fetchOptional('quotes')]);
     content = {
       exercises: unwrap(exercises, 'exercises'),
       workouts: unwrap(workouts, 'workouts'),
@@ -39,6 +39,7 @@ export function loadContent({ force = false } = {}) {
       poses: poses && typeof poses === 'object' ? poses : { segments: {}, poses: {} },
       badges: unwrap(badges, 'badges'),
       equipment,
+      quotes: unwrap(quotes, 'quotes').filter((q) => typeof q === 'string' && q.trim()),
     };
     return content;
   })();

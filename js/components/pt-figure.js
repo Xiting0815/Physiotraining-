@@ -460,7 +460,7 @@ function bowSvg(P) {
   const { h, top, bot } = bowGeom(P);
   const limb = `M${f(top.x)} ${f(top.y)}Q${f(h.x + 18)} ${f(h.y - 22)} ${f(h.x + 2)} ${f(h.y)}Q${f(h.x + 18)} ${f(h.y + 22)} ${f(bot.x)} ${f(bot.y)}`;
   const nock = P.handR;
-  const drawn = dist(nock, h) > 30 && nock.x < h.x;
+  const drawn = dist(nock, h) > 30 && nock.x < h.x && h.y < P.hip.y - 25 && Math.abs(nock.y - h.y) < 30; // bow raised, string hand on the arrow line
   const str = drawn ? `M${f(top.x)} ${f(top.y)}L${f(nock.x)} ${f(nock.y)}L${f(bot.x)} ${f(bot.y)}` : `M${f(top.x)} ${f(top.y)}L${f(bot.x)} ${f(bot.y)}`;
   const arrow = drawn ? `<path class="fig-arrow" d="M${f(nock.x)} ${f(nock.y)}L${f(h.x + 12)} ${f(h.y)}"/>` : '';
   return `<g class="fig-bow"><path class="fig-bow-string" d="${str}"/>${arrow}<path class="fig-bow-limb" d="${limb}"/></g>`;
@@ -479,7 +479,9 @@ export function buildScene(spec) {
   const front = pose0.view === 'front';
   const top = front && pose0.camera === 'top';
   const band = spec.band && spec.band.from ? spec.band : null;
-  const props = layoutProps(mergeProps(spec.props, pose0), pose0, P0, band);
+  const handBand = band && /^hand[LR]$/.test(band.from) && /^hand[LR]$/.test(String(band.to));
+  // a band drawn hand-to-hand replaces the bow (band drills in archery stance)
+  const props = layoutProps(mergeProps(spec.props, pose0).filter((p) => !(handBand && p.type === 'bow')), pose0, P0, band);
   const hasMat = props.some((p) => p.type === 'mat');
 
   // body bounds over all keyframes
@@ -624,6 +626,24 @@ function injectStyle(doc) {
   styleInjected = true;
 }
 
+/**
+ * Figure spec for an exercise (pure): figure block + highlight + band/tempo of the given level.
+ * Knee block: operated (left) leg in --primary, ring on the left knee when side === "left".
+ * Archery block: arms in --accent. Others: no highlight.
+ */
+export function figureSpecForExercise(ex, level = 0) {
+  const knee = ex.block === 'knee';
+  const lv = ex.levels?.[level] ?? ex.levels?.[0];
+  return {
+    ...ex.figure,
+    highlight: knee ? (ex.side === 'both' ? 'legs' : 'legL') : ex.block === 'archery' ? 'arms' : '',
+    highlightColor: ex.block === 'archery' ? 'accent' : 'primary',
+    highlightLeftKnee: knee && ex.side === 'left',
+    bandId: lv?.band ?? ex.levels?.find((l) => l.band)?.band ?? null,
+    tempo: lv?.tempo ?? null,
+  };
+}
+
 const parseJSON = (s, d) => { if (s == null || s === '') return d; try { return JSON.parse(s); } catch { return d; } };
 const HL_COLORS = { primary: 'var(--primary,#0E7C86)', accent: 'var(--accent,#E07A1F)', petrol: 'var(--primary,#0E7C86)', orange: 'var(--accent,#E07A1F)' };
 
@@ -661,15 +681,9 @@ export class PtFigure extends Base {
     if (id) {
       const ex = getExercise(id);
       if (!ex) return null;
-      spec = { ...ex.figure };
-      const hl = ex.block === 'knee' ? (ex.side === 'both' ? 'legs' : 'legL') : ex.block === 'archery' ? 'arms' : '';
-      spec.highlight = hl;
-      spec.highlightColor = ex.block === 'archery' ? 'accent' : 'primary';
-      spec.highlightLeftKnee = ex.block === 'knee' && ex.side === 'left';
       let lvl = parseInt(this.getAttribute('level'), 10);
       if (!Number.isInteger(lvl)) { try { lvl = levelOf(getState(), id, ex); } catch { lvl = 0; } }
-      spec.bandId = ex.levels?.[lvl]?.band ?? ex.levels?.find((l) => l.band)?.band ?? null;
-      spec.tempo = ex.levels?.[lvl]?.tempo ?? null;
+      spec = figureSpecForExercise(ex, lvl);
     } else {
       spec = { poses: parseJSON(this.getAttribute('poses'), []), props: [], band: null, mirror: false };
     }
@@ -698,9 +712,9 @@ export class PtFigure extends Base {
       return;
     }
     const size = parseFloat(this.getAttribute('size'));
-    this.style.width = size > 0 ? `${size}px` : '';
+    if (size > 0) { this.style.width = `${size}px`; this._sized = true; } else if (this._sized) { this.style.width = ''; this._sized = false; }
     const hc = spec.highlightColor;
-    this.style.setProperty?.('--fig-hl', hc ? HL_COLORS[hc] || hc : '');
+    if (hc) this.style.setProperty?.('--fig-hl', HL_COLORS[hc] || hc); else this.style.removeProperty?.('--fig-hl');
     const band = spec.band ? { ...spec.band } : null;
     const sceneSpec = {
       poses: keyframes, segments: posesFile.segments, props: spec.props, band,

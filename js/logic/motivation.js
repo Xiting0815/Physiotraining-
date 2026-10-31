@@ -168,11 +168,17 @@ export const QUOTES = [
   'Ein guter Schuss beginnt lange vor dem Lösen.',
 ];
 
-/** Deterministic quote by date. @param {string} today "YYYY-MM-DD" */
-export function dailyQuote(today) {
+/**
+ * Deterministic quote by date. Uses `quotes` (e.g. content.quotes from data/quotes.json) when a
+ * non-empty array is given, else the built-in list.
+ * @param {string} today "YYYY-MM-DD"
+ * @param {string[]|null} [quotes]
+ */
+export function dailyQuote(today, quotes) {
+  const list = Array.isArray(quotes) && quotes.length ? quotes : QUOTES;
   let h = 0;
   for (const c of String(today)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return QUOTES[h % QUOTES.length];
+  return list[h % list.length];
 }
 
 /**

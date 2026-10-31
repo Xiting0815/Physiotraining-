@@ -1,0 +1,476 @@
+// Shared helpers for the WP-Views screens (not a route). Pure helpers are Node-testable;
+// DOM helpers (toast, confirmDialog, openSheet, ensureViewStyles) only touch `document` when called.
+import { html, raw } from '../render.js';
+import { parseISODate } from '../util/date.js';
+
+/* ------------------------------------------------------------------ */
+/* Labels                                                              */
+/* ------------------------------------------------------------------ */
+
+export const BLOCK_LABEL = { warmup: 'Aufwärmen', knee: 'Knie', archery: 'Bogen', cooldown: 'Abschluss' };
+export const BLOCK_LONG = { warmup: 'Aufwärmen', knee: 'Knie-Block', archery: 'Bogen-/Rücken-Block', cooldown: 'Cool-down' };
+export const EQUIPMENT_LABEL = {
+  theraband: 'TheraBand', loop: 'Loop-Band', mat: 'Matte', chair: 'Stuhl', step: 'Stufe',
+  wall: 'Wand', door: 'Tür', none: 'Ohne Geräte',
+};
+export const TRAFFIC_SHORT = { green: 'Grün', yellow: 'Gelb', red: 'Rot', stop: 'Stopp' };
+export const TRAFFIC_LONG = {
+  green: 'Grün – passt', yellow: 'Gelb – halten', red: 'Rot – zurück', stop: 'Stopp – ärztlich abklären',
+};
+export const SIDE_LABEL = {
+  both: 'beidseitig', left: 'nur links (OP-Knie)', right: 'nur rechts', alternate: 'abwechselnd', perSide: 'je Seite',
+};
+
+/* ------------------------------------------------------------------ */
+/* Icons (stroke, currentColor)                                        */
+/* ------------------------------------------------------------------ */
+
+const svg = (d, extra = '') => `<svg viewBox="0 0 24 24" aria-hidden="true"${extra}>${d}</svg>`;
+export const ICON = {
+  play: svg('<path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/>'),
+  clock: svg('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4"/>'),
+  list: svg('<path d="M4 12h16M4 6h16M4 18h10"/>'),
+  chev: '<svg class="list-item__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
+  back: svg('<path d="M15 6l-6 6 6 6"/>'),
+  left: svg('<path d="M15 6l-6 6 6 6"/>'),
+  right: svg('<path d="M9 6l6 6-6 6"/>'),
+  up: svg('<path d="M12 19V5M6 11l6-6 6 6"/>'),
+  down: svg('<path d="M12 5v14M6 13l6 6 6-6"/>'),
+  check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+  download: svg('<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>'),
+  upload: svg('<path d="M12 15V3M7 8l5-5 5 5M5 21h14"/>'),
+  trash: svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
+  calendar: svg('<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8.5 3v4M15.5 3v4"/>'),
+  target: svg('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>'),
+  bag: svg('<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>'),
+  shield: svg('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'),
+  info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'),
+  search: svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'),
+  swap: svg('<path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/>'),
+  refresh: svg('<path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/>'),
+  flag: svg('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'),
+  minus: svg('<path d="M6 12h12"/>'),
+  plus: svg('<path d="M6 12h12M12 6v12"/>'),
+  knee: svg('<path d="M9 3v7l-2 5 3 6M15 3v6l1 5-2 7"/>'),
+  bow: svg('<path d="M6 3c8 3 8 15 0 18M6 3v18M3 12h16M16 9l3 3-3 3"/>'),
+  sparkle: svg('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>'),
+};
+
+/* ------------------------------------------------------------------ */
+/* Pure helpers                                                        */
+/* ------------------------------------------------------------------ */
+
+/** @param {any} settings @param {string|null|undefined} id */
+export function bandInfo(settings, id) {
+  if (!id) return null;
+  const b = (settings?.bands || []).find((x) => x.id === id);
+  return b || { id, label: id, color: 'var(--muted)', kind: 'theraband' };
+}
+
+/**
+ * Dose line for a level, e.g. "3 × 10 × 10 s", "2 × 12 je Seite", "3 × 45 s".
+ * @param {any} ex exercise  @param {any} lvl level
+ */
+export function doseText(ex, lvl) {
+  if (!lvl) return '';
+  const parts = [String(lvl.sets ?? 1)];
+  if (ex?.type === 'timed' || (lvl.seconds && !lvl.reps)) parts.push(`${lvl.seconds ?? 0} s`);
+  else {
+    if (lvl.reps != null) parts.push(String(lvl.reps));
+    if (lvl.hold) parts.push(`${lvl.hold} s`);
+  }
+  let s = parts.join(' × ');
+  if (ex?.side === 'perSide') s += ' je Seite';
+  return s;
+}
+
+/** Workout items with sections in session order. @param {any} w */
+export function workoutItems(w) {
+  if (!w) return [];
+  return [
+    ...(w.warmup || []).map((it) => ({ ...it, section: 'warmup' })),
+    ...(w.blocks || []).flatMap((b) => (b.items || []).map((it) => ({ ...it, section: b.id }))),
+    ...(w.cooldown || []).map((it) => ({ ...it, section: 'cooldown' })),
+  ];
+}
+
+/** Count of exercises per section. @param {any} w @returns {{warmup:number, knee:number, archery:number, cooldown:number, total:number}} */
+export function workoutSplit(w) {
+  const c = { warmup: 0, knee: 0, archery: 0, cooldown: 0, total: 0 };
+  for (const it of workoutItems(w)) { c[it.section] = (c[it.section] || 0) + 1; c.total += 1; }
+  return c;
+}
+
+/** "A" | "B" | "C" letter of a workout inside its phase (fallback: last char of the name). */
+export function workoutLetter(w, phases) {
+  const ph = (phases || []).find((p) => p.id === w?.phaseId);
+  if (ph) for (const k of ['A', 'B', 'C']) if (ph.workouts?.[k] === w.id) return k;
+  const m = String(w?.name || '').match(/([A-Z])\s*$/);
+  return m ? m[1] : '•';
+}
+
+/**
+ * Most recent done session that still needs a next-day check-in (≥ 12 h after its end, or from
+ * the next calendar day on). Sessions older than 4 days are not asked for anymore.
+ * @param {any[]} sessions @param {Date} [now]
+ */
+export function pendingNextDay(sessions, now = new Date()) {
+  const done = (sessions || []).filter((s) => s && s.status === 'done');
+  const last = done.at(-1);
+  if (!last || last.nextDay) return null;
+  const end = new Date(last.endedAt || last.startedAt);
+  if (Number.isNaN(end.getTime())) return null;
+  const hours = (now.getTime() - end.getTime()) / 3600e3;
+  const nextCalendarDay = now.toDateString() !== end.toDateString() && now > end;
+  if (hours > 96) return null;
+  return hours >= 12 || nextCalendarDay ? last : null;
+}
+
+/** "8–15" → [8, 15]; "2–5" → [2, 5]; "25–60 (einfach) / 100–135" → [25, 60]; "12" → [12, 12]. */
+export function parsePriceRange(str) {
+  const m = String(str ?? '').match(/(\d+(?:[.,]\d+)?)(?:\s*[–-]\s*(\d+(?:[.,]\d+)?))?/);
+  if (!m) return null;
+  const a = Number(m[1].replace(',', '.'));
+  const b = m[2] != null ? Number(m[2].replace(',', '.')) : a;
+  return [a, b];
+}
+
+/** Sum price ranges of items. @param {{priceEur?: string}[]} items @returns {[number, number]} */
+export function budgetSum(items) {
+  let lo = 0, hi = 0;
+  for (const it of items || []) {
+    const r = parsePriceRange(it?.priceEur);
+    if (r) { lo += r[0]; hi += r[1]; }
+  }
+  return [lo, hi];
+}
+
+export const PRIORITY_ORDER = ['muss', 'sinnvoll', 'nice'];
+export const PRIORITY_LABEL = { muss: 'Muss', sinnvoll: 'Sinnvoll', nice: 'Nice-to-have' };
+/** Normalise free-form priorities ("Nice to have", "MUSS") to muss|sinnvoll|nice. */
+export function normPriority(p) {
+  const s = String(p ?? '').toLowerCase();
+  if (s.startsWith('mus')) return 'muss';
+  if (s.startsWith('sinn')) return 'sinnvoll';
+  if (s.startsWith('nice') || s.startsWith('opt')) return 'nice';
+  return 'sinnvoll';
+}
+
+/** Equipment items from a raw equipment.json (object with items/equipment or bare array). */
+export function equipmentItems(eq) {
+  if (Array.isArray(eq)) return eq;
+  if (eq && Array.isArray(eq.items)) return eq.items;
+  if (eq && Array.isArray(eq.equipment)) return eq.equipment;
+  return [];
+}
+
+/** Greeting by local hour. @param {Date} [now] */
+export function greeting(now = new Date()) {
+  const h = now.getHours();
+  if (h < 5) return 'Gute Nacht';
+  if (h < 11) return 'Guten Morgen';
+  if (h < 17) return 'Hallo';
+  if (h < 22) return 'Guten Abend';
+  return 'Gute Nacht';
+}
+
+/** German month title "Oktober 2026" for "YYYY-MM". */
+export const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+export function monthTitle(ym) {
+  const [y, m] = String(ym).split('-').map(Number);
+  return `${MONTHS[(m || 1) - 1]} ${y}`;
+}
+/** Shift "YYYY-MM" by n months. */
+export function shiftMonth(ym, n) {
+  const [y, m] = String(ym).split('-').map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/** "Sa., 31.10." short date. */
+export function shortDate(iso) {
+  const WD = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
+  const d = parseISODate(iso);
+  return `${WD[d.getDay()]}, ${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.`;
+}
+
+/** Seconds → "4:05 min" or "45 s" or "1 h 05 min". */
+export function humanSeconds(sec) {
+  const s = Math.max(0, Math.round(sec || 0));
+  if (s < 60) return { value: String(s), unit: 's' };
+  if (s < 3600) return { value: `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`, unit: 'min' };
+  return { value: `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}`, unit: 'h' };
+}
+
+/** Session duration in minutes (rounded) or null. */
+export function sessionMinutes(s) {
+  if (!s?.startedAt || !s?.endedAt) return null;
+  const m = Math.round((new Date(s.endedAt) - new Date(s.startedAt)) / 60000);
+  return Number.isFinite(m) && m > 0 ? m : null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Markup helpers                                                      */
+/* ------------------------------------------------------------------ */
+
+/** Traffic pill (symbol + text). */
+export function trafficPill(light, { long = false, lg = false } = {}) {
+  if (!light) return html`<span class="chip chip--sm chip--outline">offen</span>`;
+  return html`<span class="traffic traffic--${light}${lg ? ' traffic--lg' : ''}">${long ? TRAFFIC_LONG[light] : TRAFFIC_SHORT[light]}</span>`;
+}
+
+/** Band chip. */
+export function bandChip(settings, id, { sm = true } = {}) {
+  const b = bandInfo(settings, id);
+  if (!b) return '';
+  return html`<span class="chip chip--band${sm ? ' chip--sm' : ''}" style="--band:${b.color}"><i class="chip__swatch"></i>${b.label}</span>`;
+}
+
+/** Page header with optional back link. */
+export function pageHeader({ title, eyebrow = '', back = null, backLabel = 'Zurück', actions = '' }) {
+  if (back) {
+    return html`<header class="page-header page-header--back">
+      <a class="btn btn--icon btn--outline" href="${back}" aria-label="${backLabel}">${raw(ICON.back)}</a>
+      <div class="grow">${eyebrow ? html`<p class="eyebrow">${eyebrow}</p>` : ''}<h1 class="page-header__title pv-title-sm">${title}</h1></div>
+      ${actions ? html`<div class="page-header__actions">${actions}</div>` : ''}
+    </header>`;
+  }
+  return html`<header class="page-header">
+    <div class="grow">${eyebrow ? html`<p class="eyebrow">${eyebrow}</p>` : ''}<h1 class="page-header__title">${title}</h1></div>
+    ${actions ? html`<div class="page-header__actions">${actions}</div>` : ''}
+  </header>`;
+}
+
+/* ------------------------------------------------------------------ */
+/* DOM helpers                                                         */
+/* ------------------------------------------------------------------ */
+
+/** Apply settings.fontScale (e.g. 1, 1.125, 1.25) to <html>. */
+export function applyFontScale(settings) {
+  if (typeof document === 'undefined') return;
+  const f = Number(settings?.fontScale) || 1;
+  document.documentElement.style.fontSize = f === 1 ? '' : `${Math.round(f * 100)}%`;
+}
+
+/** Show a toast. @param {string} text @param {{kind?: 'success'|'gold'|'accent', icon?: string, ms?: number}} [o] */
+export function toast(text, { kind = 'success', icon = '✓', ms = 2600 } = {}) {
+  if (typeof document === 'undefined') return;
+  let region = document.querySelector('.toast-region');
+  if (!region) {
+    region = document.createElement('div');
+    region.className = 'toast-region';
+    region.setAttribute('aria-live', 'polite');
+    document.body.appendChild(region);
+  }
+  const el = document.createElement('div');
+  el.className = `toast toast--${kind}`;
+  el.setAttribute('role', 'status');
+  el.innerHTML = String(html`<span class="toast__icon">${icon}</span><span class="toast__text">${text}</span>`);
+  region.appendChild(el);
+  setTimeout(() => { el.classList.add('is-leaving'); setTimeout(() => el.remove(), 220); }, ms);
+}
+
+/**
+ * Promise-based confirm modal.
+ * @param {{title: string, text?: string, confirm?: string, cancel?: string, danger?: boolean, icon?: string}} o
+ * @returns {Promise<boolean>}
+ */
+export function confirmDialog({ title, text = '', confirm = 'OK', cancel = 'Abbrechen', danger = false, icon = '' }) {
+  return new Promise((resolve) => {
+    const dlg = document.createElement('dialog');
+    dlg.className = 'modal modal--center';
+    dlg.innerHTML = String(html`
+      ${icon ? html`<div class="pv-modal-icon${danger ? ' is-danger' : ''}" aria-hidden="true">${icon}</div>` : ''}
+      <h2 class="modal__title">${title}</h2>
+      ${text ? html`<p class="muted">${text}</p>` : ''}
+      <div class="modal__actions">
+        <button class="btn ${danger ? 'btn--danger' : 'btn--primary'} btn--block" value="ok" data-act="ok">${confirm}</button>
+        <button class="btn btn--outline btn--block" data-act="cancel">${cancel}</button>
+      </div>`);
+    document.body.appendChild(dlg);
+    let result = false;
+    dlg.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-act]');
+      if (b) { result = b.dataset.act === 'ok'; dlg.close(); }
+      else if (e.target === dlg) dlg.close();
+    });
+    dlg.addEventListener('close', () => { dlg.remove(); resolve(result); });
+    dlg.showModal();
+  });
+}
+
+/**
+ * Bottom sheet dialog. Returns the dialog; it removes itself on close.
+ * @param {string|import('../render.js').SafeHtml} content
+ * @param {{onClose?: () => void, label?: string}} [o]
+ */
+export function openSheet(content, { onClose, label = '' } = {}) {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'sheet';
+  if (label) dlg.setAttribute('aria-label', label);
+  dlg.innerHTML = `<div class="sheet__handle"></div>${String(content)}`;
+  document.body.appendChild(dlg);
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg || e.target.closest('[data-close]')) dlg.close();
+  });
+  dlg.addEventListener('close', () => { dlg.remove(); onClose?.(); });
+  dlg.showModal();
+  return dlg;
+}
+
+/* ------------------------------------------------------------------ */
+/* View-only styles (tokens only), injected once                       */
+/* ------------------------------------------------------------------ */
+
+const VIEW_CSS = `
+.pv-title-sm { font-size: var(--fs-2xl); }
+.pv-greet { margin: var(--s-2) 0 var(--s-4); }
+.pv-greet { align-items: center; }
+.pv-greet__hello { font-size: var(--fs-2xl); font-weight: var(--fw-black); letter-spacing: -0.035em; line-height: 1.05; margin: 0; }
+.pv-hero-tags { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: 0 0 var(--s-4); }
+.pv-split-legend { display: flex; gap: var(--s-4); font-size: var(--fs-xs); color: var(--on-hero-muted); margin: calc(-1 * var(--s-2)) 0 var(--s-4); font-weight: var(--fw-semibold); }
+.pv-split-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.pv-hero-alt { margin-top: var(--s-3); text-align: center; font-size: var(--fs-sm); }
+.pv-hero-alt a { color: var(--on-hero); font-weight: var(--fw-semibold); }
+.pv-mini { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); text-align: center; height: 100%; justify-content: center; }
+.pv-mini .streak { flex-direction: column; gap: var(--s-1); text-align: center; }
+.pv-mini .streak__label { max-width: 14ch; }
+.pv-mini__note { font-size: var(--fs-xs); color: var(--muted); font-weight: var(--fw-semibold); }
+.pv-mini__note.is-gold { color: var(--gold-ink); }
+a.card.pv-last, .pv-last { display: flex; align-items: center; gap: var(--s-3); }
+.pv-reminder { display: flex; gap: var(--s-3); align-items: center; padding: var(--s-3) var(--s-4); border-radius: var(--radius); background: var(--surface); border: 1px dashed var(--border); color: var(--muted); font-size: var(--fs-sm); margin-bottom: var(--s-4); }
+.pv-reminder > span:first-child { font-size: 22px; }
+a.card.pv-badge-row, .pv-badge-row { display: flex; align-items: center; gap: var(--s-4); }
+.pv-badge-row .badge-tile__icon { width: 52px; height: 52px; font-size: 26px; flex: none; }
+.pv-modal-icon { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto var(--s-3); border-radius: 50%; background: var(--primary-soft); color: var(--primary-ink); font-size: 30px; }
+.pv-modal-icon.is-danger { background: var(--red-soft); color: var(--red-ink); }
+.pv-criteria { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.pv-crit { display: flex; gap: var(--s-3); align-items: flex-start; padding: var(--s-3); border-radius: var(--radius-sm); background: var(--surface-2); cursor: pointer; min-height: var(--tap); }
+.pv-crit input { position: absolute; opacity: 0; pointer-events: none; }
+.pv-crit__box { flex: none; width: 28px; height: 28px; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); display: grid; place-items: center; color: transparent; transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.pv-crit__box svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.pv-crit.is-ticked .pv-crit__box { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.pv-crit.is-auto .pv-crit__box { background: var(--green); border-color: var(--green); color: #fff; }
+.pv-crit input:focus-visible + .pv-crit__box { box-shadow: var(--focus-ring); }
+.pv-crit__text { flex: 1; min-width: 0; line-height: 1.35; }
+.pv-crit__hint { display: block; font-size: var(--fs-xs); color: var(--muted); margin-top: 2px; }
+.pv-crit.is-ticked .pv-crit__main, .pv-crit.is-auto .pv-crit__main { color: var(--muted); }
+.pv-progress { height: 10px; border-radius: var(--radius-pill); background: var(--surface-2); overflow: hidden; }
+.pv-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--grad-xp, var(--primary)); width: calc(var(--p, 0) * 100%); transition: width var(--dur-slow) var(--ease); }
+.card--hero .pv-progress { background: rgba(255,255,255,0.2); }
+.card--hero .pv-progress > span { background: #fff; }
+.pv-phase-steps { display: flex; gap: var(--s-2); margin: var(--s-3) 0 var(--s-4); }
+.pv-phase-steps > span { flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.25); }
+.pv-phase-steps > span.is-done { background: rgba(255,255,255,0.7); }
+.pv-phase-steps > span.is-current { background: #fff; }
+.pv-workout__head { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-3); }
+.pv-workout > summary { cursor: pointer; }
+.disclosure-arrow { flex: none; width: 28px; height: 28px; display: grid; place-items: center; color: var(--muted); transition: transform var(--dur) var(--ease); }
+.disclosure-arrow svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.pv-workout[open] .disclosure-arrow { transform: rotate(180deg); }
+.pv-letter { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--primary-soft); color: var(--primary-ink); font-weight: var(--fw-black); font-size: var(--fs-xl); }
+.pv-letter.is-next { background: var(--grad-hero); color: var(--on-hero); }
+.pv-ex-row { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) 0; text-decoration: none; color: inherit; min-height: var(--tap); }
+.pv-ex-row + .pv-ex-row { border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+.pv-ex-row__body { flex: 1; min-width: 0; }
+.pv-ex-row__name { display: block; font-weight: var(--fw-semibold); line-height: 1.3; }
+.pv-ex-row__meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: var(--fs-sm); color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.pv-sec-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--block-neutral); }
+.pv-sec-dot.is-knee { background: var(--block-knee); }
+.pv-sec-dot.is-archery { background: var(--block-archery); }
+.pv-sec-label { font-size: var(--fs-xs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: var(--s-3) 0 var(--s-1); display: flex; align-items: center; gap: var(--s-2); }
+.pv-sec-label.is-knee { color: var(--primary-ink); }
+.pv-sec-label.is-archery { color: var(--accent-ink); }
+.pv-phase-list { display: flex; flex-direction: column; gap: var(--s-2); }
+.pv-thumb { width: 64px; height: 64px; flex: none; border-radius: 14px; background: var(--surface-2); overflow: hidden; display: grid; place-items: center; }
+.pv-thumb pt-figure { width: 100%; height: 100%; display: block; }
+.exercise-card .pv-thumb { width: 72px; height: 72px; }
+.pv-ex-list { display: flex; flex-direction: column; gap: var(--s-3); }
+.pv-figure-stage { border-radius: var(--radius); background: var(--surface-2); overflow: hidden; margin-bottom: var(--s-4); position: relative; }
+.pv-figure-stage pt-figure { display: block; width: 100%; }
+.pv-figure-stage .chip-row { position: absolute; left: var(--s-3); top: var(--s-3); }
+.pv-ladder { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.pv-ladder__item { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3); border-radius: var(--radius-sm); background: var(--surface-2); border: 2px solid transparent; }
+.pv-ladder__item.is-current { background: var(--primary-soft); border-color: var(--primary); }
+.pv-ladder__item.is-done { opacity: 0.75; }
+.pv-ladder__num { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--surface); font-weight: var(--fw-black); font-variant-numeric: tabular-nums; color: var(--muted); }
+.pv-ladder__item.is-current .pv-ladder__num { background: var(--primary); color: var(--on-primary); }
+.pv-ladder__item.is-done .pv-ladder__num { background: var(--green-soft); color: var(--green-ink); }
+.pv-ladder__body { flex: 1; min-width: 0; }
+.pv-ladder__label { display: block; font-weight: var(--fw-bold); }
+.pv-ladder__dose { display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: var(--fs-sm); color: var(--muted); align-items: center; font-variant-numeric: tabular-nums; }
+.pv-callout { display: flex; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: var(--radius); background: var(--accent-soft); border-left: 4px solid var(--accent); margin-bottom: var(--s-4); }
+.pv-callout--knee { background: var(--primary-soft); border-left-color: var(--primary); }
+.pv-callout--warn { background: var(--yellow-soft); border-left-color: var(--yellow); }
+.pv-callout--stop { background: var(--stop-soft); border-left-color: var(--stop); }
+.pv-callout__icon { font-size: 20px; line-height: 1.3; flex: none; }
+.pv-callout p { margin: 0; }
+.pv-bullets { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--s-2); }
+.pv-bullets--ok li::marker { content: "✓  "; color: var(--green); font-weight: 900; }
+.pv-bullets--no li::marker { content: "✕  "; color: var(--red); font-weight: 900; }
+.pv-link-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+.pv-link-card { display: flex; flex-direction: column; gap: 4px; padding: var(--s-3); border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); text-decoration: none; color: inherit; min-height: 72px; }
+.pv-link-card__k { font-size: var(--fs-xs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+.pv-link-card__k svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.pv-link-card__n { font-weight: var(--fw-bold); line-height: 1.25; }
+.pv-month-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); margin-bottom: var(--s-3); }
+.pv-month-nav h3 { margin: 0; font-size: var(--fs-lg); }
+.pv-records { display: flex; flex-direction: column; gap: var(--s-2); }
+.pv-record { display: flex; align-items: center; gap: var(--s-3); }
+.pv-record__icon { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--gold-soft); font-size: 20px; }
+.pv-record__body { flex: 1; min-width: 0; }
+.pv-record__val { font-weight: var(--fw-black); font-size: var(--fs-lg); font-variant-numeric: tabular-nums; }
+.pv-sum-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin: var(--s-3) 0; }
+.pv-sum-grid .stat { padding: var(--s-2) var(--s-3); box-shadow: none; background: var(--surface-2); border: 0; }
+.pv-sum-grid .stat__value { font-size: var(--fs-xl); }
+.pv-note { padding: var(--s-3); border-radius: var(--radius-sm); background: var(--surface-2); font-style: italic; }
+.pv-band-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.pv-band { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); border-radius: var(--radius-sm); background: var(--surface-2); }
+.pv-band__swatch { flex: none; width: 34px; height: 14px; border-radius: 7px; background: var(--band); box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.15); }
+.pv-band__rank { flex: none; width: 22px; font-weight: var(--fw-black); color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
+.pv-band__name { flex: 1; min-width: 0; font-weight: var(--fw-semibold); }
+.pv-band .btn--icon { width: 40px; min-height: 40px; }
+.pv-band-scale { display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin-top: var(--s-2); }
+.pv-band-scale > span { flex: 1; background: var(--band); }
+.pv-setting-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: var(--tap); padding: var(--s-2) 0; }
+.pv-setting-row + .pv-setting-row, .pv-setting-row + .switch-row, .switch-row + .pv-setting-row { border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+.pv-setting-row__label { font-weight: var(--fw-semibold); }
+.pv-setting-row__hint { display: block; font-size: var(--fs-xs); color: var(--muted); font-weight: 400; }
+.pv-version { text-align: center; color: var(--muted); font-size: var(--fs-xs); margin: var(--s-6) 0 var(--s-2); }
+.pv-eq { display: flex; flex-direction: column; gap: var(--s-2); }
+.pv-eq__head { display: flex; gap: var(--s-3); align-items: flex-start; }
+.pv-eq__check { flex: none; width: 32px; height: 32px; border-radius: 10px; border: 2px solid var(--border); display: grid; place-items: center; color: transparent; background: var(--surface); margin-top: 2px; }
+.pv-eq__check svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.pv-eq.is-owned .pv-eq__check { background: var(--green); border-color: var(--green); color: #fff; }
+.pv-eq.is-owned .card__title { color: var(--muted); }
+.pv-eq__price { flex: none; font-weight: var(--fw-black); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pv-eq__price small { display: block; font-size: var(--fs-xs); color: var(--muted); font-weight: var(--fw-semibold); text-align: right; white-space: normal; max-width: 14ch; }
+.pv-eq__why { color: var(--text); font-size: var(--fs-sm); margin: 0; }
+.pv-budget { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin-top: var(--s-3); }
+.pv-budget > div { background: rgba(255,255,255,0.14); border-radius: var(--radius-sm); padding: var(--s-2) var(--s-3); }
+.pv-budget__v { display: block; font-weight: var(--fw-black); font-size: var(--fs-lg); font-variant-numeric: tabular-nums; }
+.pv-budget__k { font-size: var(--fs-xs); font-weight: var(--fw-semibold); color: var(--on-hero-muted); }
+.pv-taper { margin-top: var(--s-3); }
+.pv-quote-wrap .quote { margin-bottom: var(--s-4); }
+.pv-empty-sm { color: var(--muted); font-size: var(--fs-sm); text-align: center; padding: var(--s-4) 0; }
+.pv-sticky-filter { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: var(--s-2) 0 var(--s-2); margin: 0 0 var(--s-2); }
+.pv-count { font-size: var(--fs-sm); color: var(--muted); margin: var(--s-2) 0 var(--s-3); }
+.pv-session-item { cursor: pointer; }
+.pv-target { display: flex; justify-content: center; }
+.pv-target .target-face { width: min(64vw, 240px); }
+.pv-lights { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+.pv-reasons { margin: var(--s-2) 0 0; padding-left: 1.2em; font-size: var(--fs-sm); color: var(--muted); }
+.pv-ex-sum { list-style: none; margin: 0; padding: 0; }
+.pv-ex-sum li { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) 0; font-size: var(--fs-sm); }
+.pv-ex-sum li + li { border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+.pv-ex-sum__name { flex: 1; min-width: 0; }
+.pv-ex-sum__val { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+`;
+
+export function ensureViewStyles() {
+  if (typeof document === 'undefined' || document.getElementById('pv-styles')) return;
+  const st = document.createElement('style');
+  st.id = 'pv-styles';
+  st.textContent = VIEW_CSS;
+  document.head.appendChild(st);
+}
