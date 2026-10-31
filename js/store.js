@@ -31,6 +31,10 @@ export function defaults() {
       sound: true,
       vibration: true,
       operatedSide: 'left',
+      restDefault: null,
+      fontScale: 1,
+      ownedEquipment: [],
+      lastBackupAt: null,
     },
     state: {
       phaseId: 'p1-basis',
@@ -43,6 +47,8 @@ export function defaults() {
       records: { longestHold: null, mostReps: null, strongestBand: null },
       phaseHistory: [{ phaseId: 'p1-basis', startedAt: today() }],
       lastSeenQuoteDay: null,
+      welcomeDone: false,
+      bandsConfirmed: false,
     },
     sessions: [],
   };

@@ -47,6 +47,15 @@ test('doseFor applies level, plannedSets and overrides', () => {
   assert.deepEqual(H.setValues(H.doseFor({ level: 0 }, ex('breathing-reset'))), { seconds: 120, band: null });
 });
 
+test('doseFor: settings.restDefault overrides level rest, null falls back', () => {
+  const tke = ex('tke');
+  const lvlRest = tke.levels[0].rest ?? 30;
+  assert.equal(H.doseFor({ level: 0 }, tke, { restDefault: null }).rest, lvlRest);
+  assert.equal(H.doseFor({ level: 0 }, tke, {}).rest, lvlRest);
+  assert.equal(H.doseFor({ level: 0 }, tke, { restDefault: 90 }).rest, 90);
+  assert.equal(H.doseFor({ level: 0 }, { levels: [{ sets: 1, rest: 0 }] }, { restDefault: 90 }).rest, 0);
+});
+
 test('markSet / unmarkSet / nextOpenSet / setXp', () => {
   const e = { sets: [], painDuring: null, sharpPain: false };
   H.markSet(e, 1, { reps: 10 }, 'T');
@@ -55,8 +64,8 @@ test('markSet / unmarkSet / nextOpenSet / setXp', () => {
   assert.equal(H.doneCount(e), 1);
   H.unmarkSet(e, 1);
   assert.equal(e.sets.length, 0);
-  assert.equal(H.setXp(e, {}), 15);
-  assert.equal(H.setXp({ ...e, painDuring: 4 }, {}), 10);
+  assert.equal(H.setXp(e, {}), 3);
+  assert.equal(H.setXp({ ...e, painDuring: 4 }, {}), 2);
 });
 
 test('assessPreCheck: stop, red, yellow, green', () => {
@@ -111,7 +120,7 @@ test('finishSession: stores session, advances rotation, XP, badges, records, rem
   assert.ok(session.xpEarned > 50);
   assert.equal(session.score.points, session.score.max);
   assert.ok(data.state.badges['first-session']);
-  assert.equal(data.state.xp, session.xpEarned + 25 * Object.keys(data.state.badges).length);
+  assert.equal(data.state.xp, session.xpEarned + 15 * Object.keys(data.state.badges).length);
   assert.deepEqual(session.celebration.badges, Object.keys(data.state.badges));
   assert.ok(session.celebration.records.length >= 1);
   assert.equal(data.state.nextDayReminder.sessionId, session.id);
@@ -139,12 +148,12 @@ test('pendingNextDay: due after 12 h or next calendar day, not twice', () => {
   assert.ok(dueAt <= Date.parse('2026-11-01T00:00:00'));
 });
 
-test('applyNextDay: final light, +20 XP, merged recommendations', () => {
+test('applyNextDay: final light, +10 XP, merged recommendations', () => {
   const { data, session } = playSession(fresh());
   const later = new Date(Date.parse(session.endedAt) + 20 * 3600e3);
   const ok = H.applyNextDay(data, session.id, { pain: 1, swelling: 0, stiffness: 0, nightPain: false, locking: false, givingWay: false }, content, { now: later });
   assert.equal(ok.result.traffic, 'green');
-  assert.equal(ok.data.state.xp, data.state.xp + 20 + 25 * ok.badges.length);
+  assert.equal(ok.data.state.xp, data.state.xp + 10 + 15 * ok.badges.length);
   assert.equal(ok.data.sessions[0].traffic.final, 'green');
   assert.equal(ok.data.state.nextDayReminder, null);
   assert.equal(H.pendingNextDay(ok.data.sessions, later), null);

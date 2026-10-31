@@ -1,6 +1,6 @@
 # Physiotraining – SPEC (single source of truth)
 
-Version 1.0 · WP0 · 2026-10-31
+Version 1.1 · 2026-10-31 (1.1: integration/QA – documented deviations from WP0 in §3, §4.2, §6.4, §6.7, §7.4, §7.5, §8)
 
 This document is binding for all work packages. If code and SPEC disagree, the SPEC wins
 (or the SPEC is updated deliberately in the same change). UI language is **German**;
@@ -60,14 +60,20 @@ js/views/*.js               one module per screen
 js/util/date.js             date helpers (pure)
 js/util/audio.js            beep, vibrate, unlock
 js/util/export-import.js    downloadBackup, readBackupFile
-data/exercises.json workouts.json phases.json poses.json badges.json [equipment.json]
+data/exercises.json workouts.json phases.json poses.json badges.json [equipment.json] [quotes.json]
 tests/*.test.js             node --test
+tools/gen-precache.mjs      writes PRECACHE + CACHE_VERSION into sw.js (--check verifies)
+tools/gen-poses.mjs         generates data/poses.json; tools/pose-editor.html previews poses
+tools/gen-icons.mjs         renders icons/*.png from icons/icon.svg (Playwright, dev only)
 docs/SPEC.md
 ```
 
 ## 3. Feature list
 
-1. **Heute (Today)** – hero card with next workout (A/B/C, phase, estimated duration),
+1. **Heute (Today)** – first-run welcome card (only while no session exists and not hidden:
+   OP-Termin date input, band order „Passt so“ / „Anpassen“, safety note „ersetzt keine
+   ärztliche Beratung“, „Erstes Training starten“; replaces hero/OP card/reminder until the first
+   session), hero card with next workout (A/B/C, phase, estimated duration),
    big "Training starten" button (or "Training fortsetzen" if `activeSession`), OP countdown
    card with progress ring, weekly goal ring (x/3), streak, XP level bar, daily quote,
    pending recommendations to confirm, pending next-day check-in banner, taper banner.
@@ -83,7 +89,8 @@ docs/SPEC.md
 6. **Verlauf (History)** – calendar heatmap (traffic colors), pain trend line chart
    (pre/post/next-day), sessions per week bar chart, personal records, session list with detail.
 7. **Mehr (Settings & more)** – surgery date, weekly goal, pain thresholds, band order,
-   theme (system/light/dark), sound, vibration, export/import JSON backup, reset, link to
+   theme (system/light/dark), font size (`fontScale`), default rest between sets
+   (`restDefault`), sound, vibration, export/import JSON backup, reset, link to
    Ausrüstung, about/disclaimer.
 8. **Ausrüstung (Equipment)** – optional page rendering `data/equipment.json` if present,
    otherwise renders bands from settings.
@@ -143,7 +150,12 @@ export const title = 'Heute';          // static fallback title (string)
    `<pt-timer>` (hold / timed / rest), set checkboxes (big 56–64px buttons), per-exercise
    „Schmerz während“ scale (knee block mandatory, others optional), archery exercises ask
    **RPE 1–10** instead, „Überspringen“, „Scharfer Schmerz“ flag, back/next.
-   After each completed set → rest timer auto-starts (level.rest seconds).
+   After each completed set → rest timer auto-starts (`settings.restDefault` seconds if set,
+   else `level.rest`; levels with `rest: 0` never rest). Pre-check options when not all green:
+   „Wie geplant“, „Leichtere Varianten“ (`session.mode = "light"`, knee entries one level lower
+   or ~40 % fewer sets, `entry.lighter`), „Nur Oberkörper“ (`session.mode = "upper"`).
+   Long-press on a set check opens „Satz anpassen“ (reps/hold/seconds/band → `entry.override`).
+   Leaving mid-session sets `pausedAt`; time paused is excluded from the duration (`pausedMs`).
 4. **Nach dem Training (post-check):** Schmerz jetzt, Schwellung, RPE gesamt (1–10), Notiz.
 5. **Summary:** provisional traffic light (symbol + text), target face with arrows & score,
    XP gained + level bar, new badges, new PRs, recommendations (each: Übernehmen / Später).
@@ -345,6 +357,14 @@ Example:
   - `elbowL/elbowR`: **flexion relative to upper arm**, 0 = straight, + = forearm forward/up.
 - Named points computed by `pt-figure`: `hip, neck, head, shoulderL/R (= neck), elbowL/R, handL/R,
   kneeL/R, footL/R`.
+- **Extensions (additive, implemented):** optional pose keys `ankleL/R`, `headTilt`, `twist`,
+  `reachL/R`, length multipliers `thighLenL…forearmLenR`, `props` per pose, and
+  `camera: "top"` (front view seen from above, e.g. prone Y/T/W on a mat). Pose ids are
+  descriptive kebab-case (`stand`, `sit-chair`, `supine`, `prone-t`, `side-plank-elevated`, …;
+  182 poses). `data/poses.json` is **generated** by `node tools/gen-poses.mjs "$PWD"`
+  (grounds every pose: root heights from floor/mat/seat/step via `computePoints`); edit the
+  generator, not the JSON. `tools/pose-editor.html` previews poses; open requests live in
+  `docs/POSE_REQUESTS.md`.
 - Left limbs drawn slightly darker/behind in side view; the **left knee** (operated) is
   highlighted with the accent ring when the exercise `side` is `left`.
 
@@ -410,7 +430,11 @@ from `settings.bands`. Accept a bare array or `{ equipment: [] }` too.
     "theme": "system",                     // "system" | "light" | "dark"
     "sound": true,
     "vibration": true,
-    "operatedSide": "left"
+    "operatedSide": "left",
+    "restDefault": null,                   // seconds between sets | null → level.rest
+    "fontScale": 1,                        // 1 | 1.125 | 1.25 → <html> font-size
+    "ownedEquipment": [],                  // equipment ids ticked on Ausrüstung
+    "lastBackupAt": null                   // ISO timestamp of the last export
   },
   "state": {
     "phaseId": "p1-basis",
@@ -422,7 +446,10 @@ from `settings.bands`. Accept a bare array or `{ equipment: [] }` too.
     "badges": { "first-session": "2026-10-31T17:20:00.000Z" },  // id → earned at
     "records": { "longestHold": {…}, "mostReps": {…}, "strongestBand": {…} }, // see stats.personalRecords
     "phaseHistory": [{ "phaseId": "p1-basis", "startedAt": "2026-10-31" }],
-    "lastSeenQuoteDay": null
+    "lastSeenQuoteDay": null,
+    "welcomeDone": false,                  // first-run welcome card hidden
+    "bandsConfirmed": false,               // band order confirmed in the welcome card
+    "nextDayReminder": null                // { sessionId, dueAt, text } set by finishSession
   },
   "sessions": [ Session, … ]               // completed sessions, oldest first
 }
@@ -450,9 +477,18 @@ from `settings.bands`. Accept a bare array or `{ equipment: [] }` too.
   "traffic": { "provisional": "green", "final": null, "reasons": ["…"] },
   "recommendations": [ Recommendation, … ],
   "xpEarned": 120,
-  "score": { "points": 172, "max": 190 }
+  "score": { "points": 172, "max": 190 },
+  // additive fields written by the session flow:
+  "mode": "light",                         // only set by the pre-check choice: "light" | "upper"
+  "pausedMs": 0,                           // time spent paused (excluded from duration)
+  "celebration": { "xpBefore": 0, "xpAfter": 120, "badges": [], "records": [], "shown": true }
 }
 ```
+Per exercise entry (additive): `plannedSets` (after taper/lighter), `override`
+(`{reps?, hold?, seconds?, band?}` from „Satz anpassen“), `lighter` (bool). Done sets of timed
+exercises log `seconds` instead of `reps/hold`. Active sessions may carry `pausedAt`.
+New keys are filled from `defaults()` by the deep merge in `migrate()` (no schema bump needed
+because they are purely additive with defaults).
 - `section`: `"warmup" | "knee" | "archery" | "cooldown"`.
 - `swelling`: `0` keine · `1` leicht · `2` deutlich. `stiffness`: `0` keine · `1` leicht · `2` deutlich.
 - `pain`, `painDuring`: 0–10 integers. `rpe`: 1–10 or `null`.
@@ -515,7 +551,9 @@ All signatures are binding. JSDoc types live in `js/types.js`.
 - `loadContent({ force? }) → Promise<Content>` — fetches `data/{exercises,workouts,phases,poses,badges}.json`
   in parallel (relative to module URL), plus optional `equipment.json` (→ `null` on 404/parse error).
   Cached after first call. Returns `{ exercises: Exercise[], workouts: Workout[], phases: Phase[],
-  poses: PosesFile, badges: Badge[], equipment: any|null }` (arrays unwrapped from `{version, …}`).
+  poses: PosesFile, badges: Badge[], equipment: any|null, quotes: string[] }` (arrays unwrapped
+  from `{version, …}`). `data/quotes.json` (`{version, quotes: string[]}`) is optional like
+  equipment; `quotes: []` → `motivation.QUOTES` fallback in `dailyQuote`.
 - `getContent() → Content|null` (sync, after load).
 - `getExercise(id)`, `getWorkout(id)`, `getPhase(id)` → item or `undefined` (sync, after load).
 - `getPose(id) → Pose|undefined`.
@@ -529,6 +567,12 @@ All signatures are binding. JSDoc types live in `js/types.js`.
 - Methods: `start()`, `pause()`, `reset()`; property `running` (bool), `remaining` (s).
 - Events (bubbling, `CustomEvent`): `tick` `{remaining, elapsed, rep}`, `rep` `{rep, total}`,
   `done` `{elapsed}`.
+- **Extras (additive):** attributes `sets` / `set-rest` (hold mode: repeat the holds for n sets
+  with rest between, defaults 1 / 30); methods `skip()` (end current phase) and
+  `adjust(deltaSeconds)` (±15 s buttons in rest mode); props `rep`, `phase`; `rep` event detail
+  also has `{set, sets}`. Set mode with `seconds` and no tempo = one timed work phase
+  (exercise type `timed`). Light DOM, styleable via `--pt-timer-color`, `--pt-timer-rest-color`,
+  `--pt-timer-size`.
 - Renders 72px+ tabular-nums countdown, big start/pause button, progress ring; uses `audio.beep`
   at last 3 s and done, `audio.vibrate` on done. Uses timestamps (not interval counting) so it
   stays correct when the tab is throttled; keeps screen awake via Wake Lock API if available.
@@ -643,8 +687,12 @@ via `viewBox`, colors from CSS tokens:
 - **Weekly goal ring:** `done/3`, ring fills; complete → gold ring + „Wochenziel erreicht 🎯“.
 - **Streak:** weeks in a row meeting the goal: „🔥 4 Wochen in Folge“. A missed week resets
   silently (no shaming); copy: „Neuer Anlauf – diese Woche zählt.“
-- **XP:** +10 per completed set, +5 per clean set (pain ≤ 2), +50 per finished session,
-  +20 next-day check-in, +25 per badge. Level bar with archery title (`LEVELS`).
+- **XP:** +2 per completed set, +1 per clean set (pain ≤ 2), +20 per finished session,
+  +10 next-day check-in, +15 per badge (`XP` in `motivation.js`). A typical session (35–50
+  sets) yields ~130–180 XP. Level bar with archery title (`LEVELS`): Novize 0, Lehrling 400,
+  Bogenträger 1000, Schütze 1900, Jäger 3000, Scharfschütze 4400, Meisterschütze 6200,
+  Bogenmeister 8800, Robin Hood 12000 – at 3 sessions/week a new title every 1–2 weeks early
+  on, slower later; Robin Hood after ~75 sessions (~6 months).
 - **Badges:** first session, 3-session week, 10/25/50 sessions, 5 min total hold time, phase
   completed, green week, personal record, comeback after pause. New badge → modal/toast with
   icon + confetti. Badge grid in Verlauf/Mehr (locked badges greyed with hint).

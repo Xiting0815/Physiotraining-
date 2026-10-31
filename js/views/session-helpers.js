@@ -29,8 +29,11 @@ export function isKneeEntry(entry, content) {
 /**
  * Effective prescription of an entry: level values + user overrides (`entry.override`) +
  * planned set count (`entry.plannedSets`, already tapered by buildSessionPlan).
+ * Rest between sets: `settings.restDefault` (seconds) when set, else the level's `rest`
+ * (levels with `rest: 0` keep no rest).
+ * @param {any} entry @param {any} exercise @param {import('../types.js').Settings} [settings]
  */
-export function doseFor(entry, exercise) {
+export function doseFor(entry, exercise, settings) {
   const lvl = exercise?.levels?.[entry?.level ?? 0] ?? exercise?.levels?.[0] ?? {};
   const o = entry?.override || {};
   return {
@@ -41,12 +44,18 @@ export function doseFor(entry, exercise) {
     seconds: o.seconds ?? lvl.seconds ?? null,
     band: 'band' in o ? o.band : lvl.band ?? null,
     tempo: lvl.tempo ?? null,
-    rest: isNum(lvl.rest) ? lvl.rest : 30,
+    rest: restFor(lvl, settings),
     restBetween: isNum(lvl.restBetween) ? lvl.restBetween : 3,
     label: lvl.label ?? '',
     perSide: exercise?.side === 'perSide',
     side: exercise?.side ?? 'both',
   };
+}
+
+function restFor(lvl, settings) {
+  const base = isNum(lvl.rest) ? lvl.rest : 30;
+  const def = settings?.restDefault;
+  return isNum(def) && def >= 0 && base !== 0 ? def : base;
 }
 
 /** Values logged for one done set (SPEC §6.7 set shape; `seconds` for timed exercises). */
@@ -283,7 +292,7 @@ const recKey = (r) => `${r.exerciseId}|${r.action}|${r.toLevel}|${r.toExerciseId
 
 /**
  * Next-day check-in: stores `nextDay`, final light, merges updated recommendations (decided ones are
- * kept), +20 XP, new badges. Pure.
+ * kept), +XP.nextDayCheckIn, new badges. Pure.
  * @returns {{data: any, session: Session, result: {traffic: string, reasons: string[]}, xpGained: number, badges: string[]}|null}
  */
 export function applyNextDay(data, sessionId, nextDay, content, { now = new Date() } = {}) {

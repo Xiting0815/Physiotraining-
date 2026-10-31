@@ -27,7 +27,7 @@ button { cursor: pointer; background: none; border: 0; padding: 0; }
 button:disabled { cursor: not-allowed; }
 a { color: var(--primary-ink); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
 a:hover { text-decoration-thickness: 2px; }
-ul[class], ol[class] { list-style: none; margin: 0; padding: 0; }
+:where(ul[class], ol[class]) { list-style: none; margin: 0; padding: 0; }
 hr { border: 0; border-top: 1px solid var(--border); margin: var(--s-5) 0; }
 details > summary { cursor: pointer; }
 details > summary::-webkit-details-marker { display: none; }

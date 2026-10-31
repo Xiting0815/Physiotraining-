@@ -63,12 +63,12 @@ export function render(root, { store, content, query }) {
     <div class="pv-sticky-filter">
       <div class="search">${raw(ICON.search)}<input class="input" type="search" placeholder="Übung suchen, z. B. Brücke" aria-label="Übung suchen" value="${f.q}" data-q></div>
       <div class="chip-row chip-row--scroll mt-2" role="group" aria-label="Block">
-        <button class="chip chip--filter" data-block="" aria-pressed="${!f.block && !f.plan}">Alle</button>
-        <button class="chip chip--filter" data-plan aria-pressed="${f.plan}">Im Plan</button>
-        ${BLOCKS.map((b) => html`<button class="chip chip--filter" data-block="${b}" aria-pressed="${f.block === b}">${BLOCK_LABEL[b]}</button>`)}
+        <button class="chip chip--filter" data-block="" aria-pressed="${String(!f.block && !f.plan)}">Alle</button>
+        <button class="chip chip--filter" data-plan aria-pressed="${String(!!f.plan)}">Im Plan</button>
+        ${BLOCKS.map((b) => html`<button class="chip chip--filter" data-block="${b}" aria-pressed="${String(f.block === b)}">${BLOCK_LABEL[b]}</button>`)}
       </div>
       <div class="chip-row chip-row--scroll mt-2" role="group" aria-label="Ausrüstung">
-        ${usedEquip.map((id) => html`<button class="chip chip--filter chip--sm" data-eq="${id}" aria-pressed="${f.equipment.includes(id)}">${EQUIPMENT_LABEL[id] ?? id}</button>`)}
+        ${usedEquip.map((id) => html`<button class="chip chip--filter chip--sm" data-eq="${id}" aria-pressed="${String(f.equipment.includes(id))}">${EQUIPMENT_LABEL[id] ?? id}</button>`)}
       </div>
     </div>
     <div data-list></div>

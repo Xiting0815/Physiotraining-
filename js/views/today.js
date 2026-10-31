@@ -3,12 +3,12 @@ import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE, daysBetween } from '../util/date.js';
 import { nextWorkout, applyRecommendation } from '../logic/progression.js';
 import { weeklyProgress, streak, sessionLight, dayOf } from '../logic/stats.js';
-import { levelFor, LEVELS, dailyQuote, opCountdown, reminderText } from '../logic/motivation.js';
+import { XP, levelFor, LEVELS, dailyQuote, opCountdown, reminderText } from '../logic/motivation.js';
 import { taperActive } from '../logic/traffic-light.js';
 import { progressRing, streakFlame, xpBar } from '../components/charts.js';
 import {
   ICON, ensureViewStyles, applyFontScale, greeting, pendingNextDay, workoutSplit, workoutLetter,
-  trafficPill, shortDate, toast, sessionMinutes,
+  trafficPill, shortDate, toast, sessionMinutes, bandChip,
 } from './ui.js';
 
 export const title = 'Heute';
@@ -75,6 +75,44 @@ export function render(root, { store, content }) {
     const trainedToday = done.some((s) => dayOf(s) === today);
     const letter = w ? workoutLetter(w, content.phases) : '–';
     const opOver = op.stage === 'today' || op.stage === 'after';
+    const firstRun = !done.length && !active && !state.welcomeDone;
+    const bandsOk = !!state.bandsConfirmed;
+
+    const welcome = firstRun ? html`<section class="card pv-welcome" aria-labelledby="welcome-title">
+        <p class="eyebrow">Willkommen</p>
+        <h2 class="pv-welcome__title" id="welcome-title">Schön, dass du da bist! 👋</h2>
+        <p class="pv-welcome__lead">Drei Mal pro Woche ~40 Minuten: Knie stärken für die OP und Rücken & Schultern fürs Bogenschießen. Drei kurze Schritte zum Start:</p>
+        <ol class="pv-steps">
+          <li class="${settings.surgeryDate ? 'is-done' : ''}">
+            <span class="pv-steps__num" aria-hidden="true">${settings.surgeryDate ? raw(ICON.check) : '1'}</span>
+            <div class="pv-steps__body">
+              <label class="pv-steps__title" for="welcome-op">OP-Termin eintragen</label>
+              <input id="welcome-op" class="input" type="date" data-welcome-op value="${settings.surgeryDate ?? ''}" min="${today}">
+              <span class="pv-steps__hint">Für Countdown und die ruhigere OP-Woche. Geht auch später unter „Mehr“.</span>
+            </div>
+          </li>
+          <li class="${bandsOk ? 'is-done' : ''}">
+            <span class="pv-steps__num" aria-hidden="true">${bandsOk ? raw(ICON.check) : '2'}</span>
+            <div class="pv-steps__body">
+              <span class="pv-steps__title">Deine Bänder – leicht → schwer</span>
+              <div class="pv-welcome__bands">${(settings.bands || []).map((b) => bandChip(settings, b.id, { sm: true }))}</div>
+              ${bandsOk ? html`<span class="pv-steps__hint">Bestätigt · Reihenfolge änderbar unter <a href="#/mehr">Mehr</a>.</span>`
+                : html`<div class="btn-row"><a class="btn btn--outline btn--sm" href="#/mehr">Anpassen</a><button type="button" class="btn btn--primary btn--sm" data-welcome-bands>Passt so</button></div>`}
+            </div>
+          </li>
+          <li>
+            <span class="pv-steps__num" aria-hidden="true">3</span>
+            <div class="pv-steps__body">
+              <span class="pv-steps__title">Auf dein Knie hören</span>
+              <span class="pv-steps__hint">Die Ampel hilft dir bei der Dosierung. Bei stechendem Schmerz, Blockade oder starker Schwellung: aufhören und Rücksprache halten. Die App ersetzt keine ärztliche oder physiotherapeutische Beratung.</span>
+            </div>
+          </li>
+        </ol>
+        <div class="pv-welcome__cta">
+          <a class="btn btn--primary btn--block btn--session" href="#/session?workout=${encodeURIComponent(w?.id ?? '')}">${raw(ICON.play)}Erstes Training starten</a>
+          <p class="pv-welcome__sub">${w ? html`${w.name} · ca. ${w.durationMin} Min<br>` : ''}<button type="button" class="pv-linkbtn" data-welcome-hide>Hinweis ausblenden</button></p>
+        </div>
+      </section>` : '';
 
     const opCard = op.stage === 'none'
       ? html`<a class="card" href="#/mehr?focus=surgeryDate"><div class="ring-card">
@@ -157,7 +195,7 @@ export function render(root, { store, content }) {
       ${nd ? html`<a class="banner banner--gold" href="#/folgetag">
         <span class="banner__icon">🌤️</span>
         <span class="banner__body"><span class="banner__title">Wie geht's dem Knie heute?</span>
-        <span class="banner__text">Kurzer Folgetag-Check zu ${shortDate(dayOf(nd))} · 30 Sek. · +20 XP</span></span>
+        <span class="banner__text">Kurzer Folgetag-Check zu ${shortDate(dayOf(nd))} · 30 Sek. · +${XP.nextDayCheckIn} XP</span></span>
         ${raw(ICON.chev)}
       </a>` : ''}
 
@@ -168,7 +206,9 @@ export function render(root, { store, content }) {
         ${raw(ICON.chev)}
       </a>` : ''}
 
-      ${hero}
+      ${welcome}
+
+      ${firstRun ? '' : hero}
 
       ${recs.length ? html`<h2 class="section-title">Vorschläge für dich <span class="count">${recs.length}</span></h2>
         ${recs.map(({ sessionId, index, rec }) => html`<section class="card rec ${rec.action === 'regress' || rec.action === 'reduce' ? 'rec--regress' : rec.action === 'consult' ? 'rec--consult' : ''}">
@@ -186,7 +226,7 @@ export function render(root, { store, content }) {
           </div>
         </section>`)}` : ''}
 
-      ${opCard}
+      ${firstRun ? '' : opCard}
 
       <div class="grid-2 mb-4">
         <a class="card card--tight" href="#/verlauf" aria-label="Wochenziel ${wk.done} von ${wk.goal}">
@@ -206,7 +246,7 @@ export function render(root, { store, content }) {
 
       <a class="card" href="#/verlauf" style="display:block">${raw(xpBar({ xp: state.xp || 0, level: lvl, nextTitle }))}</a>
 
-      ${reminder ? html`<div class="pv-reminder"><span aria-hidden="true">🌱</span><span>${reminder}</span></div>` : ''}
+      ${reminder && !firstRun ? html`<div class="pv-reminder"><span aria-hidden="true">🌱</span><span>${reminder}</span></div>` : ''}
 
       ${last ? html`<h2 class="section-title">Letzte Einheit <a href="#/verlauf">Verlauf</a></h2>
         <a class="card pv-last" href="#/verlauf?session=${encodeURIComponent(last.id)}">
@@ -223,7 +263,7 @@ export function render(root, { store, content }) {
           <span class="badge-tile__icon" aria-hidden="true">${recentBadge.icon}</span>
           <span class="grow"><span class="list-item__title">${recentBadge.name}</span>
           <span class="list-item__sub">${recentBadge.description}${recentBadgeAt ? ` · ${daysAgo(recentBadgeAt, today)}` : ''}</span></span>
-        </a>` : !done.length ? html`<section class="card"><div class="empty">
+        </a>` : !done.length && !firstRun ? html`<section class="card"><div class="empty">
           <div class="empty__art"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="13"/><circle cx="32" cy="32" r="4"/><path d="M32 32l18-18M44 12h6v6"/></svg></div>
           <h3 class="empty__title">Dein erster Pfeil wartet</h3>
           <p class="empty__text">Starte ganz entspannt – das erste Abzeichen gibt's nach der ersten Einheit.</p>
@@ -231,7 +271,18 @@ export function render(root, { store, content }) {
     `);
   };
 
+  const onChange = (e) => {
+    const t = e.target;
+    if (t.matches?.('[data-welcome-op]')) store.update((d) => { d.settings.surgeryDate = t.value || null; });
+  };
+
   const onClick = (e) => {
+    if (e.target.closest('[data-welcome-bands]')) { store.update((d) => { d.state.bandsConfirmed = true; }); return; }
+    if (e.target.closest('[data-welcome-hide]')) {
+      store.update((d) => { d.state.welcomeDone = true; });
+      toast('Ausgeblendet – OP-Termin und Bänder findest du unter „Mehr“.', { icon: '👍' });
+      return;
+    }
     const b = e.target.closest('[data-rec]');
     if (!b) return;
     const status = b.dataset.rec;
@@ -249,8 +300,9 @@ export function render(root, { store, content }) {
 
   draw();
   root.addEventListener('click', onClick);
+  root.addEventListener('change', onChange);
   const unsub = store.subscribe(draw);
-  return () => { unsub(); root.removeEventListener('click', onClick); };
+  return () => { unsub(); root.removeEventListener('click', onClick); root.removeEventListener('change', onChange); };
 }
 
 function daysAgo(isoTs, today) {

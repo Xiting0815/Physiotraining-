@@ -1,11 +1,12 @@
 // Folgetag-Check – see docs/SPEC.md §4.2 step 6, §5.1 (WP-Session-flow).
 // Next-day check-in for the most recent done session without `nextDay` → finalizeWithNextDay
-// (final light), updated recommendations (accept/dismiss), +20 XP, encouraging message.
+// (final light), updated recommendations (accept/dismiss), +XP.nextDayCheckIn, encouraging message.
 import { html, raw, render as paint } from '../render.js';
 import { LIGHT_LABELS } from '../logic/traffic-light.js';
 import { formatDE } from '../util/date.js';
 import { confetti } from '../components/celebrate.js';
 import * as H from './session-helpers.js';
+import { XP } from '../logic/motivation.js';
 
 export const title = 'Folgetag-Check';
 
@@ -84,7 +85,7 @@ export function render(root, { store, content, navigate }) {
         ${check('locking', 'Knie blockiert oder hakt')}
         ${check('givingWay', 'Knie knickt weg oder gibt nach')}
       </section>
-      <div class="sticky-cta"><button type="button" class="btn btn--primary btn--block btn--session" data-act="submit">Check abschließen · +20 XP</button></div>`);
+      <div class="sticky-cta"><button type="button" class="btn btn--primary btn--block btn--session" data-act="submit">Check abschließen · +${XP.nextDayCheckIn} XP</button></div>`);
     document.body.classList.add('has-cta');
     actions = {
       submit: () => {

@@ -142,7 +142,7 @@ export function render(root, { store, content, query }) {
 
       <h2 class="section-title">Bänder <button class="btn btn--ghost btn--sm" data-band-reset>Standard</button></h2>
       <section class="card">
-        <p class="card__sub mb-4" style="margin-top:0">Reihenfolge von leicht nach schwer. Danach richten sich Rekorde („stärkstes Band“) und Vorschläge.</p>
+        <p class="card__sub" style="margin:0 0 var(--s-4)">Reihenfolge von leicht nach schwer. Danach richten sich Rekorde („stärkstes Band“) und Vorschläge.</p>
         ${BAND_GROUPS.map((g) => {
           const list = s.bands.filter((b) => b.kind === g.kind);
           if (!list.length) return '';

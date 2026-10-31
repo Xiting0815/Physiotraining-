@@ -41,6 +41,7 @@ export function render(root, ctx) {
   let session = null;
   let saved = false;         // activeSession exists in the store
   let leaving = false;
+  let disposed = false; // view left (route change) – no more dialogs
   let actions = {};          // data-act → handler, per screen
   let onChange = () => {};   // change events, per screen
   let screen = {};           // per-screen transient state (timers, nudges)
@@ -324,7 +325,7 @@ export function render(root, ctx) {
       return show();
     }
     const w = workoutOf(session);
-    const dose = H.doseFor(entry, ex);
+    const dose = H.doseFor(entry, ex, settings());
     const sec = entry.section;
     const knee = sec === 'knee';
     const archery = sec === 'archery';
@@ -549,7 +550,7 @@ export function render(root, ctx) {
   function afterRest() {
     const entry = session.exercises[session.cursor.index];
     const ex = exById(entry.exerciseId);
-    const dose = H.doseFor(entry, ex);
+    const dose = H.doseFor(entry, ex, settings());
     stopRest();
     const timerCard = root.querySelector('[data-slot="timer"]');
     const allDone = H.doneCount(entry) >= dose.sets;
@@ -596,7 +597,7 @@ export function render(root, ctx) {
 
   // ------------------------------------------------------------------ adjust sheet
   async function openAdjust(entry, ex, setIdx) {
-    const dose = H.doseFor(entry, ex);
+    const dose = H.doseFor(entry, ex, settings());
     const set = setIdx != null ? entry.sets?.[setIdx] : null;
     const isDone = !!set?.done;
     const vals = {
@@ -652,7 +653,7 @@ export function render(root, ctx) {
     if (dose.type === 'timed' && vals.seconds != null) o.seconds = vals.seconds;
     if (usesBand) o.band = vals.band;
     entry.override = o;
-    if (isDone) Object.assign(entry.sets[setIdx], H.setValues(H.doseFor(entry, ex)));
+    if (isDone) Object.assign(entry.sets[setIdx], H.setValues(H.doseFor(entry, ex, settings())));
     persist();
     H.toast('Angepasst', { icon: '✎', kind: '' });
     renderExercise();
@@ -831,7 +832,7 @@ export function render(root, ctx) {
     store.update((d) => { const x = d.sessions.find((y) => y.id === s.id); if (x?.celebration) x.celebration.shown = true; });
     if (light !== 'red' && light !== 'stop') { await new Promise((r) => setTimeout(r, 450)); confetti(); }
     if (lc.up || badges.length) await new Promise((r) => setTimeout(r, 900));
-    if (lc.up && !leaving) {
+    if (lc.up && !leaving && !disposed) {
       confetti({ origin: { x: 0.5, y: 0.3 } });
       await H.openDialog(String(html`<div class="badge-reveal"><span class="badge-tile__icon">🏆</span>
         <h2 class="modal__title">Neue Stufe!</h2><p class="strong mb-0">Lv ${lc.after.index + 1} · ${lc.after.title}</p>
@@ -839,7 +840,7 @@ export function render(root, ctx) {
         <div class="modal__actions"><button type="button" class="btn btn--gold btn--block btn--session" data-value="ok">Stark!</button></div>`), { className: 'modal modal--center ses-dlg' });
     }
     for (const b of badges) {
-      if (leaving) break;
+      if (leaving || disposed) break;
       confetti({ origin: { x: 0.5, y: 0.3 } });
       await H.openDialog(String(html`<div class="badge-reveal"><span class="badge-tile__icon">${b.icon}</span>
         <h2 class="modal__title">Neues Abzeichen!</h2><p class="strong mb-0">${b.name}</p><p class="muted">${b.description}</p></div>
@@ -857,6 +858,7 @@ export function render(root, ctx) {
   }
 
   function cleanup() {
+    disposed = true;
     root.removeEventListener('click', onClick);
     root.removeEventListener('change', onChangeEvt);
     root.removeEventListener('input', onChangeEvt);

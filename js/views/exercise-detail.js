@@ -97,7 +97,7 @@ export function render(root, { store, content, params, query }) {
           ${lvl.reps != null ? html`<div class="dose__item"><span class="dose__value">${lvl.reps}</span><span class="dose__label">Wdh.${ex.side === 'perSide' ? ' / Seite' : ''}</span></div>` : ''}
           ${lvl.hold ? html`<div class="dose__item"><span class="dose__value">${lvl.hold}<small>s</small></span><span class="dose__label">Halten</span></div>` : ''}
           ${lvl.seconds ? html`<div class="dose__item"><span class="dose__value">${lvl.seconds}<small>s</small></span><span class="dose__label">Dauer</span></div>` : ''}
-          <div class="dose__item"><span class="dose__value">${lvl.rest ?? 0}<small>s</small></span><span class="dose__label">Pause</span></div>
+          <div class="dose__item"><span class="dose__value">${Number.isFinite(settings.restDefault) && lvl.rest !== 0 ? settings.restDefault : (lvl.rest ?? 0)}<small>s</small></span><span class="dose__label">Pause</span></div>
         </div>
         <div class="chip-row">
           ${lvl.tempo ? html`<span class="chip chip--outline chip--sm">Tempo ${lvl.tempo}</span>` : ''}

@@ -2,23 +2,25 @@
 import { daysBetween, startOfIsoWeek } from '../util/date.js';
 import { dayOf, doneSessions, newRecords, personalRecords, sessionLight, totalHoldSeconds, weeklyProgress } from './stats.js';
 
-export const XP = { perSet: 10, cleanSetBonus: 5, sessionBonus: 50, nextDayCheckIn: 20, badge: 25 };
+// Balanced for ~3 sessions/week: a typical session (35–50 sets) yields ~130–180 XP incl. check-in,
+// so the top title takes ~75 sessions (~6 months); early levels come every 1–2 weeks.
+export const XP = { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15 };
 
 export const LEVELS = [
   { title: 'Novize', min: 0 },
-  { title: 'Lehrling', min: 150 },
-  { title: 'Bogenträger', min: 400 },
-  { title: 'Schütze', min: 800 },
-  { title: 'Jäger', min: 1400 },
-  { title: 'Scharfschütze', min: 2200 },
-  { title: 'Meisterschütze', min: 3200 },
-  { title: 'Bogenmeister', min: 4500 },
-  { title: 'Robin Hood', min: 6000 },
+  { title: 'Lehrling', min: 400 },
+  { title: 'Bogenträger', min: 1000 },
+  { title: 'Schütze', min: 1900 },
+  { title: 'Jäger', min: 3000 },
+  { title: 'Scharfschütze', min: 4400 },
+  { title: 'Meisterschütze', min: 6200 },
+  { title: 'Bogenmeister', min: 8800 },
+  { title: 'Robin Hood', min: 12000 },
 ];
 
 /**
  * done sets × perSet + clean sets (pain ≤ greenMax, no sharp pain) × bonus + session bonus (status done).
- * Next-day check-in (+20) and badges (+25 each) are awarded separately via `XP`.
+ * Next-day check-in (+XP.nextDayCheckIn) and badges (+XP.badge each) are awarded separately via `XP`.
  * @param {import('../types.js').Session} session
  * @param {import('../types.js').Settings} settings
  */

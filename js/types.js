@@ -105,6 +105,7 @@
  * @property {PosesFile} poses
  * @property {Badge[]} badges
  * @property {any|null} equipment  raw equipment.json or null
+ * @property {string[]} quotes      daily quotes from data/quotes.json ([] → built-in QUOTES)
  */
 
 /** @typedef {{id: string, label: string, kind: 'theraband'|'loop', color: string}} Band */
@@ -120,6 +121,10 @@
  * @property {boolean} sound
  * @property {boolean} vibration
  * @property {'left'|'right'} operatedSide
+ * @property {number|null} restDefault  rest between sets in seconds; null → level.rest
+ * @property {number} fontScale         1 | 1.125 | 1.25 (applied to <html> font-size)
+ * @property {string[]} ownedEquipment  equipment ids the user owns (Ausrüstung)
+ * @property {string|null} lastBackupAt ISO timestamp of the last JSON export
  */
 
 /** @typedef {{done: boolean, reps?: number|null, hold?: number|null, seconds?: number|null, band?: string|null, at: string}} SetLog */
@@ -204,6 +209,8 @@
  * @property {{longestHold: any, mostReps: any, strongestBand: any}} records
  * @property {{phaseId: string, startedAt: string}[]} phaseHistory
  * @property {string|null} lastSeenQuoteDay
+ * @property {boolean} welcomeDone      first-run welcome card on Heute hidden by the user
+ * @property {boolean} bandsConfirmed   band order confirmed in the welcome card
  */
 
 /**

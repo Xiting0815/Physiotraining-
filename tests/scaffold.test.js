@@ -78,9 +78,9 @@ test('taper window is 1..7 days before surgery', () => {
 test('worst / levelFor / xpFor / scoreForSet basics', () => {
   assert.equal(worst('green', 'red'), 'red');
   assert.equal(levelFor(0).title, 'Novize');
-  assert.equal(levelFor(6000).title, 'Robin Hood');
+  assert.equal(levelFor(12000).title, 'Robin Hood');
   const s = { status: 'done', exercises: [{ painDuring: 1, sharpPain: false, sets: [{ done: true }, { done: false }] }] };
-  assert.equal(xpFor(s, { painThresholds: { greenMax: 2 } }), 50 + 15);
+  assert.equal(xpFor(s, { painThresholds: { greenMax: 2 } }), 20 + 3);
   assert.equal(scoreForSet({ done: true, painDuring: 1 }), 10);
   assert.equal(scoreForSet({ done: true, painDuring: 4 }), 7);
   assert.equal(scoreForSet({ done: true, painDuring: 7 }), 4);

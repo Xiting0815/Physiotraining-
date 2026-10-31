@@ -18,30 +18,55 @@ const S = (day, { light = 'green', final = null, exercises = [], status = 'done'
 const data = (sessions, state = {}) => ({ schemaVersion: 1, settings, state: { badges: {}, phaseHistory: [{ phaseId: 'p1-basis' }], ...state }, sessions });
 
 test('XP constants and xpFor', () => {
-  assert.deepEqual(XP, { perSet: 10, cleanSetBonus: 5, sessionBonus: 50, nextDayCheckIn: 20, badge: 25 });
+  assert.deepEqual(XP, { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15 });
   const s = { status: 'done', exercises: [
-    { painDuring: 1, sets: [{ done: true }, { done: true }, { done: false }] }, // 2 × 15
-    { painDuring: 4, sets: [{ done: true }] }, // 10
-    { painDuring: 0, sharpPain: true, sets: [{ done: true }] }, // 10
-    { painDuring: null, sets: [{ done: true }] }, // 15 (archery, no pain)
+    { painDuring: 1, sets: [{ done: true }, { done: true }, { done: false }] }, // 2 × 3
+    { painDuring: 4, sets: [{ done: true }] }, // 2
+    { painDuring: 0, sharpPain: true, sets: [{ done: true }] }, // 2
+    { painDuring: null, sets: [{ done: true }] }, // 3 (archery, no pain)
     { painDuring: 0, skipped: true, sets: [{ done: true }] }, // 0
   ] };
-  assert.equal(xpFor(s, settings), 50 + 30 + 10 + 10 + 15);
-  assert.equal(xpFor({ ...s, status: 'aborted' }, settings), 65);
-  assert.equal(xpFor({ status: 'done', exercises: [] }, {}), 50);
+  assert.equal(xpFor(s, settings), 20 + 6 + 2 + 2 + 3);
+  assert.equal(xpFor({ ...s, status: 'aborted' }, settings), 13);
+  assert.equal(xpFor({ status: 'done', exercises: [] }, {}), 20);
 });
 
 test('levelFor: archery titles, boundaries, max level, bad input', () => {
   assert.equal(LEVELS.length, 9);
-  assert.deepEqual(levelFor(0), { index: 0, title: 'Novize', min: 0, next: 150, progress: 0 });
-  assert.equal(levelFor(149).title, 'Novize');
-  assert.equal(levelFor(150).title, 'Lehrling');
-  assert.equal(levelFor(275).progress, 0.5);
-  assert.equal(levelFor(800).title, 'Schütze');
-  assert.deepEqual(levelFor(6000), { index: 8, title: 'Robin Hood', min: 6000, next: null, progress: 1 });
+  assert.deepEqual(levelFor(0), { index: 0, title: 'Novize', min: 0, next: 400, progress: 0 });
+  assert.equal(levelFor(399).title, 'Novize');
+  assert.equal(levelFor(400).title, 'Lehrling');
+  assert.equal(levelFor(700).progress, 0.5);
+  assert.equal(levelFor(1900).title, 'Schütze');
+  assert.deepEqual(levelFor(12000), { index: 8, title: 'Robin Hood', min: 12000, next: null, progress: 1 });
   assert.equal(levelFor(99999).title, 'Robin Hood');
   assert.equal(levelFor(-5).title, 'Novize');
   assert.equal(levelFor(NaN).progress, 0);
+});
+
+test('XP balance: 3 sessions/week → top title after ~75 sessions, early levels every 1–2 weeks', () => {
+  const content = {
+    exercises: JSON.parse(readFileSync(new URL('../data/exercises.json', import.meta.url), 'utf8')).exercises,
+    workouts: JSON.parse(readFileSync(new URL('../data/workouts.json', import.meta.url), 'utf8')).workouts,
+  };
+  // Realistic session: every item of the workout at its first level, all sets done, mostly clean.
+  const sessionFor = (w, lvlPick) => ({ status: 'done', exercises: [...(w.warmup || []), ...w.blocks.flatMap((b) => b.items), ...(w.cooldown || [])]
+    .map((it, i) => { const ex = content.exercises.find((x) => x.id === it.exerciseId); const lv = lvlPick(ex);
+      return { painDuring: i % 7 === 0 ? 3 : 1, sets: Array.from({ length: ex?.levels?.[lv]?.sets ?? 1 }, () => ({ done: true })) }; }) });
+  let xp = 0, sessions = 0; const levelAt = [];
+  while (levelFor(xp).index < LEVELS.length - 1 && sessions < 500) {
+    const w = content.workouts[(Math.floor(sessions / 36) * 3 + (sessions % 3)) % content.workouts.length];
+    const progress = Math.min(1, sessions / 60);
+    xp += xpFor(sessionFor(w, (ex) => Math.round(progress * ((ex?.levels?.length ?? 1) - 1))), settings) + XP.nextDayCheckIn;
+    if (sessions === 0 || sessions === 9 || sessions === 24) xp += XP.badge; // first, 10, 25 sessions
+    if (sessions % 6 === 2) xp += XP.badge / 2; // other badges spread over time
+    sessions++;
+    const li = levelFor(xp).index; if (levelAt[li] == null) levelAt[li] = sessions;
+  }
+  assert.ok(sessions >= 60 && sessions <= 90, `Robin Hood after ${sessions} sessions`);
+  assert.ok(levelAt[1] >= 2 && levelAt[1] <= 6, `Lehrling after ${levelAt[1]}`);
+  assert.ok(levelAt[2] - levelAt[1] <= 6 && levelAt[3] - levelAt[2] <= 7, `early gaps ${levelAt.join(',')}`);
+  assert.ok(levelAt[8] - levelAt[7] > levelAt[2] - levelAt[1], 'later levels take longer');
 });
 
 test('badges.json covers all required badges with known rule types', () => {

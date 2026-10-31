@@ -3,6 +3,7 @@ import * as store from './store.js';
 import { loadContent } from './content.js';
 import { startRouter } from './router.js';
 import { unlock } from './util/audio.js';
+import { applyFontScale } from './views/ui.js';
 import './components/pt-timer.js';
 import './components/pt-figure.js';
 import './components/pt-pain-scale.js';
@@ -17,7 +18,8 @@ async function main() {
   const root = document.getElementById('app');
   const data = store.load();
   applyTheme(data.settings.theme);
-  store.subscribe((d) => applyTheme(d.settings.theme));
+  applyFontScale(data.settings);
+  store.subscribe((d) => { applyTheme(d.settings.theme); applyFontScale(d.settings); });
 
   // Unlock audio on first user gesture (iOS/Safari requirement).
   window.addEventListener('pointerdown', () => unlock(), { once: true, capture: true });
@@ -67,6 +69,7 @@ function registerServiceWorker() {
     document.body.appendChild(toast);
   };
   sw.register('./sw.js').then((reg) => {
+    if (!reg) return; // registration blocked (e.g. some embedded browsers)
     if (reg.waiting && sw.controller) showUpdateToast(reg.waiting);
     reg.addEventListener('updatefound', () => {
       const nw = reg.installing;

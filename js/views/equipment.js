@@ -71,7 +71,7 @@ export function render(root, { content, store }) {
           const extra = range && String(it.priceEur).replace(/\s/g, '') !== `${range[0]}–${range[1]}` && String(it.priceEur).trim() !== String(range[0]);
           return html`<section class="card pv-eq${has ? ' is-owned' : ''}">
             <div class="pv-eq__head">
-              <button class="pv-eq__check" data-own="${it.id}" role="checkbox" aria-checked="${has}" aria-label="${it.name ?? it.id}: vorhanden">${raw(ICON.check)}</button>
+              <button class="pv-eq__check" data-own="${it.id}" role="checkbox" aria-checked="${String(!!has)}" aria-label="${it.name ?? it.id}: vorhanden">${raw(ICON.check)}</button>
               <div class="grow">
                 <h3 class="card__title">${it.name ?? it.label ?? it.id}</h3>
                 ${has ? html`<span class="chip chip--green chip--sm mt-2">✓ Vorhanden</span>` : ''}
