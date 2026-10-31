@@ -596,7 +596,7 @@ pt-pain-scale { display: block; margin: var(--s-3) 0 var(--s-4); }
   position: relative; min-height: 52px; border-radius: 14px;
   background: color-mix(in srgb, var(--c) 13%, var(--surface));
   border: 1.5px solid color-mix(in srgb, var(--c) 35%, transparent);
-  color: var(--c-ink); font-size: var(--fs-lg); font-weight: var(--fw-black); font-variant-numeric: tabular-nums;
+  color: var(--c-ink); font-size: 1.25rem; font-weight: var(--fw-black); font-variant-numeric: tabular-nums;
   transition: transform var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), box-shadow var(--dur) var(--ease);
 }
 .pain-scale__btn:active { transform: scale(0.93); }

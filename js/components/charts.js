@@ -224,7 +224,7 @@ export function calendarHeatmapSvg(data, opts = {}) {
     } else {
       s += `<circle class="cell-empty" cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(future ? r * 0.35 : r * 0.42)}"${future ? ' opacity="0.6"' : ''}/>`;
     }
-    if (showNum) s += `<text x="${f1(cx)}" y="${f1(cy + r + 9)}" text-anchor="middle" font-size="8">${Number(iso.slice(8))}</text>`;
+    if (showNum) s += `<text x="${f1(cx)}" y="${f1(cy + r + 13)}" text-anchor="middle" font-size="8">${Number(iso.slice(8))}</text>`;
     if (iso === today) s += `<circle class="cell-today" cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(r + 2.5)}"/>`;
     return s + `<title>${esc(title)}</title></g>`;
   };
@@ -236,7 +236,7 @@ export function calendarHeatmapSvg(data, opts = {}) {
     const lead = daysBetween(startOfIsoWeek(first), first);
     const rows = Math.ceil((lead + daysIn) / 7);
     const c = 44, top = 20, r = 12;
-    const W = 7 * c, H = top + rows * c;
+    const W = 7 * c, H = top + rows * c + 4;
     const label = opts.label || `Trainingskalender ${opts.month}`;
     let out = `<svg class="chart chart--calendar" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" xmlns="http://www.w3.org/2000/svg"><title>${esc(label)}</title>`;
     DOW.forEach((d, i) => { out += `<text class="dow" x="${i * c + c / 2}" y="11" text-anchor="middle">${d}</text>`; });

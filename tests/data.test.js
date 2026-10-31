@@ -17,11 +17,12 @@ const BANDS = [null, 'yellow', 'red', 'green', 'blue', 'loop-orange', 'loop-blue
 const PROPS = ['chair', 'wall', 'door', 'mat', 'step'];
 const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
-// Poses requested from WP-Figure but not yet drawn are listed in docs/POSE_REQUESTS.md
-// (lines starting with "- `pose-id`"). Set STRICT_POSES=1 to require every pose in poses.json.
+// Strict by default: every pose referenced by an exercise must exist in poses.json.
+// Escape hatch while drafting content: ALLOW_PENDING_POSES=1 tolerates poses still listed in
+// docs/POSE_REQUESTS.md (lines starting with "- `pose-id`").
 const requestsUrl = new URL('../docs/POSE_REQUESTS.md', import.meta.url);
 const PENDING_POSES = new Set(
-  process.env.STRICT_POSES || !existsSync(requestsUrl)
+  !process.env.ALLOW_PENDING_POSES || !existsSync(requestsUrl)
     ? []
     : [...readFileSync(requestsUrl, 'utf8').matchAll(/^- `([a-z0-9-]+)`/gm)].map((m) => m[1]),
 );
@@ -55,7 +56,7 @@ test('exercises conform to schema', () => {
     assert.ok(phaseIds.has(e.phaseMin), `${where} phaseMin`);
     const f = e.figure;
     assert.ok(f && Array.isArray(f.poses) && f.poses.length > 0, `${where} figure`);
-    for (const p of f.poses) assert.ok(posesFile.poses[p] || PENDING_POSES.has(p), `${where} unknown pose ${p} (add to poses.json or list in docs/POSE_REQUESTS.md)`);
+    for (const p of f.poses) assert.ok(posesFile.poses[p] || PENDING_POSES.has(p), `${where} unknown pose ${p} (add it to data/poses.json)`);
     assert.ok(f.props.every((p) => PROPS.includes(p)), `${where} props`);
     assert.equal(typeof f.mirror, 'boolean', where);
   }
