@@ -3,42 +3,744 @@
   "workouts": [
     {
       "id": "p1-a",
-      "name": "Training A",
+      "name": "A – Kraft & Zug",
       "phaseId": "p1-basis",
       "durationMin": 40,
-      "warmup": [{ "exerciseId": "heel-slides" }],
-      "blocks": [
-        { "id": "knee", "title": "Knie", "items": [
-          { "exerciseId": "quad-set", "note": "Linkes Bein" },
-          { "exerciseId": "straight-leg-raise", "note": "Linkes Bein" }
-        ] },
-        { "id": "archery", "title": "Bogen & Rücken", "items": [{ "exerciseId": "band-pull-apart" }] }
+      "description": "Quadrizeps aktivieren, Aufstehen üben, Rückenspannung aufbauen.",
+      "warmup": [
+        {
+          "exerciseId": "knee-pendulum"
+        },
+        {
+          "exerciseId": "heel-slides",
+          "note": "Locker, 1 Satz reicht zum Aufwärmen"
+        },
+        {
+          "exerciseId": "shoulder-circles"
+        }
       ],
-      "cooldown": [{ "exerciseId": "breathing-reset" }]
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie",
+          "items": [
+            {
+              "exerciseId": "quad-set",
+              "note": "Post-OP-Übung – jetzt sauber lernen"
+            },
+            {
+              "exerciseId": "tke",
+              "note": "Links beginnen, links ist das Trainingsbein."
+            },
+            {
+              "exerciseId": "sit-to-stand"
+            },
+            {
+              "exerciseId": "glute-bridge"
+            },
+            {
+              "exerciseId": "single-leg-stance",
+              "note": "Hand in Reichweite"
+            }
+          ]
+        },
+        {
+          "id": "archery",
+          "title": "Bogen & Rücken",
+          "items": [
+            {
+              "exerciseId": "band-pull-apart"
+            },
+            {
+              "exerciseId": "seated-row"
+            },
+            {
+              "exerciseId": "lat-pulldown"
+            },
+            {
+              "exerciseId": "er-towel",
+              "note": "Rechts (Zugarm) mit Extra-Satz"
+            },
+            {
+              "exerciseId": "serratus-punch",
+              "note": "Links (Bogenarm) mit Extra-Satz"
+            },
+            {
+              "exerciseId": "band-draw-hold",
+              "note": "Band nie schnappen lassen"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "doorway-pec-stretch"
+        },
+        {
+          "exerciseId": "breathing-reset"
+        }
+      ]
     },
     {
       "id": "p1-b",
-      "name": "Training B",
+      "name": "B – Stabilität & Schulterschutz",
       "phaseId": "p1-basis",
       "durationMin": 40,
-      "warmup": [{ "exerciseId": "heel-slides" }],
-      "blocks": [
-        { "id": "knee", "title": "Knie", "items": [{ "exerciseId": "quad-set" }] },
-        { "id": "archery", "title": "Bogen & Rücken", "items": [{ "exerciseId": "band-pull-apart", "note": "Langsam zurückführen" }] }
+      "description": "Hüfte und Beinachse stabilisieren, Rotatorenmanschette und Rumpf schützen.",
+      "warmup": [
+        {
+          "exerciseId": "knee-pendulum"
+        },
+        {
+          "exerciseId": "ankle-pumps"
+        },
+        {
+          "exerciseId": "seated-spine-wave"
+        }
       ],
-      "cooldown": [{ "exerciseId": "breathing-reset" }]
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie",
+          "items": [
+            {
+              "exerciseId": "quad-set"
+            },
+            {
+              "exerciseId": "straight-leg-raise",
+              "note": "Links beginnen, links ist das Trainingsbein."
+            },
+            {
+              "exerciseId": "wall-sit",
+              "note": "Max. 30–45° Beugung"
+            },
+            {
+              "exerciseId": "clamshell"
+            },
+            {
+              "exerciseId": "side-lying-hip-abduction"
+            },
+            {
+              "exerciseId": "single-leg-stance"
+            }
+          ]
+        },
+        {
+          "id": "archery",
+          "title": "Bogen & Rücken",
+          "items": [
+            {
+              "exerciseId": "wall-slide"
+            },
+            {
+              "exerciseId": "prone-ytw"
+            },
+            {
+              "exerciseId": "sidelying-er"
+            },
+            {
+              "exerciseId": "pallof-press"
+            },
+            {
+              "exerciseId": "dead-bug"
+            },
+            {
+              "exerciseId": "bow-arm-push",
+              "note": "Bogenarm links zuerst"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "hamstring-stretch-seated"
+        },
+        {
+          "exerciseId": "breathing-reset"
+        }
+      ]
     },
     {
       "id": "p1-c",
-      "name": "Training C",
+      "name": "C – Funktion & Haltung",
       "phaseId": "p1-basis",
       "durationMin": 40,
-      "warmup": [{ "exerciseId": "heel-slides" }],
-      "blocks": [
-        { "id": "knee", "title": "Knie", "items": [{ "exerciseId": "straight-leg-raise" }] },
-        { "id": "archery", "title": "Bogen & Rücken", "items": [{ "exerciseId": "band-pull-apart" }] }
+      "description": "Kniestreckung im Alltag, Beinrückseite und eine aufrechte Schießhaltung.",
+      "warmup": [
+        {
+          "exerciseId": "knee-pendulum"
+        },
+        {
+          "exerciseId": "heel-slides"
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation"
+        }
       ],
-      "cooldown": [{ "exerciseId": "breathing-reset" }]
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie",
+          "items": [
+            {
+              "exerciseId": "tke",
+              "note": "Links beginnen, links ist das Trainingsbein."
+            },
+            {
+              "exerciseId": "seated-knee-extension",
+              "note": "Nur im schmerzfreien Bogen"
+            },
+            {
+              "exerciseId": "mini-squat",
+              "note": "Stufe 1: nur bis 30°"
+            },
+            {
+              "exerciseId": "seated-hamstring-curl"
+            },
+            {
+              "exerciseId": "calf-raise"
+            },
+            {
+              "exerciseId": "single-leg-stance"
+            }
+          ]
+        },
+        {
+          "id": "archery",
+          "title": "Bogen & Rücken",
+          "items": [
+            {
+              "exerciseId": "band-pull-apart"
+            },
+            {
+              "exerciseId": "lat-pulldown"
+            },
+            {
+              "exerciseId": "serratus-punch"
+            },
+            {
+              "exerciseId": "bow-arm-push"
+            },
+            {
+              "exerciseId": "band-draw-hold"
+            },
+            {
+              "exerciseId": "pallof-press"
+            },
+            {
+              "exerciseId": "thoracic-extension-chair"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "calf-stretch-wall"
+        },
+        {
+          "exerciseId": "doorway-pec-stretch"
+        },
+        {
+          "exerciseId": "breathing-reset"
+        }
+      ]
+    },
+    {
+      "id": "p2-a",
+      "name": "A – Kraft & Auszug",
+      "phaseId": "p2-aufbau",
+      "durationMin": 40,
+      "description": "Treppenkraft aufbauen und den Auszug mit Widerstand trainieren.",
+      "warmup": [
+        {
+          "exerciseId": "knee-pendulum"
+        },
+        {
+          "exerciseId": "heel-slides"
+        },
+        {
+          "exerciseId": "shoulder-circles"
+        }
+      ],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie",
+          "items": [
+            {
+              "exerciseId": "tke",
+              "note": "Links beginnen, links ist das Trainingsbein."
+            },
+            {
+              "exerciseId": "step-up",
+              "note": "Mit 10 cm starten"
+            },
+            {
+              "exerciseId": "mini-squat",
+              "note": "Max. 60°"
+            },
+            {
+              "exerciseId": "glute-bridge",
+              "note": "Ziel: einbeinig links"
+            },
+            {
+              "exerciseId": "calf-raise"
+            },
+            {
+              "exerciseId": "single-leg-stance"
+            }
+          ]
+        },
+        {
+          "id": "archery",
+          "title": "Bogen & Rücken",
+          "items": [
+            {
+              "exerciseId": "seated-row"
+            },
+            {
+              "exerciseId": "face-pull"
+            },
+            {
+              "exerciseId": "lat-pulldown"
+            },
+            {
+              "exerciseId": "single-arm-high-row",
+              "note": "Zugarm rechts zuerst"
+            },
+            {
+              "exerciseId": "band-draw-hold"
+            },
+            {
+              "exerciseId": "expansion-drill",
+              "note": "Lösen nur andeuten"
+            },
+            {
+              "exerciseId": "er-towel"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "doorway-pec-stretch"
+        },
+        {
+          "exerciseId": "hamstring-stretch-seated"
+        },
+        {
+          "exerciseId": "breathing-reset"
+        }
+      ]
+    },
+    {
+      "id": "p2-b",
+      "name": "B – Balance & Rotatoren",
+      "phaseId": "p2-aufbau",
+      "durationMin": 40,
+      "description": "Standbein links stabil machen, Schultern in Bogenposition belastbar machen.",
+      "warmup": [
+        {
+          "exerciseId": "knee-pendulum"
+        },
+        {
+          "exerciseId": "ankle-pumps"
+        },
+        {
+          "exerciseId": "seated-spine-wave"
+        }
+      ],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie",
+          "items": [
+            {
+              "exerciseId": "wall-sit",
+              "note": "Max. 45°"
+            },
+            {
+              "exerciseId": "lateral-band-walk"
+            },
+            {
+              "exerciseId": "standing-hip-abduction",
+              "note": "Standbein links zuerst"
+            },
+            {
+              "exerciseId": "standing-hip-extension"
+            },
+            {
+              "exerciseId": "straight-leg-raise",
+              "note": "Links beginnen, links ist das Trainingsbein."
+            },
+            {
+              "exerciseId": "single-leg-stance"
+            }
+          ]
+        },
+        {
+          "id": "archery",
+          "title": "Bogen & Rücken",
+          "items": [
+            {
+              "exerciseId": "er-90-90",
+              "note": "Rechts zuerst"
+            },
+            {
+              "exerciseId": "sidelying-er"
+            },
+            {
+              "exerciseId": "wall-slide"
+            },
+            {
+              "exerciseId": "prone-ytw"
+            },
+            {
+              "exerciseId": "serratus-punch",
+              "note": "Links mit Extra-Satz"
+            },
+            {
+              "exerciseId": "pallof-press"
+            },
+            {
+              "exerciseId": "side-plank-elevated"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "calf-stretch-wall"
+        },
+        {
+          "exerciseId": "breathing-reset"
+        }
+      ]
+    },
+    {
+      "id": "p2-c",
+      "name": "C – Funktion & Ausdauer",
+      "phaseId": "p2-aufbau",
+      "durationMin": 40,
+      "description": "Alltagskraft für das linke Bein und Haltekraft für lange Turniere.",
+      "warmup": [
+        {
+          "exerciseId": "knee-pendulum"
+        },
+        {
+          "exerciseId": "heel-slides"
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation"
+        }
+      ],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie",
+          "items": [
+            {
+              "exerciseId": "sit-to-stand",
+              "note": "Versetzt: linker Fuß hinten"
+            },
+            {
+              "exerciseId": "step-up",
+              "note": "Links beginnen, links ist das Trainingsbein."
+            },
+            {
+              "exerciseId": "hamstring-bridge-chair"
+            },
+            {
+              "exerciseId": "seated-hamstring-curl"
+            },
+            {
+              "exerciseId": "calf-raise"
+            },
+            {
+              "exerciseId": "single-leg-stance"
+            }
+          ]
+        },
+        {
+          "id": "archery",
+          "title": "Bogen & Rücken",
+          "items": [
+            {
+              "exerciseId": "band-pull-apart"
+            },
+            {
+              "exerciseId": "straight-arm-pulldown"
+            },
+            {
+              "exerciseId": "push-pull-iso"
+            },
+            {
+              "exerciseId": "mirror-draw",
+              "note": "Ca. 50–60 % des Umfangs"
+            },
+            {
+              "exerciseId": "endurance-series",
+              "note": "20 s Pause zwischen den Pfeilen"
+            },
+            {
+              "exerciseId": "dead-bug"
+            },
+            {
+              "exerciseId": "thoracic-extension-chair"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "doorway-pec-stretch"
+        },
+        {
+          "exerciseId": "breathing-reset"
+        }
+      ]
+    },
+    {
+      "id": "p3-a",
+      "name": "A – Kraft sichern",
+      "phaseId": "p3-op-vorbereitung",
+      "durationMin": 40,
+      "description": "Erreichte Kraft halten, Bremskraft schulen, Post-OP-Übungen festigen.",
+      "warmup": [
+        {
+          "exerciseId": "knee-pendulum"
+        },
+        {
+          "exerciseId": "heel-slides"
+        },
+        {
+          "exerciseId": "shoulder-circles"
+        }
+      ],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie",
+          "items": [
+            {
+              "exerciseId": "quad-set",
+              "note": "Post-OP-Übung wiederholen"
+            },
+            {
+              "exerciseId": "step-up",
+              "note": "Links beginnen, links ist das Trainingsbein."
+            },
+            {
+              "exerciseId": "lateral-step-down",
+              "note": "Neu: niedrig starten"
+            },
+            {
+              "exerciseId": "mini-squat"
+            },
+            {
+              "exerciseId": "glute-bridge"
+            },
+            {
+              "exerciseId": "single-leg-stance"
+            }
+          ]
+        },
+        {
+          "id": "archery",
+          "title": "Bogen & Rücken",
+          "items": [
+            {
+              "exerciseId": "seated-row"
+            },
+            {
+              "exerciseId": "face-pull"
+            },
+            {
+              "exerciseId": "single-arm-high-row"
+            },
+            {
+              "exerciseId": "band-draw-hold"
+            },
+            {
+              "exerciseId": "expansion-drill"
+            },
+            {
+              "exerciseId": "er-90-90"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "hamstring-stretch-seated"
+        },
+        {
+          "exerciseId": "breathing-reset"
+        }
+      ]
+    },
+    {
+      "id": "p3-b",
+      "name": "B – Stabil in die OP",
+      "phaseId": "p3-op-vorbereitung",
+      "durationMin": 40,
+      "description": "Hüfte, Rumpf und Schultern stabil – die beste Basis für die Reha danach.",
+      "warmup": [
+        {
+          "exerciseId": "knee-pendulum"
+        },
+        {
+          "exerciseId": "ankle-pumps"
+        },
+        {
+          "exerciseId": "seated-spine-wave"
+        }
+      ],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie",
+          "items": [
+            {
+              "exerciseId": "straight-leg-raise",
+              "note": "Post-OP-Übung – ohne Streckdefizit"
+            },
+            {
+              "exerciseId": "wall-sit"
+            },
+            {
+              "exerciseId": "lateral-band-walk"
+            },
+            {
+              "exerciseId": "standing-hip-abduction"
+            },
+            {
+              "exerciseId": "hamstring-bridge-chair"
+            },
+            {
+              "exerciseId": "single-leg-stance"
+            }
+          ]
+        },
+        {
+          "id": "archery",
+          "title": "Bogen & Rücken",
+          "items": [
+            {
+              "exerciseId": "wall-slide"
+            },
+            {
+              "exerciseId": "prone-ytw"
+            },
+            {
+              "exerciseId": "er-towel"
+            },
+            {
+              "exerciseId": "serratus-punch"
+            },
+            {
+              "exerciseId": "side-plank-elevated"
+            },
+            {
+              "exerciseId": "pallof-press"
+            },
+            {
+              "exerciseId": "bow-arm-push"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "calf-stretch-wall"
+        },
+        {
+          "exerciseId": "doorway-pec-stretch"
+        },
+        {
+          "exerciseId": "breathing-reset"
+        }
+      ]
+    },
+    {
+      "id": "p3-c",
+      "name": "C – Turnierform & Ausdauer",
+      "phaseId": "p3-op-vorbereitung",
+      "durationMin": 40,
+      "description": "Funktion des linken Beins und Turnier-Haltekraft bis zur OP erhalten.",
+      "warmup": [
+        {
+          "exerciseId": "knee-pendulum"
+        },
+        {
+          "exerciseId": "heel-slides"
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation"
+        }
+      ],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie",
+          "items": [
+            {
+              "exerciseId": "tke",
+              "note": "Links beginnen, links ist das Trainingsbein."
+            },
+            {
+              "exerciseId": "sit-to-stand"
+            },
+            {
+              "exerciseId": "lateral-step-down"
+            },
+            {
+              "exerciseId": "standing-hip-extension"
+            },
+            {
+              "exerciseId": "calf-raise"
+            },
+            {
+              "exerciseId": "single-leg-stance"
+            }
+          ]
+        },
+        {
+          "id": "archery",
+          "title": "Bogen & Rücken",
+          "items": [
+            {
+              "exerciseId": "band-pull-apart"
+            },
+            {
+              "exerciseId": "lat-pulldown"
+            },
+            {
+              "exerciseId": "straight-arm-pulldown"
+            },
+            {
+              "exerciseId": "push-pull-iso"
+            },
+            {
+              "exerciseId": "mirror-draw"
+            },
+            {
+              "exerciseId": "endurance-series"
+            },
+            {
+              "exerciseId": "dead-bug"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "thoracic-extension-chair"
+        },
+        {
+          "exerciseId": "breathing-reset"
+        }
+      ]
     }
   ]
 }

@@ -1,6 +1,5 @@
 // Celebration: confetti + target face summary. See docs/SPEC.md §7.5, §8.
 // targetFaceSvg() is a pure string builder (Node-safe); targetFace() returns an SVGSVGElement.
-const NS = 'http://www.w3.org/2000/svg';
 
 /**
  * @param {{done: boolean, skipped?: boolean, painDuring?: number|null, sharpPain?: boolean}} set
@@ -201,5 +200,5 @@ export function targetFace(results, opts = {}) {
   const tpl = document.createElement('template');
   tpl.innerHTML = str;
   const svg = /** @type {SVGSVGElement} */ (tpl.content.firstElementChild);
-  return svg.namespaceURI === NS ? svg : svg;
+  return svg;
 }

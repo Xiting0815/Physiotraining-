@@ -2,134 +2,4245 @@
   "version": 1,
   "exercises": [
     {
-      "id": "heel-slides",
-      "name": "Fersengleiten",
+      "id": "knee-pendulum",
+      "name": "Kniependel im Sitzen",
+      "description": "Lockeres Pendeln des Unterschenkels – schmiert das Gelenk und nährt den Knorpel.",
       "category": "mobilitaet",
       "block": "warmup",
-      "equipment": ["mat"],
-      "type": "reps",
-      "side": "left",
-      "instructions": [
-        "Rückenlage auf der Matte, Beine lang.",
-        "Linke Ferse langsam Richtung Gesäß gleiten lassen.",
-        "Nur so weit beugen, wie es angenehm ist.",
-        "Langsam wieder strecken."
+      "equipment": [
+        "chair"
       ],
-      "cues": ["Ferse bleibt am Boden", "Ruhig atmen"],
-      "mistakes": ["In den Schmerz hineinbeugen", "Hüfte dreht nach außen"],
-      "kneeNote": "Bewegung im schmerzfreien Bereich. Ziehen ist ok, Stechen nicht.",
+      "type": "timed",
+      "side": "perSide",
+      "instructions": [
+        "Auf eine hohe Kante setzen (Tisch, Stuhl mit Kissen), sodass die Füße frei hängen.",
+        "Oberschenkel liegt ganz auf, Hände stützen seitlich.",
+        "Unterschenkel locker vor und zurück pendeln lassen – ohne Kraft, wie ein Uhrpendel.",
+        "Erst links, dann rechts."
+      ],
+      "cues": [
+        "Locker lassen – Schwung statt Kraft",
+        "Kleiner, ruhiger Bogen",
+        "Gleichmäßig atmen"
+      ],
+      "mistakes": [
+        "Aktiv bis zum Anschlag strecken",
+        "Zu großer, schneller Ausschlag",
+        "Im Rundrücken sitzen"
+      ],
+      "kneeNote": "Nur im angenehmen Bereich pendeln. Knirschen ohne Schmerz ist ok, Stechen nicht.",
       "levels": [
-        { "label": "Stufe 1", "sets": 1, "reps": 10, "tempo": "2-0-2", "band": null, "rest": 20 },
-        { "label": "Stufe 2", "sets": 2, "reps": 12, "tempo": "2-1-2", "band": null, "rest": 20 }
+        {
+          "label": "45 s je Seite",
+          "sets": 1,
+          "seconds": 45,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        },
+        {
+          "label": "60 s je Seite",
+          "sets": 1,
+          "seconds": 60,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        },
+        {
+          "label": "2 × 60 s je Seite",
+          "sets": 2,
+          "seconds": 60,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        }
       ],
       "regressTo": null,
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "figure": { "poses": ["lying-supine", "lying-heel-slide"], "props": ["mat"], "band": null, "mirror": false }
+      "tags": [
+        "knorpel",
+        "gelenkschmiere",
+        "aufwaermen"
+      ],
+      "figure": {
+        "poses": [
+          "sit-high-hang",
+          "sit-high-swing"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "ankle-pumps",
+      "name": "Fußwippe (Sprunggelenk pumpen)",
+      "description": "Füße kräftig anziehen und strecken – bringt den Kreislauf im Bein in Schwung.",
+      "category": "kardio",
+      "block": "warmup",
+      "equipment": [
+        "mat"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Rückenlage oder Langsitz, Beine lang.",
+        "Zehen kräftig zur Nase ziehen, dabei Oberschenkel leicht anspannen.",
+        "Dann Füße weit nach unten strecken.",
+        "Zügig, aber rhythmisch wechseln."
+      ],
+      "cues": [
+        "Großer Bewegungsweg im Sprunggelenk",
+        "Beim Anziehen Kniekehle Richtung Boden"
+      ],
+      "mistakes": [
+        "Nur die Zehen bewegen",
+        "Luft anhalten"
+      ],
+      "kneeNote": "Gleiche Übung wie direkt nach der OP – jetzt schon einüben (Thromboseprophylaxe).",
+      "levels": [
+        {
+          "label": "20 Wiederholungen",
+          "sets": 1,
+          "reps": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        },
+        {
+          "label": "30 Wiederholungen",
+          "sets": 1,
+          "reps": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "post-op",
+        "kreislauf",
+        "aufwaermen"
+      ],
+      "figure": {
+        "poses": [
+          "lying-supine",
+          "lying-supine-quad"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "shoulder-circles",
+      "name": "Schulterkreisen & Armheben",
+      "description": "Schultern rollen und Arme kontrolliert heben – macht Schultergelenk und Schulterblätter warm.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "none"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Aufrecht stehen (oder sitzen), Füße hüftbreit.",
+        "30 s Schultern langsam nach hinten kreisen.",
+        "Dann Arme gestreckt nach vorn bis über den Kopf heben und langsam senken.",
+        "Bewegung fließend, ohne Schwung."
+      ],
+      "cues": [
+        "Schultern weg von den Ohren",
+        "Brustbein leicht anheben",
+        "Langsam ausatmen beim Senken"
+      ],
+      "mistakes": [
+        "Hohlkreuz beim Armheben",
+        "Ruckartige Bewegungen"
+      ],
+      "kneeNote": "Im Sitzen auf dem Stuhl möglich, falls das Knie heute gereizt ist. Nicht auf dem linken Knie knien.",
+      "levels": [
+        {
+          "label": "60 s",
+          "sets": 1,
+          "seconds": 60,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        },
+        {
+          "label": "90 s",
+          "sets": 1,
+          "seconds": 90,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "schulter",
+        "aufwaermen"
+      ],
+      "figure": {
+        "poses": [
+          "stand",
+          "stand-arms-forward",
+          "stand-arms-overhead"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "seated-spine-wave",
+      "name": "Wirbelsäulen-Welle im Sitzen",
+      "description": "Rücken abwechselnd rund machen und aufrichten – die kniefreundliche Katze-Kuh.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "chair"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Aufrecht auf die vordere Stuhlhälfte setzen, Hände auf den Oberschenkeln.",
+        "Ausatmen: Becken nach hinten kippen, Rücken rund, Kinn zur Brust.",
+        "Einatmen: Becken nach vorn, Brustbein hoch, Schulterblätter zusammen.",
+        "Langsam im Atemrhythmus wechseln."
+      ],
+      "cues": [
+        "Bewegung beginnt im Becken",
+        "Wirbel für Wirbel"
+      ],
+      "mistakes": [
+        "Nur den Kopf bewegen",
+        "Ins Hohlkreuz drücken"
+      ],
+      "kneeNote": "Ersetzt den Vierfüßlerstand – kein Knien auf dem linken Knie nötig.",
+      "levels": [
+        {
+          "label": "8 Wellen",
+          "sets": 1,
+          "reps": 8,
+          "tempo": "3-0-3",
+          "band": null,
+          "rest": 10
+        },
+        {
+          "label": "12 Wellen",
+          "sets": 1,
+          "reps": 12,
+          "tempo": "3-0-3",
+          "band": null,
+          "rest": 10
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "wirbelsaeule",
+        "aufwaermen",
+        "kniefreundlich"
+      ],
+      "figure": {
+        "poses": [
+          "sit-chair",
+          "sit-round-back",
+          "sit-chest-open"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "seated-thoracic-rotation",
+      "name": "Brustwirbel-Rotation im Sitzen",
+      "description": "Oberkörper im Sitzen drehen – mobilisiert die Brustwirbelsäule für eine freie Auszugslinie.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "chair"
+      ],
+      "type": "reps",
+      "side": "alternate",
+      "instructions": [
+        "Aufrecht auf den Stuhl setzen, Knie und Füße zeigen nach vorn.",
+        "Arme vor der Brust verschränken.",
+        "Oberkörper langsam nach rechts drehen, Blick folgt, kurz halten.",
+        "Zur Mitte und auf die andere Seite."
+      ],
+      "cues": [
+        "Knie bleiben ruhig – Drehung nur im Oberkörper",
+        "Groß werden, dann drehen"
+      ],
+      "mistakes": [
+        "Becken dreht mit",
+        "Zusammensacken"
+      ],
+      "kneeNote": "Gewollt im Sitzen: so dreht das Knie garantiert nicht unter Last mit.",
+      "levels": [
+        {
+          "label": "8 je Seite",
+          "sets": 1,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "2 × 8 je Seite",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "2 × 10, 3 s halten",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 15
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "brustwirbelsaeule",
+        "rotation",
+        "aufwaermen"
+      ],
+      "figure": {
+        "poses": [
+          "front-sit-arms-crossed",
+          "front-sit-rotate"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
     },
     {
       "id": "quad-set",
       "name": "Quadrizeps anspannen (Quad Set)",
+      "description": "Oberschenkel fest anspannen und die Kniekehle in eine Handtuchrolle drücken – Übung Nr. 1 nach der OP.",
       "category": "kraft",
       "block": "knee",
-      "equipment": ["mat"],
+      "equipment": [
+        "mat"
+      ],
       "type": "hold",
       "side": "left",
       "instructions": [
-        "Rückenlage, Beine lang.",
-        "Kleines Handtuch unter das linke Knie legen.",
-        "Kniekehle ins Handtuch drücken, Oberschenkel fest anspannen.",
-        "Halten, dann locker lassen."
+        "Rückenlage oder Langsitz, Beine lang.",
+        "Kleine Handtuchrolle unter das linke Knie legen.",
+        "Kniekehle ins Handtuch drücken, Oberschenkel fest anspannen, Zehen zu dir.",
+        "Halten, dann ganz locker lassen."
       ],
-      "cues": ["Kniescheibe zieht nach oben", "Zehen zu dir"],
-      "mistakes": ["Luft anhalten", "Gesäß hebt ab"],
-      "kneeNote": "Schmerzfrei bis leicht (≤ 2/10). Kein Durchdrücken mit Gewalt.",
+      "cues": [
+        "Kniescheibe zieht nach oben",
+        "Zehen zu dir",
+        "Weiter atmen"
+      ],
+      "mistakes": [
+        "Luft anhalten",
+        "Gesäß hebt ab",
+        "Nur Wade statt Oberschenkel anspannen"
+      ],
+      "kneeNote": "Schmerzfrei bis leicht (≤ 2/10). Kein Durchdrücken mit Gewalt. Jetzt lernen – nach der OP brauchst du sie sofort.",
       "levels": [
-        { "label": "Stufe 1", "sets": 2, "reps": 10, "hold": 5, "tempo": null, "band": null, "rest": 30 },
-        { "label": "Stufe 2", "sets": 3, "reps": 10, "hold": 10, "tempo": null, "band": null, "rest": 30 }
+        {
+          "label": "Stufe 1 · 2 × 10 × 5 s",
+          "sets": 2,
+          "reps": 10,
+          "hold": 5,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Stufe 2 · 3 × 10 × 5 s",
+          "sets": 3,
+          "reps": 10,
+          "hold": 5,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Stufe 3 · 3 × 10 × 10 s",
+          "sets": 3,
+          "reps": 10,
+          "hold": 10,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        }
       ],
       "regressTo": null,
       "progressTo": "straight-leg-raise",
       "phaseMin": "p1-basis",
-      "figure": { "poses": ["lying-supine", "lying-supine-quad"], "props": ["mat"], "band": null, "mirror": false }
+      "tags": [
+        "post-op",
+        "quadrizeps",
+        "isometrisch",
+        "streckung"
+      ],
+      "figure": {
+        "poses": [
+          "lying-supine",
+          "lying-supine-quad"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "heel-slides",
+      "name": "Fersengleiten",
+      "description": "Ferse auf der Matte zum Gesäß gleiten lassen – sanfte Beugung ohne Last.",
+      "category": "mobilitaet",
+      "block": "knee",
+      "equipment": [
+        "mat"
+      ],
+      "type": "reps",
+      "side": "left",
+      "instructions": [
+        "Rückenlage auf der Matte, Beine lang. Unter der Ferse ggf. ein Handtuch (gleitet besser).",
+        "Linke Ferse langsam Richtung Gesäß gleiten lassen.",
+        "Nur so weit beugen, wie es angenehm ist – kurz halten.",
+        "Langsam wieder ganz strecken und Oberschenkel kurz anspannen."
+      ],
+      "cues": [
+        "Ferse bleibt am Boden",
+        "Am Ende ganz strecken",
+        "Ruhig atmen"
+      ],
+      "mistakes": [
+        "In den Schmerz hineinbeugen",
+        "Hüfte dreht nach außen",
+        "Schwung holen"
+      ],
+      "kneeNote": "Ohne Last, daher darf die Beugung über 60° gehen – aber nur schmerzfrei. Ziehen ist ok, Stechen oder Einklemmen nicht. Post-OP-Übung.",
+      "levels": [
+        {
+          "label": "Stufe 1 · 1 × 10",
+          "sets": 1,
+          "reps": 10,
+          "tempo": "2-0-2",
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "Stufe 2 · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "Stufe 3 · 2 × 15",
+          "sets": 2,
+          "reps": 15,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 20
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "post-op",
+        "beweglichkeit",
+        "beugung"
+      ],
+      "figure": {
+        "poses": [
+          "lying-supine",
+          "lying-heel-slide"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      }
     },
     {
       "id": "straight-leg-raise",
       "name": "Gestrecktes Beinheben",
+      "description": "Gestrecktes Bein anheben, ohne dass das Knie einknickt – kräftigt den Quadrizeps ohne Beugung.",
       "category": "kraft",
       "block": "knee",
-      "equipment": ["mat"],
-      "type": "reps",
-      "side": "left",
-      "instructions": [
-        "Rückenlage, rechtes Bein aufgestellt.",
-        "Linkes Bein strecken und Oberschenkel anspannen.",
-        "Gestrecktes Bein bis auf Höhe des rechten Knies anheben.",
-        "Langsam wieder absenken."
+      "equipment": [
+        "mat",
+        "loop"
       ],
-      "cues": ["Erst anspannen, dann heben", "Knie bleibt ganz gestreckt"],
-      "mistakes": ["Knie knickt beim Heben ein", "Hohlkreuz"],
-      "kneeNote": "Wenn das Knie nicht gestreckt bleibt: zurück zum Quad Set.",
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Rückenlage, das nicht trainierte Bein aufgestellt.",
+        "Trainingsbein strecken, Zehen anziehen, Oberschenkel fest anspannen (Quad Set).",
+        "Gestrecktes Bein bis auf Höhe des anderen Knies anheben, kurz halten.",
+        "Langsam absenken, ablegen, kurz locker lassen. Links beginnen."
+      ],
+      "cues": [
+        "Erst anspannen, dann heben",
+        "Knie bleibt ganz gestreckt",
+        "Unterer Rücken bleibt am Boden"
+      ],
+      "mistakes": [
+        "Knie knickt beim Heben ein (Streckdefizit)",
+        "Hohlkreuz",
+        "Bein fallen lassen"
+      ],
+      "kneeNote": "Wenn das Knie nicht gestreckt bleibt: zurück zum Quad Set. Post-OP-Übung. Loop erst, wenn 3 × 12 sauber gehen.",
       "levels": [
-        { "label": "Stufe 1", "sets": 2, "reps": 8, "tempo": "2-1-3", "band": null, "rest": 45 },
-        { "label": "Stufe 2", "sets": 3, "reps": 10, "tempo": "2-1-3", "band": null, "rest": 45 },
-        { "label": "Stufe 3 (Loop)", "sets": 3, "reps": 10, "tempo": "2-1-3", "band": "loop-orange", "rest": 60 }
+        {
+          "label": "Stufe 1 · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Stufe 2 · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-3",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Stufe 3 · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-3",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Stufe 4 · Loop orange um die Fußgelenke",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-3",
+          "band": "loop-orange",
+          "rest": 60
+        },
+        {
+          "label": "Stufe 5 · Loop blau um die Fußgelenke",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-3",
+          "band": "loop-blue",
+          "rest": 60
+        }
       ],
       "regressTo": "quad-set",
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "figure": { "poses": ["lying-slr-down", "lying-slr-up"], "props": ["mat"], "band": null, "mirror": false }
+      "tags": [
+        "post-op",
+        "quadrizeps",
+        "offene-kette"
+      ],
+      "figure": {
+        "poses": [
+          "lying-slr-down",
+          "lying-slr-up"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "tke",
+      "name": "Terminal Knee Extension (TKE) mit Band",
+      "description": "Aus leichter Beugung gegen das Band in die volle Streckung drücken – Endstreckung im Stand.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band mit dickem Knoten hinter die Tür auf der Scharnierseite in Kniehöhe klemmen, Tür so schließen, dass der Zug sie zudrückt.",
+        "Gesicht zur Tür, Bandschlaufe hinter das linke Knie, so weit zurückgehen, bis Spannung entsteht.",
+        "Knie leicht beugen (ca. 20–30°), Ferse bleibt am Boden.",
+        "Knie gegen das Band ganz strecken, Oberschenkel 2 s fest anspannen.",
+        "Langsam zurück in die leichte Beugung. Danach rechts."
+      ],
+      "cues": [
+        "Kniekehle nach hinten schieben",
+        "Ferse bleibt am Boden",
+        "Becken bleibt gerade"
+      ],
+      "mistakes": [
+        "Hüfte schiebt statt Knie streckt",
+        "Ins Hohlkreuz ausweichen",
+        "Knie mit Schwung durchschlagen"
+      ],
+      "kneeNote": "Geschlossene Kette, kleiner Beugewinkel – sehr knorpelfreundlich. Bei Druck vorne an der Kniescheibe Band leichter wählen.",
+      "levels": [
+        {
+          "label": "Rot · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 15, 2 s halten",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "2-2-2",
+          "band": "green",
+          "rest": 45
+        },
+        {
+          "label": "Blau · 3 × 15, 2 s halten",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "2-2-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": "seated-knee-extension",
+      "progressTo": "wall-sit",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "geschlossene-kette",
+        "quadrizeps",
+        "streckung"
+      ],
+      "figure": {
+        "poses": [
+          "stand-tke-bent",
+          "stand-tke-straight"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": {
+          "from": "kneeL",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "wall-sit",
+      "name": "Wandsitz isometrisch (30–45°)",
+      "description": "Mit dem Rücken an der Wand in leichter Kniebeugung halten – Kraft ohne Bewegung im Gelenk.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "wall"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Rücken an die Wand, Füße hüftbreit ca. zwei Fußlängen vor der Wand.",
+        "Langsam an der Wand hinabgleiten, bis die Knie ca. 30° gebeugt sind (später bis 45°).",
+        "Gewicht gleichmäßig auf beide Füße, Knie über den Füßen.",
+        "Position halten, dann an der Wand wieder hochschieben."
+      ],
+      "cues": [
+        "Knie zeigen über die zweite Zehe",
+        "Gewicht auf den Fersen",
+        "Ruhig weiteratmen"
+      ],
+      "mistakes": [
+        "Zu tief gehen (90° ist hier tabu)",
+        "Knie fallen nach innen",
+        "Gewicht nur aufs rechte Bein"
+      ],
+      "kneeNote": "Maximal 45° Beugung – das ist deutlich weniger als ein Viertel-Hinsetzen. Bei Schmerz > 3 höher stehen bleiben.",
+      "levels": [
+        {
+          "label": "30° · 4 × 20 s",
+          "sets": 4,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "30° · 4 × 30 s",
+          "sets": 4,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "45° · 5 × 30 s",
+          "sets": 5,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "45° · 5 × 45 s",
+          "sets": 5,
+          "reps": 1,
+          "hold": 45,
+          "tempo": null,
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "tke",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "geschlossene-kette",
+        "isometrisch",
+        "quadrizeps"
+      ],
+      "figure": {
+        "poses": [
+          "stand-wall-upright",
+          "stand-wall-sit"
+        ],
+        "props": [
+          "wall"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "sit-to-stand",
+      "name": "Aufstehen vom Stuhl",
+      "description": "Kontrolliert aufstehen und hinsetzen – die wichtigste Alltagsbewegung, Schritt für Schritt kräftiger.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "chair"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Stuhl an die Wand stellen. Am Anfang Kissen auf die Sitzfläche (erhöhter Sitz).",
+        "Vorne auf den Sitz, Füße hüftbreit, Arme vor der Brust gekreuzt oder nach vorn.",
+        "Oberkörper nach vorn neigen, über die Füße kommen und aufstehen.",
+        "Langsam (3 s) wieder hinsetzen, kurz absitzen ohne zusammenzusacken."
+      ],
+      "cues": [
+        "Nase über die Zehen",
+        "Beide Beine gleich belasten",
+        "Langsam hinsetzen"
+      ],
+      "mistakes": [
+        "Ins Sitzen plumpsen",
+        "Knie fallen nach innen",
+        "Gewicht aufs rechte Bein verlagern"
+      ],
+      "kneeNote": "Sitzhöhe so wählen, dass das Knie im Sitzen nicht mehr als ca. 60–70° gebeugt ist. Normale Stuhlhöhe (≈ 90°) erst, wenn 3 × 12 schmerzfrei gehen.",
+      "levels": [
+        {
+          "label": "Hoher Sitz · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Hoher Sitz · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Normale Stuhlhöhe · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Versetzt (links hinten) · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Versetzt (links hinten) · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "wall-sit",
+      "progressTo": "mini-squat",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "geschlossene-kette",
+        "alltag",
+        "quadrizeps",
+        "gesaess"
+      ],
+      "figure": {
+        "poses": [
+          "sit-chair-high",
+          "stand-from-chair-mid",
+          "stand"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "mini-squat",
+      "name": "Mini-Kniebeuge mit Loop (0–60°)",
+      "description": "Kleine Kniebeuge mit Loop über den Knien – Beinachse stabil halten, Tiefe streng begrenzt.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "loop",
+        "chair"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Loop knapp oberhalb der Knie, Füße hüftbreit, Stuhllehne zum Festhalten vor dir.",
+        "Gesäß nach hinten schieben, als wolltest du dich auf eine hohe Kante setzen.",
+        "Nur bis zur Stufen-Tiefe beugen (30°, 45° oder höchstens 60°), Knie drücken leicht gegen den Loop nach außen.",
+        "Über die Fersen wieder aufrichten, oben Gesäß anspannen."
+      ],
+      "cues": [
+        "Knie bleiben über den Füßen",
+        "Gesäß nach hinten",
+        "Gewicht auf ganzer Fußsohle"
+      ],
+      "mistakes": [
+        "Zu tief gehen",
+        "Knie wandern nach innen",
+        "Fersen heben ab"
+      ],
+      "kneeNote": "Höchstens 60° Beugung unter Last. Kein Drehen, kein Federn. Ein Stuhl hinter dir als Tiefen-Begrenzer hilft.",
+      "levels": [
+        {
+          "label": "0–30° ohne Band · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "0–45° Loop orange · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": "loop-orange",
+          "rest": 60
+        },
+        {
+          "label": "0–60° Loop orange · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "loop-orange",
+          "rest": 60
+        },
+        {
+          "label": "0–60° Loop blau · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "loop-blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": "sit-to-stand",
+      "progressTo": "step-up",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "geschlossene-kette",
+        "beinachse",
+        "gesaess"
+      ],
+      "figure": {
+        "poses": [
+          "stand",
+          "stand-mini-squat"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": {
+          "from": "kneeL",
+          "to": "kneeR"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "step-up",
+      "name": "Step-up vorwärts",
+      "description": "Mit dem linken Bein auf den Step steigen – Kraft und Kontrolle wie beim Treppensteigen.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "step",
+        "wall"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Vor den Step stellen, eine Hand an der Wand oder Stuhllehne.",
+        "Linken Fuß komplett auf den Step setzen.",
+        "Über das linke Bein hochdrücken, bis es gestreckt ist – rechter Fuß tippt nur auf.",
+        "Langsam (3 s) mit dem rechten Fuß wieder absteigen, links bleibt oben bis zuletzt. Danach Seiten tauschen."
+      ],
+      "cues": [
+        "Knie über dem zweiten Zeh",
+        "Drücken, nicht abspringen",
+        "Oberkörper leicht nach vorn"
+      ],
+      "mistakes": [
+        "Mit dem unteren Bein abstoßen",
+        "Knie knickt nach innen",
+        "Fallen lassen beim Absteigen"
+      ],
+      "kneeNote": "Stufenhöhe 10 cm, später 15–20 cm – dabei bleibt das Knie unter ca. 60° Beugung. Kein Springen.",
+      "levels": [
+        {
+          "label": "10 cm · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "10 cm · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "15 cm · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "20 cm · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 75
+        },
+        {
+          "label": "20 cm · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 75
+        }
+      ],
+      "regressTo": "mini-squat",
+      "progressTo": "lateral-step-down",
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "geschlossene-kette",
+        "treppe",
+        "quadrizeps",
+        "gesaess"
+      ],
+      "figure": {
+        "poses": [
+          "stand-step-left-up",
+          "stand-step-top"
+        ],
+        "props": [
+          "step"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "seated-knee-extension",
+      "name": "Kniestrecken im Sitzen mit Band",
+      "description": "Unterschenkel gegen leichten Bandzug strecken – gezielt für den Quadrizeps im schmerzfreien Bereich.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "theraband",
+        "chair"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band um das hintere Stuhlbein knoten, Schlaufe um das linke Fußgelenk.",
+        "Aufrecht sitzen, Oberschenkel liegt ganz auf.",
+        "Unterschenkel langsam nach vorn strecken, oben Oberschenkel kurz anspannen.",
+        "Langsam (3 s) zurück. Danach rechts."
+      ],
+      "cues": [
+        "Nur so weit, wie es schmerzfrei geht",
+        "Oben kurz halten",
+        "Zehen zu dir"
+      ],
+      "mistakes": [
+        "Mit Schwung strecken",
+        "Zurücklehnen",
+        "Im schmerzhaften Bereich weiterarbeiten"
+      ],
+      "kneeNote": "Offene Kette: nur im schmerzfreien Bewegungsbogen. Wenn Knirschen mit Schmerz oder Druck hinter der Kniescheibe kommt, den Bereich verkürzen oder leichteres Band nehmen.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": "yellow",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "green",
+          "rest": 60
+        }
+      ],
+      "regressTo": "quad-set",
+      "progressTo": "tke",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "offene-kette",
+        "quadrizeps",
+        "schmerzfreier-bogen"
+      ],
+      "figure": {
+        "poses": [
+          "sit-chair",
+          "sit-knee-ext"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": {
+          "from": "footL",
+          "to": "chair"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "lateral-step-down",
+      "name": "Seitliches Step-down (exzentrisch)",
+      "description": "Auf dem Step stehend die andere Ferse langsam zum Boden senken – Bremskraft und Beinachse.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "step",
+        "wall"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Seitlich auf den Step stellen, linkes Bein steht, rechtes hängt seitlich frei. Hand an der Wand.",
+        "Linkes Knie langsam (3–4 s) beugen, bis die rechte Ferse den Boden antippt.",
+        "Nicht abstellen – sofort über das linke Bein wieder hochdrücken.",
+        "Becken bleibt waagerecht. Danach Seiten tauschen."
+      ],
+      "cues": [
+        "Knie über dem zweiten Zeh",
+        "Langsam runter, zügig hoch",
+        "Becken gerade"
+      ],
+      "mistakes": [
+        "Knie knickt nach innen",
+        "Becken kippt ab",
+        "Ferse wird abgestellt und belastet"
+      ],
+      "kneeNote": "Nur Phase 3 und nur, wenn Step-up 3 × 10 auf 15 cm problemlos geht. Niedrige Stufe, max. ca. 60° Beugung.",
+      "levels": [
+        {
+          "label": "10 cm · 2 × 6",
+          "sets": 2,
+          "reps": 6,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "10 cm · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "15 cm · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "4-1-2",
+          "band": null,
+          "rest": 75
+        },
+        {
+          "label": "15 cm · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "4-1-2",
+          "band": null,
+          "rest": 75
+        }
+      ],
+      "regressTo": "step-up",
+      "progressTo": null,
+      "phaseMin": "p3-op-vorbereitung",
+      "tags": [
+        "exzentrisch",
+        "geschlossene-kette",
+        "beinachse"
+      ],
+      "figure": {
+        "poses": [
+          "front-step-single",
+          "front-step-down"
+        ],
+        "props": [
+          "step"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "glute-bridge",
+      "name": "Gesäßbrücke mit Loop",
+      "description": "Becken heben, Knie gegen den Loop nach außen – kräftigt Gesäß und Beinrückseite ohne Kniebelastung.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "mat",
+        "loop"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Rückenlage, Loop knapp über den Knien, Füße hüftbreit und eher weit vom Gesäß entfernt.",
+        "Knie leicht gegen den Loop nach außen drücken.",
+        "Gesäß anspannen und Becken heben, bis Schulter, Hüfte und Knie eine Linie bilden.",
+        "Oben kurz halten, langsam Wirbel für Wirbel absenken."
+      ],
+      "cues": [
+        "Fersen in den Boden",
+        "Gesäß zuerst anspannen",
+        "Rippen unten lassen"
+      ],
+      "mistakes": [
+        "Hohlkreuz statt Hüftstreckung",
+        "Knie fallen nach innen",
+        "Füße zu nah am Gesäß"
+      ],
+      "kneeNote": "Füße weiter weg stellen = weniger Kniebeugung (ca. 60–70°). Einbeinig: links trainieren, rechts zum Ausgleich ein Satz.",
+      "levels": [
+        {
+          "label": "Ohne Band · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Loop orange · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": "loop-orange",
+          "rest": 45
+        },
+        {
+          "label": "Loop blau · 3 × 12, oben 2 s",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-2-2",
+          "band": "loop-blue",
+          "rest": 45
+        },
+        {
+          "label": "Marschieren mit Loop orange · 3 × 8 je Seite",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": "loop-orange",
+          "rest": 60
+        },
+        {
+          "label": "Einbeinig links · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "hamstring-bridge-chair",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "gesaess",
+        "hueftstreckung",
+        "beinachse"
+      ],
+      "figure": {
+        "poses": [
+          "lying-bridge-down",
+          "lying-bridge-up"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": {
+          "from": "kneeL",
+          "to": "kneeR"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "clamshell",
+      "name": "Muschel (Clamshell) mit Loop",
+      "description": "In Seitlage das obere Knie öffnen – kräftigt den Gesäßmuskel, der das Knie in der Achse hält.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "mat",
+        "loop"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Seitlage, Kopf auf dem Arm, Hüfte ca. 45° und Knie ca. 90° gebeugt, Loop über den Knien.",
+        "Fersen bleiben zusammen.",
+        "Oberes Knie öffnen wie eine Muschel, Becken bleibt still.",
+        "Langsam schließen. Beide Seiten."
+      ],
+      "cues": [
+        "Becken kippt nicht nach hinten",
+        "Bewegung aus dem Gesäß"
+      ],
+      "mistakes": [
+        "Oberkörper rollt mit",
+        "Zu schnell",
+        "Fersen lösen sich"
+      ],
+      "kneeNote": "Kissen zwischen die Knie in der Pause, wenn das Liegen auf dem linken Knie drückt.",
+      "levels": [
+        {
+          "label": "Ohne Band · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Loop orange · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "loop-orange",
+          "rest": 30
+        },
+        {
+          "label": "Loop orange · 3 × 15, oben 2 s",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "2-2-2",
+          "band": "loop-orange",
+          "rest": 30
+        },
+        {
+          "label": "Loop blau · 3 × 15",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "2-1-2",
+          "band": "loop-blue",
+          "rest": 45
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "side-lying-hip-abduction",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "gesaess",
+        "hueftabduktion",
+        "beinachse"
+      ],
+      "figure": {
+        "poses": [
+          "sidelying-clam-closed",
+          "sidelying-clam-open"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": {
+          "from": "kneeL",
+          "to": "kneeR"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "side-lying-hip-abduction",
+      "name": "Seitliches Beinheben im Liegen",
+      "description": "Gestrecktes oberes Bein in Seitlage anheben – stärkt den mittleren Gesäßmuskel.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "mat",
+        "loop"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Seitlage, unteres Bein leicht gebeugt, oberes Bein gestreckt in Verlängerung des Körpers.",
+        "Fußspitze zeigt nach vorn, nicht nach oben.",
+        "Oberes Bein ca. 30–40 cm anheben, kurz halten.",
+        "Langsam absenken. Beide Seiten."
+      ],
+      "cues": [
+        "Ferse führt leicht nach hinten",
+        "Becken nach vorn gekippt lassen",
+        "Langsam ablassen"
+      ],
+      "mistakes": [
+        "Bein nach vorn bringen",
+        "Fußspitze dreht zur Decke",
+        "Zu hoch heben"
+      ],
+      "kneeNote": "Knie bleibt gestreckt und unbelastet. Loop über den Knien ist knieschonender als an den Fußgelenken.",
+      "levels": [
+        {
+          "label": "Ohne Band · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Ohne Band · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-3",
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Loop orange · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "loop-orange",
+          "rest": 45
+        },
+        {
+          "label": "Loop blau · 3 × 15",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "2-1-2",
+          "band": "loop-blue",
+          "rest": 45
+        }
+      ],
+      "regressTo": "clamshell",
+      "progressTo": "lateral-band-walk",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "gesaess",
+        "hueftabduktion"
+      ],
+      "figure": {
+        "poses": [
+          "sidelying-abd-down",
+          "sidelying-abd-up"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "lateral-band-walk",
+      "name": "Seitwärtsgehen mit Loop",
+      "description": "Kleine Seitschritte mit Loop über den Knien – Hüfte stabil, Knie in der Spur.",
+      "category": "stabilitaet",
+      "block": "knee",
+      "equipment": [
+        "loop"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Loop knapp oberhalb der Knie, Füße hüftbreit, Knie ganz leicht gebeugt.",
+        "Kleinen Schritt zur Seite, Spannung im Loop halten.",
+        "Nachstellen, ohne dass die Füße zusammenkommen.",
+        "Anzahl Schritte nach rechts, dann gleich viele nach links."
+      ],
+      "cues": [
+        "Kleine Schritte",
+        "Zehen zeigen nach vorn",
+        "Oberkörper ruhig"
+      ],
+      "mistakes": [
+        "Knie fallen nach innen",
+        "Schwanken mit dem Oberkörper",
+        "Füße drehen aus"
+      ],
+      "kneeNote": "Knie max. 20–30° gebeugt, keine Drehung, kein Hüpfen. Bei Unsicherheit an der Wand entlang gehen.",
+      "levels": [
+        {
+          "label": "Loop orange über den Knien · 2 × 10 je Richtung",
+          "sets": 2,
+          "reps": 10,
+          "tempo": null,
+          "band": "loop-orange",
+          "rest": 45
+        },
+        {
+          "label": "Loop orange über den Knien · 3 × 10 je Richtung",
+          "sets": 3,
+          "reps": 10,
+          "tempo": null,
+          "band": "loop-orange",
+          "rest": 45
+        },
+        {
+          "label": "Loop blau über den Knien · 3 × 10 je Richtung",
+          "sets": 3,
+          "reps": 10,
+          "tempo": null,
+          "band": "loop-blue",
+          "rest": 60
+        },
+        {
+          "label": "Loop blau über den Knien · 3 × 12 je Richtung",
+          "sets": 3,
+          "reps": 12,
+          "tempo": null,
+          "band": "loop-blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": "side-lying-hip-abduction",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "gesaess",
+        "hueftabduktion",
+        "beinachse",
+        "stand"
+      ],
+      "figure": {
+        "poses": [
+          "front-stand-soft",
+          "front-band-walk-wide"
+        ],
+        "props": [],
+        "band": {
+          "from": "kneeL",
+          "to": "kneeR"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "standing-hip-abduction",
+      "name": "Hüftabduktion im Stand mit Band",
+      "description": "Rechtes Bein gegen das Band seitlich abspreizen – das linke Standbein arbeitet für die Stabilität.",
+      "category": "stabilitaet",
+      "block": "knee",
+      "equipment": [
+        "theraband",
+        "door",
+        "chair"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band mit Knoten unten hinter die Tür (Scharnierseite) klemmen, Schlaufe ums rechte Fußgelenk.",
+        "Seitlich zur Tür stellen, linkes Bein ist Standbein (Knie weich, nicht durchgedrückt), Hand an der Stuhllehne.",
+        "Rechtes Bein gestreckt ca. 20–30° zur Seite führen, kurz halten.",
+        "Langsam zurück. Danach Seiten tauschen (rechts Standbein)."
+      ],
+      "cues": [
+        "Becken bleibt waagerecht",
+        "Standbein-Knie über dem Fuß",
+        "Aufrecht bleiben"
+      ],
+      "mistakes": [
+        "Oberkörper kippt zur Seite",
+        "Standbein-Knie knickt ein",
+        "Zu großer Ausschlag"
+      ],
+      "kneeNote": "Das Standbein links ist der eigentliche Trainingsreiz. Knie leicht entriegelt, keine Drehung im Standbein.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 15 ohne Festhalten",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 60
+        }
+      ],
+      "regressTo": "side-lying-hip-abduction",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "gesaess",
+        "hueftabduktion",
+        "standbein",
+        "stabilitaet"
+      ],
+      "figure": {
+        "poses": [
+          "front-stand-soft",
+          "front-hip-abd-right"
+        ],
+        "props": [
+          "chair",
+          "door"
+        ],
+        "band": {
+          "from": "footR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "standing-hip-extension",
+      "name": "Hüftstreckung im Stand mit Band",
+      "description": "Gestrecktes rechtes Bein gegen das Band nach hinten führen – Gesäß kräftigen, links stabilisieren.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "theraband",
+        "door",
+        "chair"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band mit Knoten unten hinter die Tür (Scharnierseite) klemmen, Schlaufe ums rechte Fußgelenk.",
+        "Gesicht zur Tür, Hände an der Stuhllehne, linkes Bein ist Standbein mit weichem Knie.",
+        "Rechtes Bein gestreckt ca. 20° nach hinten führen, Gesäß anspannen.",
+        "Langsam zurück. Danach Seiten tauschen."
+      ],
+      "cues": [
+        "Bewegung aus dem Gesäß",
+        "Kein Hohlkreuz",
+        "Becken zeigt nach vorn"
+      ],
+      "mistakes": [
+        "Bein zu weit nach hinten (Hohlkreuz)",
+        "Oberkörper kippt nach vorn",
+        "Standbein durchgedrückt"
+      ],
+      "kneeNote": "Standbein-Knie weich, aber stabil. Keine Drehung im Standbein.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 45
+        },
+        {
+          "label": "Blau · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": "glute-bridge",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "gesaess",
+        "hueftstreckung",
+        "standbein"
+      ],
+      "figure": {
+        "poses": [
+          "stand-hold-chair",
+          "stand-hip-ext-right"
+        ],
+        "props": [
+          "chair",
+          "door"
+        ],
+        "band": {
+          "from": "footR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "seated-hamstring-curl",
+      "name": "Beinbeuger im Sitzen mit Band",
+      "description": "Ferse gegen das Band unter den Stuhl ziehen – Beinrückseite stärken, Beugung begrenzt.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "theraband",
+        "door",
+        "chair"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band mit Knoten unten hinter die Tür (Scharnierseite) klemmen, Stuhl mit Blick zur Tür davor.",
+        "Schlaufe um die linke Ferse, Bein fast gestreckt nach vorn, Spannung im Band.",
+        "Ferse gegen das Band zurückziehen bis ca. 60° Kniebeugung.",
+        "Langsam (3 s) wieder nach vorn. Danach rechts."
+      ],
+      "cues": [
+        "Oberschenkel bleibt auf dem Sitz",
+        "Langsam zurückgeben",
+        "Aufrecht sitzen"
+      ],
+      "mistakes": [
+        "Zu weit beugen",
+        "Mit dem Oberkörper nach hinten ziehen",
+        "Band zurückschnappen lassen"
+      ],
+      "kneeNote": "Beugung unter Zug max. ca. 60° (später 90°). Bei Ziehen hinten innen im Knie (Meniskus) Bewegungsweg verkürzen.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "yellow",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "green",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 15",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "3-1-2",
+          "band": "green",
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "hamstring-bridge-chair",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "beinbeuger",
+        "offene-kette"
+      ],
+      "figure": {
+        "poses": [
+          "sit-leg-forward",
+          "sit-knee-60"
+        ],
+        "props": [
+          "chair",
+          "door"
+        ],
+        "band": {
+          "from": "footL",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "hamstring-bridge-chair",
+      "name": "Fersen-Brücke auf dem Stuhl",
+      "description": "Fersen auf dem Stuhl, Becken heben – kräftigt Beinbeuger und Gesäß bei fast gestrecktem Knie.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "mat",
+        "chair"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Rückenlage vor dem Stuhl, beide Fersen auf die Sitzfläche, Knie leicht gebeugt (ca. 20–30°).",
+        "Arme neben dem Körper, Fersen in die Sitzfläche drücken.",
+        "Becken heben, bis Schultern, Hüfte und Fersen eine Linie bilden.",
+        "Langsam absenken."
+      ],
+      "cues": [
+        "Fersen ziehen leicht Richtung Gesäß",
+        "Gesäß fest",
+        "Ruhig atmen"
+      ],
+      "mistakes": [
+        "Hohlkreuz",
+        "Krampf in der Wade – dann Zehen anziehen",
+        "Ruckartig hochstoßen"
+      ],
+      "kneeNote": "Knie fast gestreckt, daher wenig Druck auf Meniskus und Knorpel. Einbeinig nur links trainieren, rechts 1 Ausgleichssatz.",
+      "levels": [
+        {
+          "label": "Beidbeinig · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Beidbeinig · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Beidbeinig · 3 × 12, oben 3 s",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Einbeinig links · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "seated-hamstring-curl",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "beinbeuger",
+        "gesaess",
+        "geschlossene-kette"
+      ],
+      "figure": {
+        "poses": [
+          "lying-heels-chair-down",
+          "lying-heels-chair-up"
+        ],
+        "props": [
+          "mat",
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "calf-raise",
+      "name": "Wadenheben",
+      "description": "Auf die Zehenspitzen und langsam zurück – kräftige Waden entlasten das Knie beim Gehen.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "chair"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Hüftbreit hinter die Stuhllehne stellen, Hände leicht aufgelegt.",
+        "Knie gestreckt, aber nicht durchgedrückt.",
+        "Gleichmäßig auf die Zehenspitzen hochdrücken, oben kurz halten.",
+        "Langsam (3 s) absenken."
+      ],
+      "cues": [
+        "Über den großen Zeh drücken",
+        "Ganz hoch, ganz langsam runter",
+        "Aufrecht bleiben"
+      ],
+      "mistakes": [
+        "Wippen",
+        "Gewicht auf den Außenrand",
+        "Nur das rechte Bein arbeitet"
+      ],
+      "kneeNote": "Einbeinig: links trainieren, rechts gleich viele Wiederholungen zum Ausgleich. Knie bleibt ruhig, keine Drehung.",
+      "levels": [
+        {
+          "label": "Beidbeinig · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Beidbeinig · 3 × 15",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Einbeinig links · 3 × 6",
+          "sets": 3,
+          "reps": 6,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Einbeinig links · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Einbeinig links · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "wade",
+        "geschlossene-kette"
+      ],
+      "figure": {
+        "poses": [
+          "stand-hold-chair",
+          "stand-calf-raise"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "single-leg-stance",
+      "name": "Einbeinstand links",
+      "description": "Auf dem linken Bein stehen und ruhig bleiben – schult die Gelenkwahrnehmung nach der Meniskusverletzung.",
+      "category": "stabilitaet",
+      "block": "knee",
+      "equipment": [
+        "chair",
+        "theraband",
+        "door"
+      ],
+      "type": "hold",
+      "side": "left",
+      "instructions": [
+        "Neben einer Stuhllehne oder Wand stehen, Hand in Reichweite.",
+        "Auf das linke Bein verlagern, Knie leicht entriegelt, rechten Fuß lösen.",
+        "Becken waagerecht, Blick auf einen festen Punkt.",
+        "Halten. Rechts zum Ausgleich gerne auch kurz."
+      ],
+      "cues": [
+        "Fuß krallt nicht – breit und ruhig",
+        "Knie über dem Fuß",
+        "Groß werden"
+      ],
+      "mistakes": [
+        "Knie durchgedrückt",
+        "Becken kippt ab",
+        "Luft anhalten"
+      ],
+      "kneeNote": "Knie minimal gebeugt, nie verdrehen. Stern-Tippen ohne Drehung im Standbein. Bei Unsicherheit Stufe zurück.",
+      "levels": [
+        {
+          "label": "Augen offen · 3 × 30 s",
+          "sets": 3,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "Augen geschlossen · 3 × 20 s",
+          "sets": 3,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "Auf Kissen/gefalteter Matte · 3 × 30 s",
+          "sets": 3,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "Stern-Tippen rechts (vorn/seitlich/hinten) · 3 × 30 s",
+          "sets": 3,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Band-Störung: Band in den Händen ziehen · 3 × 30 s",
+          "sets": 3,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": "red",
+          "rest": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "balance",
+        "propriozeption",
+        "standbein"
+      ],
+      "figure": {
+        "poses": [
+          "stand-single-left",
+          "stand-single-tap"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
     },
     {
       "id": "band-pull-apart",
       "name": "Band auseinanderziehen (Pull-Apart)",
+      "description": "Band vor dem Körper auseinanderziehen – Schulterblätter zusammen, wie beim Vollauszug.",
       "category": "haltung",
       "block": "archery",
-      "equipment": ["theraband"],
+      "equipment": [
+        "theraband"
+      ],
       "type": "reps",
       "side": "both",
       "instructions": [
-        "Aufrecht stehen oder sitzen, Band schulterbreit vor dem Körper.",
+        "Aufrecht stehen oder sitzen, Band schulterbreit vor dem Körper greifen.",
         "Arme gestreckt auf Schulterhöhe.",
-        "Band auseinanderziehen, Schulterblätter zusammenführen.",
+        "Band auseinanderziehen, bis es die Brust berührt, Schulterblätter zusammenführen.",
         "Kontrolliert zurück."
       ],
-      "cues": ["Schultern tief", "Brustbein hoch – wie beim Vollauszug"],
-      "mistakes": ["Schultern zu den Ohren", "Hohlkreuz", "Schwung holen"],
-      "kneeNote": "Bei Kniebeschwerden im Sitzen auf dem Stuhl ausführen.",
+      "cues": [
+        "Schultern tief",
+        "Brustbein hoch – wie beim Vollauszug",
+        "Ellbogen weich"
+      ],
+      "mistakes": [
+        "Schultern zu den Ohren",
+        "Hohlkreuz",
+        "Schwung holen"
+      ],
+      "kneeNote": "Im Sitzen auf dem Stuhl möglich, falls das Knie heute gereizt ist. Nicht auf dem linken Knie knien.",
       "levels": [
-        { "label": "Gelb", "sets": 2, "reps": 12, "tempo": "2-1-2", "band": "yellow", "rest": 45 },
-        { "label": "Rot", "sets": 3, "reps": 12, "tempo": "2-1-2", "band": "red", "rest": 45 },
-        { "label": "Grün", "sets": 3, "reps": 12, "tempo": "2-1-3", "band": "green", "rest": 60 }
+        {
+          "label": "Gelb · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Blau · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "face-pull",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "schulterblatt",
+        "rueckenspannung",
+        "haltung"
+      ],
+      "figure": {
+        "poses": [
+          "front-arms-forward",
+          "front-arms-apart"
+        ],
+        "props": [],
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "seated-row",
+      "name": "Rudern im Sitzen mit Band",
+      "description": "Band zum Bauch ziehen, Schulterblätter nach hinten-unten – die Basis jeder Rückenspannung.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door",
+        "chair"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Band mit dickem Knoten auf Brusthöhe (im Sitzen) hinter die Tür auf der Scharnierseite klemmen, Tür zieht zu.",
+        "Mit Blick zur Tür aufrecht auf den Stuhl setzen, Bandenden in beiden Händen, Arme gestreckt.",
+        "Erst Schulterblätter nach hinten-unten ziehen, dann Ellbogen eng am Körper zurückführen.",
+        "Kurz halten, langsam zurück."
+      ],
+      "cues": [
+        "Schulterblätter starten die Bewegung",
+        "Ellbogen nah am Körper",
+        "Brustbein hoch"
+      ],
+      "mistakes": [
+        "Mit dem Oberkörper zurücklehnen",
+        "Schultern hochziehen",
+        "Handgelenke abknicken"
+      ],
+      "kneeNote": "Im Sitzen – das Knie hat Pause. Füße flach, Knie ca. 90° ohne Last.",
+      "levels": [
+        {
+          "label": "Rot · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Grün · 3 × 12, 2 s halten",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-2-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Blau · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "single-arm-high-row",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rueckenspannung",
+        "zug",
+        "schulterblatt"
+      ],
+      "figure": {
+        "poses": [
+          "sit-row-start",
+          "sit-row-end"
+        ],
+        "props": [
+          "chair",
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "prone-ytw",
+      "name": "Y-T-W in Bauchlage",
+      "description": "Arme in Y-, T- und W-Form vom Boden heben – stärkt die untere und mittlere Schulterblattmuskulatur.",
+      "category": "haltung",
+      "block": "archery",
+      "equipment": [
+        "mat"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Bauchlage, Kissen unter dem Becken, Stirn auf einem kleinen Handtuch.",
+        "Y: Arme schräg nach vorn, Daumen zur Decke, Arme leicht abheben.",
+        "T: Arme seitlich, dann W: Ellbogen gebeugt neben dem Körper, Schulterblätter zur Gesäßtasche.",
+        "Jede Position kurz halten, langsam ablegen. Eine Wiederholung = Y + T + W."
+      ],
+      "cues": [
+        "Schulterblätter nach hinten-unten",
+        "Nacken lang",
+        "Klein und präzise"
+      ],
+      "mistakes": [
+        "Kopf in den Nacken",
+        "Arme zu hoch reißen",
+        "Schultern zu den Ohren"
+      ],
+      "kneeNote": "Gefaltetes Handtuch unter das linke Knie, falls die Bauchlage auf die Kniescheibe drückt. Alternative: Oberkörper vorgeneigt im Sitzen.",
+      "levels": [
+        {
+          "label": "Ohne Gewicht · 2 × 6",
+          "sets": 2,
+          "reps": 6,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Ohne Gewicht · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Ohne Gewicht · 3 × 8, 3 s halten",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Mit 0,5-l-Flaschen · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        }
       ],
       "regressTo": null,
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "figure": { "poses": ["front-arms-forward", "front-arms-apart"], "props": [], "band": { "from": "handL", "to": "handR" }, "mirror": false }
+      "tags": [
+        "schulterblatt",
+        "trapezius-unten",
+        "haltung"
+      ],
+      "figure": {
+        "poses": [
+          "prone-arms-y",
+          "prone-arms-t",
+          "prone-arms-w"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "wall-slide",
+      "name": "Wandgleiten mit Loop",
+      "description": "Unterarme an der Wand nach oben gleiten lassen, Loop um die Handgelenke – Schulterblätter rotieren sauber.",
+      "category": "haltung",
+      "block": "archery",
+      "equipment": [
+        "loop",
+        "wall"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Mit Gesicht zur Wand stehen, Loop um beide Handgelenke.",
+        "Unterarme schulterbreit an die Wand, Ellbogen auf Schulterhöhe.",
+        "Handgelenke leicht nach außen gegen den Loop drücken und Unterarme nach oben in ein Y gleiten lassen.",
+        "Langsam zurück, Spannung im Loop halten."
+      ],
+      "cues": [
+        "Schultern weg von den Ohren",
+        "Rippen unten lassen",
+        "Loop immer gespannt"
+      ],
+      "mistakes": [
+        "Hohlkreuz",
+        "Schultern hochziehen",
+        "Ellbogen fallen nach innen"
+      ],
+      "kneeNote": "Im Stand mit weichen Knien. Bei gereiztem Knie im Sitzen mit Rücken zur Wand.",
+      "levels": [
+        {
+          "label": "Loop orange · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": "loop-orange",
+          "rest": 45
+        },
+        {
+          "label": "Loop orange · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": "loop-orange",
+          "rest": 45
+        },
+        {
+          "label": "Loop blau · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": "loop-blue",
+          "rest": 60
+        },
+        {
+          "label": "Loop blau · 3 × 12, oben von der Wand lösen",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-2-2",
+          "band": "loop-blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "schulterblatt",
+        "serratus",
+        "ueberkopf"
+      ],
+      "figure": {
+        "poses": [
+          "stand-wall-slide-low",
+          "stand-wall-slide-high"
+        ],
+        "props": [
+          "wall"
+        ],
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "serratus-punch",
+      "name": "Serratus-Punch mit Band",
+      "description": "Arm gegen das Band nach vorn schieben und das Schulterblatt mitnehmen – stabilisiert den Bogenarm.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band auf Brusthöhe hinter die Tür (Scharnierseite) klemmen, Rücken zur Tür, Schrittstellung mit weichen Knien.",
+        "Bandende in einer Hand, Arm auf Schulterhöhe nach vorn, Ellbogen leicht gebeugt.",
+        "Arm strecken und die Schulter zusätzlich ein Stück nach vorn schieben („boxen“).",
+        "Langsam zurück, Schulterblatt gleitet wieder an. Links (Bogenarm) zuerst."
+      ],
+      "cues": [
+        "Schulter tief, dann nach vorn schieben",
+        "Rumpf bleibt ruhig",
+        "Kein Schwung"
+      ],
+      "mistakes": [
+        "Oberkörper dreht mit",
+        "Schulter zieht zum Ohr",
+        "Hohlkreuz"
+      ],
+      "kneeNote": "Schrittstellung klein und stabil, keine Drehung in den Knien. Alternativ im Sitzen.",
+      "levels": [
+        {
+          "label": "Rot · 2 × 12 je Seite (links +1 Satz)",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12 je Seite (links +1 Satz)",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 15 je Seite (links +1 Satz)",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 45
+        },
+        {
+          "label": "Blau · 3 × 12 je Seite (links +1 Satz)",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "serratus",
+        "bogenarm",
+        "schulterblatt"
+      ],
+      "figure": {
+        "poses": [
+          "stand-arm-forward-bent",
+          "stand-arm-forward-reach"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": {
+            "x": 12,
+            "y": 62
+          }
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "er-towel",
+      "name": "Außenrotation 0° mit Handtuch",
+      "description": "Unterarm gegen das Band nach außen drehen, Handtuch unter dem Ellbogen – Schutz für die Rotatorenmanschette.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band auf Ellbogenhöhe hinter die Tür (Scharnierseite) klemmen, seitlich zur Tür stellen.",
+        "Kleines gerolltes Handtuch zwischen Ellbogen und Rumpf, Ellbogen 90° gebeugt.",
+        "Unterarm vom Bauch nach außen drehen, Ellbogen bleibt am Handtuch.",
+        "Langsam zurück. Rechts (Zugarm) zuerst und mit einem Extra-Satz."
+      ],
+      "cues": [
+        "Handtuch nicht fallen lassen",
+        "Handgelenk gerade",
+        "Schulter tief"
+      ],
+      "mistakes": [
+        "Ellbogen wandert vom Körper weg",
+        "Oberkörper dreht mit",
+        "Zu schweres Band"
+      ],
+      "kneeNote": "Im Sitzen auf dem Stuhl möglich, falls das Knie heute gereizt ist. Nicht auf dem linken Knie knien.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12 je Seite (rechts +1 Satz)",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 12 je Seite (rechts +1 Satz)",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 15 je Seite (rechts +1 Satz)",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "3-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12 je Seite (rechts +1 Satz)",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "green",
+          "rest": 60
+        }
+      ],
+      "regressTo": "sidelying-er",
+      "progressTo": "er-90-90",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rotatorenmanschette",
+        "zugarm",
+        "schulterschutz"
+      ],
+      "figure": {
+        "poses": [
+          "front-er-neutral",
+          "front-er-out"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "er-90-90",
+      "name": "Außenrotation 90/90 mit Band",
+      "description": "Oberarm auf Schulterhöhe, Unterarm gegen das Band nach oben drehen – die Schulterposition des Zugarms.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band auf Schulterhöhe hinter die Tür (Scharnierseite) klemmen, Gesicht zur Tür.",
+        "Oberarm seitlich auf Schulterhöhe, Ellbogen 90° gebeugt, Unterarm zeigt nach vorn.",
+        "Unterarm nach oben drehen, bis er senkrecht steht – Ellbogen bleibt auf Höhe.",
+        "Langsam zurück. Rechts zuerst."
+      ],
+      "cues": [
+        "Ellbogen bleibt auf Schulterhöhe",
+        "Schulter tief",
+        "Langsam zurückgeben"
+      ],
+      "mistakes": [
+        "Ellbogen sinkt ab",
+        "Hohlkreuz",
+        "Über den Schmerzpunkt hinaus drehen"
+      ],
+      "kneeNote": "Im Sitzen auf dem Stuhl möglich, falls das Knie heute gereizt ist. Nicht auf dem linken Knie knien.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 10 je Seite",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 45
+        },
+        {
+          "label": "Gelb · 3 × 12 je Seite",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "yellow",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 12 je Seite",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "red",
+          "rest": 60
+        },
+        {
+          "label": "Rot · 3 × 12, oben 2 s",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-2-2",
+          "band": "red",
+          "rest": 60
+        }
+      ],
+      "regressTo": "er-towel",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "rotatorenmanschette",
+        "zugarm",
+        "schulterschutz"
+      ],
+      "figure": {
+        "poses": [
+          "front-er9090-start",
+          "front-er9090-end"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "sidelying-er",
+      "name": "Außenrotation in Seitlage",
+      "description": "In Seitlage den Unterarm nach oben drehen – die sanfteste Form für die Außenrotatoren.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "mat"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Auf die Seite legen, Kopf gestützt, Kissen zwischen den Knien.",
+        "Obere Hand: Ellbogen 90° am Körper, Handtuchrolle darunter, Unterarm liegt vor dem Bauch.",
+        "Unterarm langsam nach oben drehen, Ellbogen bleibt am Körper.",
+        "Langsam zurück. Beide Seiten."
+      ],
+      "cues": [
+        "Ellbogen klebt am Handtuch",
+        "Langsam ablassen",
+        "Nur so weit, wie es frei geht"
+      ],
+      "mistakes": [
+        "Oberkörper rollt nach hinten",
+        "Schwung",
+        "Handgelenk knickt ab"
+      ],
+      "kneeNote": "Kissen zwischen den Knien, Knie leicht gebeugt – so liegt das linke Knie entspannt.",
+      "levels": [
+        {
+          "label": "Ohne Gewicht · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "0,5-l-Flasche · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "1-l-Flasche · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "1-l-Flasche · 3 × 15",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "er-towel",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rotatorenmanschette",
+        "schulterschutz"
+      ],
+      "figure": {
+        "poses": [
+          "sidelying-er-down",
+          "sidelying-er-up"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "face-pull",
+      "name": "Face Pull mit Außenrotation",
+      "description": "Band zum Gesicht ziehen und die Hände nach außen drehen – hintere Schulter und Rotatoren in einem.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Band über Kopfhöhe hinter die Tür (Scharnierseite) klemmen, Gesicht zur Tür, Füße hüftbreit.",
+        "Bandenden mit Daumen nach hinten greifen, Arme schräg nach oben gestreckt.",
+        "Band Richtung Stirn ziehen, Ellbogen hoch und weit, am Ende Hände nach hinten-oben drehen.",
+        "Kurz halten, langsam zurück."
+      ],
+      "cues": [
+        "Ellbogen hoch",
+        "Hände enden neben den Ohren",
+        "Brustbein hoch"
+      ],
+      "mistakes": [
+        "Zurücklehnen",
+        "Ellbogen sinken ab",
+        "Schultern hochziehen"
+      ],
+      "kneeNote": "Im Stand mit weichen Knien oder sitzend auf dem Stuhl.",
+      "levels": [
+        {
+          "label": "Rot · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Grün · 3 × 15, 2 s halten",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "2-2-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Blau · 3 × 12, 2 s halten",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-2-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": "band-pull-apart",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "hintere-schulter",
+        "rotatorenmanschette",
+        "zug"
+      ],
+      "figure": {
+        "poses": [
+          "stand-facepull-start",
+          "stand-facepull-end"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "lat-pulldown",
+      "name": "Latzug im Sitzen mit Band",
+      "description": "Band von oben zur Brust ziehen – kräftigt den breiten Rückenmuskel für einen stabilen Anker.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door",
+        "chair"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Band mit dickem Knoten oben über die Tür (Scharnierseite) klemmen, Tür zieht zu.",
+        "Stuhl vor die Tür, Bandenden greifen, Arme schräg nach oben gestreckt.",
+        "Schulterblätter nach unten ziehen, dann Ellbogen zu den Rippen führen.",
+        "Langsam zurück, oben Schultern nicht hochziehen lassen."
+      ],
+      "cues": [
+        "Schultern tief vor dem Ziehen",
+        "Ellbogen zur Hosentasche",
+        "Aufrecht bleiben"
+      ],
+      "mistakes": [
+        "Zurücklehnen",
+        "Mit dem Nacken ziehen",
+        "Band zurückschnellen lassen"
+      ],
+      "kneeNote": "Im Sitzen – kniefreundlich. Füße flach auf dem Boden.",
+      "levels": [
+        {
+          "label": "Rot · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Grün · 3 × 12, langsam",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Blau · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "straight-arm-pulldown",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "latissimus",
+        "zug",
+        "rueckenspannung"
+      ],
+      "figure": {
+        "poses": [
+          "sit-arms-overhead",
+          "sit-pulldown-end"
+        ],
+        "props": [
+          "chair",
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "straight-arm-pulldown",
+      "name": "Überzug mit gestreckten Armen",
+      "description": "Gestreckte Arme gegen das Band nach unten führen – verbindet Latissimus und Rumpf wie im Vollauszug.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Band oben über die Tür (Scharnierseite) klemmen, Gesicht zur Tür, einen Schritt zurück.",
+        "Aufrecht stehen, Knie weich, Arme gestreckt schräg nach vorn-oben.",
+        "Gestreckte Arme bis neben die Oberschenkel nach unten ziehen, Schulterblätter tief.",
+        "Langsam zurück bis Augenhöhe."
+      ],
+      "cues": [
+        "Arme bleiben fast gestreckt",
+        "Rippen unten",
+        "Bewegung aus dem Rücken"
+      ],
+      "mistakes": [
+        "Ellbogen beugen (wird zum Rudern)",
+        "Oberkörper kippt nach vorn",
+        "Hohlkreuz"
+      ],
+      "kneeNote": "Aufrecht mit leicht gebeugten Knien (max. 20°), kein Vorbeugen mit Gewicht auf den Knien. Alternativ im Sitzen.",
+      "levels": [
+        {
+          "label": "Rot · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Grün · 3 × 15",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "3-1-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Blau · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "3-1-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": "lat-pulldown",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "latissimus",
+        "rumpf",
+        "zug"
+      ],
+      "figure": {
+        "poses": [
+          "stand-arms-forward-high",
+          "stand-arms-down"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "single-arm-high-row",
+      "name": "Einarmiges hohes Rudern im Schießstand",
+      "description": "Im Schießstand mit dem Zugarm auf Gesichtshöhe ziehen – die Auszugsbewegung mit Widerstand.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band auf Schulterhöhe hinter die Tür (Scharnierseite) klemmen, im Schießstand seitlich zur Tür stellen (Bogenarm-Seite zur Tür).",
+        "Zughand greift das Band, Arm zur Tür gestreckt, Bogenarm locker oder als Bogenarm vorgestreckt.",
+        "Ellbogen auf Schulterhöhe nach hinten ziehen bis zum Anker an der Kinnlinie, Schulterblatt zur Wirbelsäule.",
+        "Kurz halten, langsam zurück. Zugarm rechts zuerst, links als Ausgleich."
+      ],
+      "cues": [
+        "Ellbogen führt, Hand ist nur Haken",
+        "Schulter tief",
+        "Kopf bleibt ruhig"
+      ],
+      "mistakes": [
+        "Ellbogen zu tief",
+        "Oberkörper dreht mit",
+        "Schultern hochziehen"
+      ],
+      "kneeNote": "Schießstand hüftbreit mit gleichmäßiger Belastung und weichen Knien, keine Drehung im Knie. Alternativ sitzend auf dem Stuhl.",
+      "levels": [
+        {
+          "label": "Rot · 2 × 10 je Seite",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 10 je Seite",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Grün · 3 × 12, 3 s halten",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-3-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Blau · 3 × 10, 3 s halten",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-3-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": "seated-row",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "zugarm",
+        "auszug",
+        "rueckenspannung"
+      ],
+      "figure": {
+        "poses": [
+          "front-draw-start",
+          "front-draw-anchor"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "band-draw-hold",
+      "name": "Auszug & Halten mit Band (SPT)",
+      "description": "Band wie den Bogen ausziehen und im Anker halten – spezifisches Haltetraining für den Compound-Schuss.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband"
+      ],
+      "type": "hold",
+      "side": "right",
+      "instructions": [
+        "Band wählen, dessen Zug im Anker ungefähr deinem Haltegewicht (nach dem Let-off) entspricht.",
+        "Schießstand, Bogenhand links hält das Band auf Schulterhöhe, Zughand rechts greift wie mit dem Release.",
+        "Ruhig in den Anker ziehen, Rückenspannung aufbauen und halten – Atmung ruhig.",
+        "Kontrolliert zurückführen. Band nie schnappen oder aus der Hand rutschen lassen."
+      ],
+      "cues": [
+        "Bogenschulter tief",
+        "Zugellbogen hinter der Pfeillinie",
+        "Halten aus dem Rücken, nicht aus dem Arm"
+      ],
+      "mistakes": [
+        "Halten bis zum Zittern",
+        "Band loslassen (Verletzungsgefahr)",
+        "Kopf geht zur Sehne statt umgekehrt"
+      ],
+      "kneeNote": "Stand hüftbreit, beide Beine gleich belastet, Knie weich. Bei gereiztem Knie im Sitzen auf dem Stuhl.",
+      "levels": [
+        {
+          "label": "Rot · 5 × 10 s",
+          "sets": 5,
+          "reps": 1,
+          "hold": 10,
+          "tempo": null,
+          "band": "red",
+          "rest": 30
+        },
+        {
+          "label": "Grün · 5 × 10 s ohne Zittern",
+          "sets": 5,
+          "reps": 1,
+          "hold": 10,
+          "tempo": null,
+          "band": "green",
+          "rest": 30
+        },
+        {
+          "label": "Grün · 6 × 20 s",
+          "sets": 6,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": "green",
+          "rest": 40
+        },
+        {
+          "label": "Blau · 6 × 20 s ruhig",
+          "sets": 6,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": "blue",
+          "rest": 40
+        },
+        {
+          "label": "Blau · 5 × 30 s",
+          "sets": 5,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "expansion-drill",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "spt",
+        "halten",
+        "auszug",
+        "bogenspezifisch"
+      ],
+      "figure": {
+        "poses": [
+          "front-draw-start",
+          "front-draw-anchor"
+        ],
+        "props": [],
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "bow-arm-push",
+      "name": "Bogenarm-Isometrie an der Wand",
+      "description": "Gestreckten Arm gegen die Wand drücken, Schulter tief – ein stabiler Bogenarm wie ein Pfeiler.",
+      "category": "stabilitaet",
+      "block": "archery",
+      "equipment": [
+        "wall"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Seitlich zur Wand im Schießstand stehen, Bogenarm auf Schulterhöhe gestreckt.",
+        "Handballen (wie am Bogengriff) gegen die Wand.",
+        "Aus der Schulter heraus gegen die Wand drücken, Schulter bleibt tief und hinten.",
+        "Halten, locker lassen. Bogenarm links zuerst, rechts als Ausgleich."
+      ],
+      "cues": [
+        "Schulter tief – nicht zum Ohr",
+        "Ellbogen leicht nach außen gedreht",
+        "Druck aus dem Rücken"
+      ],
+      "mistakes": [
+        "Schulter schiebt nach oben",
+        "Ellbogen überstreckt",
+        "Oberkörper lehnt zur Wand"
+      ],
+      "kneeNote": "Stand hüftbreit, Gewicht gleich verteilt, nicht zur Wand lehnen. Alternativ im Sitzen.",
+      "levels": [
+        {
+          "label": "4 × 10 s je Seite",
+          "sets": 4,
+          "reps": 1,
+          "hold": 10,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "5 × 10 s je Seite",
+          "sets": 5,
+          "reps": 1,
+          "hold": 10,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "5 × 15 s je Seite",
+          "sets": 5,
+          "reps": 1,
+          "hold": 15,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "5 × 20 s je Seite",
+          "sets": 5,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "push-pull-iso",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "bogenarm",
+        "isometrisch",
+        "schulterstabilitaet"
+      ],
+      "figure": {
+        "poses": [
+          "stand-arm-push-wall"
+        ],
+        "props": [
+          "wall"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "mirror-draw",
+      "name": "Spiegel-Auszug (links ziehen)",
+      "description": "Den Auszug gespiegelt mit links ziehen – gleicht die einseitige Belastung des Bogensports aus.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband"
+      ],
+      "type": "hold",
+      "side": "left",
+      "instructions": [
+        "Wie beim normalen Bandauszug, aber gespiegelt: rechte Hand hält, linke zieht.",
+        "Leichteres Band als beim SPT wählen – ca. 50–60 % des Umfangs.",
+        "In einen gespiegelten Anker ziehen, Rückenspannung links spüren, halten.",
+        "Kontrolliert zurückführen, Band nie schnappen lassen."
+      ],
+      "cues": [
+        "Gleiche Qualität wie rechts",
+        "Schulterblatt zur Wirbelsäule",
+        "Ruhig atmen"
+      ],
+      "mistakes": [
+        "Zu schweres Band",
+        "Schulter zieht hoch",
+        "Hastig ziehen"
+      ],
+      "kneeNote": "Stand hüftbreit oder sitzend; beide Beine gleich belastet.",
+      "levels": [
+        {
+          "label": "Gelb · 3 × 10 s",
+          "sets": 3,
+          "reps": 1,
+          "hold": 10,
+          "tempo": null,
+          "band": "yellow",
+          "rest": 30
+        },
+        {
+          "label": "Rot · 3 × 10 s",
+          "sets": 3,
+          "reps": 1,
+          "hold": 10,
+          "tempo": null,
+          "band": "red",
+          "rest": 30
+        },
+        {
+          "label": "Rot · 4 × 15 s",
+          "sets": 4,
+          "reps": 1,
+          "hold": 15,
+          "tempo": null,
+          "band": "red",
+          "rest": 30
+        },
+        {
+          "label": "Grün · 4 × 15 s",
+          "sets": 4,
+          "reps": 1,
+          "hold": 15,
+          "tempo": null,
+          "band": "green",
+          "rest": 40
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "ausgleich",
+        "auszug",
+        "bogenspezifisch"
+      ],
+      "figure": {
+        "poses": [
+          "front-draw-start",
+          "front-draw-anchor"
+        ],
+        "props": [],
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": true
+      }
+    },
+    {
+      "id": "pallof-press",
+      "name": "Pallof Press (Anti-Rotation)",
+      "description": "Band seitlich, Hände vor die Brust schieben und nicht verdrehen lassen – ein stabiler Rumpf für ruhiges Zielen.",
+      "category": "stabilitaet",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Band auf Brusthöhe hinter die Tür (Scharnierseite) klemmen, seitlich zur Tür stellen, Füße hüftbreit.",
+        "Band mit beiden Händen vor dem Brustbein halten, Spannung aufbauen.",
+        "Arme langsam nach vorn strecken, 3 s halten – der Rumpf darf sich nicht zur Tür drehen.",
+        "Zurück zur Brust. Danach andere Seite."
+      ],
+      "cues": [
+        "Bauch fest, Becken still",
+        "Arme auf Brustbein-Linie",
+        "Ausatmen beim Strecken"
+      ],
+      "mistakes": [
+        "Zur Tür mitdrehen",
+        "Hohlkreuz",
+        "Schultern hochziehen"
+      ],
+      "kneeNote": "Nicht kniend auf links – stehend mit weichen Knien oder sitzend auf dem Stuhl. Keine Drehung im Knie.",
+      "levels": [
+        {
+          "label": "Rot · 2 × 10 je Seite",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-3-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 10 je Seite",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-3-2",
+          "band": "green",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12 je Seite",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-3-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Blau · 3 × 10 je Seite",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-3-2",
+          "band": "blue",
+          "rest": 60
+        }
+      ],
+      "regressTo": "dead-bug",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rumpf",
+        "anti-rotation",
+        "stabilitaet"
+      ],
+      "figure": {
+        "poses": [
+          "stand-pallof-in",
+          "stand-pallof-out"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "dead-bug",
+      "name": "Dead Bug mit Band (kniefreundlich)",
+      "description": "In Rückenlage Arme gegen das Band halten und abwechselnd die Ferse ausgleiten lassen – Rumpfkontrolle ohne Kniebelastung.",
+      "category": "stabilitaet",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door",
+        "mat"
+      ],
+      "type": "reps",
+      "side": "alternate",
+      "instructions": [
+        "Band unten hinter die Tür (Scharnierseite) klemmen, Rückenlage mit dem Kopf zur Tür.",
+        "Bandenden greifen, Arme gestreckt Richtung Decke, unterer Rücken flach am Boden, Füße aufgestellt.",
+        "Ein Bein langsam lang ausgleiten lassen (Ferse auf dem Boden), Arme halten gegen das Band.",
+        "Zurück und Seite wechseln. Später Beine in der Luft (Tischposition)."
+      ],
+      "cues": [
+        "Rücken bleibt am Boden",
+        "Ausatmen beim Strecken",
+        "Langsam"
+      ],
+      "mistakes": [
+        "Hohlkreuz",
+        "Luft anhalten",
+        "Bein fällt unkontrolliert"
+      ],
+      "kneeNote": "Kniefreundliche Variante: Ferse gleitet am Boden statt freiem Beinsenken. Tischposition (Knie 90°, ohne Last) erst in späteren Stufen.",
+      "levels": [
+        {
+          "label": "Gelb · Füße am Boden, nur Arme halten · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 30
+        },
+        {
+          "label": "Rot · Ferse gleitet aus · 2 × 8 je Seite",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": "red",
+          "rest": 30
+        },
+        {
+          "label": "Rot · Ferse gleitet aus · 3 × 10 je Seite",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · Tischposition, Bein senken · 3 × 8 je Seite",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": "green",
+          "rest": 45
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "pallof-press",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rumpf",
+        "kniefreundlich",
+        "stabilitaet"
+      ],
+      "figure": {
+        "poses": [
+          "lying-deadbug-start",
+          "lying-deadbug-reach"
+        ],
+        "props": [
+          "mat",
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "side-plank-elevated",
+      "name": "Seitstütz erhöht (Wand/Stuhl)",
+      "description": "Seitstütz mit erhöhtem Unterarm und gestreckten Beinen – seitliche Rumpfkraft ohne Knien.",
+      "category": "stabilitaet",
+      "block": "archery",
+      "equipment": [
+        "wall",
+        "chair"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Stufe Wand: seitlich zur Wand, Unterarm auf Schulterhöhe an die Wand, Füße einen Schritt weg.",
+        "Stufe Stuhl: Unterarm auf die stabile Sitzfläche (Stuhl an der Wand), Beine gestreckt übereinander.",
+        "Becken anheben bzw. halten, bis der Körper eine gerade Linie bildet.",
+        "Halten, ablegen, Seite wechseln."
+      ],
+      "cues": [
+        "Ellbogen unter der Schulter",
+        "Becken nach vorn schieben",
+        "Kopf in Verlängerung"
+      ],
+      "mistakes": [
+        "Becken sinkt ab",
+        "Schulter fällt zum Ohr",
+        "Luft anhalten"
+      ],
+      "kneeNote": "Beine gestreckt übereinander, kein Abstützen auf dem linken Knie. Wand-Variante ist die sanfteste.",
+      "levels": [
+        {
+          "label": "Wand · 3 × 20 s je Seite",
+          "sets": 3,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Wand · 3 × 30 s je Seite",
+          "sets": 3,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Stuhl · 3 × 20 s je Seite",
+          "sets": 3,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Stuhl · 3 × 30 s je Seite",
+          "sets": 3,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 45
+        }
+      ],
+      "regressTo": "pallof-press",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "rumpf",
+        "seitstuetz",
+        "kniefreundlich"
+      ],
+      "figure": {
+        "poses": [
+          "front-side-plank-wall"
+        ],
+        "props": [
+          "wall"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "thoracic-extension-chair",
+      "name": "Brustwirbel-Streckung über die Stuhllehne",
+      "description": "Oberen Rücken über die Stuhllehne strecken – öffnet die Brust für einen aufrechten Auszug.",
+      "category": "mobilitaet",
+      "block": "archery",
+      "equipment": [
+        "chair"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Aufrecht auf einen Stuhl mit niedriger Lehne setzen, Hände hinter dem Kopf.",
+        "Ellbogen zeigen nach vorn, Bauch leicht fest.",
+        "Oberen Rücken über die Lehne nach hinten strecken, Blick schräg nach oben.",
+        "Kurz halten, langsam zurück."
+      ],
+      "cues": [
+        "Bewegung im oberen Rücken, nicht im Hohlkreuz",
+        "Einatmen beim Strecken"
+      ],
+      "mistakes": [
+        "Nacken überstrecken",
+        "Ins Hohlkreuz fallen",
+        "Zu schnell"
+      ],
+      "kneeNote": "Im Sitzen – das Knie bleibt entspannt.",
+      "levels": [
+        {
+          "label": "1 × 8",
+          "sets": 1,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "2 × 10, 3 s halten",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 15
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "brustwirbelsaeule",
+        "haltung",
+        "mobilitaet"
+      ],
+      "figure": {
+        "poses": [
+          "sit-hands-head",
+          "sit-thoracic-ext"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "expansion-drill",
+      "name": "Expansions-Drill (Rückenspannung & Lösen)",
+      "description": "Im Anker die Rückenspannung weiter aufbauen und das Lösen nur andeuten – Schussablauf ohne Bogen.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband"
+      ],
+      "type": "reps",
+      "side": "right",
+      "instructions": [
+        "Wie beim SPT in den Anker ziehen, Visier-Moment kurz halten (2 s).",
+        "Expansion: Zugschulterblatt langsam weiter zur Wirbelsäule, 3–5 s – Gefühl wie beim Durchziehen durch den Klicker/Release.",
+        "Lösen nur andeuten: Zughand bleibt am Band, Ellbogen folgt 2–3 cm nach hinten (Nachhalten).",
+        "Band kontrolliert zurückführen. Niemals loslassen oder schnappen lassen."
+      ],
+      "cues": [
+        "Expansion aus dem Rücken",
+        "Bogenarm bleibt stehen",
+        "Nachhalten zählen: 1–2"
+      ],
+      "mistakes": [
+        "Band loslassen",
+        "Zughand öffnet sich ruckartig",
+        "Bogenarm fällt nach dem „Lösen“"
+      ],
+      "kneeNote": "Stand hüftbreit, Knie weich, oder im Sitzen auf dem Stuhl.",
+      "levels": [
+        {
+          "label": "Rot · 2 × 6",
+          "sets": 2,
+          "reps": 6,
+          "tempo": "2-5-2",
+          "band": "red",
+          "rest": 60
+        },
+        {
+          "label": "Grün · 2 × 6",
+          "sets": 2,
+          "reps": 6,
+          "tempo": "2-5-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Grün · 3 × 6",
+          "sets": 3,
+          "reps": 6,
+          "tempo": "2-5-2",
+          "band": "green",
+          "rest": 60
+        },
+        {
+          "label": "Blau · 3 × 6",
+          "sets": 3,
+          "reps": 6,
+          "tempo": "2-5-2",
+          "band": "blue",
+          "rest": 75
+        }
+      ],
+      "regressTo": "band-draw-hold",
+      "progressTo": "endurance-series",
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "drill",
+        "rueckenspannung",
+        "schussablauf",
+        "bogenspezifisch"
+      ],
+      "figure": {
+        "poses": [
+          "front-draw-anchor",
+          "front-draw-expand"
+        ],
+        "props": [],
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "push-pull-iso",
+      "name": "Push-Pull-Isometrie",
+      "description": "Bogenarm drückt gegen die Wand, Zugarm zieht das Band in den Anker – beide Seiten gleichzeitig halten.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door",
+        "wall"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Band auf Schulterhöhe hinter die Tür (Scharnierseite) klemmen; im Schießstand so stellen, dass Bogenhand eine Wand oder den Türrahmen erreicht.",
+        "Bogenhand drückt mit gestrecktem Arm gegen Wand/Rahmen.",
+        "Zughand zieht das Band in den Anker – Druck vorn und Zug hinten gleichzeitig aufbauen.",
+        "Halten, dann beides kontrolliert lösen."
+      ],
+      "cues": [
+        "Druck und Zug gleich stark",
+        "Schultern auf einer Linie",
+        "Ruhig atmen"
+      ],
+      "mistakes": [
+        "Nur eine Seite arbeitet",
+        "Schulter des Bogenarms schiebt hoch",
+        "Band schnappen lassen"
+      ],
+      "kneeNote": "Stand hüftbreit, Knie weich, keine Drehung. Alternativ im Sitzen.",
+      "levels": [
+        {
+          "label": "Rot · 3 × 10 s",
+          "sets": 3,
+          "reps": 1,
+          "hold": 10,
+          "tempo": null,
+          "band": "red",
+          "rest": 30
+        },
+        {
+          "label": "Grün · 4 × 15 s",
+          "sets": 4,
+          "reps": 1,
+          "hold": 15,
+          "tempo": null,
+          "band": "green",
+          "rest": 30
+        },
+        {
+          "label": "Blau · 4 × 15 s",
+          "sets": 4,
+          "reps": 1,
+          "hold": 15,
+          "tempo": null,
+          "band": "blue",
+          "rest": 40
+        },
+        {
+          "label": "Blau · 4 × 20 s",
+          "sets": 4,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": "blue",
+          "rest": 40
+        }
+      ],
+      "regressTo": "bow-arm-push",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "drill",
+        "isometrisch",
+        "bogenspezifisch"
+      ],
+      "figure": {
+        "poses": [
+          "front-draw-anchor"
+        ],
+        "props": [
+          "wall",
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "endurance-series",
+      "name": "Ausdauerserie – Turniersimulation",
+      "description": "Passen zu 6 „Pfeilen“: ausziehen, 8–12 s halten, 20 s Pause – Haltekraft für lange Turniere.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Band wie beim SPT wählen (Zug ≈ Haltegewicht). Eine Passe = 6 Pfeile.",
+        "Pro Pfeil: ausziehen, ankern, 8–12 s zielen und halten, kontrolliert zurück.",
+        "20 s Pause zwischen den Pfeilen, 2 min Pause zwischen den Passen.",
+        "Jede Wiederholung wie einen echten Schuss mit voller Routine durchgehen."
+      ],
+      "cues": [
+        "Jeder Pfeil gleich",
+        "Routine vor Kraft",
+        "Abbrechen, sobald die Form leidet"
+      ],
+      "mistakes": [
+        "Halten bis zum Zittern",
+        "Pausen verkürzen",
+        "Band schnappen lassen"
+      ],
+      "kneeNote": "Stand hüftbreit, beide Beine gleich belastet. Zwischen den Passen ruhig hinsetzen.",
+      "levels": [
+        {
+          "label": "2 Passen · Rot",
+          "sets": 2,
+          "reps": 6,
+          "hold": 10,
+          "tempo": null,
+          "band": "red",
+          "rest": 120,
+          "restBetween": 20
+        },
+        {
+          "label": "3 Passen · Rot",
+          "sets": 3,
+          "reps": 6,
+          "hold": 10,
+          "tempo": null,
+          "band": "red",
+          "rest": 120,
+          "restBetween": 20
+        },
+        {
+          "label": "3 Passen · Grün",
+          "sets": 3,
+          "reps": 6,
+          "hold": 10,
+          "tempo": null,
+          "band": "green",
+          "rest": 120,
+          "restBetween": 20
+        },
+        {
+          "label": "4 Passen · Grün",
+          "sets": 4,
+          "reps": 6,
+          "hold": 10,
+          "tempo": null,
+          "band": "green",
+          "rest": 120,
+          "restBetween": 20
+        },
+        {
+          "label": "5 Passen · Grün",
+          "sets": 5,
+          "reps": 6,
+          "hold": 10,
+          "tempo": null,
+          "band": "green",
+          "rest": 120,
+          "restBetween": 20
+        }
+      ],
+      "regressTo": "band-draw-hold",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "drill",
+        "ausdauer",
+        "turnier",
+        "bogenspezifisch"
+      ],
+      "figure": {
+        "poses": [
+          "front-draw-start",
+          "front-draw-anchor"
+        ],
+        "props": [],
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "doorway-pec-stretch",
+      "name": "Brustdehnung im Türrahmen",
+      "description": "Unterarm an den Türrahmen, sanft nach vorn lehnen – Gegenpol zur Zugarbeit. Optional: sanfte Sleeper-Dehnung.",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "door"
+      ],
+      "type": "timed",
+      "side": "perSide",
+      "instructions": [
+        "In den Türrahmen stellen, Unterarm auf Schulterhöhe an den Rahmen, Ellbogen 90°.",
+        "Kleinen Schritt nach vorn, bis ein sanftes Ziehen in der Brust entsteht.",
+        "Halten, ruhig atmen, Seite wechseln.",
+        "Optional Sleeper-Dehnung: auf der Seite liegen, unterer Arm 90° vor dem Körper, Unterarm sanft Richtung Boden drücken – nur leichtes Ziehen."
+      ],
+      "cues": [
+        "Schulter tief und hinten",
+        "Nur sanftes Ziehen",
+        "Lang ausatmen"
+      ],
+      "mistakes": [
+        "Ins Hohlkreuz lehnen",
+        "Schmerz in der Schulter vorne",
+        "Wippen"
+      ],
+      "kneeNote": "Kleiner Schritt, Gewicht gleich verteilt, keine Drehung im Knie. Sleeper-Dehnung mit Kissen zwischen den Knien.",
+      "levels": [
+        {
+          "label": "2 × 20 s je Seite",
+          "sets": 2,
+          "seconds": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        },
+        {
+          "label": "2 × 30 s je Seite",
+          "sets": 2,
+          "seconds": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        },
+        {
+          "label": "3 × 30 s je Seite",
+          "sets": 3,
+          "seconds": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "brust",
+        "dehnung",
+        "ausgleich"
+      ],
+      "figure": {
+        "poses": [
+          "stand-doorway-stretch"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "hamstring-stretch-seated",
+      "name": "Beinrückseite dehnen im Sitzen",
+      "description": "Auf der Stuhlkante ein Bein lang, mit geradem Rücken vorneigen – sanft für die Beinrückseite.",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "chair"
+      ],
+      "type": "timed",
+      "side": "perSide",
+      "instructions": [
+        "Auf die vordere Stuhlkante setzen, ein Bein lang nach vorn, Ferse am Boden, Zehen zu dir.",
+        "Rücken gerade, Hände auf dem anderen Oberschenkel.",
+        "Mit geradem Rücken aus der Hüfte nach vorn neigen, bis es hinten im Oberschenkel zieht.",
+        "Halten, ruhig atmen, Seite wechseln."
+      ],
+      "cues": [
+        "Brustbein nach vorn",
+        "Knie minimal gebeugt",
+        "Sanft, nicht wippen"
+      ],
+      "mistakes": [
+        "Rundrücken",
+        "Knie durchdrücken",
+        "Ziehen in der Kniekehle"
+      ],
+      "kneeNote": "Ziehen im Oberschenkel ja, Druck oder Ziehen direkt in der Kniekehle nein – dann Knie etwas beugen.",
+      "levels": [
+        {
+          "label": "2 × 20 s je Seite",
+          "sets": 2,
+          "seconds": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        },
+        {
+          "label": "2 × 30 s je Seite",
+          "sets": 2,
+          "seconds": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "beinbeuger",
+        "dehnung"
+      ],
+      "figure": {
+        "poses": [
+          "sit-hamstring-stretch"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "calf-stretch-wall",
+      "name": "Wadendehnung an der Wand",
+      "description": "Hände an die Wand, hinteres Bein lang – lockert die Wade nach dem Training.",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "wall"
+      ],
+      "type": "timed",
+      "side": "perSide",
+      "instructions": [
+        "Mit Gesicht zur Wand, Hände auf Schulterhöhe an die Wand.",
+        "Ein Bein nach hinten, Ferse am Boden, Fußspitze zeigt nach vorn.",
+        "Vorderes Knie leicht beugen, Becken nach vorn schieben, bis die hintere Wade zieht.",
+        "Halten, Seite wechseln."
+      ],
+      "cues": [
+        "Hintere Ferse bleibt unten",
+        "Hinteres Knie gestreckt, nicht durchgedrückt"
+      ],
+      "mistakes": [
+        "Fuß dreht nach außen",
+        "Vorderes Knie zu tief gebeugt"
+      ],
+      "kneeNote": "Vorderes Knie nur leicht beugen (ca. 20°). Wenn das linke Knie vorn drückt, links nur als hinteres Bein dehnen.",
+      "levels": [
+        {
+          "label": "2 × 20 s je Seite",
+          "sets": 2,
+          "seconds": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        },
+        {
+          "label": "2 × 30 s je Seite",
+          "sets": 2,
+          "seconds": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 10
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "wade",
+        "dehnung"
+      ],
+      "figure": {
+        "poses": [
+          "stand-calf-stretch"
+        ],
+        "props": [
+          "wall"
+        ],
+        "band": null,
+        "mirror": false
+      }
     },
     {
       "id": "breathing-reset",
       "name": "Atem-Reset in Rückenlage",
+      "description": "Ruhig in den Bauch atmen, länger aus als ein – das Nervensystem fährt herunter.",
       "category": "dehnung",
       "block": "cooldown",
-      "equipment": ["mat"],
+      "equipment": [
+        "mat"
+      ],
       "type": "timed",
       "side": "both",
       "instructions": [
-        "Rückenlage, Beine lang oder aufgestellt.",
+        "Rückenlage, Beine lang oder aufgestellt (Kissen unter die Knie ist erlaubt).",
         "Hände auf den Bauch.",
-        "4 Sekunden ein, 6 Sekunden aus."
+        "4 Sekunden ein, 6 Sekunden aus – 2 Minuten lang.",
+        "Kurz nachspüren: Wie fühlt sich das Knie an?"
       ],
-      "cues": ["Ausatmen länger als einatmen", "Schultern schwer"],
-      "mistakes": ["Brustatmung", "Pressen"],
-      "kneeNote": "",
+      "cues": [
+        "Ausatmen länger als einatmen",
+        "Schultern schwer",
+        "Bauch hebt sich"
+      ],
+      "mistakes": [
+        "Brustatmung",
+        "Pressen"
+      ],
+      "kneeNote": "Kissen unter dem linken Knie ist ok, aber nicht dauerhaft gebeugt liegen – zum Schluss Bein lang ausstrecken.",
       "levels": [
-        { "label": "2 Minuten", "sets": 1, "seconds": 120, "tempo": null, "band": null, "rest": 0 }
+        {
+          "label": "2 Minuten",
+          "sets": 1,
+          "seconds": 120,
+          "tempo": null,
+          "band": null,
+          "rest": 0
+        },
+        {
+          "label": "3 Minuten",
+          "sets": 1,
+          "seconds": 180,
+          "tempo": null,
+          "band": null,
+          "rest": 0
+        }
       ],
       "regressTo": null,
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "figure": { "poses": ["lying-supine"], "props": ["mat"], "band": null, "mirror": false }
+      "tags": [
+        "atmung",
+        "entspannung"
+      ],
+      "figure": {
+        "poses": [
+          "lying-supine"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      }
     }
   ]
 }

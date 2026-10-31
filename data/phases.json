@@ -5,32 +5,55 @@
       "id": "p1-basis",
       "name": "Phase 1 – Basis",
       "order": 1,
-      "description": "Reizarm aktivieren, Kontrolle und Routine aufbauen.",
+      "description": "Ca. 3–4 Wochen. Reizarm aktivieren: Quadrizeps anschalten, volle Streckung sichern, Routine aufbauen. Post-OP-Übungen (Quad Set, Fersengleiten, gestrecktes Beinheben) jetzt lernen. Unter Last max. 60° Kniebeugung, langsames Tempo, kein Springen, keine Drehung.",
       "exitCriteria": [
-        "2 Wochen überwiegend grün",
-        "Quad Set 3 × 10 × 10 s schmerzfrei",
-        "Folgetag nie mehr als +1 über Ausgangswert"
+        "Linkes Knie ganz streckbar (kein Streckdefizit)",
+        "1 Woche keine Schwellung nach dem Training",
+        "3 × 12 Aufstehen vom Stuhl mit Schmerz ≤ 3/10",
+        "Einbeinstand links 30 s sicher",
+        "Bogen: SPT 5 × 10 s ohne Zittern"
       ],
-      "workouts": { "A": "p1-a", "B": "p1-b", "C": "p1-c" }
+      "workouts": {
+        "A": "p1-a",
+        "B": "p1-b",
+        "C": "p1-c"
+      }
     },
     {
       "id": "p2-aufbau",
       "name": "Phase 2 – Aufbau",
       "order": 2,
-      "description": "Kraft und Stabilität steigern, Belastung dosiert erhöhen.",
+      "description": "Ca. 4 Wochen. Kraft und Stabilität dosiert steigern: Step-ups, einbeinige Übungen, Standbein-Training. Beugung unter Last weiterhin bis ca. 60°, später schmerzfrei bis 90°. Bogen: Auszug mit Widerstand, Expansion und erste Turnier-Ausdauer.",
       "exitCriteria": [
-        "3 Wochen Wochenziel erreicht",
-        "Beinheben gestreckt 3 × 12 ohne Streckdefizit"
+        "2 Wochen nur grün/gelb, keine Schwellung",
+        "Step-up 3 × 10 auf 15–20 cm",
+        "Einbeinige Brücke links 3 × 8",
+        "Einbeiniges Wadenheben links 3 × 10",
+        "Einbeinstand links mit geschlossenen Augen 20 s",
+        "Bogen: SPT 6 × 20 s ruhig"
       ],
-      "workouts": { "A": "p2-a", "B": "p2-b", "C": "p2-c" }
+      "workouts": {
+        "A": "p2-a",
+        "B": "p2-b",
+        "C": "p2-c"
+      }
     },
     {
       "id": "p3-op-vorbereitung",
       "name": "Phase 3 – OP-Vorbereitung",
       "order": 3,
-      "description": "Erreichtes sichern, Umfang reduzieren, fit in die OP.",
-      "exitCriteria": ["OP-Termin erreicht"],
-      "workouts": { "A": "p3-a", "B": "p3-b", "C": "p3-c" }
+      "description": "Bis zur OP. Erreichtes sichern statt Rekorde jagen, Bremskraft (Step-down) schulen, Post-OP-Übungen festigen. Letzte Woche vor der OP: Taper – weniger Umfang, gleiche Qualität, nichts Neues.",
+      "taperNote": "OP-Woche: Umfang um 30–40 % reduzieren (weniger Sätze), Wiederholungen und Haltezeiten gleich, keine Steigerung und keine neuen Übungen. Die letzten 1–2 Tage vor der OP nur noch Post-OP-Übungen und lockeres Kniependeln. Ausgeruht und ohne Schwellung in die OP.",
+      "exitCriteria": [
+        "Post-OP-Übungen (Quad Set, Fersengleiten, gestrecktes Beinheben) sicher beherrscht",
+        "Taper in der OP-Woche umgesetzt",
+        "OP-Termin erreicht"
+      ],
+      "workouts": {
+        "A": "p3-a",
+        "B": "p3-b",
+        "C": "p3-c"
+      }
     }
   ]
 }

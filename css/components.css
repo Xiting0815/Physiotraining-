@@ -686,6 +686,7 @@ a.banner:active { transform: scale(0.985); }
 .target-face { width: min(80vw, 300px); height: auto; overflow: visible; filter: drop-shadow(0 10px 24px rgba(0,0,0,0.18)); }
 .target-face .tf-arrow { animation: arrow-drop 520ms var(--spring) both; animation-delay: calc(var(--i, 0) * 70ms + 200ms); transform-box: fill-box; transform-origin: center; }
 @keyframes arrow-drop { 0% { opacity: 0; transform: translate(14px, -22px) scale(1.8); } 70% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+.target-face .tf-arrow.no-anim { animation: none; }
 .target-face .tf-score { font-family: var(--font); font-variant-numeric: tabular-nums; }
 .target__score { font-size: var(--fs-3xl); font-weight: var(--fw-black); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; }
 .target__score small { font-size: var(--fs-lg); color: var(--muted); font-weight: var(--fw-bold); }
