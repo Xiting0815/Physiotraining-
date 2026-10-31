@@ -65,8 +65,8 @@
       ],
       "figure": {
         "poses": [
-          "sit-high-hang",
-          "sit-high-swing"
+          "knee-pendulum-a",
+          "knee-pendulum-b"
         ],
         "props": [
           "chair"
@@ -329,8 +329,8 @@
       ],
       "figure": {
         "poses": [
-          "front-sit-arms-crossed",
-          "front-sit-rotate"
+          "seated-rotation-start",
+          "seated-rotation-end"
         ],
         "props": [
           "chair"
@@ -656,8 +656,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-tke-bent",
-          "stand-tke-straight"
+          "tke-start",
+          "tke-end"
         ],
         "props": [
           "door"
@@ -745,8 +745,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-wall-upright",
-          "stand-wall-sit"
+          "stand",
+          "wall-sit-high"
         ],
         "props": [
           "wall"
@@ -836,9 +836,9 @@
       ],
       "figure": {
         "poses": [
-          "sit-chair-high",
-          "stand-from-chair-mid",
-          "stand"
+          "sit-chair",
+          "sit-to-stand-mid",
+          "sit-to-stand-end"
         ],
         "props": [
           "chair"
@@ -921,7 +921,7 @@
       "figure": {
         "poses": [
           "stand",
-          "stand-mini-squat"
+          "quarter-squat-45"
         ],
         "props": [
           "chair"
@@ -1015,8 +1015,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-step-left-up",
-          "stand-step-top"
+          "step-up-start",
+          "step-up-end"
         ],
         "props": [
           "step"
@@ -1098,8 +1098,8 @@
       ],
       "figure": {
         "poses": [
-          "sit-chair",
-          "sit-knee-ext"
+          "seated-knee-ext-start",
+          "seated-knee-ext-end"
         ],
         "props": [
           "chair"
@@ -1184,8 +1184,8 @@
       ],
       "figure": {
         "poses": [
-          "front-step-single",
-          "front-step-down"
+          "lateral-step-down-start",
+          "lateral-step-down-end"
         ],
         "props": [
           "step"
@@ -1275,8 +1275,8 @@
       ],
       "figure": {
         "poses": [
-          "lying-bridge-down",
-          "lying-bridge-up"
+          "bridge-down",
+          "bridge-up"
         ],
         "props": [
           "mat"
@@ -1360,8 +1360,8 @@
       ],
       "figure": {
         "poses": [
-          "sidelying-clam-closed",
-          "sidelying-clam-open"
+          "clamshell-closed",
+          "clamshell-open"
         ],
         "props": [
           "mat"
@@ -1445,8 +1445,8 @@
       ],
       "figure": {
         "poses": [
-          "sidelying-abd-down",
-          "sidelying-abd-up"
+          "side-lying-abd-down",
+          "side-lying-abd-up"
         ],
         "props": [
           "mat"
@@ -1528,8 +1528,8 @@
       ],
       "figure": {
         "poses": [
-          "front-stand-soft",
-          "front-band-walk-wide"
+          "lateral-walk-a",
+          "lateral-walk-b"
         ],
         "props": [],
         "band": {
@@ -1614,8 +1614,8 @@
       ],
       "figure": {
         "poses": [
-          "front-stand-soft",
-          "front-hip-abd-right"
+          "hip-abd-standing-start",
+          "hip-abd-standing-end"
         ],
         "props": [
           "chair",
@@ -1702,8 +1702,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-hold-chair",
-          "stand-hip-ext-right"
+          "hip-ext-standing-start",
+          "hip-ext-standing-end"
         ],
         "props": [
           "chair",
@@ -1789,8 +1789,8 @@
       ],
       "figure": {
         "poses": [
-          "sit-leg-forward",
-          "sit-knee-60"
+          "seated-ham-curl-start",
+          "seated-ham-curl-end"
         ],
         "props": [
           "chair",
@@ -1876,8 +1876,8 @@
       ],
       "figure": {
         "poses": [
-          "lying-heels-chair-down",
-          "lying-heels-chair-up"
+          "bridge-heel-chair-down",
+          "bridge-heel-chair-up"
         ],
         "props": [
           "mat",
@@ -1966,8 +1966,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-hold-chair",
-          "stand-calf-raise"
+          "calf-raise-down",
+          "calf-raise-up"
         ],
         "props": [
           "chair"
@@ -2063,8 +2063,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-single-left",
-          "stand-single-tap"
+          "single-leg-stance",
+          "star-tap-front"
         ],
         "props": [
           "chair"
@@ -2230,8 +2230,8 @@
       ],
       "figure": {
         "poses": [
-          "sit-row-start",
-          "sit-row-end"
+          "seated-row-start",
+          "seated-row-end"
         ],
         "props": [
           "chair",
@@ -2316,9 +2316,9 @@
       ],
       "figure": {
         "poses": [
-          "prone-arms-y",
-          "prone-arms-t",
-          "prone-arms-w"
+          "prone-y",
+          "prone-t",
+          "prone-w"
         ],
         "props": [
           "mat"
@@ -2400,8 +2400,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-wall-slide-low",
-          "stand-wall-slide-high"
+          "wall-slide-down",
+          "wall-slide-up"
         ],
         "props": [
           "wall"
@@ -2575,8 +2575,8 @@
       ],
       "figure": {
         "poses": [
-          "front-er-neutral",
-          "front-er-out"
+          "er0-start",
+          "er0-end"
         ],
         "props": [
           "door"
@@ -2661,8 +2661,8 @@
       ],
       "figure": {
         "poses": [
-          "front-er9090-start",
-          "front-er9090-end"
+          "er9090-start",
+          "er9090-end"
         ],
         "props": [
           "door"
@@ -2745,8 +2745,8 @@
       ],
       "figure": {
         "poses": [
-          "sidelying-er-down",
-          "sidelying-er-up"
+          "side-lying-er-start",
+          "side-lying-er-end"
         ],
         "props": [
           "mat"
@@ -2828,8 +2828,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-facepull-start",
-          "stand-facepull-end"
+          "face-pull-start",
+          "face-pull-end"
         ],
         "props": [
           "door"
@@ -3002,8 +3002,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-arms-forward-high",
-          "stand-arms-down"
+          "straight-arm-pulldown-start",
+          "straight-arm-pulldown-end"
         ],
         "props": [
           "door"
@@ -3088,8 +3088,8 @@
       ],
       "figure": {
         "poses": [
-          "front-draw-start",
-          "front-draw-anchor"
+          "high-row-stance-start",
+          "high-row-stance-end"
         ],
         "props": [
           "door"
@@ -3187,8 +3187,8 @@
       ],
       "figure": {
         "poses": [
-          "front-draw-start",
-          "front-draw-anchor"
+          "archery-set",
+          "archery-full-draw"
         ],
         "props": [],
         "band": {
@@ -3274,7 +3274,7 @@
       ],
       "figure": {
         "poses": [
-          "stand-arm-push-wall"
+          "bow-arm-wall-push"
         ],
         "props": [
           "wall"
@@ -3359,8 +3359,8 @@
       ],
       "figure": {
         "poses": [
-          "front-draw-start",
-          "front-draw-anchor"
+          "mirror-draw-start",
+          "mirror-draw-end"
         ],
         "props": [],
         "band": {
@@ -3443,8 +3443,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-pallof-in",
-          "stand-pallof-out"
+          "pallof-press-start",
+          "pallof-press-end"
         ],
         "props": [
           "door"
@@ -3530,8 +3530,8 @@
       ],
       "figure": {
         "poses": [
-          "lying-deadbug-start",
-          "lying-deadbug-reach"
+          "dead-bug-start",
+          "dead-bug-end"
         ],
         "props": [
           "mat",
@@ -3621,7 +3621,8 @@
       ],
       "figure": {
         "poses": [
-          "front-side-plank-wall"
+          "side-plank-elevated-down",
+          "side-plank-elevated"
         ],
         "props": [
           "wall"
@@ -3693,8 +3694,8 @@
       ],
       "figure": {
         "poses": [
-          "sit-hands-head",
-          "sit-thoracic-ext"
+          "thoracic-ext-chair-start",
+          "thoracic-ext-chair-end"
         ],
         "props": [
           "chair"
@@ -3776,7 +3777,7 @@
       ],
       "figure": {
         "poses": [
-          "front-draw-anchor",
+          "archery-full-draw",
           "front-draw-expand"
         ],
         "props": [],
@@ -3865,7 +3866,7 @@
       ],
       "figure": {
         "poses": [
-          "front-draw-anchor"
+          "archery-full-draw"
         ],
         "props": [
           "wall",
@@ -3969,8 +3970,8 @@
       ],
       "figure": {
         "poses": [
-          "front-draw-start",
-          "front-draw-anchor"
+          "archery-set",
+          "archery-full-draw"
         ],
         "props": [],
         "band": {
@@ -4044,7 +4045,7 @@
       ],
       "figure": {
         "poses": [
-          "stand-doorway-stretch"
+          "doorway-stretch"
         ],
         "props": [
           "door"

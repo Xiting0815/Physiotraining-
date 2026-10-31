@@ -222,13 +222,15 @@ export function layoutProps(props, pose0, P, band) {
           }
         }
         p.facing ??= 1;
-        p.anchor = { x: p.x + 16 * p.facing, y: FLOOR - 8 };
+        p.anchor = { x: p.x - 14 * p.facing, y: FLOOR - 8 }; // rear chair leg
         break;
       }
       case 'wall': {
+        p.line = side || p.x !== undefined;
         if (p.x === undefined) {
           p.x = side ? Math.min(P.hip.x - BODY.trunk / 2, P.neck.x - BODY.trunk / 2, P.head.x - DEFAULT_SEGMENTS.head) - 1.5 : 100;
         }
+        p.away ??= p.facing ? -p.facing : (p.x < P.hip.x ? -1 : 1); // hatch on the far side of the figure
         p.anchor = { x: p.x, y: p.y ?? P.hip.y - 20 };
         break;
       }
@@ -281,7 +283,7 @@ export function layoutProps(props, pose0, P, band) {
 
 function propBounds(p) {
   switch (p.type) {
-    case 'chair': return [{ x: p.x - 18, y: p.y - (p.back === false ? 0 : 44) }, { x: p.x + 18, y: FLOOR }];
+    case 'chair': return [{ x: p.x - 18, y: p.y - (p.back === false ? 0 : 50) }, { x: p.x + 18, y: FLOOR }];
     case 'door': return [{ x: p.x - 6, y: p.y - 6 }, { x: p.x + 6, y: p.y + 6 }];
     case 'step': return [{ x: p.x - p.w / 2, y: p.top }, { x: p.x + p.w / 2, y: FLOOR }];
     case 'towel': return [{ x: p.x - p.r, y: p.y - p.r }, { x: p.x + p.r, y: p.y + p.r }];
@@ -305,20 +307,19 @@ function propSvg(p, frame, front) {
       const fr = p.x + 16 * s;
       if (front && p.view !== 'side') {
         return `<g class="fig-prop">
-          ${p.back === false ? '' : `<rect class="fig-prop-soft" x="${f(p.x - 17)}" y="${f(p.y - 44)}" width="34" height="40" rx="4"/>`}
+          ${p.back === false ? '' : `<rect class="fig-prop-soft" x="${f(p.x - 17)}" y="${f(p.y - 48)}" width="34" height="44" rx="4"/>`}
           <path class="fig-prop-line" d="M${f(p.x - 15)} ${f(p.y + 2)}V${FLOOR}M${f(p.x + 15)} ${f(p.y + 2)}V${FLOOR}"/>
           <rect class="fig-prop-solid" x="${f(p.x - 19)}" y="${f(p.y)}" width="38" height="5" rx="2"/></g>`;
       }
       return `<g class="fig-prop">
-        <path class="fig-prop-line" d="M${f(back)} ${f(p.y + 2)}V${FLOOR}M${f(fr)} ${f(p.y + 2)}V${FLOOR}${p.back === false ? '' : `M${f(back)} ${f(p.y)}V${f(p.y - 42)}`}"/>
+        <path class="fig-prop-line" d="M${f(back)} ${f(p.y + 2)}V${FLOOR}M${f(fr)} ${f(p.y + 2)}V${FLOOR}${p.back === false ? '' : `M${f(back)} ${f(p.y)}V${f(p.y - 48)}`}"/>
         <rect class="fig-prop-solid" x="${f(Math.min(back, fr) - 2)}" y="${f(p.y)}" width="36" height="5" rx="2"/></g>`;
     }
     case 'wall': {
-      if (front) {
+      if (front && !p.line) {
         return `<rect class="fig-wall-bg" x="${f(frame.x)}" y="${f(frame.y)}" width="${f(frame.w)}" height="${f(FLOOR - frame.y)}"/>`;
       }
-      const dir = p.x < 100 || p.side === 'back' ? -1 : 1; // hatch away from the figure
-      const xs = p.facing ? -p.facing : dir;
+      const xs = p.away;
       let hatch = '';
       for (let y = FLOOR - 4; y > frame.y; y -= 12) hatch += `M${f(p.x)} ${f(y)}l${f(xs * 6)} ${-6}`;
       return `<g class="fig-prop"><path class="fig-prop-hatch" d="${hatch}"/><path class="fig-prop-wall" d="M${f(p.x)} ${FLOOR}V${f(frame.y - 2)}"/></g>`;
@@ -328,7 +329,7 @@ function propSvg(p, frame, front) {
       const fx = front ? ax : ax + 3;
       return `<g class="fig-prop">
         <rect class="fig-prop-soft" x="${f(fx - 3)}" y="${f(Math.min(frame.y + 4, p.y - 30))}" width="7" height="${f(FLOOR - Math.min(frame.y + 4, p.y - 30))}" rx="1.5"/>
-        <circle class="fig-knot" cx="${f(ax)}" cy="${f(p.y)}" r="3.4"/></g>`;
+        ${p.knot === false ? '' : `<circle class="fig-knot" cx="${f(ax)}" cy="${f(p.y)}" r="3.4"/>`}</g>`;
     }
     case 'mat':
       return '';

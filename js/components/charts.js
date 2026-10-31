@@ -97,7 +97,8 @@ export function lineChartSvg(data, opts = {}) {
     const color = s.color || palette[i % palette.length];
     const showMean = s.mean ?? meanMode === true;
     out += `<g class="series" data-name="${esc(s.name)}">`;
-    out += `<path class="line${showMean ? ' line-raw' : ''}${showMean ? '' : anim}" d="${path(pts)}" stroke="${color}" pathLength="1000"/>`;
+    const rawCls = showMean ? ' line-raw' : meanMode === 'combined' ? ' line-thin' + anim : anim;
+    out += `<path class="line${rawCls}" d="${path(pts)}" stroke="${color}" pathLength="1000"/>`;
     if (showMean) out += `<path class="line-mean${anim}" d="${path(rollingMean(pts, opts.meanDays ?? 7))}" stroke="${color}" pathLength="1000"/>`;
     for (const p of pts) out += `<circle class="dot" cx="${f1(X(p.x))}" cy="${f1(Y(p.y))}" r="${showMean ? 2.5 : 3.5}" fill="${color}"><title>${esc(s.name)} ${dm(p.x)}: ${p.y}</title></circle>`;
     out += '</g>';
@@ -223,7 +224,7 @@ export function calendarHeatmapSvg(data, opts = {}) {
     } else {
       s += `<circle class="cell-empty" cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(future ? r * 0.35 : r * 0.42)}"${future ? ' opacity="0.6"' : ''}/>`;
     }
-    if (showNum && !(e && (e.traffic || e.value > 0))) s += `<text x="${f1(cx)}" y="${f1(cy + r + 9)}" text-anchor="middle" font-size="8">${Number(iso.slice(8))}</text>`;
+    if (showNum) s += `<text x="${f1(cx)}" y="${f1(cy + r + 9)}" text-anchor="middle" font-size="8">${Number(iso.slice(8))}</text>`;
     if (iso === today) s += `<circle class="cell-today" cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(r + 2.5)}"/>`;
     return s + `<title>${esc(title)}</title></g>`;
   };
@@ -234,7 +235,7 @@ export function calendarHeatmapSvg(data, opts = {}) {
     const daysIn = new Date(yy, mm, 0).getDate();
     const lead = daysBetween(startOfIsoWeek(first), first);
     const rows = Math.ceil((lead + daysIn) / 7);
-    const c = 44, top = 20, r = 13;
+    const c = 44, top = 20, r = 12;
     const W = 7 * c, H = top + rows * c;
     const label = opts.label || `Trainingskalender ${opts.month}`;
     let out = `<svg class="chart chart--calendar" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" xmlns="http://www.w3.org/2000/svg"><title>${esc(label)}</title>`;
@@ -251,11 +252,11 @@ export function calendarHeatmapSvg(data, opts = {}) {
   const weeks = opts.weeks ?? 16;
   const end = opts.end ?? today;
   const start = addDays(startOfIsoWeek(end), -7 * (weeks - 1));
-  const c = 20, left = 18, top = 14, r = 7.5;
+  const c = 20, left = 22, top = 14, r = 7.5;
   const W = left + weeks * c, H = top + 7 * c;
   const label = opts.label || 'Trainingskalender';
   let out = `<svg class="chart chart--calendar" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" xmlns="http://www.w3.org/2000/svg"><title>${esc(label)}</title>`;
-  [0, 2, 4, 6].forEach((i) => { out += `<text class="dow" x="${left - 4}" y="${top + i * c + c / 2 + 3}" text-anchor="end">${DOW[i][0]}</text>`; });
+  [0, 2, 4, 6].forEach((i) => { out += `<text class="dow" x="${left - 4}" y="${top + i * c + c / 2 + 3}" text-anchor="end">${DOW[i]}</text>`; });
   let lastMonth = '';
   for (let w = 0; w < weeks; w++) {
     const wkStart = addDays(start, w * 7);

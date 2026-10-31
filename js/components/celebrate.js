@@ -132,7 +132,8 @@ export function hitPosition(score, i, seed = 7) {
   else {
     const inner = (10 - s) * RW, outer = (11 - s) * RW;
     // keep away from ring lines; 10s cluster toward the X
-    r = s === 10 ? rnd() * RW * 0.85 : inner + RW * (0.2 + rnd() * 0.6);
+    // 10s group inside the 10 ring; others sit mid-ring, away from lines
+    r = s === 10 ? Math.sqrt(rnd()) * RW * 0.88 : inner + RW * (0.2 + rnd() * 0.6);
   }
   const a = i * 2.39996323 + rnd() * 1.2; // golden-angle spread + jitter
   return { x: C + Math.cos(a) * r, y: C + Math.sin(a) * r };
@@ -168,7 +169,7 @@ export function targetFaceSvg(results, opts = {}) {
     const { x, y } = hitPosition(res.score, i, opts.seed);
     const sc = Math.round(res.score);
     const fletch = sc >= 9 ? '#0E7C86' : '#E07A1F';
-    const dx = 11, dy = -15;
+    const dx = 13, dy = -18;
     const ex = x + dx, ey = y + dy;
     const t = (res.label ? `${res.label}: ` : `Pfeil ${i + 1}: `) + `${sc} ${sc === 1 ? 'Punkt' : 'Punkte'}`;
     s += `<g class="tf-arrow${animate ? '' : ' no-anim'}" style="--i:${i}"><title>${t.replace(/</g, '&lt;')}</title>`;

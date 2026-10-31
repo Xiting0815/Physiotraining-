@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Komponenten · Physio</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .demo-toolbar { position: sticky; top: 0; z-index: 60; display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 10px 16px; margin: -16px -16px 16px; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+    .demo-h { font-size: var(--fs-xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-ink); margin: 40px 0 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+    .demo-code { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+    .demo-tabbar { position: relative; border-radius: var(--radius); overflow: hidden; }
+    .demo-tabbar .tabbar { position: static; height: var(--tabbar-h); }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="demo-toolbar">
+    <strong>Komponenten</strong>
+    <div class="segmented" role="radiogroup" aria-label="Thema" style="width: 210px">
+      <label><input type="radio" name="theme" value="" checked><span>System</span></label>
+      <label><input type="radio" name="theme" value="light"><span>Hell</span></label>
+      <label><input type="radio" name="theme" value="dark"><span>Dunkel</span></label>
+    </div>
+  </div>
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Sa., 31.10.2026</p>
+      <h1 class="page-header__title">Heute</h1>
+    </div>
+    <div class="page-header__actions">
+      <span class="chip chip--gold">🔥 <span class="num">4</span></span>
+    </div>
+  </header>
+
+  <a class="banner banner--gold" href="#">
+    <span class="banner__icon">🌤️</span>
+    <span class="banner__body"><span class="banner__title">Wie geht's dem Knie heute?</span><span class="banner__text">Kurzer Folgetag-Check · 30 Sek.</span></span>
+    <svg class="list-item__chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+  </a>
+
+  <!-- Hero: knee -->
+  <section class="card card--hero">
+    <div class="hero__row">
+      <div>
+        <p class="hero__eyebrow">Nächstes Training · Phase 1 – Basis</p>
+        <h2 class="hero__title">Training A</h2>
+      </div>
+      <span class="hero__letter">A</span>
+    </div>
+    <p class="hero__meta">
+      <span><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4"/></svg>ca. 40 Min</span>
+      <span><svg viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h10"/></svg>11 Übungen</span>
+    </p>
+    <div class="hero__split" aria-hidden="true"><span style="flex:1"></span><span class="is-knee" style="flex:5"></span><span class="is-archery" style="flex:4"></span><span style="flex:1"></span></div>
+    <a class="btn btn--light btn--block btn--session" href="#">
+      <svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/></svg>Training starten
+    </a>
+  </section>
+
+  <!-- Hero: archery -->
+  <section class="card card--accent">
+    <p class="hero__eyebrow">Bogen-Block</p>
+    <h2 class="hero__title">Rücken &amp; Schulter</h2>
+    <p class="hero__meta"><span>4 Übungen</span><span>RPE-gesteuert</span></p>
+    <div class="chip-row"><span class="chip">Band Pull-Apart</span><span class="chip">Y-T-W</span><span class="chip">+2</span></div>
+  </section>
+
+  <div class="demo-h">Ringe · Streak · XP</div>
+  <section class="card">
+    <div class="ring-card" id="op-ring-card">
+      <!-- progressRing() -->
+      <div class="ring-card__body">
+        <p class="eyebrow">OP-Countdown</p>
+        <p class="ring-card__title">Fit für die OP – noch <strong class="num">76</strong> Tage</p>
+        <p class="ring-card__sub">Jede Einheit zählt.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid-2">
+    <section class="card card--tight center" id="week-ring"><p class="eyebrow">Wochenziel</p></section>
+    <section class="card card--tight center" id="week-ring-gold"><p class="eyebrow">Wochenziel</p></section>
+  </div>
+  <p class="center text-sm ink-gold strong mt-2">Wochenziel erreicht 🎯</p>
+
+  <section class="card">
+    <div class="row row--between">
+      <div id="streak"></div>
+      <div id="streak-cold"></div>
+    </div>
+  </section>
+
+  <section class="card" id="xp"></section>
+
+  <section class="card card--hero" id="xp-hero"></section>
+
+  <div class="demo-h">Stat-Kacheln</div>
+  <div class="grid-3">
+    <div class="stat"><span class="stat__value">12</span><span class="stat__label">Einheiten</span></div>
+    <div class="stat stat--gold"><span class="stat__value">45<span class="stat__unit">s</span></span><span class="stat__label">Längster Hold</span></div>
+    <div class="stat"><span class="stat__value">87<span class="stat__unit">%</span></span><span class="stat__label">Grün</span></div>
+  </div>
+
+  <div class="demo-h">Ampel</div>
+  <div class="chip-row">
+    <span class="traffic traffic--green">Grün – passt</span>
+    <span class="traffic traffic--yellow">Gelb – halten</span>
+    <span class="traffic traffic--red">Rot – zurück</span>
+    <span class="traffic traffic--stop">Stopp – ärztlich abklären</span>
+  </div>
+  <p class="mt-4"><span class="traffic traffic--green traffic--lg">Grün – passt</span></p>
+
+  <div class="demo-h">Buttons</div>
+  <div class="stack stack--sm">
+    <button class="btn btn--primary btn--block btn--session">Training starten</button>
+    <button class="btn btn--accent btn--block">Bogen-Block starten</button>
+    <div class="btn-row"><button class="btn btn--outline">Später</button><button class="btn btn--soft">Übernehmen</button></div>
+    <div class="row row--wrap"><button class="btn btn--ghost btn--sm">Ghost</button><button class="btn btn--sm">Neutral</button><button class="btn btn--danger btn--sm">Scharfer Schmerz</button><button class="btn btn--gold btn--sm">Gold</button><button class="btn btn--icon btn--outline" aria-label="Zurück"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><button class="btn btn--primary" disabled>Disabled</button></div>
+  </div>
+
+  <div class="demo-h">Chips</div>
+  <div class="chip-row">
+    <span class="chip chip--knee">Knie</span><span class="chip chip--archery">Bogen</span>
+    <span class="chip chip--band" style="--band:#D9443B"><i class="chip__swatch"></i>Rot</span>
+    <span class="chip chip--band" style="--band:#3BA55C"><i class="chip__swatch"></i>Grün</span>
+    <span class="chip chip--outline">3 × 10</span><span class="chip chip--green">Stufe 2</span>
+    <span class="chip chip--record">★ Neuer Rekord!</span><span class="count">3</span>
+  </div>
+  <div class="chip-row chip-row--scroll mt-4">
+    <button class="chip chip--filter" aria-pressed="true">Alle</button><button class="chip chip--filter" aria-pressed="false">Knie</button><button class="chip chip--filter" aria-pressed="false">Bogen</button><button class="chip chip--filter" aria-pressed="false">Aufwärmen</button><button class="chip chip--filter" aria-pressed="false">Cool-down</button>
+  </div>
+
+  <div class="demo-h">Badges</div>
+  <ul class="badge-grid">
+    <li class="badge-tile is-unlocked"><span class="badge-tile__icon">🎯</span><span class="badge-tile__name">Erste Einheit</span><span class="badge-tile__hint">31.10.</span></li>
+    <li class="badge-tile is-unlocked"><span class="badge-tile__icon">🔥</span><span class="badge-tile__name">3er-Woche</span><span class="badge-tile__hint">02.11.</span></li>
+    <li class="badge-tile is-locked"><span class="badge-tile__icon">🏹</span><span class="badge-tile__name">10 Einheiten</span><span class="badge-tile__hint">noch 7</span></li>
+    <li class="badge-tile is-locked"><span class="badge-tile__icon">⏱️</span><span class="badge-tile__name">5 Min Halten</span><span class="badge-tile__hint">3:10 / 5:00</span></li>
+    <li class="badge-tile is-unlocked is-new"><span class="badge-tile__icon">🏆</span><span class="badge-tile__name">Rekord</span><span class="badge-tile__hint">heute</span></li>
+    <li class="badge-tile is-locked"><span class="badge-tile__icon">🟢</span><span class="badge-tile__name">Grüne Woche</span><span class="badge-tile__hint">3× grün</span></li>
+  </ul>
+
+  <div class="demo-h">Session: Block, Übung, Sätze</div>
+  <div class="session-progress" aria-hidden="true"><span class="is-done"></span><span class="is-done"></span><span class="is-current"></span><span></span><span></span><span class="is-archery"></span><span class="is-archery"></span><span></span></div>
+  <div class="block-header block-header--knee"><span class="block-header__dot"></span>Knie-Block<span class="block-header__count">3/6</span></div>
+  <section class="card">
+    <div class="row row--between"><h2 class="card__title">Quad Set</h2><span class="chip chip--knee chip--sm">Stufe 2</span></div>
+    <div class="dose"><div class="dose__item"><span class="dose__value">3</span><span class="dose__label">Sätze</span></div><div class="dose__item"><span class="dose__value">10</span><span class="dose__label">Wdh.</span></div><div class="dose__item"><span class="dose__value">10<small>s</small></span><span class="dose__label">Halten</span></div></div>
+    <div class="set-checks" id="sets">
+      <button class="set-check" aria-pressed="true" aria-label="Satz 1"><span class="set-check__num">1</span><svg class="set-check__icon" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button class="set-check is-current" aria-pressed="false" aria-label="Satz 2"><span class="set-check__num">2</span><svg class="set-check__icon" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button class="set-check" aria-pressed="false" aria-label="Satz 3"><span class="set-check__num">3</span><svg class="set-check__icon" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button class="set-check set-check--archery" aria-pressed="true" aria-label="Bogen Satz"><span class="set-check__num">4</span><svg class="set-check__icon" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    </div>
+    <details class="disclosure mt-4"><summary>Ablauf</summary><ol class="steps"><li>Rückenlage, Beine lang.</li><li>Kniekehle ins Handtuch drücken.</li><li>Halten, dann locker lassen.</li></ol></details>
+  </section>
+
+  <div class="timer timer--hold" style="--p:0.62">
+    <div class="timer__dial">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring__track" cx="60" cy="60" r="54"/><circle class="ring__bar" cx="60" cy="60" r="54" pathLength="100"/></svg>
+      <div class="timer__center"><span class="timer__label">Halten</span><span class="timer__time">0:07</span><span class="timer__sub">Wdh. 4 / 10</span></div>
+    </div>
+    <div class="timer__controls">
+      <button class="btn btn--outline btn--icon" aria-label="Zurücksetzen"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/></svg></button>
+      <button class="timer__play" aria-label="Pause"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+      <button class="btn btn--outline btn--icon" aria-label="Weiter"><svg viewBox="0 0 24 24"><path d="M6 6l8 6-8 6zM18 6v12"/></svg></button>
+    </div>
+  </div>
+  <div class="timer timer--rest" style="--p:0.3"><div class="timer__center"><span class="timer__label">Pause</span><span class="timer__time" style="font-size:56px">0:18</span></div></div>
+
+  <div class="demo-h">Schmerzskala</div>
+  <section class="card">
+    <pt-pain-scale label="Schmerz jetzt" value="2"></pt-pain-scale>
+    <pt-pain-scale label="Schmerz während" value="4"></pt-pain-scale>
+    <pt-pain-scale label="Anstrengung (RPE)" kind="rpe" value="7"></pt-pain-scale>
+    <p class="text-sm muted" id="pain-out">change-Event: –</p>
+  </section>
+
+  <div class="demo-h">Formulare</div>
+  <section class="card">
+    <p class="field__label mb-2">Schwellung</p>
+    <div class="segmented" role="radiogroup" aria-label="Schwellung">
+      <label><input type="radio" name="sw" value="0" checked><span>keine</span></label>
+      <label><input type="radio" name="sw" value="1"><span>leicht</span></label>
+      <label><input type="radio" name="sw" value="2"><span>deutlich</span></label>
+    </div>
+    <div class="row row--between mt-4"><span class="field__label">Wochenziel</span>
+      <div class="stepper"><button class="stepper__btn" aria-label="weniger"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button><output class="stepper__value">3</output><button class="stepper__btn" aria-label="mehr"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button></div>
+    </div>
+    <label class="switch-row"><span>Ton</span><input type="checkbox" class="switch" checked></label>
+    <label class="check-row"><input type="checkbox"> <span>Nachtschmerz</span></label>
+    <div class="field"><label class="field__label" for="d">OP-Termin</label><input id="d" class="input" type="date" value="2027-01-15"><span class="field__hint">Grundlage für den Countdown</span></div>
+    <div class="field"><label class="field__label" for="s">Theme</label><select id="s" class="select"><option>System</option><option>Hell</option></select></div>
+    <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input class="input" type="search" placeholder="Übung suchen" aria-label="Übung suchen"></div>
+  </section>
+
+  <div class="demo-h">Übungskarten &amp; Liste</div>
+  <a class="exercise-card exercise-card--knee" href="#"><div class="exercise-card__thumb"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v7l-4 6M12 14l4 6M6 10l6-2 6 2"/></svg></div><div class="exercise-card__body"><span class="exercise-card__title">Quadrizeps anspannen</span><span class="exercise-card__meta">3 × 10 × 10 s · Matte</span><span class="chip-row"><span class="chip chip--knee chip--sm">Stufe 2</span></span></div><svg class="list-item__chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a>
+  <a class="exercise-card exercise-card--archery" href="#"><div class="exercise-card__thumb"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v8M4 9h16M12 15l-3 6M12 15l3 6"/></svg></div><div class="exercise-card__body"><span class="exercise-card__title">Band Pull-Apart</span><span class="exercise-card__meta">3 × 15 · Tempo 2-1-2</span><span class="chip-row"><span class="chip chip--band chip--sm" style="--band:#D9443B"><i class="chip__swatch"></i>Rot</span></span></div><svg class="list-item__chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a>
+  <ul class="list list--card">
+    <li><a class="list-item" href="#"><span class="list-item__icon">🦵</span><span class="list-item__body"><span class="list-item__title">Training A</span><span class="list-item__sub">Sa., 31.10. · 38 Min</span></span><span class="list-item__trail"><span class="traffic traffic--green">Grün</span></span></a></li>
+    <li><a class="list-item" href="#"><span class="list-item__icon list-item__icon--accent">🏹</span><span class="list-item__body"><span class="list-item__title">Training C</span><span class="list-item__sub">Mi., 28.10. · 41 Min</span></span><span class="list-item__trail"><span class="traffic traffic--yellow">Gelb</span></span></a></li>
+    <li><a class="list-item" href="#"><span class="list-item__icon list-item__icon--neutral"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span><span class="list-item__body"><span class="list-item__title">Backup exportieren</span></span><svg class="list-item__chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a></li>
+  </ul>
+
+  <div class="demo-h">Empfehlung · Zitat · Stopp</div>
+  <section class="card rec">
+    <div class="rec__head"><span class="rec__arrow"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span><div><div class="rec__title">Quad Set: <span class="rec__levels">Stufe 2 → 3</span></div><div class="rec__reason">2× grün in Folge</div></div></div>
+    <div class="btn-row"><button class="btn btn--outline btn--sm">Später</button><button class="btn btn--primary btn--sm">Übernehmen</button></div>
+  </section>
+  <blockquote class="quote"><p>Ein ruhiger Atem trifft besser als ein starker Arm.</p><span class="quote__src">Gedanke des Tages</span></blockquote>
+  <section class="card stop-card"><h2 class="card__title">Heute lieber pausieren</h2><p>und Rücksprache halten. Du entscheidest.</p><div class="btn-row"><button class="btn btn--outline btn--sm">Nur Bogen-Block</button><button class="btn btn--sm">Beenden</button></div></section>
+
+  <div class="demo-h">Trefferbild (Zusammenfassung)</div>
+  <section class="card">
+    <div class="summary-head"><span class="traffic traffic--green">Grün – passt</span><h2 class="summary-head__title mt-2" id="tf-head">Starke Gruppe!</h2><p class="summary-head__sub"><span class="xp-gain">+185 XP</span> · 2 neue Rekorde</p></div>
+    <div class="target" id="target"></div>
+    <div class="row" style="justify-content:center"><button class="btn btn--soft btn--sm" id="replay">Nochmal &amp; Konfetti</button></div>
+  </section>
+
+  <div class="demo-h">Diagramme</div>
+  <section class="card"><div class="card__header"><h3 class="card__title">Schmerzverlauf</h3><span class="chip chip--sm">6 Wochen</span></div><div id="line"></div>
+    <div class="chart-legend"><span><i style="--c:var(--chart-1)"></i>vorher</span><span><i style="--c:var(--chart-2)"></i>nachher</span><span><i style="--c:var(--text)"></i>Ø 7 Tage</span></div></section>
+  <section class="card"><div class="card__header"><h3 class="card__title">Einheiten pro Woche</h3></div><div id="bar"></div></section>
+  <section class="card"><div class="card__header"><h3 class="card__title">Oktober</h3></div><div id="cal-month"></div>
+    <div class="chart-legend"><span><i class="is-dot" style="--c:var(--green)"></i>Grün</span><span><i style="--c:var(--yellow);width:10px;height:10px;clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0"></i>Gelb</span><span><i style="--c:var(--red);width:10px;height:10px;border-radius:2px"></i>Rot</span></div></section>
+  <section class="card"><div class="card__header"><h3 class="card__title">16 Wochen</h3></div><div id="cal"></div></section>
+
+  <div class="demo-h">Leerer Zustand</div>
+  <section class="card"><div class="empty"><div class="empty__art"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="13"/><circle cx="32" cy="32" r="4"/><path d="M32 32l18-18M44 12h6v6"/></svg></div><h3 class="empty__title">Noch keine Einheiten</h3><p class="empty__text">Dein erster Pfeil wartet. Starte heute ganz entspannt.</p><a class="btn btn--primary" href="#">Erstes Training</a></div></section>
+
+  <div class="demo-h">Toast · Sheet · Modal</div>
+  <div class="stack stack--sm" style="align-items:center">
+    <div class="toast toast--success" style="animation:none"><span class="toast__icon">✓</span><span class="toast__text">Gespeichert</span></div>
+    <div class="toast toast--gold" style="animation:none"><span class="toast__icon">🏆</span><span class="toast__text">Neues Abzeichen: Rekord</span><button class="toast__action">Ansehen</button></div>
+  </div>
+  <div class="sheet sheet--static mt-4"><div class="sheet__handle"></div><h2 class="sheet__title">Empfehlung übernehmen?</h2><p class="muted">Quad Set wird auf Stufe 3 gesetzt. Du kannst jederzeit zurück.</p><div class="sheet__actions"><button class="btn btn--primary btn--block">Übernehmen</button><button class="btn btn--outline btn--block">Später</button></div></div>
+  <div class="row mt-4" style="justify-content:center"><button class="btn btn--gold" id="open-modal">Abzeichen-Modal öffnen</button><button class="btn btn--outline" id="open-toast">Toast</button></div>
+  <dialog class="modal modal--center" id="modal"><div class="badge-reveal"><span class="badge-tile__icon">🏹</span><h2 class="modal__title">Neues Abzeichen!</h2><p class="muted">10 Einheiten geschafft. Routine schlägt Talent.</p></div><div class="modal__actions"><button class="btn btn--primary btn--block" id="close-modal">Weiter so</button></div></dialog>
+
+  <div class="demo-h">Tab-Leiste</div>
+  <div class="demo-tabbar" id="tabbar-demo"></div>
+
+  <div class="sticky-cta sticky-cta--static mt-6" style="position:relative"><button class="btn btn--primary btn--block btn--session">Training starten</button></div>
+</div>
+<div class="toast-region" aria-live="polite" id="toasts"></div>
+
+<script type="module">
+  import '../js/components/pt-pain-scale.js';
+  import { lineChart, barChart, calendarHeatmap, progressRing, streakFlame, xpBar } from '../js/components/charts.js';
+  import { targetFace, targetHeadline, confetti, scoreForSet } from '../js/components/celebrate.js';
+  import { addDays } from '../js/util/date.js';
+
+  const $ = (s) => document.querySelector(s);
+  const params = new URLSearchParams(location.search);
+  const setTheme = (t) => { if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; };
+  if (params.get('theme')) { setTheme(params.get('theme')); const r = document.querySelector(`input[name=theme][value="${params.get('theme')}"]`); if (r) r.checked = true; }
+  document.querySelectorAll('input[name=theme]').forEach((r) => r.addEventListener('change', () => setTheme(r.value)));
+
+  $('#op-ring-card').insertAdjacentHTML('afterbegin', progressRing({ value: 0.42, max: 1, label: 76, unit: 'Tage', ariaLabel: '42 % der Prehab-Zeit' }));
+  $('#week-ring').insertAdjacentHTML('beforeend', `<div style="display:grid;place-items:center">${progressRing({ value: 2, max: 3, label: '2/3', size: 'md', ariaLabel: '2 von 3 Einheiten' })}</div>`);
+  $('#week-ring-gold').insertAdjacentHTML('beforeend', `<div style="display:grid;place-items:center">${progressRing({ value: 3, max: 3, label: '3/3', variant: 'gold', ariaLabel: 'Wochenziel erreicht' })}</div>`);
+  $('#streak').innerHTML = streakFlame({ weeks: 4 });
+  $('#streak-cold').innerHTML = streakFlame({ weeks: 0, label: 'Neuer Anlauf' });
+  $('#xp').innerHTML = xpBar({ xp: 340, level: { index: 1, title: 'Lehrling', min: 150, next: 400, progress: 0.76 }, nextTitle: 'Bogenträger' });
+  $('#xp-hero').innerHTML = xpBar({ xp: 2950, level: { index: 5, title: 'Scharfschütze', min: 2200, next: 3200, progress: 0.75 }, nextTitle: 'Meisterschütze' });
+
+  document.addEventListener('change', (e) => { if (e.target.tagName === 'PT-PAIN-SCALE') $('#pain-out').textContent = `change-Event: ${e.target.getAttribute('label')} = ${e.detail?.value}`; });
+  $('#sets').addEventListener('click', (e) => { const b = e.target.closest('.set-check'); if (b) b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); });
+
+  const sets = [
+    ...Array(13).fill({ done: true, painDuring: 1 }),
+    { done: true, painDuring: 3 }, { done: true, painDuring: 4 }, { done: true, painDuring: 6 }, { done: false },
+  ];
+  const results = sets.map((s) => ({ score: scoreForSet(s) }));
+  const drawTarget = () => {
+    const t = targetFace(results);
+    $('#target').replaceChildren(t);
+    const pts = results.reduce((a, r) => a + r.score, 0);
+    $('#tf-head').textContent = targetHeadline(pts, results.length * 10);
+  };
+  drawTarget();
+  $('#replay').addEventListener('click', () => { drawTarget(); confetti(); });
+
+  const today = '2026-10-31';
+  const pre = [], post = [];
+  for (let i = 41; i >= 0; i -= 2 + (i % 3 === 0 ? 1 : 0)) {
+    const d = addDays(today, -i);
+    const base = 4 - (41 - i) / 14;
+    pre.push({ x: d, y: Math.max(0, Math.round(base + ((i * 7) % 3) - 1)) });
+    post.push({ x: d, y: Math.max(0, Math.round(base + ((i * 5) % 4) - 0.5)) });
+  }
+  lineChart($('#line'), { series: [{ name: 'vorher', points: pre }, { name: 'nachher', points: post }], yMax: 10 }, { label: 'Schmerzverlauf' });
+  barChart($('#bar'), ['KW39', 'KW40', 'KW41', 'KW42', 'KW43', 'KW44'].map((label, i) => ({ label, value: [1, 2, 3, 2, 3, 2][i], goal: 3 })), { label: 'Einheiten pro Woche' });
+  const cal = [];
+  const lights = ['green', 'green', 'yellow', 'green', 'red', 'green', 'green', 'green', 'yellow', 'green', 'green', 'green', 'stop'];
+  let k = 0;
+  for (let i = 110; i >= 0; i -= 2 + (i % 5 === 0 ? 1 : 0)) cal.push({ date: addDays(today, -i), value: 1, traffic: lights[k++ % lights.length] });
+  calendarHeatmap($('#cal-month'), cal.filter((c) => c.date.startsWith('2026-10')).map((c) => (c.traffic === 'stop' ? { ...c, traffic: 'green' } : c)), { month: '2026-10', today });
+  calendarHeatmap($('#cal'), cal, { weeks: 16, today });
+
+  // tab bar copy from index.html markup for the demo
+  fetch('../index.html').then((r) => r.text()).then((t) => {
+    const nav = new DOMParser().parseFromString(t, 'text/html').querySelector('.tabbar');
+    nav.querySelector('[data-tab="heute"]').setAttribute('aria-current', 'page');
+    $('#tabbar-demo').appendChild(nav);
+  });
+
+  $('#open-modal').addEventListener('click', () => { $('#modal').showModal(); confetti(); });
+  $('#close-modal').addEventListener('click', () => $('#modal').close());
+  $('#open-toast').addEventListener('click', () => {
+    const el = document.createElement('div');
+    el.className = 'toast toast--success';
+    el.innerHTML = '<span class="toast__icon">✓</span><span class="toast__text">Satz gespeichert · +15 XP</span>';
+    $('#toasts').appendChild(el);
+    setTimeout(() => { el.classList.add('is-leaving'); setTimeout(() => el.remove(), 220); }, 2200);
+  });
+</script>
+</body>
+</html>

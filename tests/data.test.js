@@ -17,6 +17,15 @@ const BANDS = [null, 'yellow', 'red', 'green', 'blue', 'loop-orange', 'loop-blue
 const PROPS = ['chair', 'wall', 'door', 'mat', 'step'];
 const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
+// Poses requested from WP-Figure but not yet drawn are listed in docs/POSE_REQUESTS.md
+// (lines starting with "- `pose-id`"). Set STRICT_POSES=1 to require every pose in poses.json.
+const requestsUrl = new URL('../docs/POSE_REQUESTS.md', import.meta.url);
+const PENDING_POSES = new Set(
+  process.env.STRICT_POSES || !existsSync(requestsUrl)
+    ? []
+    : [...readFileSync(requestsUrl, 'utf8').matchAll(/^- `([a-z0-9-]+)`/gm)].map((m) => m[1]),
+);
+
 test('exercises conform to schema', () => {
   const ids = new Set();
   const phaseIds = new Set(phases.map((p) => p.id));
@@ -46,7 +55,7 @@ test('exercises conform to schema', () => {
     assert.ok(phaseIds.has(e.phaseMin), `${where} phaseMin`);
     const f = e.figure;
     assert.ok(f && Array.isArray(f.poses) && f.poses.length > 0, `${where} figure`);
-    for (const p of f.poses) assert.ok(posesFile.poses[p], `${where} unknown pose ${p}`);
+    for (const p of f.poses) assert.ok(posesFile.poses[p] || PENDING_POSES.has(p), `${where} unknown pose ${p} (add to poses.json or list in docs/POSE_REQUESTS.md)`);
     assert.ok(f.props.every((p) => PROPS.includes(p)), `${where} props`);
     assert.equal(typeof f.mirror, 'boolean', where);
   }
@@ -100,4 +109,30 @@ test('badges: required ids and known rule types', () => {
 
 test('equipment.json (optional) parses if present', () => {
   if (existsSync(new URL('../data/equipment.json', import.meta.url))) assert.ok(load('equipment'));
+});
+
+test('content: workout structure, phaseMin and knee notes', () => {
+  const byId = new Map(exercises.map((e) => [e.id, e]));
+  const order = new Map(phases.map((p) => [p.id, p.order]));
+  for (const w of workouts) {
+    assert.ok(w.warmup.length > 0 && w.cooldown.length > 0, `${w.id} warmup/cooldown`);
+    assert.deepEqual(w.blocks.map((b) => b.id), ['knee', 'archery'], `${w.id} blocks`);
+    for (const b of w.blocks) assert.ok(b.items.length >= 4, `${w.id}.${b.id} has ≥ 4 items`);
+    const items = [...w.warmup, ...w.blocks.flatMap((b) => b.items), ...w.cooldown];
+    for (const it of items) {
+      const e = byId.get(it.exerciseId);
+      assert.ok(order.get(e.phaseMin) <= order.get(w.phaseId), `${w.id} uses ${e.id} before its phaseMin ${e.phaseMin}`);
+    }
+  }
+  for (const e of exercises) if (e.block === 'knee') assert.ok(e.kneeNote.length > 0, `${e.id} knee exercise needs kneeNote`);
+  for (const p of phases) assert.ok(p.description && p.exitCriteria.length > 0, p.id);
+});
+
+test('quotes.json (optional) is a non-empty list of strings', () => {
+  const url = new URL('../data/quotes.json', import.meta.url);
+  if (!existsSync(url)) return;
+  const q = JSON.parse(readFileSync(url, 'utf8')).quotes;
+  assert.ok(Array.isArray(q) && q.length >= 20);
+  for (const s of q) assert.ok(typeof s === 'string' && s.length > 0 && s.length <= 140, s);
+  assert.equal(new Set(q).size, q.length, 'no duplicate quotes');
 });
