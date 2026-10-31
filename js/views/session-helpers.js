@@ -214,11 +214,11 @@ export function nextDayDueAt(endedAt) {
 /**
  * The session awaiting a next-day check-in: the most recent DONE session if it has no `nextDay`.
  * `due` = check-in is open (≥ 12 h after end or from the next calendar day). Sessions older than
- * `maxDays` (default 3) are not offered anymore.
+ * `maxDays` (default 4, same as ui.pendingNextDay) are not offered anymore.
  * @param {Session[]} sessions
  * @returns {{session: Session, due: boolean, dueAt: string}|null}
  */
-export function pendingNextDay(sessions, now = new Date(), { maxDays = 3 } = {}) {
+export function pendingNextDay(sessions, now = new Date(), { maxDays = 4 } = {}) {
   const last = doneSessions(sessions).filter((s) => s.endedAt).sort((a, b) => Date.parse(a.endedAt) - Date.parse(b.endedAt)).at(-1);
   if (!last || last.nextDay) return null;
   const dueAt = nextDayDueAt(last.endedAt);
