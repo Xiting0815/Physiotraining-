@@ -97,8 +97,8 @@ test('upper-body-only and lighter variants', () => {
   const qs = s2.exercises.find((e) => e.exerciseId === 'quad-set');
   assert.equal(qs.level, 0);
   assert.equal(qs.plannedSets, ex('quad-set').levels[0].sets);
-  const tke = s2.exercises.find((e) => e.exerciseId === 'tke');
-  assert.equal(tke.plannedSets, Math.max(1, Math.round(ex('tke').levels[0].sets * 0.6)));
+  const sts = s2.exercises.find((e) => e.exerciseId === 'sit-to-stand');
+  assert.equal(sts.plannedSets, Math.max(1, Math.round(ex('sit-to-stand').levels[0].sets * 0.6)));
 });
 
 test('navigation helpers skip pre-check-hidden entries', () => {

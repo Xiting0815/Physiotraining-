@@ -3,6 +3,8 @@
 // touch the DOM / store only when called.
 import { exportData, get, importData, migrate as storeMigrate, migrations as storeMigrations, SCHEMA_VERSION } from '../store.js';
 import { todayISO } from './date.js';
+import { mergeLogs } from '../logic/health.js';
+import { mergeCustomWorkouts } from '../logic/custom-workouts.js';
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const clone = (v) => (typeof structuredClone === 'function' ? structuredClone(v) : JSON.parse(JSON.stringify(v)));
@@ -116,9 +118,22 @@ export function mergeBackups(current, incoming) {
     const b = is.records?.[k];
     if (b && (!a || (b[field] ?? -Infinity) > (a[field] ?? -Infinity))) records[k] = b;
   }
+  // v2: health log by date, custom workouts by id (newer updatedAt wins), profile/weightGoal/toggles: current wins, gaps filled.
+  const csets = cur.settings || {};
+  const isets = inc.settings || {};
+  const profile = { ...(isets.profile || {}) };
+  for (const [k, v] of Object.entries(csets.profile || {})) if (v != null || !(k in profile)) profile[k] = v;
   return {
     ...cur,
-    state: { ...cs, exerciseLevels, exitCriteriaDone, badges, records, xp: Math.max(cs.xp || 0, is.xp || 0) },
+    settings: { ...csets, profile, weightGoal: csets.weightGoal ?? isets.weightGoal ?? null },
+    state: {
+      ...cs, exerciseLevels, exitCriteriaDone, badges, records, xp: Math.max(cs.xp || 0, is.xp || 0),
+      healthLog: mergeLogs(cs.healthLog, is.healthLog),
+      customWorkouts: mergeCustomWorkouts(cs.customWorkouts, is.customWorkouts),
+      exerciseToggles: { ...(is.exerciseToggles || {}), ...(cs.exerciseToggles || {}) },
+      postOpClearance: cs.postOpClearance ?? is.postOpClearance ?? null,
+      postOpEndClearance: cs.postOpEndClearance ?? is.postOpEndClearance ?? null,
+    },
     sessions,
   };
 }

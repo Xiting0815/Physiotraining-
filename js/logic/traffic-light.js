@@ -95,6 +95,20 @@ function sharedCriteria(session, nextDay, thr) {
     if (postGivingWay) c.add('red', 'Wegknicken während des Trainings.');
   }
 
+  // ---- post-op (non-weight-bearing) phase: red flags → contact the doctor (SPEC §12.10)
+  if (session.postOp) {
+    const DOC = 'Entlastungsphase: bitte Arzt kontaktieren';
+    for (const [src, label] of [[pre, 'vor dem Training'], [post, 'nach dem Training'], [nextDay, 'am Folgetag']]) {
+      if (!src) continue;
+      if (src.redness) c.add('stop', `${DOC} – Rötung/Überwärmung ${label}.`);
+      if (src.fever) c.add('stop', `${DOC} – Fieber ${label}.`);
+      const pp = num(src.pain);
+      if (pp != null && pp > thr.yellowMax) c.add('stop', `${DOC} – Schmerz ${pp}/10 ${label}.`);
+    }
+    if (post && (num(post.swelling) ?? 0) > preSwelling) c.add('stop', `${DOC} – neue Schwellung.`);
+    if (nextDay && (num(nextDay.swelling) ?? 0) > preSwelling) c.add('stop', `${DOC} – neue Schwellung am Folgetag.`);
+  }
+
   // ---- next day
   if (nextDay) {
     const np = num(nextDay.pain);
@@ -140,10 +154,13 @@ function evaluate(session, nextDay, settings, history) {
   for (const e of session.exercises || []) {
     if (!e || e.skipped) continue;
     const own = exerciseCriteria(e, thr);
-    // Sharp pain is a safety flag in any block; painDuring only counts for the knee block.
-    if (e.section !== 'knee') {
+    // Sharp pain is a safety flag in any block; painDuring only counts for the knee block and rowing (cardio).
+    if (e.section !== 'knee' && e.section !== 'cardio') {
       if (e.sharpPain) all.add('red', 'Scharfer Schmerz gemeldet.');
       continue;
+    }
+    if (session.postOp && num(e.painDuring) != null && e.painDuring > thr.yellowMax) {
+      own.add('stop', `Entlastungsphase: bitte Arzt kontaktieren – Schmerz ${e.painDuring}/10 während der Übung.`);
     }
     all.add(own.light);
     for (const r of own.reasons) if (!all.reasons.includes(r)) all.reasons.push(r);
@@ -308,7 +325,7 @@ export function recommendLevels(session, history, state, content, settings, { to
   const out = [];
 
   if (res.traffic === 'stop') {
-    const why = res.reasons.filter((r) => /abklären/.test(r));
+    const why = res.reasons.filter((r) => /abklären|kontaktieren/.test(r));
     out.push(rec(null, 'consult', null, null, why.join(' ') || 'Bitte ärztlich bzw. physiotherapeutisch abklären.'));
     return out;
   }
@@ -329,7 +346,7 @@ export function recommendLevels(session, history, state, content, settings, { to
 
   for (const e of session.exercises || []) {
     if (!e || seen.has(e.exerciseId) || !performed(e)) continue;
-    if (e.section !== 'knee' && e.section !== 'archery') continue;
+    if (e.section !== 'knee' && e.section !== 'archery' && e.section !== 'cardio') continue;
     seen.add(e.exerciseId);
     const ex = exById.get(e.exerciseId);
     const id = e.exerciseId;
@@ -347,6 +364,20 @@ export function recommendLevels(session, history, state, content, settings, { to
       const n = cur ? cur + streakFor(id, from, newestFirst, (s) => lightIn(s, id) === 'green') : 0;
       if (n >= need) { wantsProgress = true; reason = `${need}× grün in Folge.`; }
       else { out.push(rec(id, 'hold', from, from, `Grün – noch ${need - n}× grün bis zur nächsten Stufe.`)); continue; }
+    } else if (block === 'cardio') {
+      // Rowing: knee light first (pain during rowing counts), then effort (entry RPE, else post RPE).
+      const light = res.perExercise[id] ?? 'green';
+      if (light === 'red' || light === 'stop') { out.push(regressRec(ex, id, from, content, 'Ampel Rot beim Rudern.')); continue; }
+      if (light === 'yellow') { out.push(rec(id, 'hold', from, from, 'Ampel Gelb – Rudern auf dieser Stufe halten.')); continue; }
+      const rpeOf = (s, x) => num(x.rpe) ?? num(s.post?.rpe);
+      const rpe = rpeOf(session, e);
+      if (rpe == null) continue;
+      if (rpe >= 9) { out.push(regressRec(ex, id, from, content, `RPE ${rpe} – zu anstrengend.`)); continue; }
+      if (rpe >= 7) { out.push(rec(id, 'hold', from, from, `RPE ${rpe} – Stufe halten.`)); continue; }
+      const cur = (e.level ?? 0) === from ? 1 : 0;
+      const n = cur ? cur + streakFor(id, from, newestFirst, (s, entries) => lightIn(s, id) === 'green' && entries.every((x) => (rpeOf(s, x) ?? 99) <= 6)) : 0;
+      if (n >= 2) { wantsProgress = true; reason = '2× grün und RPE ≤ 6 beim Rudern.'; }
+      else { out.push(rec(id, 'hold', from, from, `Rudern locker – noch ${2 - n}× bis zur nächsten Stufe.`)); continue; }
     } else {
       const rpe = num(e.rpe);
       if (rpe == null) continue;

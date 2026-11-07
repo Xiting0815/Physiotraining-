@@ -27,11 +27,23 @@ function worstOf(lights) {
   return best < 0 ? null : LIGHT_ORDER[best];
 }
 
-/** Map Monday-date → count of done sessions. @param {Session[]} sessions */
-export function sessionsPerWeek(sessions) {
+/** v2: rowing/cardio session? (`kind === "cardio"` or a `rowing` object). @param {Session} s */
+export const isCardioSession = (s) => s?.kind === 'cardio' || (s?.rowing != null && typeof s.rowing === 'object');
+/** Done strength-type sessions (strength, short, custom – everything except cardio). @param {Session[]} sessions */
+export const strengthSessions = (sessions) => doneSessions(sessions).filter((s) => !isCardioSession(s));
+/** Done cardio (rowing) sessions. @param {Session[]} sessions */
+export const cardioSessions = (sessions) => doneSessions(sessions).filter(isCardioSession);
+
+/**
+ * Map Monday-date → count of done sessions.
+ * @param {Session[]} sessions
+ * @param {(s: Session) => boolean} [filter] optional extra filter (e.g. `isCardioSession`)
+ */
+export function sessionsPerWeek(sessions, filter) {
   /** @type {Map<string, number>} */
   const m = new Map();
   for (const s of doneSessions(sessions)) {
+    if (filter && !filter(s)) continue;
     const wk = startOfIsoWeek(dayOf(s));
     m.set(wk, (m.get(wk) ?? 0) + 1);
   }
@@ -53,9 +65,9 @@ function defaultToday(sessions) {
  * @param {string} today
  * @returns {{weeks: number, currentWeekCount: number}}
  */
-export function streak(sessions, weeklyGoal, today) {
+export function streak(sessions, weeklyGoal, today, { cardio = false } = {}) {
   const goal = Math.max(1, Math.floor(weeklyGoal || 0) || 1);
-  const perWeek = sessionsPerWeek(sessions);
+  const perWeek = sessionsPerWeek(sessions, cardio ? isCardioSession : (s) => !isCardioSession(s));
   const cur = startOfIsoWeek(today);
   const currentWeekCount = perWeek.get(cur) ?? 0;
   let weeks = 0;
@@ -75,8 +87,38 @@ export function streak(sessions, weeklyGoal, today) {
  * @returns {{done: number, goal: number, ratio: number}}
  */
 export function weeklyProgress(sessions, weeklyGoal, today) {
-  const done = sessionsPerWeek(sessions).get(startOfIsoWeek(today)) ?? 0;
+  // v2: the strength goal counts strength/short/custom sessions; rowing has its own goal (cardioProgress).
+  const done = sessionsPerWeek(sessions, (s) => !isCardioSession(s)).get(startOfIsoWeek(today)) ?? 0;
   return { done, goal: weeklyGoal, ratio: weeklyGoal > 0 ? Math.min(1, done / weeklyGoal) : 0 };
+}
+
+/**
+ * v2: rowing sessions this ISO week vs `settings.cardioGoalPerWeek` (default 3).
+ * @param {Session[]} sessions @param {number} cardioGoal @param {string} today
+ * @returns {{done: number, goal: number, ratio: number, minutes: number, distanceM: number}}
+ */
+export function cardioProgress(sessions, cardioGoal, today) {
+  const wk = startOfIsoWeek(today);
+  const list = cardioSessions(sessions).filter((s) => startOfIsoWeek(dayOf(s)) === wk);
+  const minutes = Math.round(list.reduce((a, s) => a + (s.rowing?.durationSec ?? 0), 0) / 60);
+  const distanceM = list.reduce((a, s) => a + (s.rowing?.distanceM ?? 0), 0);
+  const goal = cardioGoal ?? 3;
+  return { done: list.length, goal, ratio: goal > 0 ? Math.min(1, list.length / goal) : 0, minutes, distanceM };
+}
+
+/**
+ * v2: same-day load hint – rowing and strength on the same day give the knee less recovery.
+ * @param {Session[]} sessions
+ * @param {string} today
+ * @param {'strength'|'cardio'} [starting] kind the user is about to start (optional)
+ * @returns {string|null} gentle German hint or null
+ */
+export function sameDayLoadHint(sessions, today, starting) {
+  const todays = doneSessions(sessions).filter((s) => dayOf(s) === today);
+  const hasCardio = todays.some(isCardioSession) || starting === 'cardio';
+  const hasStrength = todays.some((s) => !isCardioSession(s)) || (starting != null && starting !== 'cardio');
+  if (!(hasCardio && hasStrength)) return null;
+  return 'Rudern und Krafttraining am selben Tag: Gönn dem Knie danach genug Erholung – am nächsten Tag besser Pause oder nur Oberkörper. Bei Schmerz über 5/10 oder Schwellung: Ampel beachten.';
 }
 
 /** Mean of y values with from ≤ x ≤ to (inclusive) or null. @param {Point[]} points */
@@ -118,10 +160,11 @@ export function trends(sessions, { days = 42, today } = {}) {
   post.push(...all.post.filter((p) => inWin(p.x)));
   nextDay.push(...all.nextDay.filter((p) => inWin(p.x)));
 
-  const counts = sessionsPerWeek(sessions);
+  const counts = sessionsPerWeek(sessions, (s) => !isCardioSession(s));
+  const cardioCounts = sessionsPerWeek(sessions, isCardioSession);
   const perWeek = [];
   for (let wk = startOfIsoWeek(from); wk <= t; wk = addDays(wk, 7)) {
-    perWeek.push({ week: isoWeekKey(wk), weekStart: wk, count: counts.get(wk) ?? 0 });
+    perWeek.push({ week: isoWeekKey(wk), weekStart: wk, count: counts.get(wk) ?? 0, cardio: cardioCounts.get(wk) ?? 0 });
   }
   const m7from = addDays(t, -6);
   const p7from = addDays(t, -13);

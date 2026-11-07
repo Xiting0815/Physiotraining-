@@ -2,9 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  XP, LEVELS, xpFor, levelFor, evaluateBadges, badgeRuleMet, setScore, sessionScore, dailyQuote, QUOTES, opCountdown, reminderText,
+  XP, LEVELS, xpFor, healthLogXp, levelFor, evaluateBadges, badgeRuleMet, setScore, sessionScore, dailyQuote, QUOTES, opCountdown, reminderText,
 } from '../js/logic/motivation.js';
 import { scoreForSet } from '../js/components/celebrate.js';
+import { buildSessionPlan } from '../js/logic/progression.js';
 
 const badgeDefs = JSON.parse(readFileSync(new URL('../data/badges.json', import.meta.url), 'utf8')).badges;
 const settings = { weeklyGoal: 3, painThresholds: { greenMax: 2, yellowMax: 5, greenStreakToProgress: 2 }, bands: [{ id: 'yellow' }, { id: 'red' }, { id: 'green' }] };
@@ -18,7 +19,7 @@ const S = (day, { light = 'green', final = null, exercises = [], status = 'done'
 const data = (sessions, state = {}) => ({ schemaVersion: 1, settings, state: { badges: {}, phaseHistory: [{ phaseId: 'p1-basis' }], ...state }, sessions });
 
 test('XP constants and xpFor', () => {
-  assert.deepEqual(XP, { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15 });
+  assert.deepEqual(XP, { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15, cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20, healthLog: 5 });
   const s = { status: 'done', exercises: [
     { painDuring: 1, sets: [{ done: true }, { done: true }, { done: false }] }, // 2 × 3
     { painDuring: 4, sets: [{ done: true }] }, // 2
@@ -44,35 +45,49 @@ test('levelFor: archery titles, boundaries, max level, bad input', () => {
   assert.equal(levelFor(NaN).progress, 0);
 });
 
-test('XP balance: 3 sessions/week → top title after ~75 sessions, early levels every 1–2 weeks', () => {
+test('XP balance (v2): 3× strength (≤ 30 min) + 3× rowing + daily log per week → Robin Hood after ~6 months', () => {
   const content = {
     exercises: JSON.parse(readFileSync(new URL('../data/exercises.json', import.meta.url), 'utf8')).exercises,
     workouts: JSON.parse(readFileSync(new URL('../data/workouts.json', import.meta.url), 'utf8')).workouts,
+    phases: JSON.parse(readFileSync(new URL('../data/phases.json', import.meta.url), 'utf8')).phases,
   };
-  // Realistic session: every item of the workout at its first level, all sets done, mostly clean.
-  const sessionFor = (w, lvlPick) => ({ status: 'done', exercises: [...(w.warmup || []), ...w.blocks.flatMap((b) => b.items), ...(w.cooldown || [])]
-    .map((it, i) => { const ex = content.exercises.find((x) => x.id === it.exerciseId); const lv = lvlPick(ex);
-      return { painDuring: i % 7 === 0 ? 3 : 1, sets: Array.from({ length: ex?.levels?.[lv]?.sets ?? 1 }, () => ({ done: true })) }; }) });
-  let xp = 0, sessions = 0; const levelAt = [];
-  while (levelFor(xp).index < LEVELS.length - 1 && sessions < 500) {
-    const w = content.workouts[(Math.floor(sessions / 36) * 3 + (sessions % 3)) % content.workouts.length];
-    const progress = Math.min(1, sessions / 60);
-    xp += xpFor(sessionFor(w, (ex) => Math.round(progress * ((ex?.levels?.length ?? 1) - 1))), settings) + XP.nextDayCheckIn;
-    if (sessions === 0 || sessions === 9 || sessions === 24) xp += XP.badge; // first, 10, 25 sessions
-    if (sessions % 6 === 2) xp += XP.badge / 2; // other badges spread over time
-    sessions++;
-    const li = levelFor(xp).index; if (levelAt[li] == null) levelAt[li] = sessions;
+  const strength = content.workouts.filter((w) => (w.kind ?? 'strength') === 'strength' && w.phaseId !== 'p4-entlastung');
+  const levelsAt = (progress) => Object.fromEntries(content.exercises.map((e) => [e.id, Math.round(progress * (e.levels.length - 1))]));
+  let xp = 0, weeks = 0; const levelAt = [];
+  while (levelFor(xp).index < LEVELS.length - 1 && weeks < 100) {
+    const progress = Math.min(1, weeks / 20);
+    for (let i = 0; i < 3; i++) {
+      const w = strength[(Math.floor(weeks / 3) * 3 + i) % strength.length];
+      const plan = buildSessionPlan(w, { phaseId: w.phaseId, exerciseLevels: levelsAt(progress) }, content, {});
+      plan.status = 'done';
+      plan.exercises.forEach((e, j) => { e.painDuring = j % 7 === 0 ? 3 : 1; e.sets = Array.from({ length: e.plannedSets }, () => ({ done: true })); });
+      xp += xpFor(plan, settings) + XP.nextDayCheckIn;
+    }
+    for (let i = 0; i < 3; i++) xp += xpFor({ status: 'done', kind: 'cardio', rowing: { durationSec: 16 * 60 } }, settings);
+    xp += 7 * XP.healthLog;
+    if (weeks % 3 === 0) xp += XP.badge; // badges spread over time
+    weeks++;
+    const li = levelFor(xp).index; if (levelAt[li] == null) levelAt[li] = weeks;
   }
-  assert.ok(sessions >= 60 && sessions <= 90, `Robin Hood after ${sessions} sessions`);
-  assert.ok(levelAt[1] >= 2 && levelAt[1] <= 6, `Lehrling after ${levelAt[1]}`);
-  assert.ok(levelAt[2] - levelAt[1] <= 6 && levelAt[3] - levelAt[2] <= 7, `early gaps ${levelAt.join(',')}`);
+  assert.ok(weeks >= 22 && weeks <= 32, `Robin Hood after ${weeks} weeks`);
+  assert.ok(levelAt[1] <= 2, `Lehrling after ${levelAt[1]} weeks`);
+  assert.ok(levelAt[2] - levelAt[1] <= 3, `early gaps ${levelAt.join(',')}`);
   assert.ok(levelAt[8] - levelAt[7] > levelAt[2] - levelAt[1], 'later levels take longer');
+});
+
+test('cardioXp / healthLogXp', () => {
+  assert.equal(xpFor({ status: 'done', kind: 'cardio', rowing: { durationSec: 15 * 60 } }, settings), 20 + 30);
+  assert.equal(xpFor({ status: 'done', kind: 'cardio', rowing: { durationSec: 40 * 60 } }, settings), 20 + 40);
+  assert.equal(xpFor({ status: 'done', kind: 'cardio', exercises: [{ sets: [{ done: true, seconds: 600 }] }] }, settings), 40);
+  assert.equal(xpFor({ status: 'aborted', kind: 'cardio', rowing: { durationSec: 300 } }, settings), 10);
+  assert.equal(healthLogXp([], '2026-11-07'), 5);
+  assert.equal(healthLogXp([{ date: '2026-11-07' }], '2026-11-07'), 0);
 });
 
 test('badges.json covers all required badges with known rule types', () => {
   const ids = badgeDefs.map((b) => b.id);
   for (const id of ['first-session', 'week-3', 'sessions-10', 'sessions-25', 'sessions-50', 'hold-5min', 'phase-done', 'green-week', 'personal-record', 'comeback']) assert.ok(ids.includes(id), id);
-  for (const b of badgeDefs) assert.ok(['sessionsCount', 'weekSessions', 'totalHoldSeconds', 'phaseCompleted', 'greenWeek', 'personalRecord', 'comeback'].includes(b.rule.type));
+  for (const b of badgeDefs) assert.ok(['sessionsCount', 'weekSessions', 'totalHoldSeconds', 'phaseCompleted', 'greenWeek', 'personalRecord', 'comeback', 'cardioCount', 'rowingDistance', 'customWorkout', 'weightLost', 'weightGoalReached', 'healthLogStreak'].includes(b.rule.type));
 });
 
 test('evaluateBadges: empty history → none', () => {

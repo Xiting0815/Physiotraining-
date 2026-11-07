@@ -1,10 +1,16 @@
 // XP, levels, badges, quotes, countdown, target-face score. PURE. See docs/SPEC.md §8, §7.7.
 import { daysBetween, startOfIsoWeek } from '../util/date.js';
-import { dayOf, doneSessions, newRecords, personalRecords, sessionLight, totalHoldSeconds, weeklyProgress } from './stats.js';
+import { dayOf, doneSessions, isCardioSession, newRecords, personalRecords, sessionLight, strengthSessions, totalHoldSeconds, weeklyProgress } from './stats.js';
+import { rowingTotals } from './cardio.js';
+import { longestLogStreak } from './health.js';
+import { currentWeight, goalProgress } from './energy.js';
 
 // Balanced for ~3 sessions/week: a typical session (35–50 sets) yields ~130–180 XP incl. check-in,
 // so the top title takes ~75 sessions (~6 months); early levels come every 1–2 weeks.
-export const XP = { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15 };
+// v2 (SPEC §12.8): 30-min strength sessions (~18–24 sets) ≈ 75–95 XP, rowing 15–20 min ≈ 50–60 XP,
+// daily health log +5 (once per date). 3 strength + 3 rowing + 7 logs per week ≈ 450–480 XP → Robin Hood ≈ 6 months.
+export const XP = { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15,
+  cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20, healthLog: 5 };
 
 export const LEVELS = [
   { title: 'Novize', min: 0 },
@@ -25,6 +31,7 @@ export const LEVELS = [
  * @param {import('../types.js').Settings} settings
  */
 export function xpFor(session, settings) {
+  if (isCardioSession(session)) return cardioXp(session);
   const greenMax = settings?.painThresholds?.greenMax ?? 2;
   let xp = session?.status === 'done' ? XP.sessionBonus : 0;
   for (const e of session?.exercises || []) {
@@ -33,6 +40,32 @@ export function xpFor(session, settings) {
     for (const s of e.sets || []) if (s?.done) xp += XP.perSet + (clean ? XP.cleanSetBonus : 0);
   }
   return xp;
+}
+
+/** Minutes rowed: rowing.durationSec, else seconds of done sets of performed entries. */
+export function rowedMinutes(session) {
+  if (typeof session?.rowing?.durationSec === 'number') return session.rowing.durationSec / 60;
+  let sec = 0;
+  for (const e of session?.exercises || []) if (!e.skipped) for (const st of e.sets || []) if (st?.done) sec += st.seconds ?? 0;
+  return sec / 60;
+}
+
+/**
+ * Rowing XP: cardioBase (status done) + cardioPerMin × min(minutes, cardioMaxMin), rounded.
+ * @param {import('../types.js').Session} session
+ */
+export function cardioXp(session) {
+  const min = Math.min(XP.cardioMaxMin, Math.max(0, rowedMinutes(session)));
+  return Math.round((session?.status === 'done' ? XP.cardioBase : 0) + XP.cardioPerMin * min);
+}
+
+/**
+ * Health-log XP: +XP.healthLog when `date` had no entry in `prevLog` (one award per date).
+ * @param {import('../types.js').HealthEntry[]} prevLog log BEFORE the upsert
+ * @param {string} date
+ */
+export function healthLogXp(prevLog, date) {
+  return (prevLog || []).some((e) => e?.date === date) ? 0 : XP.healthLog;
 }
 
 /** @param {number} xp */
@@ -66,15 +99,40 @@ function anyRecordBeaten(sessions, settings) {
  * @param {import('../types.js').Badge['rule']} rule
  * @param {import('../types.js').Data} data
  */
-export function badgeRuleMet(rule, data) {
+export function badgeRuleMet(rule, data, opts = {}) {
   const sessions = doneSessions(data?.sessions);
   const settings = data?.settings;
+  const today = opts.today ?? null;
   switch (rule?.type) {
     case 'sessionsCount':
       return sessions.length >= (rule.n ?? 1);
+    case 'cardioCount':
+      return sessions.filter(isCardioSession).length >= (rule.n ?? 1);
+    case 'rowingDistance':
+      return rowingTotals(sessions).distanceM >= (rule.n ?? 10000);
+    case 'customWorkout':
+      return (data?.state?.customWorkouts || []).length >= (rule.n ?? 1) || sessions.some((s) => s.kind === 'custom');
+    case 'weightLost': {
+      const log = data?.state?.healthLog || [];
+      const t = today ?? log.map((e) => e.date).sort().at(-1);
+      if (!t) return false;
+      const cur = currentWeight(log, t);
+      const firstW = log.filter((e) => typeof e.weightKg === 'number').sort((a, b) => (a.date < b.date ? -1 : 1))[0]?.weightKg;
+      const start = data?.settings?.weightGoal?.startKg ?? firstW;
+      return cur != null && start != null && start - cur >= (rule.n ?? 2) - 1e-9;
+    }
+    case 'weightGoalReached': {
+      const log = data?.state?.healthLog || [];
+      const t = today ?? log.map((e) => e.date).sort().at(-1);
+      const g = data?.settings?.weightGoal;
+      if (!t || !g || typeof g.targetKg !== 'number') return false;
+      return !!goalProgress(log, g, t)?.reached;
+    }
+    case 'healthLogStreak':
+      return longestLogStreak(data?.state?.healthLog || []) >= (rule.n ?? 7);
     case 'weekSessions': {
       const m = new Map();
-      for (const s of sessions) { const wk = startOfIsoWeek(dayOf(s)); m.set(wk, (m.get(wk) ?? 0) + 1); }
+      for (const s of strengthSessions(sessions)) { const wk = startOfIsoWeek(dayOf(s)); m.set(wk, (m.get(wk) ?? 0) + 1); }
       return [...m.values()].some((c) => c >= (rule.n ?? 3));
     }
     case 'totalHoldSeconds':
@@ -86,7 +144,7 @@ export function badgeRuleMet(rule, data) {
     case 'greenWeek': {
       const goal = Math.max(1, settings?.weeklyGoal ?? 3);
       const m = new Map();
-      for (const s of sessions) { const wk = startOfIsoWeek(dayOf(s)); m.set(wk, [...(m.get(wk) ?? []), sessionLight(s)]); }
+      for (const s of strengthSessions(sessions)) { const wk = startOfIsoWeek(dayOf(s)); m.set(wk, [...(m.get(wk) ?? []), sessionLight(s)]); }
       return [...m.values()].some((ls) => ls.length >= goal && ls.every((l) => l === 'green'));
     }
     case 'personalRecord':
@@ -110,7 +168,7 @@ export function badgeRuleMet(rule, data) {
  */
 export function evaluateBadges(data, badgeDefs, opts = {}) {
   const have = data?.state?.badges || {};
-  return (badgeDefs || []).filter((b) => b && !have[b.id] && badgeRuleMet(b.rule, data)).map((b) => b.id);
+  return (badgeDefs || []).filter((b) => b && !have[b.id] && badgeRuleMet(b.rule, data, opts)).map((b) => b.id);
 }
 
 /**

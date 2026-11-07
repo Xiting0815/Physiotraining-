@@ -1,6 +1,78 @@
 // Workout rotation, levels, phases. PURE. See docs/SPEC.md §5.3, §7.7.
 import { addDays, daysBetween, startOfIsoWeek, todayISO } from '../util/date.js';
 import { dayOf, doneSessions, sessionLight, sessionsPerWeek, streak } from './stats.js';
+import { cappedSets, fitPlanToMinutes } from './duration.js';
+
+/** Workout kinds (v2). Missing `kind` = "strength". */
+export const WORKOUT_KINDS = ['strength', 'short', 'cardio', 'custom'];
+/** @param {{kind?: string}|null|undefined} w */
+export const workoutKind = (w) => w?.kind ?? 'strength';
+
+/**
+ * Look up any workout by id: content workouts (strength/short/cardio) first, then
+ * `state.customWorkouts` (converted with toWorkout-like normalisation: kind "custom", phaseId = state.phaseId).
+ * @param {string} id
+ * @param {import('../types.js').Content} content
+ * @param {import('../types.js').State} [state]
+ * @returns {import('../types.js').Workout|undefined}
+ */
+export function getWorkout(id, content, state) {
+  const w = (content?.workouts || []).find((x) => x.id === id);
+  if (w) return w;
+  const c = (state?.customWorkouts || []).find((x) => x.id === id);
+  if (!c) return undefined;
+  return { maxMinutes: 30, ...c, kind: 'custom', phaseId: state?.phaseId ?? c.phaseId ?? null, durationMin: c.durationMin ?? 0,
+    warmup: c.warmup || [], blocks: c.blocks || [], cooldown: c.cooldown || [] };
+}
+
+/** Phase of the state (or first phase). */
+export function currentPhase(state, phases) {
+  return (phases || []).find((p) => p.id === state?.phaseId) ?? (phases || [])[0];
+}
+
+/** Workouts of a phase by kind: `{ rotation: [A,B,C], short: Workout|null, cardio: Workout[] }`. */
+export function phaseWorkouts(phase, workouts) {
+  const find = (id) => (workouts || []).find((w) => w.id === id);
+  return {
+    rotation: phase ? ['A', 'B', 'C'].map((k) => find(phase.workouts?.[k])).filter(Boolean) : [],
+    short: phase?.short ? find(phase.short) ?? null : null,
+    cardio: (phase?.cardio || []).map(find).filter(Boolean),
+  };
+}
+
+/**
+ * Is an exercise available in a phase for this user?
+ * - `state.exerciseToggles[id] === false` → never (user disabled it);
+ * - post-op phase (`phase.kind === "postop"`): `exercise.postOpAllowed === false` → only if the user explicitly
+ *   enabled it (`exerciseToggles[id] === true`, per their surgeon/physio protocol).
+ * @param {import('../types.js').Exercise} exercise
+ * @param {import('../types.js').Phase|undefined} phase
+ * @param {import('../types.js').State} [state]
+ * @returns {boolean}
+ */
+export function exerciseAvailable(exercise, phase, state) {
+  if (!exercise) return false;
+  const t = state?.exerciseToggles?.[exercise.id];
+  if (t === false) return false;
+  if (phase?.kind === 'postop' && exercise.postOpAllowed === false) return t === true;
+  return true;
+}
+
+/**
+ * Rotation after finishing `finishedWorkoutId`: A→B→C→A when it is one of the phase's A/B/C workouts,
+ * otherwise (cardio / short / custom) `state.nextWorkoutId` stays unchanged.
+ * Use this instead of `advanceWorkout({...state, nextWorkoutId: finishedId}, phase)` (which resets to A for
+ * non-rotation ids).
+ * @param {import('../types.js').State} state
+ * @param {import('../types.js').Phase} phase
+ * @param {string} finishedWorkoutId
+ * @returns {string}
+ */
+export function rotationAfter(state, phase, finishedWorkoutId) {
+  const order = [phase?.workouts?.A, phase?.workouts?.B, phase?.workouts?.C];
+  if (!order.includes(finishedWorkoutId)) return state?.nextWorkoutId ?? order[0];
+  return advanceWorkout({ ...state, nextWorkoutId: finishedWorkoutId }, phase);
+}
 
 /**
  * @param {import('../types.js').State} state
@@ -25,7 +97,7 @@ export function levelOf(state, exerciseId, exercise) {
  */
 export function nextWorkout(state, phases, workouts) {
   const phase = phases.find((p) => p.id === state?.phaseId) ?? phases[0];
-  const byId = workouts.find((w) => w.id === state?.nextWorkoutId);
+  const byId = workouts.find((w) => w.id === state?.nextWorkoutId && workoutKind(w) === 'strength');
   if (byId && (!phase || byId.phaseId === phase.id)) return byId;
   return workouts.find((w) => w.id === phase?.workouts.A) ?? byId ?? workouts[0];
 }
@@ -61,7 +133,9 @@ function phaseOrder(content, phaseId) {
  * @param {{taper?: boolean, today?: string, history?: import('../types.js').Session[], now?: Date}} [opts]
  * @returns {import('../types.js').Session}
  */
-export function buildSessionPlan(workout, state, content, { taper = false, history = [], now = new Date() } = {}) {
+export function buildSessionPlan(workout, state, content, { taper = false, history = [], now = new Date(), settings = null, fit = true } = {}) {
+  const kind = workoutKind(workout);
+  const phase = (content?.phases || []).find((p) => p.id === (state?.phaseId ?? workout.phaseId)) ?? (content?.phases || []).find((p) => p.id === workout.phaseId);
   const items = [
     ...(workout.warmup || []).map((it) => ({ ...it, section: 'warmup' })),
     ...(workout.blocks || []).flatMap((b) => (b.items || []).map((it) => ({ ...it, section: b.id }))),
@@ -80,10 +154,12 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
     const ex = (content?.exercises || []).find((e) => e.id === it.exerciseId);
     if (!ex) continue;
     const minOrder = phaseOrder(content, ex.phaseMin);
-    if (curOrder != null && minOrder != null && curOrder < minOrder) continue;
+    // custom workouts: phaseMin is only a warning (validateCustomWorkout), not a filter
+    if (kind !== 'custom' && curOrder != null && minOrder != null && curOrder < minOrder) continue;
+    if (!exerciseAvailable(ex, phase, state)) continue;
     if (taper && done.length && !performedBefore.has(ex.id)) continue;
     const level = levelOf(state, it.exerciseId, ex);
-    const sets = ex.levels[level]?.sets ?? 1;
+    const sets = kind === 'cardio' ? (ex.levels[level]?.sets ?? 1) : cappedSets(ex.levels[level]?.sets ?? 1, it, workout);
     exercises.push({
       exerciseId: it.exerciseId,
       section: it.section,
@@ -97,10 +173,13 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
       ...(it.note ? { note: it.note } : {}),
     });
   }
-  return {
+  const plan = {
     id: `s-${stamp}-${Math.random().toString(36).slice(2, 6).padEnd(4, '0')}`,
     workoutId: workout.id,
-    phaseId: workout.phaseId,
+    phaseId: kind === 'custom' ? (state?.phaseId ?? workout.phaseId ?? null) : workout.phaseId,
+    kind,
+    ...(phase?.kind === 'postop' ? { postOp: true } : {}),
+    ...(kind === 'cardio' ? { rowing: null } : {}),
     status: 'active',
     startedAt: now.toISOString(),
     endedAt: null,
@@ -113,6 +192,10 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
     recommendations: [],
     cursor: { index: 0, set: 0, step: 'pre' },
   };
+  // v2: keep strength/short/custom sessions inside their time budget (default 30 / 15 min) by trimming sets.
+  const maxMinutes = workout.maxMinutes ?? (kind === 'cardio' ? null : 30);
+  if (fit && maxMinutes && kind !== 'cardio') fitPlanToMinutes(plan, content, settings, maxMinutes);
+  return plan;
 }
 
 /**

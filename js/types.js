@@ -1,8 +1,9 @@
 // JSDoc typedefs – documentation only. Mirrors docs/SPEC.md §6 and §7.
 // Import types with: /** @typedef {import('./types.js').Exercise} Exercise */
 
-/** @typedef {'knee'|'archery'|'warmup'|'cooldown'} BlockId */
-/** @typedef {'warmup'|'knee'|'archery'|'cooldown'} Section */
+/** @typedef {'knee'|'archery'|'warmup'|'cooldown'|'cardio'} BlockId */
+/** @typedef {'warmup'|'knee'|'archery'|'cooldown'|'cardio'} Section */
+/** @typedef {'strength'|'short'|'cardio'|'custom'} WorkoutKind */
 /** @typedef {'green'|'yellow'|'red'|'stop'} Light */
 /** @typedef {'yellow'|'red'|'green'|'blue'|'loop-orange'|'loop-blue'} BandId */
 
@@ -15,7 +16,12 @@
  * @property {number} [seconds]  continuous seconds (type "timed")
  * @property {string|null} [tempo] "ecc-pause-con", e.g. "3-1-1"
  * @property {BandId|null} [band]
- * @property {number} rest       seconds between sets
+ * @property {number} rest       seconds between sets (rowing intervals: easy rowing when restActive)
+ * @property {'easy'|'moderate'|'vigorous'} [intensity]  v2 rowing
+ * @property {[number, number]} [targetSpm]  v2 rowing strokes/min range
+ * @property {[number, number]} [targetRpe]  v2 rowing RPE range
+ * @property {boolean} [restActive]          v2 rowing: rest = easy rowing
+ * @property {{label: string, seconds: number, intensity?: string}[]} [phases]  v2 rowing technique drills
  */
 
 /**
@@ -44,17 +50,23 @@
  * @property {string|null} progressTo
  * @property {string} phaseMin
  * @property {FigureSpec} figure
+ * @property {boolean} [postOpAllowed]  v2: false → hidden in post-op phases unless enabled via state.exerciseToggles
+ * @property {string} [postOpNote]      v2: how to do it after surgery
  */
 
-/** @typedef {{exerciseId: string, note?: string}} WorkoutItem */
-/** @typedef {{id: 'knee'|'archery', title: string, items: WorkoutItem[]}} WorkoutBlock */
+/** @typedef {{exerciseId: string, note?: string, maxSets?: number}} WorkoutItem */
+/** @typedef {{id: 'knee'|'archery'|'cardio', title: string, items: WorkoutItem[]}} WorkoutBlock */
 
 /**
  * @typedef {Object} Workout
  * @property {string} id
  * @property {string} name
  * @property {string} phaseId
- * @property {number} durationMin
+ * @property {number} durationMin   estimate at level 0 (duration.estimateWorkoutMinutes)
+ * @property {WorkoutKind} [kind]   v2, default "strength"
+ * @property {number} [maxSets]     v2 set cap per item (item.maxSets wins)
+ * @property {number} [maxMinutes]  v2 time budget; buildSessionPlan trims sets to fit (not for cardio)
+ * @property {string} [description]
  * @property {WorkoutItem[]} warmup
  * @property {WorkoutBlock[]} blocks
  * @property {WorkoutItem[]} cooldown
@@ -68,6 +80,14 @@
  * @property {string} description
  * @property {string[]} exitCriteria
  * @property {{A: string, B: string, C: string}} workouts
+ * @property {'prehab'|'postop'} [kind]  v2, default "prehab"
+ * @property {number} [plannedWeeks]     v2 schedule recommendation
+ * @property {string} [short]            v2 Kurztraining workout id
+ * @property {string[]} [cardio]         v2 rowing workout ids (empty after surgery)
+ * @property {string} [clearanceNote]    v2 postop
+ * @property {string} [gaitNote]         v2 postop
+ * @property {string} [redFlagNote]      v2 postop
+ * @property {string} [endNote]          v2 postop
  */
 
 /**
@@ -125,7 +145,39 @@
  * @property {number} fontScale         1 | 1.125 | 1.25 (applied to <html> font-size)
  * @property {string[]} ownedEquipment  equipment ids the user owns (Ausrüstung)
  * @property {string|null} lastBackupAt ISO timestamp of the last JSON export
+ * @property {number} cardioGoalPerWeek   v2 rowing sessions per week (default 3)
+ * @property {string} surgeryDateSuggested v2 pre-fill value ("2027-01-05"), never auto-applied
+ * @property {Profile} profile            v2
+ * @property {WeightGoal|null} weightGoal v2
  */
+
+/** @typedef {{heightCm: number|null, birthYear: number|null, sex: 'm'|'w'|'d'|null, activityLevel: 'sedentary'|'light'|'moderate'|'active'}} Profile */
+/** @typedef {{targetKg: number, targetDate: string, startKg: number, startDate: string}} WeightGoal */
+/** @typedef {{durationSec?: number, distanceM?: number, avgSpm?: number, avgWatt?: number, kcalDisplay?: number, avgHr?: number, maxHr?: number}} RowingLog */
+/**
+ * @typedef {Object} HealthEntry
+ * @property {string} date "YYYY-MM-DD" (one entry per date)
+ * @property {number} [weightKg]
+ * @property {number} [bodyFatPct]
+ * @property {number} [waistCm]
+ * @property {number} [steps]
+ * @property {number} [activeMin]
+ * @property {number} [restingHr]
+ * @property {number} [avgTrainingHr]
+ * @property {number} [sleepH]
+ * @property {string} [note]
+ * @property {'samsung-health-manual'} source
+ */
+/**
+ * @typedef {Object} CustomWorkout
+ * @property {string} id  "cw-…"
+ * @property {string} name
+ * @property {'custom'} kind
+ * @property {string} createdAt
+ * @property {string} updatedAt
+ * @property {WorkoutItem[]} warmup
+ * @property {{id: 'knee'|'archery', title: string, items: WorkoutItem[]}[]} blocks
+ * @property {WorkoutItem[]} cooldown
 
 /** @typedef {{done: boolean, reps?: number|null, hold?: number|null, seconds?: number|null, band?: string|null, at: string}} SetLog */
 
@@ -149,9 +201,11 @@
  * @property {{locking: boolean, givingWay: boolean}} mechanical
  * @property {boolean} nightPain
  * @property {boolean} swellingOver48h
+ * @property {boolean} [redness]  v2 post-op red flag (Rötung/Überwärmung)
+ * @property {boolean} [fever]    v2 post-op red flag
  */
 
-/** @typedef {{pain: number, swelling: 0|1|2, rpe: number|null, note: string}} PostCheck */
+/** @typedef {{pain: number, swelling: 0|1|2, rpe: number|null, note: string, redness?: boolean, fever?: boolean}} PostCheck */
 
 /**
  * @typedef {Object} NextDay
@@ -161,6 +215,8 @@
  * @property {boolean} [nightPain]
  * @property {boolean} [locking]
  * @property {boolean} [givingWay]
+ * @property {boolean} [redness]  v2 post-op
+ * @property {boolean} [fever]    v2 post-op
  * @property {string} [at]
  */
 
@@ -195,6 +251,10 @@
  * @property {number} [xpEarned]
  * @property {{points: number, max: number}} [score]
  * @property {{index: number, set: number, step: 'pre'|'exercise'|'post'|'summary'}} [cursor]  active only
+ * @property {WorkoutKind} [kind]     v2 (missing = strength)
+ * @property {RowingLog|null} [rowing] v2 cardio sessions: display values
+ * @property {boolean} [postOp]       v2 session in a post-op phase (stricter traffic light)
+ * @property {{kcal: number, method: string}} [energy] v2 optional stored estimate
  */
 
 /**
@@ -211,6 +271,11 @@
  * @property {string|null} lastSeenQuoteDay
  * @property {boolean} welcomeDone      first-run welcome card on Heute hidden by the user
  * @property {boolean} bandsConfirmed   band order confirmed in the welcome card
+ * @property {CustomWorkout[]} customWorkouts v2
+ * @property {HealthEntry[]} healthLog        v2 sorted by date
+ * @property {Record<string, boolean>} exerciseToggles v2 false = disabled, true = enabled despite postOpAllowed=false
+ * @property {{confirmedAt: string, note: string}|null} postOpClearance    v2
+ * @property {{confirmedAt: string, note: string}|null} postOpEndClearance v2
  */
 
 /**

@@ -35,6 +35,11 @@ export function defaults() {
       fontScale: 1,
       ownedEquipment: [],
       lastBackupAt: null,
+      // v2 (additive, SPEC §12.2)
+      cardioGoalPerWeek: 3,
+      surgeryDateSuggested: '2027-01-05', // pre-fill only – never copied into surgeryDate automatically
+      profile: { heightCm: null, birthYear: null, sex: null, activityLevel: 'light' },
+      weightGoal: null,                    // { targetKg, targetDate, startKg, startDate }
     },
     state: {
       phaseId: 'p1-basis',
@@ -49,6 +54,12 @@ export function defaults() {
       lastSeenQuoteDay: null,
       welcomeDone: false,
       bandsConfirmed: false,
+      // v2 (additive, SPEC §12.2)
+      customWorkouts: [],
+      healthLog: [],
+      exerciseToggles: {},                 // exerciseId → false (disabled) | true (enabled despite postOpAllowed=false)
+      postOpClearance: null,               // { confirmedAt, note } – unlocks phase p4 after the surgery date
+      postOpEndClearance: null,            // { confirmedAt, note } – doctor's release ends p4 early
     },
     sessions: [],
   };

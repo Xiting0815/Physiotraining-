@@ -17,7 +17,13 @@
         "A": "p1-a",
         "B": "p1-b",
         "C": "p1-c"
-      }
+      },
+      "kind": "prehab",
+      "plannedWeeks": 3,
+      "short": "p1-short",
+      "cardio": [
+        "p1-row"
+      ]
     },
     {
       "id": "p2-aufbau",
@@ -36,7 +42,14 @@
         "A": "p2-a",
         "B": "p2-b",
         "C": "p2-c"
-      }
+      },
+      "kind": "prehab",
+      "plannedWeeks": 3,
+      "short": "p2-short",
+      "cardio": [
+        "p2-row",
+        "p2-row-intervals"
+      ]
     },
     {
       "id": "p3-op-vorbereitung",
@@ -53,7 +66,40 @@
         "A": "p3-a",
         "B": "p3-b",
         "C": "p3-c"
-      }
+      },
+      "kind": "prehab",
+      "plannedWeeks": 2.5,
+      "short": "p3-short",
+      "cardio": [
+        "p3-row",
+        "p3-row-intervals",
+        "p3-row-endurance"
+      ]
+    },
+    {
+      "id": "p4-entlastung",
+      "name": "Phase 4 – Entlastung nach der OP",
+      "order": 4,
+      "kind": "postop",
+      "plannedWeeks": 6,
+      "description": "6 Wochen nach der Mikrofrakturierung links ohne Belastung (Krücken). Ziel: Quadrizeps aktiv halten, Streckung sichern, Beweglichkeit nur im freigegebenen Bereich, gesundes Bein, Oberkörper, Bogen und Rumpf im Sitzen oder Liegen. Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+      "clearanceNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang. Einzelne Übungen kannst du passend zum Protokoll deines Teams aus- oder einschalten.",
+      "gaitNote": "Gangschule mit Krücken: Belastung des linken Beins genau so, wie Arzt/Physio es vorgeben (meist ohne bzw. nur Bodenkontakt). Die App trainiert das Gehen nicht – nur Hinweis.",
+      "redFlagNote": "Neue Schwellung, Rötung, Überwärmung, Fieber oder Schmerz über 5/10: Arzt kontaktieren.",
+      "endNote": "Entlastungsphase geschafft – Reha-Phase mit Physio planen.",
+      "exitCriteria": [
+        "6 Wochen seit der OP vergangen oder ärztliche Freigabe zur Belastung",
+        "Keine neue Schwellung, Rötung oder Fieber",
+        "Quadrizeps anspannen ohne Streckdefizit",
+        "Freigegebener Beugewinkel erreicht"
+      ],
+      "workouts": {
+        "A": "p4-a",
+        "B": "p4-b",
+        "C": "p4-c"
+      },
+      "short": "p4-short",
+      "cardio": []
     }
   ]
 }

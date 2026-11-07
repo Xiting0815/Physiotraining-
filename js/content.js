@@ -1,4 +1,5 @@
 // Loads static content from data/*.json. See docs/SPEC.md §6.1–6.6, §7.4.
+import { getWorkout as logicGetWorkout } from './logic/progression.js';
 
 const FILES = ['exercises', 'workouts', 'phases', 'poses', 'badges'];
 const dataUrl = (name) => new URL(`../data/${name}.json`, import.meta.url).href;
@@ -55,6 +56,11 @@ export const getContent = () => content;
 export const getExercise = (id) => content?.exercises.find((e) => e.id === id);
 /** @param {string} id */
 export const getWorkout = (id) => content?.workouts.find((w) => w.id === id);
+/**
+ * v2: any workout incl. the user's custom workouts (`state.customWorkouts`), see logic/progression.getWorkout.
+ * @param {string} id @param {import('./types.js').State} [state]
+ */
+export const getAnyWorkout = (id, state) => (content ? logicGetWorkout(id, content, state) : undefined);
 /** @param {string} id */
 export const getPhase = (id) => content?.phases.find((p) => p.id === id);
 /** @param {string} id */

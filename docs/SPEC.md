@@ -1,5 +1,6 @@
 # Physiotraining – SPEC (single source of truth)
 
+Version 2.0 · 2026-11-07 (2.0: §12 „v2 – Rudern, Kurztraining, eigene Workouts, Gesundheit & Abnehmen“ incl. OP-Termin 2027-01-05, Krücken-Vorbereitung, Post-OP-Phase p4. Where §12 and §0–§11 disagree, §12 wins.)
 Version 1.1 · 2026-10-31 (1.1: integration/QA – documented deviations from WP0 in §3, §4.2, §6.4, §6.7, §7.4, §7.5, §8)
 
 This document is binding for all work packages. If code and SPEC disagree, the SPEC wins
@@ -51,6 +52,13 @@ js/logic/traffic-light.js   evaluateSession, finalizeWithNextDay, recommendLevel
 js/logic/progression.js     nextWorkout, phaseProgress, applyRecommendation, levelOf
 js/logic/stats.js           streak, weeklyProgress, trends, personalRecords
 js/logic/motivation.js      xpFor, levelFor, evaluateBadges, dailyQuote, opCountdown
+js/logic/duration.js        v2 duration estimates, 30-min fit (§12.3)
+js/logic/cardio.js          v2 rowing phases, display values, totals (§12.4)
+js/logic/custom-workouts.js v2 user workouts (§12.5)
+js/logic/energy.js          v2 BMR/TDEE, session kcal, weight goal (§12.6)
+js/logic/health.js          v2 daily health log (§12.7)
+js/logic/schedule.js        v2 phase timing, post-op gate (§12.9, §12.10)
+js/logic/insights.js        v2 weekly report, correlations, OP readiness (§12.11)
 js/components/pt-timer.js   <pt-timer>
 js/components/pt-figure.js  <pt-figure>
 js/components/pt-pain-scale.js <pt-pain-scale>
@@ -768,3 +776,281 @@ dependencies; German UI copy; relative paths.
 „Diese App ersetzt keine ärztliche oder physiotherapeutische Beratung. Bei starken
 Schmerzen, Blockieren, zunehmender Schwellung oder Nachtschmerz: Training stoppen und
 Rücksprache halten.“
+
+---
+
+## 12. v2 – Rudern, Kurztraining, eigene Workouts, Gesundheit & Abnehmen
+
+Package V2-A (data + pure logic + tests) is done; UI packages build on the contracts below. All logic is pure
+(`node --test`, `tests/logic-v2.test.js`). German UI copy. Everything in this section is **additive**:
+no exported signature from §7 was removed or renamed.
+
+### 12.1 New context
+
+- **Surgery:** suggested date **2027-01-05** (microfracture, left knee), then **6 weeks non-weight-bearing**
+  (crutches). From 2026-11-07 ≈ 8.5 weeks of prehab.
+- **Rowing machine** (MERACH, magnetic, display: time, distance, SPM, watts, kcal, maybe pulse). Doctor/physio
+  cleared **full rowing before surgery**, but the pain traffic light applies to rowing too. Rowing is **forbidden
+  after surgery** during the non-weight-bearing phase (`postOpAllowed: false`).
+- **Goals:** lose weight (target + date), strength sessions **≤ 30 min**, rowing as **separate** cardio sessions
+  15–20 min, **3× rowing per week** until surgery (`settings.cardioGoalPerWeek = 3`), 3× strength per week stays,
+  ~15-min **Kurztraining**, **own workouts**, daily **health log** (manual copy from Samsung Health), calorie estimates.
+- Conservative limits from §5 stay (no further medical instructions before surgery).
+
+### 12.2 Data model additions
+
+**Settings** (defaults in `store.defaults()`, filled into old data by `migrate()` deep merge – **no schema bump**,
+`SCHEMA_VERSION` stays 1 because everything is additive):
+
+```jsonc
+"cardioGoalPerWeek": 3,
+"surgeryDateSuggested": "2027-01-05",   // pre-fill only (welcome card / Mehr); NEVER copied into surgeryDate automatically
+"profile": { "heightCm": null, "birthYear": null, "sex": null /* "m"|"w"|"d" */, "activityLevel": "light" /* sedentary|light|moderate|active */ },
+"weightGoal": null                       // { targetKg, targetDate "YYYY-MM-DD", startKg, startDate }
+```
+
+**State:**
+
+```jsonc
+"customWorkouts": [],        // CustomWorkout[] (§12.5)
+"healthLog": [],             // HealthEntry[] sorted by date, one per date (§12.7)
+"exerciseToggles": {},       // exerciseId → false (user disabled, any phase) | true (enabled despite postOpAllowed=false)
+"postOpClearance": null,     // { confirmedAt ISO, note } – user confirms doctor/physio clearance → unlocks p4
+"postOpEndClearance": null   // { confirmedAt ISO, note } – doctor's release ends p4 before 6 weeks
+```
+
+**Session** (additive): `kind` (`"strength"|"short"|"cardio"|"custom"`, missing = strength),
+`rowing: RowingLog|null` (cardio only; `null` until entered), `postOp: true` (session built in a post-op phase),
+optional `energy: {kcal, method}` if the UI wants to store the estimate. Pre/post/next-day checks may carry
+`redness` and `fever` booleans (asked in post-op phases).
+`RowingLog = { durationSec?, distanceM?, avgSpm?, avgWatt?, kcalDisplay?, avgHr?, maxHr? }` (all optional numbers).
+Exercise entries can have `section: "cardio"` and `trimmed: true` (sets cut by the time budget).
+
+**Exercise** (additive fields): `block` may be `"cardio"`; `postOpAllowed?: boolean` (missing = true),
+`postOpNote?: string`; rowing levels may carry `intensity` (`easy|moderate|vigorous`), `targetSpm [lo,hi]`,
+`targetRpe [lo,hi]`, `restActive` (rest = easy rowing), `phases [{label, seconds, intensity}]` (technique drill).
+New equipment id `rowing-machine`.
+
+**Workout** (additive): `kind` (`strength|short|cardio`, content never uses `custom`), `maxSets` (set cap per
+item; `item.maxSets` wins), `maxMinutes` (time budget: strength 30, short 15, cardio 20), `description`.
+`durationMin` = `estimateWorkoutMinutes` at level 0 (kept in sync by a test). Blocks: strength/short
+`["knee","archery"]` (≥ 3 / ≥ 2 items), cardio `["cardio"]`; short workouts have no cool-down.
+`data/workouts.json` `version: 2`.
+
+**Phase** (additive): `kind: "prehab"|"postop"` (missing = prehab), `plannedWeeks`, `short` (Kurztraining id),
+`cardio` (rowing workout ids), post-op only: `clearanceNote`, `gaitNote`, `redFlagNote`, `endNote`.
+
+### 12.3 Duration & the 30-minute rule — `js/logic/duration.js`
+
+- `estimateExerciseSeconds(entry, exercise, settings) → seconds`: `sets × work + (sets−1) × rest + setup`.
+  work: reps × tempo-sum (`"3-1-2"` = 6 s; no tempo 3 s/rep) · hold: reps × hold + (reps−1) × 3 s · timed: seconds.
+  `perSide` → work × 2 + 5 s switch. rest = `settings.restDefault` (if set and level.rest > 0) else level.rest.
+  setup 20 s (0 for block `cardio`). `entry` = session entry or `{level, plannedSets?, override?}`.
+- `estimateWorkoutSeconds / estimateWorkoutMinutes(workoutOrPlan, content, state, settings)` – a workout
+  (levels from `state.exerciseLevels`, caps from `maxSets`, phaseMin filter as buildSessionPlan) or a session plan
+  (`{exercises}`; skipped entries = 0). Minutes rounded up. Use this for every „ca. N Min“ label (Heute, Plan, builder).
+- `cappedSets(levelSets, item, workout)`, `fitPlanToMinutes(plan, content, settings, maxMinutes = 30)` (in place:
+  removes one set at a time from the main-block entry with the most sets, ties → longest; never < 1 set, never
+  removes exercises, warm-up/cool-down last; marks `trimmed: true`), `tempoSeconds`, `workoutItems`,
+  constants `SETUP_SEC=20`, `SIDE_SWITCH_SEC=5`, `MAX_SESSION_MIN=30`.
+- **How ≤ 30 min is guaranteed:** strength workouts were shortened to 1 warm-up + 4–5 knee + 4 archery + 1
+  cool-down with `maxSets: 2` (warm-up/cool-down items `maxSets: 1`); at level 0 every strength workout estimates
+  24–29 min without trimming. Higher levels raise reps/holds/bands; `buildSessionPlan` then calls
+  `fitPlanToMinutes(plan, …, workout.maxMinutes)` so plans stay ≤ 30 min (≤ 15 for short) even at max levels
+  (tested for every workout). The session UI should show `plannedSets` as usual (a small hint „gekürzt für 30 Min“
+  on `trimmed` entries is welcome). Progression semantics are unchanged (levels still progress; volume is capped).
+
+### 12.4 Rowing (cardio) — content, flow, `js/logic/cardio.js`
+
+Exercises (block `cardio`, type `timed`, side both, `postOpAllowed: false`, technique instructions + knee note):
+`row-technique-warmup` (2 min: arms → arms+body → half slide → full stroke), `row-steady` (12/13/14/15 min,
+RPE 4–5, SPM 18–22), `row-intervals` (phaseMin p2; 6×/7×/8× (1 min zügig / 1 min locker), 6× (90 s / 60 s),
+RPE 6–7, SPM 22–26, `restActive`), `row-endurance` (phaseMin p3; 13/14/15 min), `row-cooldown` (2 min).
+Knee note (all): cleared for full rowing, but traffic light applies; bend the knee only as far as pain-free (do
+not roll fully forward if needed); stop at pain > 5/10, sharp pain, locking or giving way; no rowing after surgery.
+Technique: legs – body – arms, recovery reversed, controlled catch (shins ~vertical, never „crash“ into flexion).
+
+Workouts (`kind: "cardio"`, warm-up `row-technique-warmup`, block `cardio`, cool-down `row-cooldown`, 15–20 min):
+p1 `p1-row` „Rudern – Grundlage“; p2 `p2-row`, `p2-row-intervals` „Rudern – Intervalle“; p3 `p3-row`,
+`p3-row-intervals`, `p3-row-endurance` „Rudern – Ausdauer“; p4 none.
+
+**Session flow (cardio):** pre-check (same as §4.2) → guided rowing timer → enter display values → post-check →
+summary with kcal.
+- Timer phases: `rowingPhases(plan, content) → [{exerciseId, entryIndex, label, seconds, intensity, kind:
+  'work'|'rest', targetSpm, targetRpe, set, sets}]` (drills from `level.phases`; intervals alternate work and
+  „Locker rudern“). `rowingPlannedSeconds(plan, content)`. Show intensity (`INTENSITY_LABELS`), SPM/RPE targets, and
+  a persistent „Stopp bei Schmerz > 5 / Blockieren“ hint. Mark each entry's set(s) done with `{done, seconds}`.
+  Ask „Knieschmerz beim Rudern“ (0–10) on the main `cardio` entry (`painDuring`, mandatory like knee entries) –
+  it now counts for the traffic light (§12.10); optional `rpe` on that entry (else `post.rpe` is used).
+- Display values form → `validateRowing(input) → {ok, value: RowingLog, errors}` (ranges `ROWING_RANGES`, comma
+  decimals ok, empty fields dropped) → `session.rowing = value`. Default `durationSec` = elapsed timer seconds.
+  Show `pacePer500(rowing)` („2:30 /500 m“).
+- `rowingTotals(sessions) → {sessions, distanceM, durationSec, kcalDisplay}`, `rowingRecords(sessions)`,
+  `cardioMainLabel(workout, content, state)` (level label for cards).
+- Recommendations: `recommendLevels` now also handles section `cardio`: knee light red/stop → regress, yellow →
+  hold; else RPE (entry `rpe`, fallback `post.rpe`) ≥ 9 regress, 7–8 hold, ≤ 6 with green in 2 consecutive rowing
+  sessions at that level → progress.
+- **Rotation:** cardio/short/custom sessions must **not** advance A/B/C. `nextWorkout` ignores non-strength ids.
+  ⚠ `views/session-helpers.js finishSession` currently calls `advanceWorkout({...state, nextWorkoutId: s.workoutId}, phase)`,
+  which resets to A for non-rotation ids → UI agent must replace it with
+  **`rotationAfter(state, phase, s.workoutId)`** (progression.js). Also: `xpFor` already handles cardio; for cardio
+  sessions `sessionScore` (target face) is optional – show distance/time/kcal instead.
+
+### 12.5 Custom workouts — `js/logic/custom-workouts.js`
+
+`CustomWorkout = {id "cw-…", name (≤ 60), kind:"custom", createdAt, updatedAt, warmup: Item[], blocks:
+[{id:"knee", title, items}, {id:"archery", title, items}], cooldown: Item[]}` (blocks always both, in this order;
+`CUSTOM_BLOCKS` gives default titles; items `{exerciseId, note?}`; max 20 items).
+
+- `createCustomWorkout(state, input, content, {now, settings}) → {state, workout, warnings}` (throws German Error)
+- `updateCustomWorkout(state, id, input, content, {now, settings}) → {state, workout, warnings}` (keeps id/createdAt)
+- `deleteCustomWorkout(state, id) → state`, `duplicateAsCustom(state, workoutId, content, opts)` („Kopie von …“)
+- `validateCustomWorkout(custom, content, state, settings) → {ok, errors[], warnings[], estimatedMin}` —
+  errors: no name, no exercise, unknown id, rowing exercise (→ „als eigene Rudereinheit“), > 20 items;
+  **warnings** (allowed): phaseMin above current phase, knee/archery exercise in the other block, exercise
+  blocked/disabled in the current phase, duplicates, estimate > 30 min.
+- `toWorkout(custom, state)` → Workout (`kind: "custom"`, `phaseId = state.phaseId`, `maxMinutes: 30`),
+  `normalizeCustom`, `newCustomId`, `mergeCustomWorkouts(cur, inc)` (by id, newer `updatedAt` wins).
+- **`getWorkout(id, content, state)`** (progression.js, re-exported here; also `content.getAnyWorkout(id, state)`)
+  finds content workouts first, then custom ones. Session start for any workout:
+  `buildSessionPlan(getWorkout(id, content, state), state, content, {taper, history, settings})`.
+  For custom workouts phaseMin is **not** filtered (warning only); post-op blocks and user toggles still apply.
+
+### 12.6 Energy & weight — `js/logic/energy.js` (always labelled „Schätzung“)
+
+- `bmr(profile, kg, today)` Mifflin–St Jeor (`10·kg + 6.25·cm − 5·age + s`, s = +5 m / −161 w / −78 d), `tdee`
+  (× `ACTIVITY_FACTORS` sedentary 1.2, light 1.375, moderate 1.55, active 1.725), `bmi`, `ageFrom`.
+- `sessionKcal(session, profile, latestWeightKg, content?) → {kcal, method: 'display'|'watt'|'met', met, label}`:
+  rowing: display kcal if entered > watt formula **kcal/h = 4·W + 300** (Concept2-style) > MET (moderate 4.8,
+  vigorous 7.0 when the level is vigorous or RPE ≥ 7) × kg × h. Strength/short/custom: MET =
+  2.8·kneeShare + 3.5·(1 − kneeShare), × RPE factor (≤ 3: 0.85, 4–6: 1, 7–8: 1.15, ≥ 9: 1.25), × kg × active h
+  (ended − started − pausedMs). Default weight 80 kg. `sessionDurationSec`, `kcalByDay(sessions, profile, log, content, dayOf)`.
+- `currentWeight(log, today)` = mean of the last 7 days (fallback latest), `weightTrend(log, today, 21)` (least
+  squares, ≥ 4 points → `{kgPerWeek, …}`).
+- `goalProgress(log, goal, today, profile?) → {currentKg, startKg, targetKg, lostKg, remainingKg, ratio, daysLeft,
+  requiredKgPerWeek, trendKgPerWeek, onTrack, projectedDate, reached, warnings[]}` — warnings when required
+  > 0.75 kg/week, target BMI < 18.5, date passed. `projectedDate` from the 21-day trend.
+- `calorieTarget(profile, log, goal, today) → {kcal, tdee, deficit, floorApplied, label}`: deficit =
+  required rate × 7700 / 7 clamped to **500–750 kcal** (0 if no goal/reached), floor **1500 m / 1200 w / 1350 d**.
+  Requires a complete profile (else `null` → UI asks for Profil).
+
+### 12.7 Health log — `js/logic/health.js`
+
+`HealthEntry = {date, weightKg?, bodyFatPct?, waistCm?, steps?, activeMin?, restingHr?, avgTrainingHr?, sleepH?,
+note?, source: "samsung-health-manual"}`; ranges/labels/units in `HEALTH_FIELDS`.
+`validateEntry`, `upsertEntry(log, entry, {replace}) → new log` (one per date, merges fields, `null` removes a
+field, throws German Error), `removeEntry`, `entryFor`, `latest(log, field, today?)`, `series(log, field, days,
+today)` (→ `lineChart` points), `meanOf`, `weeklyAverages(log, {weeks, today})`, `logStreak(log, today)`,
+`longestLogStreak`, `mergeLogs(cur, inc)` (by date, current values win, gaps filled).
+XP: `motivation.healthLogXp(prevLog, date)` = 5 for the first entry of a date (call before upserting).
+
+### 12.8 Motivation
+
+- `XP` gains `cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20, healthLog: 5`; `xpFor(session)` returns
+  `cardioXp` for rowing (20 + 2 × min(minutes, 20) → 15–20 min ≈ 50–60 XP, comparable to a 30-min strength
+  session ≈ 70–80 XP + 10 next-day). 3 strength + 3 rowing + 7 logs per week ≈ 430–470 XP → Robin Hood after
+  ~26–28 weeks (test). `rowedMinutes(session)`.
+- New badges (`data/badges.json`) and rule types in `badgeRuleMet(rule, data, {today})`:
+  `first-row` „Erste Ruderfahrt“ (`cardioCount` 1), `row-10km` / `row-50km` (`rowingDistance` 10000/50000 m),
+  `first-custom` „Erstes eigenes Workout“ (`customWorkout`), `minus-2kg` / `minus-5kg` (`weightLost`: start =
+  weightGoal.startKg or first logged weight vs 7-day mean), `goal-reached` „Ziel erreicht“ (`weightGoalReached`),
+  `log-7` „7 Tage Tagebuch“ (`healthLogStreak` 7). Evaluate badges also after health-log saves and custom-workout
+  creation (`evaluateBadges(data, content.badges, {today})`).
+- `weekSessions` and `greenWeek` badges count strength sessions only; `sessionsCount` counts all.
+- Stats (`stats.js`): `isCardioSession`, `strengthSessions`, `cardioSessions`; `weeklyProgress` and `streak`
+  count **strength-type** sessions (strength/short/custom); `streak(sessions, goal, today, {cardio: true})` for
+  rowing; `cardioProgress(sessions, cardioGoal, today) → {done, goal, ratio, minutes, distanceM}`;
+  `trends().perWeek[]` gains `cardio` count; `sameDayLoadHint(sessions, today, startingKind?)` → German hint when
+  rowing and strength fall on the same day (show before starting the second one and on the summary).
+
+### 12.9 Phase timing — `js/logic/schedule.js`
+
+Phase changes stay **criteria-based and user-confirmed**; the app only shows a time recommendation.
+`plannedWeeks`: p1 3, p2 3, p3 2.5 (taper = last 7 days, from 2026-12-29), p4 6.
+`phaseSchedule(phases, surgeryDate, {prehabStart}) → [{phaseId, kind, start, end, days}]` plans backwards from
+surgery: with 2027-01-05 → p1 (prehabStart …) – 2026-11-27, p2 2026-11-28 – 12-18, p3 12-19 – 2027-01-04,
+p4 2027-01-05 – 02-15. `scheduleHint(phases, settings, state, today) → {expectedPhaseId, status:
+'none'|'onTrack'|'ahead'|'behind', daysLeftInPhase, text}` (Plan + Heute). `taperStart(date)`,
+`suggestedSurgeryDate(settings)` (= `surgeryDateSuggested` only while `surgeryDate` is null → pre-fill the date
+input in the welcome card and Mehr; the user must confirm), constants `DEFAULT_SURGERY_DATE`, `POSTOP_DAYS = 42`.
+
+### 12.10 Crutch preparation & post-op phase p4
+
+**Prehab additions** (all inside the 30-min frame, in every phase's A/B/C): `chair-dip` „Stütz-Dips am Stuhl“,
+`band-triceps-extension` „Trizeps-Strecken mit Band“, `seated-press-up` „Abstützen im Sitz (Krücken-Stütz)“
+(lat/shoulder depression), `right-leg-sit-to-stand` (healthy right leg), `single-leg-stance-reach` (left-leg
+control) plus existing `single-leg-stance`, `quad-set`, `tke`, `straight-leg-raise`, `dead-bug`, `pallof-press`.
+Strength block titles: „Knie & Beine“, „Bogen, Rücken & Stütz“.
+
+**Phase `p4-entlastung`** (order 4, `kind: "postop"`, 6 weeks, workouts `p4-a/b/c`, `p4-short`, no cardio).
+Exercises (from typical microfracture protocols, weeks 0–6): ankle pumps, quad sets, straight-leg raise (only
+without extension lag / with locked brace as instructed), **patellar mobilisation** (`patella-mobilization`, new),
+heel slides / flexion only within the permitted range (often 0–90° progressing, depends on lesion site femur vs.
+patella), side-lying hip abduction, **glute sets** (`glute-set`, new), healthy right leg (`right-leg-band-press`,
+new, lying), upper body / archery / trunk seated or lying (rows, pull-aparts, SPT seated, triceps, crutch support
+with left foot off the floor, prone Y-T-W, dead bug with left leg resting). Gait training with crutches = hint
+only (`phase.gaitNote`). Every p4 knee item carries „Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat
+Vorrang.“ Sources: Northwestern Medicine microfracture protocol
+(https://www.nm.org/-/media/northwestern/resources/care-areas/orthopaedics/nmh-sports-medicine-protocols/knee/northwestern-medicine-microfracture-on-wb-surface.pdf),
+Lahey distal femoral/tibial microfracture protocol (https://lahey.org/-/media/files/lhmc/orthopedics/knee/lhmc-distal-femoral-and-proximal-tibial-microfracture.pdf),
+OSMS microfracture femoral condyle (https://osmsgb.s3.amazonaws.com/wp-content/uploads/2022/06/09104502/OSMSPT.MicrofractureFemCondyle.pdf),
+Sports Health review 2021 (https://pmc.ncbi.nlm.nih.gov/articles/PMC8167347). Protocols are surgeon-specific.
+
+- **Blocked after surgery** (`postOpAllowed: false`): all rowing, every standing/loaded-left exercise
+  (sit-to-stand, mini-squat, step-up, lateral-step-down, wall-sit, tke, calf-raise, single-leg-stance(-reach),
+  lateral-band-walk, standing hip abd/ext, right-leg-sit-to-stand), bridges, resisted seated knee ext/curl,
+  bow-arm-push, side-plank, wall-slide, chair-dip, standing stretches, clamshell. Exercises with `postOpNote`
+  („im Sitzen ausführen …“) stay allowed – show the note in post-op sessions.
+- `exerciseAvailable(exercise, phase, state)` (progression.js): `exerciseToggles[id] === false` → off anywhere;
+  in postop phases `postOpAllowed === false` → only if `exerciseToggles[id] === true`. `buildSessionPlan` applies it.
+  UI: per-exercise switch („Für mich freigegeben / deaktiviert“) in exercise detail and on the p4 plan, with a
+  confirm for enabling blocked ones („nur wenn dein Team es erlaubt“).
+- **Unlock:** `postOpStatus(settings, state, today) → {surgeryPassed (today > surgeryDate), cleared, unlocked,
+  daysSince, week, daysLeft, ended, reasons[], message}`; `canEnterPhase(phase, settings, state, today) →
+  {ok, reasons}` – p4 needs surgery date passed **and** `state.postOpClearance` (`clearance(note, now)` builds it;
+  UI: „Freigabe durch Arzt/Physio bestätigen“ + optional note). Phase change itself stays the Plan's
+  „Nächste Phase starten“. **End:** 42 days or `postOpEndClearance` → `message` „Entlastungsphase geschafft –
+  Reha-Phase mit Physio planen.“ (no further phase yet).
+- **Traffic light in post-op sessions** (`session.postOp`, set by buildSessionPlan): redness, fever, pain > 5
+  (pre/during/post/next day) or **any new swelling** → `stop` with reason „Entlastungsphase: bitte Arzt kontaktieren – …“
+  and a `consult` recommendation. Pre-/post-check UI in p4 must also ask „Rötung/Überwärmung“ and „Fieber“
+  (`redness`, `fever`) and show `phase.redFlagNote`.
+- Taper (§5.2) only concerns prehab; rowing remains available up to the surgery day.
+
+### 12.11 Insights — `js/logic/insights.js` (no physio export)
+
+- `weeklyReport(data, content, today, {weekOf?}) → {weekStart, weekEnd, strength {done, goal}, cardio {done, goal,
+  minutes, distanceM}, lights {green,yellow,red,stop}, avgPrePain, avgNextDayPain, prevAvgNextDayPain, load,
+  prevLoad, kcal, weight {startKg, endKg, deltaKg}, health {sleepH?, steps?, restingHr?, activeMin?}, logDays,
+  highlights[], notes[]}` (notes include same-day rowing+strength).
+- `sessionLoad(session)` = session-RPE (post.rpe default 5 × active minutes); `loadVsPain(sessions, {today, days=56})
+  → {points[{date, load, nextDayPain, kind}], r, n, text, weekly[{weekStart, load, avgNextDayPain}]}`.
+- `sleepVsPain(log, sessions, {today, days=90})` (sleep on wake-up date d vs knee pain on d) and
+  `stepsVsPain` (steps on d vs pain on d+1) → `{pairs, r, n, text}`. `dailyPain(sessions)` (next-day check-in pain
+  wins, else pre-session pain). `pearson(xs, ys)` → null below **`MIN_POINTS = 8`** pairs;
+  `correlationText` is cautious (leichte/mäßige/deutliche **Tendenz**, „keinen Beweis für Ursache und Wirkung“).
+- `opReadiness(data, content, today) → {score 0–100, label, parts {criteria 30, strength 25, swellingFree 25,
+  regularity 20}, tips[]}` (labels: ≥ 80 „Sehr gut vorbereitet“, ≥ 60 „Auf gutem Weg“, ≥ 40 „Im Aufbau“, else
+  „Am Anfang“; heuristic, not a medical assessment – say so in the UI).
+- `weightInsight(log, today) → {currentKg, kgPerWeek, n, text}`.
+
+### 12.12 UI expectations (for the UI packages)
+
+- **Heute** cards (in this order after hero): next strength workout (A/B/C, `estimateWorkoutMinutes`),
+  **Kurztraining** card („Nur 15 Minuten?“ → `phase.short`), **Rudern** card (cardio ring `cardioProgress` x/3,
+  workout picker from `phase.cardio`, level label, `sameDayLoadHint`), **Gewicht-Ziel** card (`goalProgress`:
+  ring = ratio, current 7-day weight, „noch X kg“, on-track text, warnings, `calorieTarget` „ca. N kcal/Tag
+  (Schätzung)“; no goal → CTA „Ziel festlegen“), **Tagebuch** card (today's entry yes/no, streak, quick add),
+  schedule hint (`scheduleHint`), post-op cards in p4 (`postOpStatus`: week x/6, red-flag note, end message).
+  Welcome card pre-fills the OP date with `suggestedSurgeryDate(settings)` (user confirms).
+- **Routes (proposal):** `#/eigene` (list of custom workouts: start, edit, duplicate, delete), `#/eigene/neu` and
+  `#/eigene/:id` (builder: name, warm-up/knee/archery/cool-down lists, add from library with filters, reorder,
+  live „ca. N Min“, warnings from `validateCustomWorkout`), `#/gesundheit` (health log form for a date with all
+  `HEALTH_FIELDS`, list, charts via `series`/`weeklyAverages`, weight goal, insights: weekly report,
+  `loadVsPain`, `sleepVsPain`, `stepsVsPain`, `opReadiness`), `#/profil` (or a section in Mehr: profile,
+  weight goal, cardioGoalPerWeek, exercise toggles). Session start for any workout: `#/session?workout=<id>`.
+- **Session flow cardio** = pre-check → rowing guided timer (`rowingPhases`) → display values (`validateRowing`)
+  → post-check → summary with kcal (`sessionKcal`, method label) + XP + badges; next-day check-in as usual.
+- Plan: show phase schedule, short + rowing workouts per phase, p4 locked state with `canEnterPhase` reasons.
+- Verlauf: cardio sessions in the list/heatmap (icon), rowing totals, per-week bars with strength + rowing.
+- `sw.js` precache must be regenerated (`node tools/gen-precache.mjs`) for the new logic modules.

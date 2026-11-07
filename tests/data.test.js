@@ -10,7 +10,7 @@ const phases = load('phases').phases;
 const posesFile = load('poses');
 const badges = load('badges').badges;
 
-const BLOCKS = ['knee', 'archery', 'warmup', 'cooldown'];
+const BLOCKS = ['knee', 'archery', 'warmup', 'cooldown', 'cardio'];
 const TYPES = ['reps', 'hold', 'timed'];
 const SIDES = ['both', 'left', 'right', 'alternate', 'perSide'];
 const BANDS = [null, 'yellow', 'red', 'green', 'blue', 'loop-orange', 'loop-blue'];
@@ -71,7 +71,8 @@ test('workouts reference existing exercises', () => {
     assert.match(w.id, ID);
     assert.ok(phases.some((p) => p.id === w.phaseId), `${w.id}.phaseId`);
     const items = [...w.warmup, ...w.blocks.flatMap((b) => b.items), ...w.cooldown];
-    for (const b of w.blocks) assert.ok(['knee', 'archery'].includes(b.id), `${w.id} block ${b.id}`);
+    for (const b of w.blocks) assert.ok(['knee', 'archery', 'cardio'].includes(b.id), `${w.id} block ${b.id}`);
+    assert.ok(['strength', 'short', 'cardio'].includes(w.kind ?? 'strength'), `${w.id} kind`);
     for (const it of items) assert.ok(ids.has(it.exerciseId), `${w.id} → ${it.exerciseId}`);
   }
 });
@@ -101,7 +102,7 @@ test('poses have all angle keys', () => {
 });
 
 test('badges: required ids and known rule types', () => {
-  const types = ['sessionsCount', 'weekSessions', 'totalHoldSeconds', 'phaseCompleted', 'greenWeek', 'personalRecord', 'comeback'];
+  const types = ['sessionsCount', 'weekSessions', 'totalHoldSeconds', 'phaseCompleted', 'greenWeek', 'personalRecord', 'comeback', 'cardioCount', 'rowingDistance', 'customWorkout', 'weightLost', 'weightGoalReached', 'healthLogStreak'];
   for (const b of badges) assert.ok(types.includes(b.rule.type), b.id);
   for (const id of ['first-session', 'week-3', 'sessions-10', 'sessions-25', 'sessions-50', 'hold-5min', 'phase-done', 'green-week', 'personal-record', 'comeback']) {
     assert.ok(badges.some((b) => b.id === id), id);
@@ -116,16 +117,34 @@ test('content: workout structure, phaseMin and knee notes', () => {
   const byId = new Map(exercises.map((e) => [e.id, e]));
   const order = new Map(phases.map((p) => [p.id, p.order]));
   for (const w of workouts) {
-    assert.ok(w.warmup.length > 0 && w.cooldown.length > 0, `${w.id} warmup/cooldown`);
-    assert.deepEqual(w.blocks.map((b) => b.id), ['knee', 'archery'], `${w.id} blocks`);
-    for (const b of w.blocks) assert.ok(b.items.length >= 4, `${w.id}.${b.id} has ≥ 4 items`);
+    const kind = w.kind ?? 'strength';
+    // v2: strength 30 min (≥ 3 per block), short ~15 min (≥ 2 per block, no cool-down needed), cardio = rowing
+    assert.ok(w.warmup.length > 0 && (kind === 'short' || w.cooldown.length > 0), `${w.id} warmup/cooldown`);
+    if (kind === 'cardio') {
+      assert.deepEqual(w.blocks.map((b) => b.id), ['cardio'], `${w.id} blocks`);
+      for (const it of [...w.warmup, ...w.blocks.flatMap((b) => b.items), ...w.cooldown]) assert.equal(byId.get(it.exerciseId).block, 'cardio', `${w.id} → ${it.exerciseId}`);
+    } else {
+      assert.deepEqual(w.blocks.map((b) => b.id), ['knee', 'archery'], `${w.id} blocks`);
+      for (const b of w.blocks) assert.ok(b.items.length >= (kind === 'short' ? 2 : 3), `${w.id}.${b.id} has enough items`);
+    }
+    const phase = phases.find((p) => p.id === w.phaseId);
+    if (phase.kind === 'postop') {
+      for (const it of [...w.warmup, ...w.blocks.flatMap((b) => b.items), ...w.cooldown]) {
+        assert.notEqual(byId.get(it.exerciseId).postOpAllowed, false, `${w.id} uses post-op blocked ${it.exerciseId}`);
+      }
+    }
     const items = [...w.warmup, ...w.blocks.flatMap((b) => b.items), ...w.cooldown];
     for (const it of items) {
       const e = byId.get(it.exerciseId);
       assert.ok(order.get(e.phaseMin) <= order.get(w.phaseId), `${w.id} uses ${e.id} before its phaseMin ${e.phaseMin}`);
     }
   }
-  for (const e of exercises) if (e.block === 'knee') assert.ok(e.kneeNote.length > 0, `${e.id} knee exercise needs kneeNote`);
+  for (const e of exercises) if (e.block === 'knee' || e.block === 'cardio') assert.ok(e.kneeNote.length > 0, `${e.id} knee/cardio exercise needs kneeNote`);
+  for (const e of exercises) if ('postOpAllowed' in e) assert.equal(typeof e.postOpAllowed, 'boolean', e.id);
+  for (const e of exercises) if (e.block === 'cardio') {
+    assert.equal(e.type, 'timed', e.id);
+    assert.equal(e.postOpAllowed, false, `${e.id}: rowing is blocked after surgery`);
+  }
   for (const p of phases) assert.ok(p.description && p.exitCriteria.length > 0, p.id);
 });
 
