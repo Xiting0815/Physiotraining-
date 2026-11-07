@@ -421,6 +421,33 @@ function rowerSeatSvg(p, P) {
   return `<g class="fig-prop fig-rower-seat">${carriage}<circle class="fig-prop-solid" cx="${f(x - 6)}" cy="${f(p.rail - 1.4)}" r="1.6"/><circle class="fig-prop-solid" cx="${f(x + 6)}" cy="${f(p.rail - 1.4)}" r="1.6"/>
     <rect class="fig-prop-solid fig-seat" x="${f(x - 12)}" y="${f(p.seat)}" width="24" height="5" rx="2.5"/></g>`;
 }
+/**
+ * Feet stay on the foot stretcher during animation (pure): re-solve both legs (2-link IK, knee flexed)
+ * so the ankle point sits on `foot`, sole along `foot.a`. Keyframes from tools/gen-poses.mjs already
+ * satisfy this; interpolated frames would otherwise slide a few px.
+ */
+export function lockFeet(pose, foot, segments = DEFAULT_SEGMENTS) {
+  if (!foot || pose.view === 'front') return pose;
+  const S = { ...DEFAULT_SEGMENTS, ...segments };
+  const out = { ...pose };
+  const hip = { x: num(pose.root?.x, 100), y: num(pose.root?.y, 100) };
+  for (const s of ['L', 'R']) {
+    const L1 = S.thigh * num(pose['thighLen' + s], 1);
+    const L2 = S.shin * num(pose['shinLen' + s], 1);
+    const v = { x: foot.x - hip.x, y: foot.y - hip.y };
+    const d = Math.min(Math.hypot(v.x, v.y), L1 + L2 - 1e-3);
+    const b = Math.atan2(v.x, v.y) / RAD;
+    const a = Math.acos(Math.max(-1, Math.min(1, (L1 * L1 + d * d - L2 * L2) / (2 * L1 * d)))) / RAD;
+    const thigh = b + a; // knee in front of the hip → shin rotates backward (knee flexion > 0)
+    const k = add(hip, down(thigh, L1));
+    const shin = Math.atan2(foot.x - k.x, foot.y - k.y) / RAD;
+    out['hip' + s] = thigh;
+    out['knee' + s] = thigh - shin;
+    out['ankle' + s] = shin - (num(foot.a, 130) - 90);
+  }
+  return out;
+}
+
 function rowerStrapSvg(p, P) {
   const h = P.hands;
   return `<path class="fig-strap" d="M${f(p.exit.x)} ${f(p.exit.y)}L${f(h.x)} ${f(h.y)}"/>`;
@@ -615,6 +642,7 @@ export function buildScene(spec) {
   const opts = { highlightLeftKnee: !!spec.highlightLeftKnee, highlight: spec.highlight || [], mirror };
 
   function figure(pose) {
+    if (rower) pose = lockFeet(pose, rower.foot, segments);
     const P = computePoints(pose, segments);
     let s = '';
     if (!top && pose.ground === 'standing') {

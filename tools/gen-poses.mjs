@@ -839,7 +839,7 @@ const armLen = (e) => Math.hypot(SEG.upperArm + SEG.forearm * Math.cos(e * RAD),
   const Pc = pts(cat);
   const exit = { x: r1(Pc.handR.x + 7), y: r1(Pc.handR.y - 1) };
   // finish: legs long (knee ~5°), lean back ~15° (11 o'clock), handle at the lower ribs, elbows behind the body
-  const finHipX = F.x - Math.sqrt((SEG.thigh + SEG.shin - 0.4) ** 2 - (F.y - hipY) ** 2);
+  const finHipX = F.x - Math.sqrt((SEG.thigh + SEG.shin - 0.08) ** 2 - (F.y - hipY) ** 2);
   const fin = base(finHipX, -15);
   {
     const P = pts(fin);

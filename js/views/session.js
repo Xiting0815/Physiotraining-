@@ -1344,7 +1344,7 @@ export function render(root, ctx) {
     session.workoutName = workout.name;
     session.pausedMs = 0;
     if (!session.exercises.length) {
-      const postop = phaseOf(session)?.kind === 'postop';
+      const postop = (content.phases.find((p) => p.id === data.state.phaseId) ?? phaseOf(session))?.kind === 'postop';
       paint(root, html`<section class="card"><div class="empty"><div class="empty__art" aria-hidden="true" style="font-size:44px">${kind === 'cardio' ? '🚣' : '🩺'}</div>
         <h2 class="empty__title">${kind === 'cardio' && postop ? 'Rudern ist gerade gesperrt' : 'Keine Übungen verfügbar'}</h2>
         <p class="empty__text">${postop ? 'In der Entlastungsphase nach der OP sind diese Übungen nicht freigegeben. Bitte halte dich an das Protokoll deines Teams.' : 'Alle Übungen dieses Workouts sind deaktiviert oder für deine Phase noch nicht freigegeben.'}</p>
