@@ -7,12 +7,19 @@ import { parseISODate } from '../util/date.js';
 /* Labels                                                              */
 /* ------------------------------------------------------------------ */
 
-export const BLOCK_LABEL = { warmup: 'Aufwärmen', knee: 'Knie', archery: 'Bogen', cooldown: 'Abschluss' };
-export const BLOCK_LONG = { warmup: 'Aufwärmen', knee: 'Knie-Block', archery: 'Bogen-/Rücken-Block', cooldown: 'Cool-down' };
+export const BLOCK_LABEL = { warmup: 'Aufwärmen', knee: 'Knie', archery: 'Bogen', cooldown: 'Abschluss', cardio: 'Rudern' };
+export const BLOCK_LONG = { warmup: 'Aufwärmen', knee: 'Knie-Block', archery: 'Bogen-/Rücken-Block', cooldown: 'Cool-down', cardio: 'Rudern' };
 export const EQUIPMENT_LABEL = {
   theraband: 'TheraBand', loop: 'Loop-Band', mat: 'Matte', chair: 'Stuhl', step: 'Stufe',
-  wall: 'Wand', door: 'Tür', none: 'Ohne Geräte',
+  wall: 'Wand', door: 'Tür', none: 'Ohne Geräte', 'rowing-machine': 'Rudergerät',
 };
+/** v2 workout/session kinds (SPEC §12.2). Missing kind = strength. */
+export const KIND_LABEL = { strength: 'Krafttraining', short: 'Kurztraining', cardio: 'Rudern', custom: 'Eigenes Workout' };
+export const KIND_ICON = { strength: '🦵', short: '⚡', cardio: '🚣', custom: '🧩' };
+/** Rowing intensity labels (capitalised for chips; logic/cardio.js INTENSITY_LABELS are lower-case). */
+export const INTENSITY_LABEL = { easy: 'Locker', moderate: 'Gleichmäßig', vigorous: 'Zügig' };
+/** @param {{kind?: string}|null|undefined} x workout or session */
+export const kindOf = (x) => x?.kind ?? 'strength';
 export const TRAFFIC_SHORT = { green: 'Grün', yellow: 'Gelb', red: 'Rot', stop: 'Stopp' };
 export const TRAFFIC_LONG = {
   green: 'Grün – passt', yellow: 'Gelb – halten', red: 'Rot – zurück', stop: 'Stopp – ärztlich abklären',
@@ -53,6 +60,15 @@ export const ICON = {
   plus: svg('<path d="M6 12h12M12 6v12"/>'),
   knee: svg('<path d="M9 3v7l-2 5 3 6M15 3v6l1 5-2 7"/>'),
   bow: svg('<path d="M6 3c8 3 8 15 0 18M6 3v18M3 12h16M16 9l3 3-3 3"/>'),
+  row: svg('<circle cx="6" cy="6" r="2"/><path d="M7 8l3 5h5M3 19h18M10 13l-3 6M15 13l3-6 3-1"/>'),
+  scale: svg('<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 9a5 5 0 0 1 8 0l-3 2.5"/>'),
+  book: svg('<path d="M5 4.5h10a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10M9 8h5"/>'),
+  user: svg('<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/>'),
+  heart: svg('<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>'),
+  bolt: svg('<path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/>'),
+  puzzle: svg('<path d="M10 4h4v3a1.5 1.5 0 0 0 3 0V4h3v6h-3a1.5 1.5 0 0 0 0 3h3v7h-6v-3a1.5 1.5 0 0 0-3 0v3H4v-7h3a1.5 1.5 0 0 0 0-3H4V4z"/>'),
+  copy: svg('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
+  lock: svg('<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>'),
   sparkle: svg('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>'),
 };
 
@@ -162,6 +178,45 @@ export function equipmentItems(eq) {
   if (eq && Array.isArray(eq.items)) return eq.items;
   if (eq && Array.isArray(eq.equipment)) return eq.equipment;
   return [];
+}
+
+/**
+ * German number format: 1 decimal by default, comma separator, no trailing ",0" when `trim`.
+ * @param {number|null|undefined} n @param {number} [digits] @param {{trim?: boolean, sign?: boolean}} [o]
+ */
+export function fmtNum(n, digits = 1, { trim = false, sign = false } = {}) {
+  if (n == null || !Number.isFinite(Number(n))) return '–';
+  const v = Number(n);
+  let s = v.toFixed(digits);
+  if (trim && digits > 0) s = s.replace(/\.?0+$/, '');
+  s = s.replace('.', ',');
+  if (sign && v > 0) s = '+' + s;
+  return s;
+}
+
+/** Integer with German thousands separator: 12345 → "12.345". */
+export function fmtInt(n) {
+  if (n == null || !Number.isFinite(Number(n))) return '–';
+  return String(Math.round(Number(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+/** Distance in m → "850 m" / "12,4 km". */
+export function fmtDistance(m) {
+  if (!m) return '0 m';
+  return m < 1000 ? `${Math.round(m)} m` : `${fmtNum(m / 1000, 1, { trim: true })} km`;
+}
+
+/**
+ * Award newly earned badges on a data draft (mutates): state.badges[id] = now, +XP.badge each.
+ * @param {any} d data draft @param {any[]} badgeDefs @param {(data: any, defs: any[], o: any) => string[]} evaluate
+ * @param {{today: string, now?: Date, xpPerBadge?: number}} o
+ * @returns {string[]} new badge ids
+ */
+export function awardBadges(d, badgeDefs, evaluate, { today, now = new Date(), xpPerBadge = 15 }) {
+  const ids = evaluate(d, badgeDefs || [], { today });
+  for (const id of ids) d.state.badges = { ...(d.state.badges || {}), [id]: now.toISOString() };
+  d.state.xp = (d.state.xp || 0) + ids.length * xpPerBadge;
+  return ids;
 }
 
 /** Greeting by local hour. @param {Date} [now] */
@@ -485,6 +540,86 @@ a.card.pv-badge-row, .pv-badge-row { display: flex; align-items: center; gap: va
 .pv-ex-sum li + li { border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
 .pv-ex-sum__name { flex: 1; min-width: 0; }
 .pv-ex-sum__val { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---- v2: Heute cards ---- */
+.pv-sched { display: flex; gap: var(--s-2); align-items: flex-start; margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); font-size: var(--fs-sm); color: var(--muted); }
+.pv-sched .chip { flex: none; }
+.pv-sched__text { min-width: 0; line-height: 1.4; }
+.pv-icon-badge { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; background: var(--surface-2); color: var(--text); }
+.pv-icon-badge svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pv-icon-badge--primary { background: var(--primary-soft); color: var(--primary-ink); }
+.pv-icon-badge--accent { background: var(--accent-soft); color: var(--accent-ink); }
+.pv-icon-badge--gold { background: var(--gold-soft); color: var(--gold-ink); }
+.pv-icon-badge--green { background: var(--green-soft); color: var(--green-ink); }
+.pv-quick { display: flex; align-items: center; gap: var(--s-3); }
+.pv-quick__title { font-size: var(--fs-md); font-weight: var(--fw-bold); margin: 2px 0 2px; line-height: 1.25; }
+.pv-quick__sub { margin: 0; font-size: var(--fs-sm); color: var(--muted); line-height: 1.35; }
+.pv-quick .btn { flex: none; }
+.pv-quick .btn svg, .pv-start .btn svg { width: 14px; height: 14px; }
+.pv-row-card__head, .pv-goal__head, .pv-postop-card__head { display: flex; align-items: center; gap: var(--s-3); }
+.pv-row-card__head .ring, .pv-postop-card__head .ring { flex: none; }
+.pv-goal__head .ring { flex: none; --size: 96px; }
+.pv-start-list { list-style: none; margin: var(--s-3) 0 0; padding: 0; display: flex; flex-direction: column; }
+.pv-start { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) 0; min-height: var(--tap); }
+.pv-start + .pv-start { border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+.pv-start__body { flex: 1; min-width: 0; }
+.pv-start__name { display: block; font-weight: var(--fw-semibold); line-height: 1.3; }
+.pv-start__meta { display: block; font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
+.pv-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin: var(--s-3) 0 var(--s-2); }
+.pv-kv > div { background: var(--surface-2); border-radius: var(--radius-sm); padding: var(--s-2); min-width: 0; }
+.pv-kv dt { font-size: var(--fs-xs); color: var(--muted); font-weight: var(--fw-semibold); }
+.pv-kv dd { margin: 0; font-weight: var(--fw-bold); font-size: var(--fs-sm); line-height: 1.3; }
+.pv-kv dd small { display: block; font-size: var(--fs-xs); font-weight: var(--fw-semibold); color: var(--muted); }
+.pv-goal__track { font-size: var(--fs-sm); color: var(--muted); margin: 0 0 var(--s-3); }
+.pv-goal__track.is-on { color: var(--green-ink); }
+.pv-goal__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); flex-wrap: wrap; border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); padding-top: var(--s-2); }
+a.card.pv-tile, .pv-tile { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--s-2); justify-content: flex-start; }
+.pv-tile__icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary-ink); }
+.pv-tile__icon svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pv-tile__icon.is-done { background: var(--green); color: #fff; }
+.pv-tile__icon.is-done svg { stroke-width: 3; }
+.pv-tile__title { font-weight: var(--fw-bold); line-height: 1.25; }
+.pv-tile__tip { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400; }
+.pv-tiles.is-single { grid-template-columns: minmax(0, 1fr); }
+a.card.pv-report, .pv-report { display: flex; align-items: center; gap: var(--s-3); }
+.pv-report .eyebrow { display: block; margin: 0; }
+.pv-postop { }
+.pv-postop__lead { color: var(--on-hero-muted); margin: 0 0 var(--s-3); }
+.pv-postop-card { border: 2px solid color-mix(in srgb, var(--primary) 28%, transparent); }
+.pv-postop-card .card__title { margin: 0; }
+.pv-clear-check { margin-top: var(--s-3); padding: var(--s-3); border-radius: var(--radius-sm); background: var(--surface-2); font-weight: var(--fw-semibold); }
+.pv-hero-hint { font-size: var(--fs-sm); color: var(--on-hero-muted); margin: 0 0 var(--s-3); }
+.pv-more { margin-top: var(--s-2); }
+.pv-more .quote { margin-bottom: var(--s-3); }
+.pv-more .card { margin-bottom: var(--s-3); }
+.pv-sec-label__link { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: var(--fw-semibold); }
+/* ---- v2: Plan ---- */
+.pv-phase-row { display: flex; align-items: center; gap: var(--s-3); }
+.pv-phase-row__dates { font-variant-numeric: tabular-nums; }
+.pv-subhead { font-size: var(--fs-sm); font-weight: var(--fw-bold); color: var(--muted); margin: var(--s-4) 0 var(--s-1); text-transform: uppercase; letter-spacing: .08em; }
+.pv-lock { display: flex; gap: var(--s-3); align-items: flex-start; }
+.pv-lock svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; color: var(--muted); margin-top: 2px; }
+.pv-toggle-row { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) 0; min-height: var(--tap); }
+.pv-toggle-row + .pv-toggle-row { border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+.pv-toggle-row__body { flex: 1; min-width: 0; }
+.pv-toggle-row__name { display: block; font-weight: var(--fw-semibold); line-height: 1.3; }
+.pv-toggle-row__meta { display: block; font-size: var(--fs-xs); color: var(--muted); }
+.pv-toggle-row.is-off .pv-toggle-row__name { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+.pv-ex-row.is-off { opacity: 0.55; }
+/* ---- v2: Profil ---- */
+.pv-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+.pv-form-grid .field { margin: 0; min-width: 0; }
+.pv-input-unit { position: relative; display: block; }
+.pv-input-unit .input { padding-right: 44px; width: 100%; }
+.pv-input-unit > span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: var(--fs-sm); pointer-events: none; }
+.pv-preview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); margin-top: var(--s-3); }
+.pv-preview > div { background: var(--surface-2); border-radius: var(--radius-sm); padding: var(--s-2) var(--s-3); min-width: 0; }
+.pv-preview dt { font-size: var(--fs-xs); color: var(--muted); font-weight: var(--fw-semibold); }
+.pv-preview dd { margin: 0; font-weight: var(--fw-black); font-size: var(--fs-lg); font-variant-numeric: tabular-nums; }
+.pv-preview dd small { font-size: var(--fs-xs); font-weight: var(--fw-semibold); color: var(--muted); }
+.field__error { display: block; color: var(--red-ink, var(--red)); font-size: var(--fs-xs); font-weight: var(--fw-semibold); margin-top: 4px; }
+.field__error:empty { display: none; }
+.input.is-invalid { border-color: var(--red); }
 `;
 
 export function ensureViewStyles() {

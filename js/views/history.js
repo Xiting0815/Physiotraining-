@@ -3,6 +3,11 @@ import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE, addDays } from '../util/date.js';
 import { streak, trends, personalRecords, totalHoldSeconds, sessionLight, dayOf, doneSessions } from '../logic/stats.js';
 import { sessionScore, levelFor } from '../logic/motivation.js';
+import { getWorkout } from '../logic/progression.js';
+import { rowingTotals, rowingRecords, pacePer500 } from '../logic/cardio.js';
+import { sessionKcal, currentWeight } from '../logic/energy.js';
+import { longestLogStreak } from '../logic/health.js';
+import { ensureV2Styles, ICON2, sessionKind, fmtNum, fmtDistance, fmtClock, fmtPace, KCAL_METHOD_LABEL } from './v2-shared.js';
 import { lineChart, barChart, calendarHeatmap } from '../components/charts.js';
 import { targetFace } from '../components/celebrate.js';
 import {
@@ -31,6 +36,15 @@ export function badgeHint(badge, data) {
     case 'greenWeek': return 'Woche ganz grün';
     case 'personalRecord': return 'Rekord verbessern';
     case 'comeback': return `nach ${rule.n ?? 10} Tagen Pause`;
+    case 'cardioCount': return `noch ${Math.max(0, (rule.n ?? 1) - done.filter((s) => sessionKind(s) === 'cardio').length)} Rudereinheit`;
+    case 'rowingDistance': {
+      const km = (m) => (Math.round(m / 100) / 10).toLocaleString('de-DE');
+      return `${km(Math.min(rule.n ?? 10000, rowingTotals(done).distanceM))} / ${km(rule.n ?? 10000)} km`;
+    }
+    case 'customWorkout': return 'eigenes Workout bauen';
+    case 'weightLost': return `${rule.n ?? 2} kg leichter`;
+    case 'weightGoalReached': return 'Gewichtsziel erreichen';
+    case 'healthLogStreak': return `${Math.min(rule.n ?? 7, longestLogStreak(data?.state?.healthLog || []))} / ${rule.n ?? 7} Tage`;
     default: return badge?.description ?? '';
   }
 }
@@ -46,15 +60,46 @@ export function deleteSession(d, id) {
 
 const RANGE = { '6w': 42, '3m': 91 };
 
+/** Filter chips of the session list/calendar. */
+export const KIND_FILTERS = [['all', 'Alle'], ['strength', 'Kraft'], ['cardio', 'Rudern'], ['short', 'Kurz'], ['custom', 'Eigene']];
+
+/** Sessions matching a kind filter ('all' | 'strength' | 'cardio' | 'short' | 'custom'). */
+export function filterSessions(sessions, kind = 'all') {
+  return (sessions || []).filter((s) => kind === 'all' || sessionKind(s) === kind);
+}
+
+/** Display name of a session's workout (content, custom, deleted custom). */
+export function sessionTitle(s, content, state) {
+  const w = getWorkout(s?.workoutId, content, state);
+  if (w?.name) return w.name;
+  const k = sessionKind(s);
+  return k === 'cardio' ? 'Rudern' : k === 'custom' ? 'Eigenes Workout' : k === 'short' ? 'Kurztraining' : 'Training';
+}
+
+/** One-line rowing summary: „4,25 km · 2:21 /500 m“. */
+export function rowingLine(s) {
+  const r = s?.rowing || {};
+  const parts = [];
+  if (r.distanceM) parts.push(fmtDistance(r.distanceM));
+  const pace = pacePer500(r);
+  if (pace) parts.push(fmtPace(pace));
+  else if (r.durationSec) parts.push(`${Math.round(r.durationSec / 60)} Min`);
+  return parts.join(' · ');
+}
+
 /** @param {HTMLElement} root @param {import('../types.js').ViewContext} ctx */
 export function render(root, { store, content, query }) {
   ensureViewStyles();
+  ensureV2Styles();
   const today = todayISO();
   let month = today.slice(0, 7);
   let range = '6w';
   let showAll = false;
+  let kind = KIND_FILTERS.some(([k]) => k === query.filter) ? query.filter : 'all';
+  let barMode = 'strength';
   const exName = (id) => content.exercises.find((e) => e.id === id)?.name ?? id;
-  const wName = (id) => content.workouts.find((w) => w.id === id)?.name ?? 'Training';
+  const sTitle = (s) => sessionTitle(s, content, store.getState());
+  const kcalOf = (s, data) => sessionKcal(s, data.settings.profile, currentWeight(data.state.healthLog || [], dayOf(s)), content);
 
   const draw = () => {
     const data = store.get();
@@ -67,8 +112,13 @@ export function render(root, { store, content, query }) {
     const recs = personalRecords(done, settings);
     const lvl = levelFor(state.xp || 0);
     const minMonth = done.length ? dayOf(done[0]).slice(0, 7) : today.slice(0, 7);
-    const monthCount = done.filter((s) => dayOf(s).startsWith(month)).length;
-    const list = done.slice().reverse();
+    const shown = filterSessions(done, kind);
+    const monthCount = shown.filter((s) => dayOf(s).startsWith(month)).length;
+    const list = shown.slice().reverse();
+    const rows = rowingTotals(done);
+    const rrec = rowingRecords(done);
+    const recDate = (rec) => { const hit = rec && done.find((x) => x.id === rec.sessionId); return hit ? { date: dayOf(hit) } : null; };
+    const kindCount = Object.fromEntries(KIND_FILTERS.map(([k]) => [k, filterSessions(done, k).length]));
     const visible = showAll ? list : list.slice(0, 8);
     const lightsCount = { green: 0, yellow: 0, red: 0, stop: 0 };
     for (const s of done) { const l = sessionLight(s); if (l) lightsCount[l] += 1; }
@@ -102,6 +152,22 @@ export function render(root, { store, content, query }) {
         <div class="stat stat--gold"><span class="stat__value">${state.xp || 0}<span class="stat__unit">XP</span></span><span class="stat__label">${lvl.title}</span></div>
       </div>
 
+      ${rows.sessions ? html`<section class="card card--accent">
+        <div class="hero__row"><div class="grow"><p class="hero__eyebrow">Rudern gesamt</p>
+          <h2 class="hero__title">${fmtDistance(rows.distanceM)}</h2></div>
+          <span class="v2-row-icon" aria-hidden="true" style="color:var(--on-hero)">${raw(ICON2.row)}</span></div>
+        <p class="hero__meta mb-0"><span><span class="num">${rows.sessions}</span>&nbsp;${rows.sessions === 1 ? 'Einheit' : 'Einheiten'}</span><span>${raw(ICON.clock)} ${humanSeconds(rows.durationSec).value} ${humanSeconds(rows.durationSec).unit}</span>${rows.kcalDisplay ? html`<span>🔥 ${fmtNum(rows.kcalDisplay)} kcal (Anzeige)</span>` : ''}</p>
+      </section>
+      <section class="card pv-records">
+        ${recordRow('📏', 'Weiteste Strecke', rrec.distanceM ? fmtDistance(rrec.distanceM.value) : null, recDate(rrec.distanceM), null)}
+        ${recordRow('⚡', 'Beste Ø-Leistung', rrec.avgWatt ? `${fmtNum(rrec.avgWatt.value)} W` : null, recDate(rrec.avgWatt), null)}
+        ${recordRow('⏱️', 'Längste Fahrt', rrec.durationSec ? `${fmtClock(rrec.durationSec.value)} min` : null, recDate(rrec.durationSec), null)}
+      </section>` : ''}
+
+      <div class="chip-row chip-row--scroll v2-filter-row" role="group" aria-label="Einheiten filtern">
+        ${KIND_FILTERS.map(([k, label]) => html`<button class="chip chip--filter" data-kind="${k}" aria-pressed="${String(kind === k)}" ${k !== 'all' && !kindCount[k] ? 'disabled' : ''}>${label} <span class="num">${kindCount[k]}</span></button>`)}
+      </div>
+
       <section class="card">
         <div class="pv-month-nav">
           <button class="btn btn--icon btn--outline btn--sm" data-month="-1" aria-label="Vorheriger Monat" ${month <= minMonth ? 'disabled' : ''}>${raw(ICON.left)}</button>
@@ -115,7 +181,7 @@ export function render(root, { store, content, query }) {
           <span><i style="--c:var(--red);width:10px;height:10px;border-radius:2px"></i>Rot</span>
           <span><i style="--c:var(--stop);width:10px;height:10px;border-radius:2px"></i>Stopp</span>
         </div>
-        <p class="text-sm muted center mt-2 mb-0"><span class="num">${greenPct} %</span> deiner Einheiten waren grün${lightsCount.green >= 3 ? ' – stark!' : '.'}</p>
+        <p class="text-sm muted center mt-2 mb-0"><span class="num">${greenPct} %</span> deiner Einheiten waren grün${lightsCount.green >= 3 ? ' – stark!' : '.'}${kind !== 'all' ? html`<br>Kalender gefiltert: ${KIND_FILTERS.find(([k]) => k === kind)[1]}` : ''}</p>
       </section>
 
       <section class="card">
@@ -130,7 +196,11 @@ export function render(root, { store, content, query }) {
       </section>
 
       <section class="card">
-        <div class="card__header"><h3 class="card__title">Einheiten pro Woche</h3><span class="chip chip--gold chip--sm">Ziel ${settings.weeklyGoal}</span></div>
+        <div class="card__header"><h3 class="card__title">Einheiten pro Woche</h3><span class="chip chip--gold chip--sm">Ziel ${barMode === 'cardio' ? settings.cardioGoalPerWeek ?? 3 : settings.weeklyGoal}</span></div>
+        ${rows.sessions ? html`<div class="segmented mb-2" role="radiogroup" aria-label="Art der Einheiten">
+          <label><input type="radio" name="barmode" value="strength" ${barMode === 'strength' ? 'checked' : ''}><span>Kraft</span></label>
+          <label><input type="radio" name="barmode" value="cardio" ${barMode === 'cardio' ? 'checked' : ''}><span>Rudern</span></label>
+        </div>` : ''}
         <div data-bar></div>
       </section>
 
@@ -143,19 +213,29 @@ export function render(root, { store, content, query }) {
 
       ${badgeSection(data)}
 
-      <h2 class="section-title">Alle Einheiten <span class="num">${done.length}</span></h2>
+      <h2 class="section-title">${kind === 'all' ? 'Alle Einheiten' : `Einheiten · ${KIND_FILTERS.find(([k]) => k === kind)[1]}`} <span class="num">${shown.length}</span></h2>
+      ${shown.length ? '' : html`<p class="pv-empty-sm">Keine Einheiten in diesem Filter.</p>`}
       <ul class="list list--card">
-        ${visible.map((s) => html`<li><button class="list-item pv-session-item" data-session="${s.id}">
-          <span class="list-item__icon ${s.exercises?.some((e) => e.section === 'archery') && !s.exercises?.some((e) => e.section === 'knee' && !e.skipped) ? 'list-item__icon--accent' : ''}">${String(wName(s.workoutId)).trim().charAt(0)}</span>
-          <span class="list-item__body"><span class="list-item__title">${wName(s.workoutId)}</span>
-          <span class="list-item__sub">${shortDate(dayOf(s))}${sessionMinutes(s) ? ` · ${sessionMinutes(s)} Min` : ''}</span></span>
+        ${visible.map((s) => {
+          const k = sessionKind(s);
+          const name = sTitle(s);
+          const kc = kcalOf(s, data).kcal;
+          const sub = k === 'cardio'
+            ? [shortDate(dayOf(s)), rowingLine(s) || (sessionMinutes(s) ? `${sessionMinutes(s)} Min` : ''), kc ? `${fmtNum(kc)} kcal` : ''].filter(Boolean).join(' · ')
+            : `${shortDate(dayOf(s))}${sessionMinutes(s) ? ` · ${sessionMinutes(s)} Min` : ''}${kc ? ` · ≈ ${fmtNum(kc)} kcal` : ''}`;
+          const iconCls = k === 'cardio' || (s.exercises?.some((e) => e.section === 'archery') && !s.exercises?.some((e) => e.section === 'knee' && !e.skipped)) ? 'list-item__icon--accent' : k === 'custom' ? 'list-item__icon--gold' : '';
+          return html`<li><button class="list-item pv-session-item" data-session="${s.id}">
+          <span class="list-item__icon ${iconCls}" aria-hidden="true">${k === 'cardio' ? raw(ICON2.row) : String(name).trim().charAt(0)}</span>
+          <span class="list-item__body"><span class="list-item__title">${name}${k === 'short' ? html` <span class="chip chip--sm chip--outline">Kurz</span>` : k === 'custom' ? html` <span class="chip chip--sm chip--gold">Eigen</span>` : ''}</span>
+          <span class="list-item__sub">${sub}</span></span>
           <span class="list-item__trail">${trafficPill(sessionLight(s))}</span>
-        </button></li>`)}
+        </button></li>`;
+        })}
       </ul>
       ${list.length > visible.length ? html`<button class="btn btn--outline btn--block" data-more>Alle ${list.length} anzeigen</button>` : ''}
     `);
 
-    calendarHeatmap(root.querySelector('[data-cal]'), done.map((s) => ({ date: dayOf(s), value: 1, traffic: sessionLight(s) })), { month, today, label: `Trainingskalender ${monthTitle(month)}` });
+    calendarHeatmap(root.querySelector('[data-cal]'), shown.map((s) => ({ date: dayOf(s), value: 1, traffic: sessionLight(s) })), { month, today, label: `Trainingskalender ${monthTitle(month)}` });
     lineChart(root.querySelector('[data-line]'), {
       series: [
         { name: 'vorher', color: 'var(--chart-1)', points: tr.pre },
@@ -165,7 +245,10 @@ export function render(root, { store, content, query }) {
       yMax: 10,
     }, { label: 'Schmerzverlauf vorher, nachher, Folgetag', greenMax: settings.painThresholds?.greenMax, yellowMax: settings.painThresholds?.yellowMax, from: addDays(today, -(RANGE[range] - 1)), to: today });
     const weeks = tr.perWeek.slice(-8);
-    barChart(root.querySelector('[data-bar]'), weeks.map((w) => ({ label: `KW${w.week.slice(-2)}`, value: w.count, goal: settings.weeklyGoal })), { label: 'Einheiten pro Woche' });
+    const cardioMode = barMode === 'cardio' && rows.sessions;
+    barChart(root.querySelector('[data-bar]'), weeks.map((w) => (cardioMode
+      ? { label: `KW${w.week.slice(-2)}`, value: w.cardio ?? 0, goal: settings.cardioGoalPerWeek ?? 3 }
+      : { label: `KW${w.week.slice(-2)}`, value: w.count, goal: settings.weeklyGoal })), { label: cardioMode ? 'Rudereinheiten pro Woche' : 'Krafteinheiten pro Woche' });
   };
 
   const openSession = (id) => {
@@ -176,14 +259,29 @@ export function render(root, { store, content, query }) {
     const score = sessionScore(s, settings, content);
     const light = sessionLight(s);
     const minutes = sessionMinutes(s);
+    const cardio = sessionKind(s) === 'cardio';
+    const kc = kcalOf(s, data);
+    const r = s.rowing || {};
+    const pace = pacePer500(r);
+    const wName = () => sTitle(s);
     const dlg = openSheet(html`
       <p class="eyebrow">${formatDE(dayOf(s))}${minutes ? ` · ${minutes} Min` : ''}</p>
-      <h2 class="sheet__title">${wName(s.workoutId)}</h2>
+      <h2 class="sheet__title">${wName()}</h2>
       <div class="pv-lights">${trafficPill(light, { long: true })}${s.traffic?.final ? html`<span class="chip chip--sm chip--outline">final</span>` : html`<span class="chip chip--sm chip--outline">vorläufig</span>`}${s.taper ? html`<span class="chip chip--sm chip--accent">Taper</span>` : ''}</div>
       ${(s.traffic?.reasons || []).length ? html`<ul class="pv-reasons">${s.traffic.reasons.map((r) => html`<li>${r}</li>`)}</ul>` : ''}
-      <div class="summary-head mb-0"><p class="summary-head__title" style="font-size:var(--fs-2xl)">${score.headline}</p>
+      ${cardio ? html`<div class="summary-head mb-0"><p class="summary-head__title" style="font-size:var(--fs-2xl)">${r.distanceM ? fmtDistance(r.distanceM) : 'Ruder-Einheit'}</p>
+          <p class="summary-head__sub">${s.xpEarned ? html`<span class="xp-gain">+${s.xpEarned} XP</span> · ` : ''}${pace ? fmtPace(pace) : 'Werte vom Display'}</p></div>
+        <div class="v2-kpis mt-4">
+          <div class="v2-kpi"><span class="v2-kpi__v num">${r.durationSec ? fmtClock(r.durationSec) : minutes ? `${minutes}:00` : '–'}</span><span class="v2-kpi__l">Zeit</span></div>
+          <div class="v2-kpi"><span class="v2-kpi__v num">${r.avgSpm ?? '–'}</span><span class="v2-kpi__l">Schläge/Min</span></div>
+          <div class="v2-kpi"><span class="v2-kpi__v num">${r.avgWatt != null ? html`${fmtNum(r.avgWatt)}<small>W</small>` : '–'}</span><span class="v2-kpi__l">Ø Leistung</span></div>
+          <div class="v2-kpi"><span class="v2-kpi__v num">${r.avgHr != null ? html`${r.avgHr}<small>${r.maxHr ? `/ ${r.maxHr}` : 'bpm'}</small>` : '–'}</span><span class="v2-kpi__l">Puls Ø${r.maxHr ? ' / max' : ''}</span></div>
+        </div>`
+      : html`<div class="summary-head mb-0"><p class="summary-head__title" style="font-size:var(--fs-2xl)">${score.headline}</p>
         <p class="summary-head__sub">${s.xpEarned ? html`<span class="xp-gain">+${s.xpEarned} XP</span> · ` : ''}<span class="num">${score.points}/${score.max}</span> Punkte</p></div>
-      <div class="pv-target" data-target></div>
+      <div class="pv-target" data-target></div>`}
+      <div class="banner banner--accent mt-4 mb-0"><span class="banner__icon" aria-hidden="true">${raw(ICON2.fire)}</span>
+        <span class="banner__body"><span class="banner__title">≈ ${fmtNum(kc.kcal)} kcal</span><span class="banner__text">Schätzung · ${KCAL_METHOD_LABEL[kc.method] ?? kc.method}</span></span></div>
       <div class="pv-sum-grid">
         <div class="stat"><span class="stat__value">${s.pre?.pain ?? '–'}</span><span class="stat__label">Vorher</span></div>
         <div class="stat"><span class="stat__value">${s.post?.pain ?? '–'}</span><span class="stat__label">Nachher</span></div>
@@ -195,9 +293,9 @@ export function render(root, { store, content, query }) {
         <ul class="pv-ex-sum">${(s.exercises || []).map((e) => {
           const doneSets = (e.sets || []).filter((x) => x?.done).length;
           return html`<li>
-            <span class="pv-sec-dot ${e.section === 'knee' ? 'is-knee' : e.section === 'archery' ? 'is-archery' : ''}"></span>
+            <span class="pv-sec-dot ${e.section === 'knee' ? 'is-knee' : e.section === 'archery' || e.section === 'cardio' ? 'is-archery' : ''}"></span>
             <span class="pv-ex-sum__name">${exName(e.exerciseId)}</span>
-            <span class="pv-ex-sum__val">${e.skipped ? 'übersprungen' : `${doneSets} ${doneSets === 1 ? 'Satz' : 'Sätze'}`}${e.painDuring != null ? ` · S ${e.painDuring}` : ''}${e.rpe != null ? ` · RPE ${e.rpe}` : ''}${e.sharpPain ? ' · ⚡' : ''}</span>
+            <span class="pv-ex-sum__val">${e.skipped ? 'übersprungen' : e.section === 'cardio' || (e.sets || []).some((x) => x?.seconds && !x?.reps) ? fmtClock((e.sets || []).reduce((a, x) => a + (x?.done ? x.seconds || 0 : 0), 0)) + ' min' : `${doneSets} ${doneSets === 1 ? 'Satz' : 'Sätze'}`}${e.painDuring != null ? ` · S ${e.painDuring}` : ''}${e.rpe != null ? ` · RPE ${e.rpe}` : ''}${e.sharpPain ? ' · ⚡' : ''}</span>
           </li>`;
         })}</ul>
       </details>
@@ -206,9 +304,9 @@ export function render(root, { store, content, query }) {
         <button class="btn btn--danger btn--block" data-delete="${s.id}">${raw(ICON.trash)} Einheit löschen</button>
       </div>
     `, { label: `Einheit vom ${formatDE(dayOf(s))}` });
-    dlg.querySelector('[data-target]').appendChild(targetFace(score.results));
+    dlg.querySelector('[data-target]')?.appendChild(targetFace(score.results));
     dlg.querySelector('[data-delete]').addEventListener('click', async () => {
-      const ok = await confirmDialog({ title: 'Einheit löschen?', text: `${wName(s.workoutId)} vom ${formatDE(dayOf(s), { weekday: false })} wird entfernt, die XP dieser Einheit werden abgezogen. Das lässt sich nicht rückgängig machen.`, confirm: 'Löschen', danger: true, icon: '🗑️' });
+      const ok = await confirmDialog({ title: 'Einheit löschen?', text: `${wName()} vom ${formatDE(dayOf(s), { weekday: false })} wird entfernt, die XP dieser Einheit werden abgezogen. Das lässt sich nicht rückgängig machen.`, confirm: 'Löschen', danger: true, icon: '🗑️' });
       if (!ok) return;
       dlg.close();
       store.update((d) => deleteSession(d, s.id));
@@ -220,16 +318,25 @@ export function render(root, { store, content, query }) {
     const m = e.target.closest('[data-month]');
     if (m) { month = shiftMonth(month, Number(m.dataset.month)); draw(); return; }
     if (e.target.closest('[data-more]')) { showAll = true; draw(); return; }
+    const kb = e.target.closest('[data-kind]');
+    if (kb) {
+      kind = kb.dataset.kind;
+      showAll = false;
+      history.replaceState(null, '', `#/verlauf${kind !== 'all' ? `?filter=${kind}` : ''}`);
+      draw();
+      return;
+    }
     const s = e.target.closest('[data-session]');
     if (s) { openSession(s.dataset.session); return; }
     const cell = e.target.closest('.cell[data-date]');
     if (cell) {
-      const hit = doneSessions(store.get().sessions).filter((x) => dayOf(x) === cell.dataset.date).at(-1);
+      const hit = filterSessions(doneSessions(store.get().sessions), kind).filter((x) => dayOf(x) === cell.dataset.date).at(-1);
       if (hit) openSession(hit.id);
     }
   };
   const onChange = (e) => {
     if (e.target.name === 'range') { range = e.target.value; draw(); }
+    if (e.target.name === 'barmode') { barMode = e.target.value; draw(); }
   };
 
   draw();
@@ -276,7 +383,7 @@ function recordRow(icon, label, value, rec, exName, swatch = null) {
     <span class="pv-record__icon" aria-hidden="true">${icon}</span>
     <span class="pv-record__body"><span class="list-item__sub" style="margin:0">${label}</span>
       <span class="pv-record__val">${value ?? '–'}</span>
-      ${rec ? html`<span class="list-item__sub">${exName(rec.exerciseId)} · ${shortDate(rec.date)}</span>` : html`<span class="list-item__sub">Noch kein Rekord</span>`}</span>
+      ${rec?.date ? html`<span class="list-item__sub">${exName ? `${exName(rec.exerciseId)} · ` : ''}${shortDate(rec.date)}</span>` : html`<span class="list-item__sub">Noch kein Rekord</span>`}</span>
     ${swatch ? html`<span class="pv-band__swatch" style="--band:${swatch}"></span>` : ''}
   </div>`;
 }

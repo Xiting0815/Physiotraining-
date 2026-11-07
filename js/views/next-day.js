@@ -1,6 +1,8 @@
 // Folgetag-Check – see docs/SPEC.md §4.2 step 6, §5.1 (WP-Session-flow).
 // Next-day check-in for the most recent done session without `nextDay` → finalizeWithNextDay
 // (final light), updated recommendations (accept/dismiss), +XP.nextDayCheckIn, encouraging message.
+// v2: rowing (cardio) sessions get the same knee check; post-op sessions also ask redness + fever
+// and show „Arzt kontaktieren“ prominently when the final light says so (SPEC §12.10).
 import { html, raw, render as paint } from '../render.js';
 import { LIGHT_LABELS } from '../logic/traffic-light.js';
 import { formatDE } from '../util/date.js';
@@ -15,6 +17,7 @@ const MESSAGES = {
   yellow: { icon: '🧭', title: 'Gut, dass du hinhörst.', text: 'Stufe halten und sauber weitertrainieren – Qualität vor Quantität.' },
   red: { icon: '🌱', title: 'Danke für deine Ehrlichkeit.', text: 'Nächstes Mal etwas leichter – so geht es sicher voran. Rückschritte gehören dazu.' },
   stop: { icon: '🩺', title: 'Bitte abklären lassen.', text: 'Lass das Knie ärztlich oder physiotherapeutisch anschauen. Oberkörper-Training bleibt möglich – du entscheidest.' },
+  doctor: { icon: '🩺', title: 'Bitte Arzt kontaktieren.', text: 'In der Entlastungsphase sind das Warnzeichen. Bitte melde dich heute noch bei deinem Arzt bzw. in der Klinik – bei hohem Fieber oder starken Beschwerden sofort.' },
 };
 
 const BACK = '<svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
@@ -23,6 +26,7 @@ const BACK = '<svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22"
 export function render(root, { store, content, navigate }) {
   H.ensureStyles();
   const draft = { pain: null, swelling: 0, stiffness: 0, nightPain: false, locking: false, givingWay: false };
+  let draftFor = null; // session id the draft belongs to (post-op flags are added per session)
   let actions = {};
   let resultFor = null; // session id after submit
 
@@ -65,13 +69,21 @@ export function render(root, { store, content, navigate }) {
       return;
     }
     const s = p.session;
-    const w = content.workouts.find((x) => x.id === s.workoutId);
+    const postOp = !!s.postOp;
+    const cardio = H.sessionKind(s) === 'cardio';
+    if (draftFor !== s.id) {
+      draftFor = s.id;
+      delete draft.redness; delete draft.fever;
+      Object.assign(draft, H.withPostOpFlags({}, postOp));
+    }
+    const t = H.sessionTitle(s, content, store.getState());
+    const phase = content.phases.find((x) => x.id === s.phaseId);
     const day = formatDE(H.sessionDay(s));
     const dueTime = new Date(p.dueAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
     const prov = s.traffic?.provisional;
-    paint(root, html`${header(`${w?.name ?? 'Training'} · ${day}`)}
+    paint(root, html`${header(`${cardio ? '🚣 ' : ''}${t.title} · ${day}`)}
       <h2 class="ses-big-q">Wie geht’s dem Knie heute?</h2>
-      <p class="muted">Dauert 30 Sekunden und macht die Ampel deiner letzten Einheit final.${prov ? html` Vorläufig: <span class="traffic traffic--${prov}">${LIGHT_LABELS[prov]}</span>` : ''}</p>
+      <p class="muted">Dauert 30 Sekunden und macht die Ampel ${cardio ? 'deiner letzten Rudereinheit' : 'deiner letzten Einheit'} final.${prov ? html` Vorläufig: <span class="traffic traffic--${prov}">${LIGHT_LABELS[prov]}</span>` : ''}</p>
       ${p.due ? '' : html`<div class="banner"><span class="banner__icon">⏳</span><span class="banner__body"><span class="banner__title">Eigentlich erst ab ${dueTime} Uhr</span><span class="banner__text">Am aussagekräftigsten am Morgen danach – eintragen geht trotzdem.</span></span></div>`}
       <section class="card stack">
         <pt-pain-scale label="Schmerz heute" ${draft.pain != null ? html`value="${draft.pain}"` : ''}></pt-pain-scale>
@@ -84,7 +96,9 @@ export function render(root, { store, content, navigate }) {
         ${check('nightPain', 'Nachtschmerz')}
         ${check('locking', 'Knie blockiert oder hakt')}
         ${check('givingWay', 'Knie knickt weg oder gibt nach')}
+        ${postOp ? html`${check('redness', 'Rötung oder Überwärmung am Knie')}${check('fever', 'Fieber (über 38 °C)')}` : ''}
       </section>
+      ${postOp && phase?.redFlagNote ? html`<p class="ses-postop">🩺 ${phase.redFlagNote}</p>` : ''}
       <div class="sticky-cta"><button type="button" class="btn btn--primary btn--block btn--session" data-act="submit">Check abschließen · +${XP.nextDayCheckIn} XP</button></div>`);
     document.body.classList.add('has-cta');
     actions = {
@@ -110,10 +124,11 @@ export function render(root, { store, content, navigate }) {
     const s = store.getSessions().find((x) => x.id === resultFor);
     if (!s) return drawForm();
     const light = s.traffic?.final ?? out?.result?.traffic ?? 'green';
-    const m = MESSAGES[light];
+    const doctor = light === 'stop' && H.needsDoctor(s.traffic?.reasons);
+    const m = doctor ? MESSAGES.doctor : MESSAGES[light];
     const badges = (out?.badges || []).map((id) => content.badges.find((b) => b.id === id)).filter(Boolean);
     paint(root, html`${header('Ergebnis')}
-      <section class="card ses-nd-result">
+      <section class="card ses-nd-result ${doctor ? 'stop-card ses-doctor' : ''}" ${doctor ? raw('role="alert"') : ''}>
         <div style="font-size:52px;line-height:1" aria-hidden="true">${m.icon}</div>
         <h2 class="summary-head__title mt-2" style="font-size:var(--fs-2xl)">${m.title}</h2>
         <p class="muted">${m.text}</p>

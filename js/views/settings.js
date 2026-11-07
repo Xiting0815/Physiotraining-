@@ -2,13 +2,15 @@
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE, daysBetween } from '../util/date.js';
 import { defaults } from '../store.js';
+import { suggestedSurgeryDate } from '../logic/schedule.js';
+import { entryFor } from '../logic/health.js';
 import { downloadBackup, readBackupFile } from '../util/export-import.js';
 import {
   ICON, ensureViewStyles, applyFontScale, pageHeader, confirmDialog, toast, openSheet, equipmentItems,
 } from './ui.js';
 
 export const title = 'Mehr';
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '2.0.0';
 
 const REST_OPTIONS = [null, 30, 45, 60, 90, 120];
 const FONT_SCALES = [{ v: 1, l: 'Normal' }, { v: 1.125, l: 'Groß' }, { v: 1.25, l: 'Sehr groß' }];
@@ -95,6 +97,11 @@ export function render(root, { store, content, query }) {
     const owned = (s.ownedEquipment || []).length;
     const eqTotal = equipmentItems(content.equipment).length;
     const scale = Number(s.fontScale) || 1;
+    const suggested = suggestedSurgeryDate(s);
+    const ownsRower = (s.ownedEquipment || []).includes('rowing-machine');
+    const customCount = (data.state.customWorkouts || []).length;
+    const logged = !!entryFor(data.state.healthLog || [], today);
+    const goal = s.weightGoal;
 
     paint(root, html`
       ${pageHeader({ title: 'Mehr', eyebrow: 'Einstellungen & Daten' })}
@@ -107,11 +114,29 @@ export function render(root, { store, content, query }) {
           <span class="field__hint">${s.surgeryDate ? `Noch ${Math.max(0, daysBetween(today, s.surgeryDate))} Tage · Grundlage für Countdown und Taper (letzte 7 Tage).` : 'Noch nicht eingetragen – dann zählt der Countdown auf Heute mit.'}</span>
         </div>
         ${s.surgeryDate ? html`<button class="btn btn--ghost btn--sm mt-2" data-clear-date>Termin entfernen</button>` : ''}
+        ${suggested ? html`<div class="pv-callout pv-callout--knee mt-2 mb-0"><span class="pv-callout__icon" aria-hidden="true">📅</span>
+          <div><p class="text-sm">Vorgeschlagener Termin: <strong>${formatDE(suggested, { weekday: false })}</strong>. Stimmt das?</p>
+          <button class="btn btn--primary btn--sm mt-2" data-use-suggested="${suggested}">${raw(ICON.check)} Termin übernehmen</button></div></div>` : ''}
         <div class="pv-setting-row mt-2">
           <span class="pv-setting-row__label">Wochenziel<span class="pv-setting-row__hint">Einheiten pro Woche</span></span>
           ${stepper('weeklyGoal', s.weeklyGoal, { min: 1, max: 7, label: 'Wochenziel' })}
         </div>
       </section>
+
+      <ul class="list list--card">
+        <li><a class="list-item" href="#/profil">
+          <span class="list-item__icon">${raw(ICON.user)}</span>
+          <span class="list-item__body"><span class="list-item__title">Profil & Ziele</span><span class="list-item__sub">${goal ? `Ziel ${String(goal.targetKg).replace('.', ',')} kg bis ${formatDE(goal.targetDate, { weekday: false })}` : 'Gewicht-Ziel, Körperdaten, Rudern pro Woche'}</span></span>
+          ${raw(ICON.chev)}</a></li>
+        <li><a class="list-item" href="#/gesundheit">
+          <span class="list-item__icon list-item__icon--gold">${raw(ICON.book)}</span>
+          <span class="list-item__body"><span class="list-item__title">Gesundheits-Tagebuch</span><span class="list-item__sub">${logged ? 'Heute eingetragen ✓ · Auswertungen & Wochenbericht' : 'Gewicht, Schlaf, Schritte · Wochenbericht'}</span></span>
+          ${raw(ICON.chev)}</a></li>
+        <li><a class="list-item" href="#/eigene">
+          <span class="list-item__icon list-item__icon--accent">${raw(ICON.puzzle)}</span>
+          <span class="list-item__body"><span class="list-item__title">Eigene Workouts</span><span class="list-item__sub">${customCount ? `${customCount} ${customCount === 1 ? 'Workout' : 'Workouts'} · erstellen & bearbeiten` : 'Eigenes Training zusammenstellen'}</span></span>
+          ${raw(ICON.chev)}</a></li>
+      </ul>
 
       ${backupDue ? html`<button class="banner banner--accent" style="width:100%;text-align:left" data-export>
         <span class="banner__icon">💾</span>
@@ -193,6 +218,10 @@ export function render(root, { store, content, query }) {
       </section>
 
       <ul class="list list--card">
+        <li><label class="list-item switch-row" style="cursor:pointer">
+          <span class="list-item__icon list-item__icon--accent" aria-hidden="true">🚣</span>
+          <span class="list-item__body"><span class="list-item__title">Rudergerät vorhanden</span><span class="list-item__sub">${ownsRower ? 'Rudern ist in deinem Plan (3× pro Woche)' : 'Für die Ruder-Einheiten im Plan'}</span></span>
+          <input type="checkbox" class="switch" name="ownsRower" ${ownsRower ? 'checked' : ''}></label></li>
         <li><a class="list-item" href="#/ausruestung">
           <span class="list-item__icon list-item__icon--accent">🎒</span>
           <span class="list-item__body"><span class="list-item__title">Ausrüstung</span><span class="list-item__sub">${eqTotal ? `${owned}/${eqTotal} vorhanden · Einkaufsliste mit Budget` : 'Deine Bänder & Hilfsmittel'}</span></span>
@@ -223,7 +252,13 @@ export function render(root, { store, content, query }) {
     } else if (t.name === 'theme') set((s) => { s.theme = t.value; });
     else if (t.name === 'fontScale') set((s) => { s.fontScale = Number(t.value); });
     else if (t.name === 'sound' || t.name === 'vibration') set((s) => { s[t.name] = t.checked; });
-    else if (t.name === 'restDefault') set((s) => { s.restDefault = t.value ? Number(t.value) : null; });
+    else if (t.name === 'ownsRower') {
+      set((s) => {
+        const owned = new Set(s.ownedEquipment || []);
+        if (t.checked) owned.add('rowing-machine'); else owned.delete('rowing-machine');
+        s.ownedEquipment = [...owned];
+      });
+    } else if (t.name === 'restDefault') set((s) => { s.restDefault = t.value ? Number(t.value) : null; });
     else if (t.name === 'importMode') { importMode = t.value; draw(); }
     else if (t.matches('[data-import]') && t.files?.[0]) {
       const file = t.files[0];
@@ -263,6 +298,12 @@ export function render(root, { store, content, query }) {
     if (band) { set((s) => { s.bands = moveBand(s.bands, band.dataset.band, Number(band.dataset.dir)); }); return; }
     if (e.target.closest('[data-band-reset]')) { set((s) => { s.bands = defaults().settings.bands; }); toast('Standard-Reihenfolge wiederhergestellt'); return; }
     if (e.target.closest('[data-thr-reset]')) { set((s) => { s.painThresholds = defaults().settings.painThresholds; }); toast('Ampel-Grenzen zurückgesetzt'); return; }
+    const sug = e.target.closest('[data-use-suggested]');
+    if (sug) {
+      set((s) => { s.surgeryDate = sug.dataset.useSuggested; });
+      toast(`OP-Termin: ${formatDE(sug.dataset.useSuggested, { weekday: false })}`, { icon: '📅' });
+      return;
+    }
     if (e.target.closest('[data-clear-date]')) { set((s) => { s.surgeryDate = null; }); return; }
     if (e.target.closest('[data-export]')) {
       try {

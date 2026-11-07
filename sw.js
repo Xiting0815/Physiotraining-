@@ -15,7 +15,7 @@
 // removing or changing app files (the version is a content hash, so any change triggers an update).
 
 // <precache-version>
-const CACHE_VERSION = '4288ee99d3';
+const CACHE_VERSION = '61cbc99ae9';
 // </precache-version>
 const CACHE_PREFIX = 'physio-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
@@ -47,8 +47,15 @@ const PRECACHE = [
   'js/components/pt-pain-scale.js',
   'js/components/pt-timer.js',
   'js/content.js',
+  'js/logic/cardio.js',
+  'js/logic/custom-workouts.js',
+  'js/logic/duration.js',
+  'js/logic/energy.js',
+  'js/logic/health.js',
+  'js/logic/insights.js',
   'js/logic/motivation.js',
   'js/logic/progression.js',
+  'js/logic/schedule.js',
   'js/logic/stats.js',
   'js/logic/traffic-light.js',
   'js/render.js',
@@ -58,17 +65,22 @@ const PRECACHE = [
   'js/util/audio.js',
   'js/util/date.js',
   'js/util/export-import.js',
+  'js/views/custom-workout-edit.js',
+  'js/views/custom-workouts.js',
   'js/views/equipment.js',
   'js/views/exercise-detail.js',
   'js/views/exercises.js',
+  'js/views/health.js',
   'js/views/history.js',
   'js/views/next-day.js',
   'js/views/plan.js',
+  'js/views/profile.js',
   'js/views/session-helpers.js',
   'js/views/session.js',
   'js/views/settings.js',
   'js/views/today.js',
   'js/views/ui.js',
+  'js/views/v2-shared.js',
   'manifest.webmanifest',
 ];
 // </precache>

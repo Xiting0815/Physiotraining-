@@ -3,10 +3,37 @@ import { html, raw, render as paint } from '../render.js';
 import { levelOf } from '../logic/progression.js';
 import { dayOf } from '../logic/stats.js';
 import { lineChart } from '../components/charts.js';
+import { rowingPhases, INTENSITY_LABELS } from '../logic/cardio.js';
 import {
-  ICON, BLOCK_LABEL, EQUIPMENT_LABEL, SIDE_LABEL, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip,
+  ICON, SIDE_LABEL, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip,
   bandInfo, workoutItems, shortDate, confirmDialog, toast,
 } from './ui.js';
+import { ensureV2Styles, availability, availabilityChip, blockLabel, equipLabel, fmtClock } from './v2-shared.js';
+
+/**
+ * Rowing level preview: timer phases (from cardio.rowingPhases) + totals.
+ * @returns {{phases: {label: string, seconds: number, intensity: string, kind: string}[], totalSec: number, workSec: number}}
+ */
+export function rowingLevelPreview(ex, levelIndex, content) {
+  const phases = rowingPhases({ exercises: [{ exerciseId: ex.id, level: levelIndex }] }, content);
+  return {
+    phases: phases.map((p) => ({ label: p.label, seconds: p.seconds, intensity: p.intensity, kind: p.kind })),
+    totalSec: phases.reduce((a, p) => a + p.seconds, 0),
+    workSec: phases.filter((p) => p.kind === 'work').reduce((a, p) => a + p.seconds, 0),
+  };
+}
+
+/** Human description of a rowing level, e.g. „6 × 1:00 zügig, dazwischen 1:00 locker rudern“. */
+export function rowingLevelText(ex, lvl) {
+  if (!lvl) return '';
+  const it = INTENSITY_LABELS[lvl.intensity] ?? '';
+  if (Array.isArray(lvl.phases) && lvl.phases.length) return lvl.phases.map((p) => `${p.label} (${fmtClock(p.seconds)})`).join(' → ');
+  if ((lvl.sets ?? 1) > 1) {
+    const rest = lvl.rest ? `, dazwischen ${fmtClock(lvl.rest)} ${lvl.restActive ? 'locker rudern' : 'Pause'}` : '';
+    return `${lvl.sets} × ${fmtClock(lvl.seconds)} ${it}${rest}`;
+  }
+  return `${fmtClock(lvl.seconds)} min ${it} am Stück`;
+}
 
 export const title = 'Übung';
 
@@ -47,6 +74,7 @@ const niceMax = (v) => {
 /** @param {HTMLElement} root @param {import('../types.js').ViewContext} ctx */
 export function render(root, { store, content, params, query }) {
   ensureViewStyles();
+  ensureV2Styles();
   const ex = content.exercises.find((e) => e.id === params.id);
   const back = query.from === 'plan' ? '#/plan' : query.from === 'verlauf' ? '#/verlauf' : '#/uebungen';
   if (!ex) {
@@ -58,7 +86,8 @@ export function render(root, { store, content, params, query }) {
   document.title = `${ex.name} · Physio`;
   const usedIn = content.workouts.filter((w) => workoutItems(w).some((it) => it.exerciseId === ex.id));
   const exById = (id) => content.exercises.find((e) => e.id === id);
-  const blockCls = ex.block === 'archery' ? 'archery' : ex.block === 'knee' ? 'knee' : '';
+  const blockCls = ex.block === 'archery' || ex.block === 'cardio' ? 'archery' : ex.block === 'knee' ? 'knee' : '';
+  const cardio = ex.block === 'cardio';
 
   const draw = () => {
     const data = store.get();
@@ -66,22 +95,28 @@ export function render(root, { store, content, params, query }) {
     const { settings, state } = data;
     const li = levelOf(state, ex.id, ex);
     const lvl = ex.levels[li];
-    const hist = exerciseHistory(data.sessions, ex);
+    const hist = exerciseHistory(data.sessions, ex).map((h) => (ex.block === 'cardio' ? { ...h, value: Math.round(h.seconds / 60) } : h));
     const best = hist.reduce((a, h) => Math.max(a, h.value), 0);
-    const unit = ex.type === 'hold' ? 's' : ex.type === 'timed' ? 's' : 'Wdh.';
-    const metricName = ex.type === 'hold' ? 'Längster Hold' : ex.type === 'timed' ? 'Sekunden gesamt' : 'Wiederholungen gesamt';
+    const unit = ex.block === 'cardio' ? 'min' : ex.type === 'hold' ? 's' : ex.type === 'timed' ? 's' : 'Wdh.';
+    const metricName = ex.block === 'cardio' ? 'Minuten gerudert' : ex.type === 'hold' ? 'Längster Hold' : ex.type === 'timed' ? 'Sekunden gesamt' : 'Wiederholungen gesamt';
     const regress = ex.regressTo ? exById(ex.regressTo) : null;
     const progress = ex.progressTo ? exById(ex.progressTo) : null;
     const band = bandInfo(settings, lvl.band);
+    const av = availability(ex, state, content.phases);
+    const toggle = state.exerciseToggles?.[ex.id];
+    const curPhase = content.phases.find((p) => p.id === state.phaseId);
+    const postop = curPhase?.kind === 'postop';
+    const rp = cardio ? rowingLevelPreview(ex, li, content) : null;
 
     paint(root, html`
-      ${pageHeader({ title: ex.name, eyebrow: `${BLOCK_LABEL[ex.block] ?? ''} · ${ex.category ?? ''}`, back })}
+      ${pageHeader({ title: ex.name, eyebrow: `${blockLabel(ex.block)} · ${ex.category ?? ''}`, back })}
 
       <div class="pv-figure-stage">
         <pt-figure exercise-id="${ex.id}" level="${li}" ${lvl.tempo ? html`tempo="${lvl.tempo}"` : ''} aria-label="Animation: ${ex.name}"></pt-figure>
         <div class="chip-row">
-          <span class="chip chip--sm ${blockCls ? `chip--${blockCls}` : ''}">${BLOCK_LABEL[ex.block]}</span>
+          <span class="chip chip--sm ${blockCls ? `chip--${blockCls}` : ''}">${blockLabel(ex.block)}</span>
           ${ex.side && ex.side !== 'both' ? html`<span class="chip chip--sm">${SIDE_LABEL[ex.side] ?? ex.side}</span>` : ''}
+          ${availabilityChip(av)}
         </div>
       </div>
 
@@ -92,21 +127,34 @@ export function render(root, { store, content, params, query }) {
           <div><p class="eyebrow">Deine aktuelle Dosis</p><h2 class="card__title">Stufe <span class="num">${li + 1}</span> von <span class="num">${ex.levels.length}</span></h2></div>
           ${band ? bandChip(settings, lvl.band, { sm: false }) : ''}
         </div>
-        <div class="dose">
+        ${cardio ? html`<div class="dose">
+          <div class="dose__item"><span class="dose__value">${Math.round(rp.totalSec / 60)}<small>min</small></span><span class="dose__label">Dauer</span></div>
+          ${lvl.targetSpm ? html`<div class="dose__item"><span class="dose__value">${lvl.targetSpm[0]}–${lvl.targetSpm[1]}</span><span class="dose__label">Schläge/Min</span></div>` : ''}
+          ${lvl.targetRpe ? html`<div class="dose__item"><span class="dose__value">${lvl.targetRpe[0]}–${lvl.targetRpe[1]}</span><span class="dose__label">RPE</span></div>` : ''}
+        </div>
+        <p class="text-sm mt-0">${rowingLevelText(ex, lvl)}</p>
+        ${rowPhasesBar(rp)}` : html`<div class="dose">
           <div class="dose__item"><span class="dose__value">${lvl.sets}</span><span class="dose__label">Sätze</span></div>
           ${lvl.reps != null ? html`<div class="dose__item"><span class="dose__value">${lvl.reps}</span><span class="dose__label">Wdh.${ex.side === 'perSide' ? ' / Seite' : ''}</span></div>` : ''}
           ${lvl.hold ? html`<div class="dose__item"><span class="dose__value">${lvl.hold}<small>s</small></span><span class="dose__label">Halten</span></div>` : ''}
           ${lvl.seconds ? html`<div class="dose__item"><span class="dose__value">${lvl.seconds}<small>s</small></span><span class="dose__label">Dauer</span></div>` : ''}
           <div class="dose__item"><span class="dose__value">${Number.isFinite(settings.restDefault) && lvl.rest !== 0 ? settings.restDefault : (lvl.rest ?? 0)}<small>s</small></span><span class="dose__label">Pause</span></div>
-        </div>
+        </div>`}
         <div class="chip-row">
           ${lvl.tempo ? html`<span class="chip chip--outline chip--sm">Tempo ${lvl.tempo}</span>` : ''}
-          ${(ex.equipment || []).map((e) => html`<span class="chip chip--sm">${EQUIPMENT_LABEL[e] ?? e}</span>`)}
+          ${cardio && lvl.intensity ? html`<span class="chip chip--sm chip--archery">Intensität: ${INTENSITY_LABELS[lvl.intensity] ?? lvl.intensity}</span>` : ''}
+          ${(ex.equipment || []).map((e) => html`<span class="chip chip--sm">${equipLabel(e)}</span>`)}
         </div>
       </section>
 
       ${ex.kneeNote ? html`<div class="pv-callout pv-callout--knee"><span class="pv-callout__icon" aria-hidden="true">🦵</span>
         <div><p class="strong">Hinweis fürs Knie</p><p>${ex.kneeNote}</p></div></div>` : ''}
+
+      ${ex.postOpNote ? html`<div class="pv-callout ${postop ? 'pv-callout--warn' : ''}"><span class="pv-callout__icon" aria-hidden="true">🩼</span>
+        <div><p class="strong">Nach der OP</p><p>${ex.postOpNote}</p></div></div>` : ''}
+      ${ex.postOpAllowed === false ? html`<div class="pv-callout ${postop && av.kind === 'blocked' ? 'pv-callout--stop' : 'pv-callout--warn'}"><span class="pv-callout__icon" aria-hidden="true">${av.kind === 'enabled' ? '✅' : '⛔'}</span>
+        <div><p class="strong">${av.kind === 'enabled' ? 'Nach der OP für dich freigegeben' : postop ? 'In der Entlastungsphase gesperrt' : 'Nach der OP pausiert'}</p>
+        <p class="text-sm">${cardio ? 'Rudern ist in den 6 Wochen ohne Belastung (Krücken) nicht vorgesehen. Bis zum OP-Tag darfst du rudern – die Ampel gilt.' : av.kind === 'enabled' ? 'Du hast die Übung freigegeben – nur so, wie dein Team es erlaubt.' : 'In der Entlastungsphase nach der OP wird die Übung übersprungen – außer dein Arzt/Physio erlaubt sie ausdrücklich.'}</p></div></div>` : ''}
 
       <section class="card">
         <h2 class="card__title mb-4">So geht's</h2>
@@ -123,7 +171,14 @@ export function render(root, { store, content, params, query }) {
       <section class="card">
         <div class="card__header"><h2 class="card__title">Stufen</h2>
           <span class="card__sub">Tippe eine Stufe, um zu wechseln</span></div>
-        <ol class="pv-ladder">
+        ${cardio ? html`<ol class="v2-rowlevels">${ex.levels.map((l, i) => {
+          const pv = rowingLevelPreview(ex, i, content);
+          return html`<li><button class="v2-rowlevel ${i === li ? 'is-current' : ''}" style="width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer" data-level="${i}" ${i === li ? 'aria-current="true"' : ''}>
+            <span class="v2-rowlevel__head"><strong>Stufe ${i + 1}: ${l.label}</strong>${i === li ? html`<span class="chip chip--accent chip--sm">aktuell</span>` : ''}</span>
+            ${rowPhasesBar(pv)}
+            <span class="v2-rowlevel__meta"><span>⏱ ${fmtClock(pv.totalSec)} min</span>${l.intensity ? html`<span>${INTENSITY_LABELS[l.intensity] ?? ''}</span>` : ''}${l.targetSpm ? html`<span>SPM ${l.targetSpm[0]}–${l.targetSpm[1]}</span>` : ''}${l.targetRpe ? html`<span>RPE ${l.targetRpe[0]}–${l.targetRpe[1]}</span>` : ''}</span>
+          </button></li>`;
+        })}</ol>` : html`<ol class="pv-ladder">
           ${ex.levels.map((l, i) => html`<li>
             <button class="pv-ladder__item ${i === li ? 'is-current' : i < li ? 'is-done' : ''}" style="width:100%;text-align:left" data-level="${i}" ${i === li ? 'aria-current="true"' : ''}>
               <span class="pv-ladder__num">${i < li ? '✓' : i + 1}</span>
@@ -133,7 +188,7 @@ export function render(root, { store, content, params, query }) {
               </span>
               ${i === li ? html`<span class="chip chip--primary chip--sm">aktuell</span>` : ''}
             </button></li>`)}
-        </ol>
+        </ol>`}
         <div class="btn-row mt-4">
           <button class="btn btn--outline btn--sm" data-step="-1" ${li === 0 ? 'disabled' : ''}>${raw(ICON.down)} Leichter</button>
           <button class="btn btn--soft btn--sm" data-step="1" ${li >= ex.levels.length - 1 ? 'disabled' : ''}>${raw(ICON.up)} Schwerer</button>
@@ -158,6 +213,14 @@ export function render(root, { store, content, params, query }) {
             ${h.painDuring != null ? html`<span class="chip chip--sm ${h.painDuring <= 2 ? 'chip--green' : ''}">Schmerz ${h.painDuring}</span>` : h.rpe != null ? html`<span class="chip chip--sm">RPE ${h.rpe}</span>` : ''}
           </li>`)}
         </ul>` : html`<p class="pv-empty-sm">Sobald du die Übung im Training machst, siehst du hier deine Entwicklung. 📈</p>`}
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">Für mich</h2>
+        <label class="switch-row"><span>In meinen Trainings verwenden<span class="pv-setting-row__hint" style="display:block;font-size:var(--fs-xs);color:var(--muted)">${toggle === false ? 'Deaktiviert – wird in allen Phasen übersprungen.' : 'Aktiv – erscheint, wenn sie im Plan vorkommt.'}</span></span>
+          <input type="checkbox" class="switch" data-toggle="active" ${toggle === false ? '' : 'checked'}></label>
+        ${ex.postOpAllowed === false && !cardio ? html`<label class="switch-row"><span>Nach der OP freigegeben<span style="display:block;font-size:var(--fs-xs);color:var(--muted)">Nur wenn dein Arzt/Physio es ausdrücklich erlaubt.</span></span>
+          <input type="checkbox" class="switch" data-toggle="postop" ${toggle === true ? 'checked' : ''} ${toggle === false ? 'disabled' : ''}></label>` : ''}
       </section>
 
       ${usedIn.length ? html`<p class="text-sm muted">Enthalten in: ${usedIn.map((w) => content.phases.find((p) => p.id === w.phaseId)?.name.split('–')[0].trim() + ' ' + w.name.split('–')[0].trim()).join(' · ')}</p>` : ''}
@@ -190,8 +253,39 @@ export function render(root, { store, content, params, query }) {
     if (st) setLevel(levelOf(store.getState(), ex.id, ex) + Number(st.dataset.step));
   };
 
+  const setToggle = (val) => store.update((d) => {
+    const t = { ...(d.state.exerciseToggles || {}) };
+    if (val === undefined) delete t[ex.id]; else t[ex.id] = val;
+    d.state.exerciseToggles = t;
+  });
+  const onChange = async (e) => {
+    const sw = e.target.closest('[data-toggle]');
+    if (!sw) return;
+    if (sw.dataset.toggle === 'active') {
+      setToggle(sw.checked ? undefined : false);
+      toast(sw.checked ? `${ex.name} ist wieder aktiv` : `${ex.name} deaktiviert`, { icon: sw.checked ? '✓' : '⏸️' });
+      return;
+    }
+    if (sw.checked) {
+      sw.checked = false;
+      const ok = await confirmDialog({ title: 'Nach der OP freigeben?', text: 'Nur, wenn dein Team (Arzt/Physio) die Übung in der Entlastungsphase ausdrücklich erlaubt. Deren Protokoll hat immer Vorrang.', confirm: 'Ja, ist erlaubt', icon: '🩼' });
+      if (!ok) return;
+      setToggle(true);
+      toast('Für die Zeit nach der OP freigegeben', { icon: '✅' });
+    } else {
+      setToggle(undefined);
+      toast('Freigabe zurückgenommen', { icon: '↩️' });
+    }
+  };
+
   draw();
   root.addEventListener('click', onClick);
+  root.addEventListener('change', onChange);
   const unsub = store.subscribe(draw);
-  return () => { unsub(); root.removeEventListener('click', onClick); };
+  return () => { unsub(); root.removeEventListener('click', onClick); root.removeEventListener('change', onChange); };
+}
+
+function rowPhasesBar(pv) {
+  if (!pv?.phases?.length) return '';
+  return html`<span class="v2-phases" role="img" aria-label="Ablauf: ${pv.phases.map((p) => `${p.label} ${fmtClock(p.seconds)}`).join(', ')}">${pv.phases.map((p) => html`<span class="is-${p.intensity}" style="flex:${p.seconds}" title="${p.label} · ${fmtClock(p.seconds)}">${pv.phases.length <= 8 && p.seconds >= 60 ? fmtClock(p.seconds) : ''}</span>`)}</span>`;
 }

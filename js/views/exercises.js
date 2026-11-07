@@ -2,14 +2,20 @@
 import { html, raw, render as paint } from '../render.js';
 import { levelOf } from '../logic/progression.js';
 import {
-  ICON, BLOCK_LABEL, figureThumb, EQUIPMENT_LABEL, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip, workoutItems,
+  ICON, figureThumb, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip, workoutItems,
 } from './ui.js';
+import { ensureV2Styles, availability, availabilityChip, blockLabel, equipLabel } from './v2-shared.js';
 
 export const title = 'Übungen';
 
-const BLOCKS = ['knee', 'archery', 'warmup', 'cooldown'];
-const BLOCK_ORDER = { warmup: 0, knee: 1, archery: 2, cooldown: 3 };
-const EQUIP_ORDER = ['theraband', 'loop', 'mat', 'chair', 'step', 'wall', 'door', 'none'];
+const BLOCKS = ['knee', 'archery', 'warmup', 'cooldown', 'cardio'];
+const BLOCK_ORDER = { warmup: 0, knee: 1, archery: 2, cooldown: 3, cardio: 4 };
+const EQUIP_ORDER = ['theraband', 'loop', 'mat', 'chair', 'step', 'wall', 'door', 'rowing-machine', 'none'];
+
+/** Dose line for library cards: rowing shows the level label (e.g. „12 min gleichmäßig“). */
+export function cardDose(ex, lvl) {
+  return ex?.block === 'cardio' ? (lvl?.label ?? '') : doseText(ex, lvl);
+}
 
 /** Normalise for search: lowercase, umlauts folded. */
 export function fold(s) {
@@ -32,12 +38,13 @@ export function filterExercises(exercises, { q = '', block = null, equipment = [
     if (!terms.length) return true;
     const hay = fold([ex.name, ex.description, ex.category, ...(ex.tags || []), ...(ex.cues || [])].join(' '));
     return terms.every((t) => hay.includes(t));
-  }).sort((a, b) => (BLOCK_ORDER[a.block] - BLOCK_ORDER[b.block]) || a.name.localeCompare(b.name, 'de'));
+  }).sort((a, b) => ((BLOCK_ORDER[a.block] ?? 9) - (BLOCK_ORDER[b.block] ?? 9)) || a.name.localeCompare(b.name, 'de'));
 }
 
 /** @param {HTMLElement} root @param {import('../types.js').ViewContext} ctx */
 export function render(root, { store, content, query }) {
   ensureViewStyles();
+  ensureV2Styles();
   applyFontScale(store.getSettings());
   const f = {
     q: query.q || '',
@@ -59,16 +66,16 @@ export function render(root, { store, content, query }) {
   };
 
   paint(root, html`
-    ${pageHeader({ title: 'Übungen', eyebrow: `${content.exercises.length} Übungen · Knie & Bogen` })}
+    ${pageHeader({ title: 'Übungen', eyebrow: `${content.exercises.length} Übungen · Knie, Bogen & Rudern` })}
     <div class="pv-sticky-filter">
       <div class="search">${raw(ICON.search)}<input class="input" type="search" placeholder="Übung suchen, z. B. Brücke" aria-label="Übung suchen" value="${f.q}" data-q></div>
       <div class="chip-row chip-row--scroll mt-2" role="group" aria-label="Block">
         <button class="chip chip--filter" data-block="" aria-pressed="${String(!f.block && !f.plan)}">Alle</button>
         <button class="chip chip--filter" data-plan aria-pressed="${String(!!f.plan)}">Im Plan</button>
-        ${BLOCKS.map((b) => html`<button class="chip chip--filter" data-block="${b}" aria-pressed="${String(f.block === b)}">${BLOCK_LABEL[b]}</button>`)}
+        ${BLOCKS.map((b) => html`<button class="chip chip--filter" data-block="${b}" aria-pressed="${String(f.block === b)}">${blockLabel(b)}</button>`)}
       </div>
       <div class="chip-row chip-row--scroll mt-2" role="group" aria-label="Ausrüstung">
-        ${usedEquip.map((id) => html`<button class="chip chip--filter chip--sm" data-eq="${id}" aria-pressed="${String(f.equipment.includes(id))}">${EQUIPMENT_LABEL[id] ?? id}</button>`)}
+        ${usedEquip.map((id) => html`<button class="chip chip--filter chip--sm" data-eq="${id}" aria-pressed="${String(f.equipment.includes(id))}">${equipLabel(id)}</button>`)}
       </div>
     </div>
     <div data-list></div>
@@ -89,18 +96,20 @@ export function render(root, { store, content, query }) {
       ${list.map((ex) => {
         const li = levelOf(state, ex.id, ex);
         const lvl = ex.levels[li];
-        const header = !f.block && ex.block !== lastBlock ? html`<h2 class="section-title">${BLOCK_LABEL[ex.block]}</h2>` : '';
+        const header = !f.block && ex.block !== lastBlock ? html`<h2 class="section-title">${blockLabel(ex.block)}</h2>` : '';
         lastBlock = ex.block;
-        const chipCls = ex.block === 'archery' ? 'chip--archery' : ex.block === 'knee' ? 'chip--knee' : '';
-        return html`${header}<a class="exercise-card exercise-card--${ex.block}" href="#/uebung/${encodeURIComponent(ex.id)}">
+        const chipCls = ex.block === 'archery' || ex.block === 'cardio' ? 'chip--archery' : ex.block === 'knee' ? 'chip--knee' : '';
+        const av = availability(ex, state, content.phases);
+        return html`${header}<a class="exercise-card exercise-card--${ex.block === 'cardio' ? 'archery' : ex.block}${av.kind === 'blocked' || av.kind === 'off' ? ' is-muted' : ''}" href="#/uebung/${encodeURIComponent(ex.id)}">
           <div class="exercise-card__thumb">${figureThumb(ex)}</div>
           <div class="exercise-card__body">
             <span class="exercise-card__title">${ex.name}</span>
-            <span class="exercise-card__meta">${doseText(ex, lvl)}${(ex.equipment || []).filter((e) => e !== 'none').length ? ` · ${(ex.equipment || []).filter((e) => e !== 'none').map((e) => EQUIPMENT_LABEL[e] ?? e).join(', ')}` : ''}</span>
+            <span class="exercise-card__meta">${cardDose(ex, lvl)}${(ex.equipment || []).filter((e) => e !== 'none').length ? ` · ${(ex.equipment || []).filter((e) => e !== 'none').map(equipLabel).join(', ')}` : ''}</span>
             <span class="chip-row">
               <span class="chip chip--sm ${chipCls}">Stufe <span class="num">${li + 1}/${ex.levels.length}</span></span>
               ${lvl?.band ? bandChip(settings, lvl.band) : ''}
               ${ex.side === 'left' ? html`<span class="chip chip--sm chip--outline">OP-Knie</span>` : ''}
+              ${availabilityChip(av)}
             </span>
           </div>
           ${raw(ICON.chev)}

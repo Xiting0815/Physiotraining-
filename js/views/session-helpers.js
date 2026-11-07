@@ -3,18 +3,24 @@
 // The few DOM helpers at the bottom (toast, sheet, styles) only touch `document` when called.
 // See docs/SPEC.md §4.2, §5, §6.7, §8.
 import { evaluateSession, finalizeWithNextDay, recommendLevels, thresholds, LIGHT_LABELS, worst } from '../logic/traffic-light.js';
-import { advanceWorkout, applyRecommendation } from '../logic/progression.js';
+import { rotationAfter, applyRecommendation, getWorkout, workoutKind } from '../logic/progression.js';
 import { xpFor, levelFor, evaluateBadges, sessionScore, XP } from '../logic/motivation.js';
-import { doneSessions, sessionLight, personalRecords, newRecords, dayOf } from '../logic/stats.js';
+import { doneSessions, sessionLight, personalRecords, newRecords, dayOf, isCardioSession } from '../logic/stats.js';
+import { rowingRecords, pacePer500, INTENSITY_LABELS } from '../logic/cardio.js';
+import { sessionKcal, currentWeight } from '../logic/energy.js';
 import { todayISO, toISODate } from '../util/date.js';
 import { html, raw } from '../render.js';
 
 /** @typedef {import('../types.js').Session} Session */
 
 export const SECTIONS = ['warmup', 'knee', 'archery', 'cooldown'];
-export const SECTION_LABELS = { warmup: 'Aufwärmen', knee: 'Knie-Block', archery: 'Bogen-Block', cooldown: 'Cool-down' };
+export const SECTION_LABELS = { warmup: 'Aufwärmen', knee: 'Knie-Block', archery: 'Bogen-Block', cooldown: 'Cool-down', cardio: 'Rudern' };
 export const SWELLING_LABELS = ['keine', 'leicht', 'deutlich'];
 export const RECORD_LABELS = { longestHold: 'Längster Hold', mostReps: 'Meiste Wdh.', strongestBand: 'Stärkstes Band' };
+export const ROW_RECORD_LABELS = { distanceM: 'Längste Strecke', avgWatt: 'Beste Ø-Leistung', durationSec: 'Längste Ruderzeit' };
+export const KIND_LABELS = { strength: 'Krafttraining', short: 'Kurztraining', cardio: 'Rudern', custom: 'Eigenes Workout' };
+/** Post-op red flag reason prefix used by the traffic light (SPEC §12.10). */
+export const DOC_PREFIX = 'Entlastungsphase: bitte Arzt kontaktieren';
 export { LIGHT_LABELS };
 
 const clone = (o) => (typeof structuredClone === 'function' ? structuredClone(o) : JSON.parse(JSON.stringify(o)));
@@ -133,9 +139,9 @@ export function positionOf(session, index) {
  * pre pain/swelling and the last sessions' lights.
  * @returns {{light: 'green'|'yellow'|'red'|'stop', reasons: string[], consult: boolean, showCard: boolean}}
  */
-export function assessPreCheck(pre, settings, history = []) {
+export function assessPreCheck(pre, settings, history = [], { postOp = false } = {}) {
   const thr = thresholds(settings);
-  const ev = evaluateSession({ pre, exercises: [], post: null }, settings, []);
+  const ev = evaluateSession({ pre, exercises: [], post: null, ...(postOp ? { postOp: true } : {}) }, settings, []);
   let light = ev.traffic;
   const reasons = ev.traffic === 'green' ? [] : ev.reasons.slice();
   const add = (l, r) => { light = worst(light, l); if (r && !reasons.includes(r)) reasons.push(r); };
@@ -151,8 +157,12 @@ export function assessPreCheck(pre, settings, history = []) {
   if (l1 === 'stop') add('stop', 'Die letzte Einheit endete mit „Stopp“ – bitte ärztlich abklären.');
   else if (l1 === 'red' && (l2 === 'red' || l2 === 'stop')) add('stop', 'Zweimal in Folge Rot – bitte ärztlich bzw. physiotherapeutisch abklären.');
   else if (l1 === 'red') add('red', 'Die letzte Einheit war Rot – heute lieber leichter.');
-  return { light, reasons, consult: light === 'stop', showCard: light === 'red' || light === 'stop' };
+  const doctor = reasons.some((r) => r.startsWith(DOC_PREFIX));
+  return { light, reasons, consult: light === 'stop', showCard: light === 'red' || light === 'stop', doctor };
 }
+
+/** True when the traffic reasons contain a post-op „Arzt kontaktieren“ red flag. */
+export const needsDoctor = (reasons) => (reasons || []).some((r) => String(r).startsWith(DOC_PREFIX));
 
 /** Pre-check choice „Nur Oberkörper“: knee entries are skipped (mutates + returns session). */
 export function applyUpperBodyOnly(session, content) {
@@ -256,6 +266,7 @@ export function finishSession(data, active, content, { now = new Date() } = {}) 
   if (s.pausedAt) { s.pausedMs = (s.pausedMs || 0) + Math.max(0, now.getTime() - Date.parse(s.pausedAt)); }
   delete s.pausedAt;
   delete s.cursor;
+  delete s.rowTimer;
   const history = doneSessions(d.sessions);
   const ev = evaluateSession(s, settings, history);
   s.traffic = { provisional: ev.traffic, final: null, reasons: ev.reasons };
@@ -267,12 +278,16 @@ export function finishSession(data, active, content, { now = new Date() } = {}) 
   const prevRec = personalRecords(history, settings);
   const nextRec = personalRecords([...history, s], settings);
   const recKeys = newRecords(prevRec, nextRec);
+  const rowRecs = isCardioSession(s) ? newRowingRecords(history, s) : [];
+  const kc = sessionKcal(s, settings?.profile, currentWeight(d.state.healthLog || [], today), content);
+  s.energy = { kcal: kc.kcal, method: kc.method };
 
   const xpBefore = d.state.xp || 0;
   d.sessions.push(s);
   d.state.activeSession = null;
   const phase = (content?.phases || []).find((p) => p.id === (d.state.phaseId || s.phaseId)) || (content?.phases || []).find((p) => p.id === s.phaseId);
-  if (phase) d.state.nextWorkoutId = advanceWorkout({ ...d.state, nextWorkoutId: s.workoutId }, phase);
+  // v2 (SPEC §12.4): only A/B/C strength workouts advance the rotation; cardio/short/custom keep it.
+  if (phase) d.state.nextWorkoutId = rotationAfter(d.state, phase, s.workoutId);
   d.state.xp = xpBefore + s.xpEarned;
   d.state.records = nextRec;
   const badges = evaluateBadges(d, content?.badges || [], { today });
@@ -282,10 +297,254 @@ export function finishSession(data, active, content, { now = new Date() } = {}) 
   s.celebration = {
     xpBefore, xpAfter: d.state.xp, badges,
     records: recKeys.map((k) => ({ key: k, first: prevRec[k] == null, value: nextRec[k] })),
+    ...(rowRecs.length ? { rowRecords: rowRecs } : {}),
     shown: false,
   };
   d.sessions[d.sessions.length - 1] = s;
   return { data: d, session: s };
+}
+
+/* ------------------------------------------------------------------ v2: kinds, labels, energy */
+
+/** Kind of a session (missing = strength). */
+export const sessionKind = (s) => s?.kind ?? (isCardioSession(s) ? 'cardio' : 'strength');
+
+/**
+ * Display title of a session/workout: custom name, workout name or stored `workoutName`.
+ * @returns {{title: string, kindLabel: string, kind: string}}
+ */
+export function sessionTitle(session, content, state) {
+  const w = getWorkout(session?.workoutId, content, state);
+  const kind = sessionKind(session) || workoutKind(w);
+  const title = w?.name ?? session?.workoutName ?? KIND_LABELS[kind] ?? 'Training';
+  return { title, kindLabel: kind === 'custom' ? 'Eigenes Workout' : KIND_LABELS[kind] ?? 'Training', kind };
+}
+
+/** Energy estimate for a stored session (uses `session.energy` when present). */
+export function energyOf(session, data, content, today = todayISO()) {
+  if (session?.energy && typeof session.energy.kcal === 'number') {
+    return { kcal: session.energy.kcal, method: session.energy.method, label: energyLabel(session.energy.method) };
+  }
+  const k = sessionKcal(session, data?.settings?.profile, currentWeight(data?.state?.healthLog || [], today), content);
+  return { kcal: k.kcal, method: k.method, label: energyLabel(k.method) };
+}
+/** „vom Display“ for display kcal, else „Schätzung“. */
+export const energyLabel = (method) => (method === 'display' ? 'vom Display' : 'Schätzung');
+
+/** Rowing records improved by `session` compared to `history`: [{key, value, first}]. */
+export function newRowingRecords(history, session) {
+  const prev = rowingRecords(history);
+  const next = rowingRecords([...doneSessions(history), { ...session, status: 'done' }]);
+  const out = [];
+  for (const k of Object.keys(next)) {
+    if (next[k] && next[k].sessionId === session.id && (!prev[k] || next[k].value > prev[k].value)) {
+      out.push({ key: k, value: next[k].value, first: prev[k] == null });
+    }
+  }
+  return out;
+}
+
+/** Human value of a rowing record. */
+export function rowRecordValue(key, value) {
+  if (value == null) return '';
+  if (key === 'distanceM') return formatDistance(value);
+  if (key === 'avgWatt') return `${Math.round(value)} W`;
+  if (key === 'durationSec') return formatClock(value);
+  return String(value);
+}
+
+/** 1234 → "1.234 m", 12345 → "12,35 km". */
+export function formatDistance(m) {
+  if (typeof m !== 'number' || !Number.isFinite(m)) return '–';
+  if (m >= 10000) return `${(m / 1000).toFixed(2).replace('.', ',')} km`;
+  return `${Math.round(m).toLocaleString('de-DE')} m`;
+}
+
+/** Seconds → "m:ss" (or "h:mm:ss"). */
+export function formatClock(sec) {
+  const t = Math.max(0, Math.round(Number(sec) || 0));
+  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
+/** Pace label for a rowing log: "2:30 /500 m" or null. */
+export function paceLabel(rowing) {
+  const p = pacePer500(rowing || {});
+  return p == null ? null : `${formatClock(p)} /500 m`;
+}
+
+/** Parse "18:30", "18", "18,5" (minutes) or "1:02:03" → seconds; '' → null; invalid → NaN. */
+export function parseClock(str) {
+  const t = String(str ?? '').trim();
+  if (!t) return null;
+  if (/^\d+(:\d{1,2}){1,2}$/.test(t)) {
+    const parts = t.split(':').map(Number);
+    if (parts.slice(1).some((n) => n > 59)) return NaN;
+    return parts.reduce((a, n) => a * 60 + n, 0);
+  }
+  const n = Number(t.replace(',', '.'));
+  return Number.isFinite(n) ? Math.round(n * 60) : NaN;
+}
+
+/* ------------------------------------------------------------------ v2: rowing timer (pure) */
+
+/** Index of the main rowing entry (section `cardio`), or -1. */
+export const mainCardioIndex = (session) => (session?.exercises || []).findIndex((e) => e.section === 'cardio');
+
+/** Big German label + sub label for a rowing phase. */
+export function rowPhaseLabel(phase, content, session) {
+  const ex = exOf(content, phase?.exerciseId);
+  const entry = session?.exercises?.[phase?.entryIndex];
+  const lvl = ex?.levels?.[entry?.level ?? 0];
+  const isDrill = Array.isArray(lvl?.phases) && lvl.phases.length > 0;
+  let big;
+  if (isDrill) big = phase.label;
+  else if (phase.kind === 'rest') big = phase.label === 'Pause' ? 'Pause' : 'Locker rudern';
+  else if (entry?.section === 'cooldown') big = 'Locker ausrudern';
+  else if (phase.intensity === 'vigorous') big = 'Zügig rudern';
+  else if (phase.intensity === 'easy') big = 'Locker rudern';
+  else big = 'Gleichmäßig rudern';
+  let sub = ex?.name ?? '';
+  if (!isDrill && phase.sets > 1) sub += phase.kind === 'rest' ? ` · Erholung ${phase.set}/${phase.sets - 1}` : ` · Intervall ${phase.set}/${phase.sets}`;
+  if (isDrill) sub += ` · Schritt ${phase.set}/${phase.sets}`;
+  return { big, sub, intensity: phase.intensity ?? 'moderate', intensityLabel: INTENSITY_LABELS[phase.intensity] ?? '' };
+}
+
+/** Fresh timer state. */
+export const newRowTimer = () => ({ idx: 0, accMs: 0, runAt: null, log: [], done: false });
+
+/** Elapsed ms in the current phase. */
+export const rowPhaseElapsed = (t, now) => (t.accMs || 0) + (t.runAt != null ? now - t.runAt : 0);
+
+/**
+ * Advance the timer to `now`, crossing phase boundaries (mutates `t`).
+ * @returns {number[]} indexes of phases completed by this tick
+ */
+export function rowingTick(t, phases, now) {
+  const crossed = [];
+  if (t.done) return crossed;
+  let el = rowPhaseElapsed(t, now);
+  while (t.idx < phases.length && el >= phases[t.idx].seconds * 1000) {
+    el -= phases[t.idx].seconds * 1000;
+    t.log[t.idx] = phases[t.idx].seconds;
+    crossed.push(t.idx);
+    t.idx++;
+  }
+  if (t.idx >= phases.length) { t.done = true; t.runAt = null; t.accMs = 0; }
+  else if (crossed.length) { t.accMs = el; if (t.runAt != null) t.runAt = now; }
+  return crossed;
+}
+
+export function rowingStart(t, now) { if (!t.done && t.runAt == null) t.runAt = now; return t; }
+export function rowingPause(t, now) { if (t.runAt != null) { t.accMs = rowPhaseElapsed(t, now); t.runAt = null; } return t; }
+
+/** End the current phase early (logs the seconds actually rowed). */
+export function rowingSkip(t, phases, now) {
+  if (t.done) return t;
+  t.log[t.idx] = Math.min(phases[t.idx]?.seconds ?? 0, Math.round(rowPhaseElapsed(t, now) / 1000));
+  t.idx++;
+  t.accMs = 0;
+  if (t.idx >= phases.length) { t.done = true; t.runAt = null; } else if (t.runAt != null) t.runAt = now;
+  return t;
+}
+
+/** Jump to the cool-down (first phase of a `cooldown` entry after the current one); else finish. */
+export function rowingJumpToCooldown(t, phases, session, now) {
+  if (t.done) return t;
+  const target = phases.findIndex((p, i) => i > t.idx && session?.exercises?.[p.entryIndex]?.section === 'cooldown');
+  const curIsCool = session?.exercises?.[phases[t.idx]?.entryIndex]?.section === 'cooldown';
+  if (curIsCool) return t;
+  t.log[t.idx] = Math.min(phases[t.idx]?.seconds ?? 0, Math.round(rowPhaseElapsed(t, now) / 1000));
+  const end = target < 0 ? phases.length : target;
+  for (let i = t.idx + 1; i < end; i++) t.log[i] = 0;
+  t.idx = end;
+  t.accMs = 0;
+  if (t.idx >= phases.length) { t.done = true; t.runAt = null; } else if (t.runAt != null) t.runAt = now;
+  return t;
+}
+
+/** {phaseRemaining, totalRemaining, rowed} in seconds. */
+export function rowingTimes(t, phases, now) {
+  const el = t.done ? 0 : rowPhaseElapsed(t, now) / 1000;
+  const cur = phases[t.idx];
+  const phaseRemaining = cur ? Math.max(0, cur.seconds - el) : 0;
+  let later = 0;
+  for (let i = t.idx + 1; i < phases.length; i++) later += phases[i].seconds;
+  const logged = (t.log || []).reduce((a, n) => a + (n || 0), 0);
+  return { phaseRemaining, totalRemaining: phaseRemaining + later, rowed: logged + (cur ? Math.min(el, cur.seconds) : 0) };
+}
+
+/**
+ * Write the rowed seconds from the timer log into the session entries (mutates + returns session):
+ * drills → one set with the summed seconds, otherwise one set per work phase; rest phases add nothing.
+ * Entries without any rowed second are marked skipped.
+ */
+export function applyRowingLog(session, phases, log, content, at = new Date().toISOString()) {
+  const per = new Map();
+  phases.forEach((p, i) => {
+    if (!per.has(p.entryIndex)) per.set(p.entryIndex, []);
+    per.get(p.entryIndex).push({ p, sec: Math.max(0, Math.round(log?.[i] || 0)) });
+  });
+  for (const [idx, list] of per) {
+    const e = session.exercises[idx];
+    if (!e) continue;
+    const ex = exOf(content, e.exerciseId);
+    const lvl = ex?.levels?.[e.level ?? 0];
+    const drill = Array.isArray(lvl?.phases) && lvl.phases.length > 0;
+    const work = list.filter((x) => x.p.kind === 'work');
+    e.sets = [];
+    if (drill) {
+      const sec = work.reduce((a, x) => a + x.sec, 0);
+      if (sec > 0) e.sets.push({ done: true, seconds: sec, band: null, at });
+    } else {
+      for (const x of work) {
+        const i = x.p.set - 1;
+        while (e.sets.length < i) e.sets.push({ done: false });
+        e.sets[i] = x.sec > 0 ? { done: true, seconds: x.sec, band: null, at } : { done: false };
+      }
+      while (e.sets.length && !e.sets.at(-1)?.done) e.sets.pop();
+    }
+    e.skipped = !e.sets.some((x) => x.done);
+  }
+  return session;
+}
+
+/** Seconds rowed according to the log (incl. active rest). */
+export const rowedSecondsFromLog = (log) => Math.round((log || []).reduce((a, n) => a + (n || 0), 0));
+
+/** Pre-check choice „Lockerer & kürzer“ for rowing: main entry one level lower or ~40 % shorter. */
+export function applyLighterCardio(session, content) {
+  for (const e of session.exercises || []) {
+    if (e.section !== 'cardio') continue;
+    const ex = exOf(content, e.exerciseId);
+    if ((e.level ?? 0) > 0 && ex) {
+      e.level -= 1;
+      e.plannedSets = ex.levels[e.level]?.sets ?? e.plannedSets;
+    } else {
+      const lvl = ex?.levels?.[e.level ?? 0] ?? {};
+      if ((e.plannedSets ?? lvl.sets ?? 1) > 1) e.plannedSets = Math.max(1, Math.round((e.plannedSets ?? lvl.sets) * 0.6));
+      else e.override = { ...(e.override || {}), seconds: Math.max(60, Math.round(((lvl.seconds ?? 600) * 0.6) / 60) * 60) };
+    }
+    e.lighter = true;
+  }
+  session.mode = 'light';
+  return session;
+}
+
+/** Live traffic light of the rowing entry (pain during + sharp pain) for the in-session warning. */
+export function rowingPainLight(entry, settings) {
+  const thr = thresholds(settings);
+  if (entry?.sharpPain) return 'red';
+  const p = entry?.painDuring;
+  if (!isNum(p)) return null;
+  return p > thr.yellowMax ? 'red' : p > thr.greenMax ? 'yellow' : 'green';
+}
+
+/** Default answers of a check (pre/post/next day); post-op sessions add redness + fever. */
+export function withPostOpFlags(draft, postOp) {
+  if (!postOp) return draft;
+  return { redness: false, fever: false, ...draft };
 }
 
 const recKey = (r) => `${r.exerciseId}|${r.action}|${r.toLevel}|${r.toExerciseId ?? ''}`;
@@ -527,7 +786,39 @@ const CSS = `
 .ses-field .field__label{font-weight:var(--fw-bold)}
 .ses-nd-result{text-align:center}
 .ses-nd-result .traffic{margin:0 auto}
-@media (prefers-reduced-motion: reduce){.ses-float,.ses-pulse,.ses-shake{animation:none}}
+.row-timer{--c:var(--primary);--c-soft:var(--primary-soft);--c-ink:var(--primary-ink);text-align:center;border:2px solid color-mix(in srgb,var(--c) 40%,transparent);background:linear-gradient(180deg,var(--c-soft),var(--surface) 70%);transition:border-color .4s var(--ease),background .4s var(--ease)}
+.row-timer--easy{--c:var(--green);--c-soft:var(--green-soft);--c-ink:var(--green-ink)}
+.row-timer--vigorous{--c:var(--accent);--c-soft:var(--accent-soft);--c-ink:var(--accent-ink)}
+.row-timer--done{--c:var(--gold);--c-soft:var(--gold-soft);--c-ink:var(--gold-ink)}
+.row-timer .eyebrow{margin:0;color:var(--c-ink)}
+.row-phase{font-size:clamp(30px,9vw,42px);font-weight:var(--fw-black);letter-spacing:-.03em;line-height:1.05;margin:var(--s-2) 0 var(--s-1);color:var(--c-ink)}
+.row-phase.is-new{animation:pop-in .45s var(--spring) both}
+.row-sub{color:var(--muted);font-size:var(--fs-sm);margin:0}
+.row-targets{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s-2);margin:var(--s-3) 0 var(--s-2)}
+.row-int{background:var(--c);color:#fff;border-color:transparent}
+.row-clock{font-size:var(--fs-timer);font-weight:var(--fw-black);font-variant-numeric:tabular-nums;letter-spacing:-.04em;line-height:1;margin:var(--s-2) 0;color:var(--text)}
+.row-bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--c) 18%,var(--surface-2));overflow:hidden}
+.row-bar>span{display:block;height:100%;width:0;background:var(--c);border-radius:inherit;transition:width .25s linear}
+.row-total{display:flex;justify-content:space-between;gap:var(--s-2);font-size:var(--fs-sm);color:var(--muted);margin:var(--s-2) 0 0;font-variant-numeric:tabular-nums}
+.row-total strong{color:var(--text)}
+.row-next{display:flex;align-items:center;gap:var(--s-2);justify-content:center;margin:var(--s-3) 0 0;padding:var(--s-2) var(--s-3);border-radius:var(--radius-sm);background:var(--surface);font-size:var(--fs-sm);font-weight:var(--fw-semibold)}
+.row-next i{width:10px;height:10px;border-radius:50%;flex:none;background:var(--primary)}
+.row-next i.is-easy{background:var(--green)}.row-next i.is-vigorous{background:var(--accent)}
+.row-ctrl{display:flex;gap:var(--s-2);margin-top:var(--s-4)}
+.row-ctrl .btn{flex:1 1 0;min-height:60px}
+.row-ctrl .row-play{flex:2 1 0}
+.row-stopline{display:flex;align-items:center;gap:var(--s-2);font-size:var(--fs-sm);font-weight:var(--fw-semibold);color:var(--red-ink);background:var(--red-soft);border-radius:var(--radius-sm);padding:var(--s-2) var(--s-3);margin:0}
+.row-form .input{font-variant-numeric:tabular-nums;font-size:var(--fs-lg)}
+.row-form .grid-2{gap:var(--s-3)}
+.row-form .field{margin-bottom:0}
+.ses-err{color:var(--red-ink);font-size:var(--fs-xs);font-weight:var(--fw-semibold)}
+.row-pace{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-2);padding:var(--s-3);border-radius:var(--radius-sm);background:var(--primary-soft);color:var(--primary-ink);font-weight:var(--fw-bold)}
+.row-pace strong{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
+.ses-hero-icon{font-size:56px;line-height:1;display:block;margin-bottom:var(--s-2)}
+.ses-postop{border-left:4px solid var(--stop);padding:var(--s-2) var(--s-3);background:var(--stop-soft);border-radius:var(--radius-sm);font-size:var(--fs-sm);margin:var(--s-2) 0 0}
+.ses-doctor .card__title{font-size:var(--fs-xl)}
+.ses-doctor .ses-doctor__icon{font-size:40px;line-height:1}
+@media (prefers-reduced-motion: reduce){.ses-float,.ses-pulse,.ses-shake,.row-phase.is-new{animation:none}}
 `;
 
 export function ensureStyles() {

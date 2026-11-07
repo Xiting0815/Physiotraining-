@@ -11,6 +11,11 @@ export const routes = [
   { pattern: '/verlauf', view: 'history', tab: 'verlauf', title: 'Verlauf' },
   { pattern: '/mehr', view: 'settings', tab: 'mehr', title: 'Mehr' },
   { pattern: '/ausruestung', view: 'equipment', tab: 'mehr', title: 'Ausrüstung' },
+  // v2 (SPEC §12.12)
+  { pattern: '/eigene', view: 'custom-workouts', tab: 'plan', title: 'Eigene Workouts' },
+  { pattern: '/eigene/:id', view: 'custom-workout-edit', tab: 'plan', title: 'Eigenes Workout' },
+  { pattern: '/gesundheit', view: 'health', tab: 'mehr', title: 'Gesundheit' },
+  { pattern: '/profil', view: 'profile', tab: 'mehr', title: 'Profil & Ziele' },
 ];
 
 export const DEFAULT_PATH = '/heute';

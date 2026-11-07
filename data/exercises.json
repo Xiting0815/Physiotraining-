@@ -130,8 +130,8 @@
       ],
       "figure": {
         "poses": [
-          "lying-supine",
-          "lying-supine-quad"
+          "supine-ankle-up",
+          "supine-ankle-down"
         ],
         "props": [
           "mat"
@@ -4318,12 +4318,16 @@
       "postOpAllowed": false,
       "figure": {
         "poses": [
-          "sit-row-start",
-          "sit-row-end"
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
         ],
         "props": [],
         "band": null,
-        "mirror": false
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
       },
       "id": "row-technique-warmup",
       "name": "Rudern – Technik-Aufwärmen",
@@ -4410,12 +4414,16 @@
       "postOpAllowed": false,
       "figure": {
         "poses": [
-          "sit-row-start",
-          "sit-row-end"
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
         ],
         "props": [],
         "band": null,
-        "mirror": false
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
       },
       "id": "row-steady",
       "name": "Rudern – Grundlage",
@@ -4532,12 +4540,16 @@
       "postOpAllowed": false,
       "figure": {
         "poses": [
-          "sit-row-start",
-          "sit-row-end"
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
         ],
         "props": [],
         "band": null,
-        "mirror": false
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
       },
       "id": "row-intervals",
       "name": "Rudern – Intervalle",
@@ -4658,12 +4670,16 @@
       "postOpAllowed": false,
       "figure": {
         "poses": [
-          "sit-row-start",
-          "sit-row-end"
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
         ],
         "props": [],
         "band": null,
-        "mirror": false
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
       },
       "id": "row-endurance",
       "name": "Rudern – Ausdauer",
@@ -4762,12 +4778,16 @@
       "postOpAllowed": false,
       "figure": {
         "poses": [
-          "sit-row-start",
-          "sit-row-end"
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
         ],
         "props": [],
         "band": null,
-        "mirror": false
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
       },
       "id": "row-cooldown",
       "name": "Rudern – Ausrudern",
@@ -4870,8 +4890,8 @@
       ],
       "figure": {
         "poses": [
-          "sit-chair",
-          "sit-chair-high"
+          "chair-dip-up",
+          "chair-dip-down"
         ],
         "props": [
           "chair"
@@ -4954,8 +4974,8 @@
       ],
       "figure": {
         "poses": [
-          "stand-arm-forward-bent",
-          "stand-arms-down"
+          "stand-triceps-ext-start",
+          "stand-triceps-ext-end"
         ],
         "props": [
           "door"
@@ -5045,8 +5065,8 @@
       ],
       "figure": {
         "poses": [
-          "sit-chair",
-          "sit-chair-high"
+          "seated-press-up-down",
+          "seated-press-up-up"
         ],
         "props": [
           "chair"
@@ -5129,15 +5149,15 @@
       ],
       "figure": {
         "poses": [
-          "sit-chair",
-          "sit-to-stand-mid",
-          "sit-to-stand-end"
+          "sit-right-load",
+          "stand-from-chair-right-mid",
+          "stand-right-load"
         ],
         "props": [
           "chair"
         ],
         "band": null,
-        "mirror": true
+        "mirror": false
       },
       "postOpAllowed": false
     },
@@ -5218,8 +5238,9 @@
       ],
       "figure": {
         "poses": [
-          "stand-single-left",
-          "stand-arms-forward-high"
+          "stand-single-left-reach-start",
+          "stand-single-left-reach-forward",
+          "stand-single-left-reach-up"
         ],
         "props": [],
         "band": null,
@@ -5284,14 +5305,14 @@
       ],
       "figure": {
         "poses": [
-          "lying-supine",
-          "supine-quad-set-relax"
+          "long-sit-patella-up",
+          "long-sit-patella-down"
         ],
         "props": [
           "mat"
         ],
         "band": null,
-        "mirror": false
+        "mirror": true
       }
     },
     {
@@ -5362,8 +5383,8 @@
       ],
       "figure": {
         "poses": [
-          "lying-supine",
-          "lying-bridge-down"
+          "supine-glute-relax",
+          "supine-glute-set"
         ],
         "props": [
           "mat"
@@ -5446,8 +5467,8 @@
       ],
       "figure": {
         "poses": [
-          "heel-slide-start",
-          "heel-slide-end"
+          "supine-right-leg-tuck",
+          "supine-right-leg-press"
         ],
         "props": [
           "mat"
@@ -5456,7 +5477,7 @@
           "from": "footR",
           "to": "handR"
         },
-        "mirror": true
+        "mirror": false
       }
     }
   ]

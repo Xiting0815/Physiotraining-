@@ -6,6 +6,7 @@ const RAD = Math.PI / 180;
 const MAT = FLOOR - MAT_H + 1; // body sinks 1px into the mat
 const STEP = FLOOR - STEP_H;
 const SEAT = SEAT_Y;
+const BODY_LEG_HALF = 4.25;
 
 const KEYS = ['trunk', 'hipL', 'hipR', 'kneeL', 'kneeR', 'shoulderL', 'shoulderR', 'elbowL', 'elbowR'];
 const base = (view, ground, o = {}) => ({ view, ground, root: { x: 100, y: 100 }, trunk: 0, hipL: 0, hipR: 0, kneeL: 0, kneeR: 0, shoulderL: 0, shoulderR: 0, elbowL: 10, elbowR: 10, ...o });
@@ -810,6 +811,206 @@ alias('serratus-punch-start', 'stand-arm-forward-bent');
 alias('serratus-punch-end', 'stand-arm-forward-reach');
 alias('lat-pulldown-start', 'sit-arms-overhead');
 alias('lat-pulldown-end', 'sit-pulldown-end');
+
+// ================================================================ v2 content: rowing, crutch prep, post-op
+/** IK both legs (same angles L = R) / both arms */
+const sameLegs = (p) => { p.hipL = p.hipR; p.kneeL = p.kneeR; if (p.ankleR !== undefined) p.ankleL = p.ankleR; return p; };
+const sameArms = (p) => { p.shoulderL = p.shoulderR; p.elbowL = p.elbowR; return p; };
+/** straight-arm length for a given elbow flexion */
+const armLen = (e) => Math.hypot(SEG.upperArm + SEG.forearm * Math.cos(e * RAD), SEG.forearm * Math.sin(e * RAD));
+
+// ---------------------------------------------------------------- rowing machine (side view, flywheel in front = right)
+{
+  const SEAT_TOP = 148; // seat top of the rowing machine (seat carriage runs on the rail below)
+  const RAIL = SEAT_TOP + 14;
+  const F = { x: 132, y: SEAT_TOP + 5 }; // ankle point on the foot stretcher (heel cup a bit below the seat)
+  const SOLE = 130; // foot stretcher: sole direction from straight down (40° toes up)
+  const hipY = SEAT_TOP - BODY_LEG_HALF - 1;
+  const legsTo = (p) => {
+    aim(p, 'legR', F, (k) => k > 0);
+    p.ankleR = r1(p.hipR - p.kneeR - (SOLE - 90));
+    return sameLegs(p);
+  };
+  const base = (hipX, trunk) => legsTo(side('sitting', { root: { x: r1(hipX), y: hipY }, trunk, shoulderL: 0, shoulderR: 0, elbowL: 0, elbowR: 0 }));
+  // catch: shins ~vertical (hip placed so the knee is right above the ankle), body ~1 o'clock, arms long
+  const catchHipX = F.x - Math.sqrt(SEG.thigh ** 2 - (F.y - SEG.shin - hipY) ** 2);
+  const cat = base(catchHipX, 22);
+  cat.shoulderR = 62; cat.elbowR = 4; sameArms(cat);
+  const Pc = pts(cat);
+  const exit = { x: r1(Pc.handR.x + 7), y: r1(Pc.handR.y - 1) };
+  // finish: legs long (knee ~5°), lean back ~15° (11 o'clock), handle at the lower ribs, elbows behind the body
+  const finHipX = F.x - Math.sqrt((SEG.thigh + SEG.shin - 0.4) ** 2 - (F.y - hipY) ** 2);
+  const fin = base(finHipX, -15);
+  {
+    const P = pts(fin);
+    const up = { x: Math.sin(fin.trunk * RAD), y: -Math.cos(fin.trunk * RAD) };
+    const chest = { x: Math.cos(fin.trunk * RAD), y: Math.sin(fin.trunk * RAD) };
+    const ribs = { x: P.hip.x + up.x * 26 + chest.x * 9, y: P.hip.y + up.y * 26 + chest.y * 9 };
+    aim(fin, 'armR', ribs, (j2, e) => e.x < P.neck.x);
+    sameArms(fin);
+  }
+  const finHand = pts(fin).handR;
+  /** arms long (elbow e), hands on the handle path exit → finish hand */
+  const onPath = (p, e = 4) => {
+    const P = pts(p);
+    const L = armLen(e);
+    // bisection along the strap line for |hand - shoulder| = L (start near the exit)
+    let lo = 0, hi = 1;
+    const at = (u) => ({ x: exit.x + (finHand.x - exit.x) * u, y: exit.y + (finHand.y - exit.y) * u });
+    for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; const q = at(m); if (Math.hypot(q.x - P.neck.x, q.y - P.neck.y) > L) lo = m; else hi = m; }
+    aim(p, 'armR', at(lo), (j2) => j2 >= 0);
+    return sameArms(p);
+  };
+  const drive = onPath(base(F.x - 58, 20));
+  const rec = onPath(base(F.x - 74, 18));
+  const rower = { type: 'rower', x0: r1(finHipX - 26), x1: r1(exit.x + 10), rail: RAIL, seat: SEAT_TOP, r: 16, foot: { x: F.x, y: F.y, a: SOLE }, exit };
+  for (const [id, p] of [['row-catch', cat], ['row-drive', drive], ['row-finish', fin], ['row-recovery', rec]]) {
+    p.props = [rower];
+    add(id, p);
+  }
+}
+
+// ---------------------------------------------------------------- chair dips (hands on the front edge behind, left leg resting long)
+{
+  const chair = { type: 'chair', x: 62, y: SEAT, facing: 1 };
+  const hand = { x: chair.x + 13, y: SEAT - 3.25 };
+  const mk = (hip, elbowBehind) => {
+    const p = side('sitting', { root: { x: r1(hip.x), y: r1(hip.y) }, trunk: 2, hipR: 85, kneeR: 85, hipL: 70, kneeL: 8 });
+    const P = pts(p);
+    aim(p, 'armR', hand, elbowBehind ? (j2, e) => e.x < P.neck.x : (j2) => j2 >= 0);
+    sameArms(p);
+    return p;
+  };
+  const upHip = { x: chair.x + 24, y: 0 };
+  // arms nearly straight (elbow 5°) with the hands a little behind the shoulders
+  const L = armLen(5);
+  const dx = upHip.x - hand.x;
+  upHip.y = hand.y - Math.sqrt(L * L - dx * dx) + SEG.trunk * Math.cos(2 * RAD);
+  const up = mk(upHip, false);
+  const footR = { x: r1(up.root.x + 44), y: FLOOR - 4.25 };
+  const legs = (p) => {
+    aim(p, 'legR', footR, (k) => k > 0); flat(p, 'R');
+    // left leg resting long, heel on the floor (slides with the body), toes up
+    p.kneeL = 8;
+    solve(p, 'hipL', 20, 89, (q) => pts(q).footL.y + 4.25 - FLOOR);
+    p.ankleL = r1(p.hipL - p.kneeL - 12);
+    return p;
+  };
+  legs(up);
+  const down = mk({ x: upHip.x + 4, y: upHip.y + 12 }, true);
+  legs(down);
+  for (const p of [up, down]) p.props = [chair];
+  add('chair-dip-up', up);
+  add('chair-dip-down', down);
+}
+
+// ---------------------------------------------------------------- seated press-up on the armrests (crutch support)
+{
+  const ARMS = 16;
+  const chair = { type: 'chair', x: chairX, y: SEAT, facing: 1, arms: ARMS };
+  const hand = { x: chairX - 2, y: SEAT - ARMS - 3.25 };
+  const mk = (lift) => {
+    const p = flat(side('sitting', { root: { x: 92, y: r1(seatY - lift) }, trunk: lift ? 1 : -2, hipL: 90, hipR: 90, kneeL: 90, kneeR: 90 }));
+    const P = pts(p);
+    aim(p, 'armR', hand, (j2, e) => e.x < P.neck.x);
+    return sameArms(p);
+  };
+  const a = mk(0);
+  const feet = pts(a).footR;
+  const b = mk(12);
+  // feet stay planted while the buttocks lift
+  for (const s of ['L', 'R']) { aim(b, 'leg' + s, { x: feet.x, y: feet.y }, (k) => k > 0); flat(b, s); }
+  for (const p of [a, b]) p.props = [chair];
+  add('seated-press-up-down', a);
+  add('seated-press-up-up', b);
+}
+
+// ---------------------------------------------------------------- band triceps extension (facing the door, anchor high)
+{
+  const mk = (sh, el) => { const p = flat(side('standing', { trunk: 6, hipL: 3, hipR: 3, kneeL: 6, kneeR: 6, shoulderR: sh, elbowR: el })); ground(p, FLOOR); return sameArms(p); };
+  const a = mk(8, 92);
+  const b = mk(2, 4);
+  const door = { type: 'door', x: r1(pts(a).handR.x + 40), y: r1(pts(a).head.y - 6) };
+  a.props = [door]; b.props = [door];
+  add('stand-triceps-ext-start', a);
+  add('stand-triceps-ext-end', b);
+}
+
+// ---------------------------------------------------------------- sit to stand over the right leg (left foot forward, unloaded)
+{
+  const chair = { type: 'chair', x: chairX, y: SEAT, facing: 1 };
+  const s0 = flat(side('sitting', { root: { x: 92, y: seatY }, trunk: -3, hipL: 80, hipR: 90, kneeL: 50, kneeR: 90, shoulderL: 22, shoulderR: 22, elbowL: 55, elbowR: 55 }));
+  const footR = pts(s0).footR;
+  const footL = { x: r1(footR.x + 24), y: footR.y };
+  const left = (p, toeUp = 0) => { aim(p, 'legL', footL, (k) => k > 0); p.ankleL = r1(p.hipL - p.kneeL - toeUp); return p; };
+  left(s0);
+  const m = flat(side('sitting', { trunk: 40, hipR: 72, kneeR: 84, shoulderL: 75, shoulderR: 75, elbowL: 5, elbowR: 5 }), 'R');
+  ground(m, FLOOR, ['legR']); atFoot(m, s0, 'R');
+  left(m, 8);
+  const e = flat(side('standing', { trunk: 2, hipR: 0, kneeR: 2, shoulderL: 8, shoulderR: 8, elbowL: 10, elbowR: 10 }), 'R');
+  ground(e, FLOOR, ['legR']); atFoot(e, s0, 'R');
+  // left foot lightly touches in front (heel down, toes up)
+  e.kneeL = 4;
+  solve(e, 'hipL', 2, 45, (q) => pts(q).footL.y + 4.25 - (FLOOR - 0.5));
+  e.ankleL = r1(e.hipL - e.kneeL - 14);
+  for (const p of [s0, m, e]) p.props = [chair];
+  add('sit-right-load', s0);
+  add('stand-from-chair-right-mid', m);
+  add('stand-right-load', e);
+}
+
+// ---------------------------------------------------------------- single leg stance left with arm reaches
+{
+  const mk = (o) => { const p = flat(side('standing', { hipL: 3, kneeL: 8, hipR: 4, kneeR: 85, shoulderL: 18, shoulderR: 18, elbowL: 12, elbowR: 12, ...o }), 'L'); return ground(p, FLOOR, ['legL']); };
+  const a = mk({});
+  const b = mk({ trunk: 12, hipL: 10, shoulderR: 88, elbowR: 0 }); atFoot(b, a, 'L');
+  const c = mk({ trunk: 2, shoulderR: 165, elbowR: 0 }); atFoot(c, a, 'L');
+  add('stand-single-left-reach-start', a);
+  add('stand-single-left-reach-forward', b);
+  add('stand-single-left-reach-up', c);
+}
+
+// ---------------------------------------------------------------- long sitting, hands at the left knee (patella mobilisation)
+{
+  const mk = (dx) => {
+    // shown mirrored (figure faces left) so the left leg is the near one and the hands on the left knee are visible
+    const p = side('sitting', { trunk: 38, headTilt: 18, hipL: 90, kneeL: 0, hipR: 105, kneeR: 30, ankleL: -6 });
+    ground(p, MAT, ['trunk', 'legL']);
+    solve(p, 'hipR', 92, 150, (q) => pts(q).footR.y + 4.25 - MAT);
+    flat(p, 'R');
+    const P = pts(p);
+    aim(p, 'armR', { x: P.kneeL.x + dx, y: P.kneeL.y - 5 }, (j2) => j2 >= 0);
+    p.props = ['mat'];
+    return sameArms(p);
+  };
+  add('long-sit-patella-up', mk(-3));
+  add('long-sit-patella-down', mk(3));
+}
+
+// ---------------------------------------------------------------- supine: glute set, ankle pumps, right leg band press
+{
+  const relax = lie(supine({ hipL: 92, hipR: 92, kneeL: 5, kneeR: 5, shoulderL: 92, shoulderR: 92, elbowL: 0, elbowR: 0 }));
+  add('supine-glute-relax', relax);
+  const set = lie(supine({ hipL: 90, hipR: 90, kneeL: 0, kneeR: 0, shoulderL: 90, shoulderR: 90, elbowL: 0, elbowR: 0, ankleL: 4, ankleR: 4 }));
+  set.root.x = relax.root.x;
+  add('supine-glute-set', set);
+  const pump = (a) => { const p = lie(supine({ ankleL: a, ankleR: a })); p.root.x = relax.root.x; return ground(p, MAT); };
+  add('supine-ankle-up', pump(-15));
+  add('supine-ankle-down', pump(55));
+  // right leg band press: knee to chest → push up/forward against the band; left leg long and relaxed
+  const press = (hipR, kneeR, toeDir) => {
+    const p = lie(supine({ hipL: 90, kneeL: 0, hipR, kneeR, shoulderL: 150, shoulderR: 150, elbowL: 60, elbowR: 60 }));
+    ground(p, MAT, ['trunk', 'head', 'legL']);
+    const P = pts(p);
+    // hands hold the band ends above the chest
+    aim(p, 'armR', { x: P.neck.x + 16, y: P.neck.y - 24 }, (j2) => j2 >= 0);
+    sameArms(p);
+    p.ankleR = r1(hipR - kneeR + 90 - toeDir); // toes up, sole toward the band
+    return p;
+  };
+  add('supine-right-leg-tuck', press(198, 102, 185));
+  add('supine-right-leg-press', press(135, 4, 200));
+}
 
 // lying with the neck lower than the hips (bridges): tilt the head back to the mat
 for (const p of Object.values(poses)) {

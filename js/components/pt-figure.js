@@ -14,6 +14,13 @@
 //   reachL/reachR (px shoulder protraction along the chest direction),
 //   thighLenL… shinLenL… upperArmLenL… forearmLenL… (length multipliers for foreshortening, default 1)
 //   camera: "top" (front view seen from above, e.g. prone on a mat), props: [string | {type, …}]
+//
+// Props: chair ({x, y, facing, back, arms: armrest height above the seat}), wall, door, mat, step, towel,
+//   cushion, bow, rower ({x0, x1, rail, seat, r, foot: {x, y, a}, exit: {x, y}} — side view rowing machine:
+//   rail, flywheel housing at x1, foot stretcher under the ankle point `foot` (sole direction `a`°), the seat
+//   follows the hip and a strap runs from `exit` to the hands every frame).
+// Figure option `loop: true`: keyframes play as a cycle (k0 → … → kn-1 → k0) instead of ping-pong; the first
+//   half of the segments uses the concentric time, the rest the eccentric time (e.g. rowing drive/recovery).
 import { getExercise, getContent, loadContent } from '../content.js';
 import { getSettings, getState } from '../store.js';
 import { levelOf } from '../logic/progression.js';
@@ -156,10 +163,11 @@ const ease = (x) => 0.5 - Math.cos(Math.PI * x) / 2;
  * Pose at time `ms` of a ping-pong keyframe loop (pure). start → end = concentric,
  * hold = pause, end → start = eccentric, short rest at the start.
  */
-export function poseAt(keyframes, tempo, ms) {
+export function poseAt(keyframes, tempo, ms, { loop = false } = {}) {
   const n = keyframes.length;
   if (n < 2) return keyframes[0];
-  const { ecc, pause, con } = typeof tempo === 'object' ? tempo : parseTempo(tempo);
+  const { ecc, pause, con } = tempo && typeof tempo === 'object' ? tempo : parseTempo(tempo);
+  if (loop && n >= 3) return loopAt(keyframes, con, pause, ecc, ms);
   const hold = Math.max(pause, 350);
   const rest = 450;
   const steps = n - 1;
@@ -178,6 +186,25 @@ export function poseAt(keyframes, tempo, ms) {
   x -= hold;
   if (x < ecc) return seg(ecc, steps, 0);
   return keyframes[0];
+}
+
+/** Cyclic playback: k0 → … → k[half] (con), hold, k[half] → … → k0 (ecc); one easing per phase. */
+function loopAt(keyframes, con, pause, ecc, ms) {
+  const n = keyframes.length;
+  const half = Math.ceil(n / 2);
+  const hold = Math.max(pause, 120);
+  const total = con + hold + ecc;
+  let x = ((ms % total) + total) % total;
+  const run = (dur, from, steps) => {
+    const u = ease(Math.min(1, x / dur)) * steps;
+    const i = Math.min(steps - 1, Math.floor(u));
+    return interpolatePose(keyframes[(from + i) % n], keyframes[(from + i + 1) % n], u - i);
+  };
+  if (x < con) return run(con, 0, half);
+  x -= con;
+  if (x < hold) return keyframes[half];
+  x -= hold;
+  return run(ecc, half, n - half);
 }
 
 /** Band colour by id: settings.bands → defaults → fallback. */
@@ -274,6 +301,19 @@ export function layoutProps(props, pose0, P, band) {
         break;
       }
       case 'bow': break; // follows the hands every frame
+      case 'rower': {
+        if (!side) continue;
+        p.seat ??= P.hip.y + BODY.leg / 2 + 1;
+        p.rail ??= p.seat + 8;
+        p.foot ??= { x: P.footR.x, y: P.footR.y, a: 130 };
+        p.foot = { a: 130, ...p.foot };
+        p.r ??= 16;
+        p.exit ??= { x: p.foot.x + 46, y: p.rail - 30 };
+        p.x1 ??= p.exit.x + 8;
+        p.x0 ??= Math.min(P.hip.x, p.foot.x - 90) - 16;
+        p.anchor = p.exit;
+        break;
+      }
       default: continue;
     }
     out.push(p);
@@ -283,7 +323,8 @@ export function layoutProps(props, pose0, P, band) {
 
 function propBounds(p) {
   switch (p.type) {
-    case 'chair': return [{ x: p.x - 18, y: p.y - (p.back === false ? 0 : 50) }, { x: p.x + 18, y: FLOOR }];
+    case 'chair': return [{ x: p.x - 18, y: p.y - (p.back === false ? (p.arms || 0) : 50) }, { x: p.x + 18, y: FLOOR }];
+    case 'rower': return [{ x: p.x0 - 6, y: p.rail - 10 - p.r - 50 }, { x: p.x1 + p.r + 4, y: FLOOR }];
     case 'door': return [{ x: p.x - 6, y: p.y - 6 }, { x: p.x + 6, y: p.y + 6 }];
     case 'step': return [{ x: p.x - p.w / 2, y: p.top }, { x: p.x + p.w / 2, y: FLOOR }];
     case 'towel': return [{ x: p.x - p.r, y: p.y - p.r }, { x: p.x + p.r, y: p.y + p.r }];
@@ -305,14 +346,17 @@ function propSvg(p, frame, front) {
       const s = p.facing; // backrest on the -facing side
       const back = p.x - 16 * s;
       const fr = p.x + 16 * s;
+      const ah = p.arms > 0 ? p.arms : 0;
       if (front && p.view !== 'side') {
         return `<g class="fig-prop">
           ${p.back === false ? '' : `<rect class="fig-prop-soft" x="${f(p.x - 17)}" y="${f(p.y - 48)}" width="34" height="44" rx="4"/>`}
-          <path class="fig-prop-line" d="M${f(p.x - 15)} ${f(p.y + 2)}V${FLOOR}M${f(p.x + 15)} ${f(p.y + 2)}V${FLOOR}"/>
+          <path class="fig-prop-line" d="M${f(p.x - 15)} ${f(p.y + 2)}V${FLOOR}M${f(p.x + 15)} ${f(p.y + 2)}V${FLOOR}${ah ? `M${f(p.x - 19)} ${f(p.y)}V${f(p.y - ah)}M${f(p.x + 19)} ${f(p.y)}V${f(p.y - ah)}` : ''}"/>
           <rect class="fig-prop-solid" x="${f(p.x - 19)}" y="${f(p.y)}" width="38" height="5" rx="2"/></g>`;
       }
+      const armD = ah ? `M${f(back)} ${f(p.y - ah)}H${f(p.x + 10 * s)}M${f(p.x + 8 * s)} ${f(p.y - ah)}V${f(p.y)}` : '';
       return `<g class="fig-prop">
-        <path class="fig-prop-line" d="M${f(back)} ${f(p.y + 2)}V${FLOOR}M${f(fr)} ${f(p.y + 2)}V${FLOOR}${p.back === false ? '' : `M${f(back)} ${f(p.y)}V${f(p.y - 48)}`}"/>
+        <path class="fig-prop-line" d="M${f(back)} ${f(p.y + 2)}V${FLOOR}M${f(fr)} ${f(p.y + 2)}V${FLOOR}${p.back === false && !ah ? '' : `M${f(back)} ${f(p.y)}V${f(p.y - (p.back === false ? ah : 48))}`}"/>
+        ${ah ? `<path class="fig-prop-line fig-armrest" d="${armD}"/>` : ''}
         <rect class="fig-prop-solid" x="${f(Math.min(back, fr) - 2)}" y="${f(p.y)}" width="36" height="5" rx="2"/></g>`;
     }
     case 'wall': {
@@ -339,9 +383,51 @@ function propSvg(p, frame, front) {
       return `<g class="fig-prop"><circle class="fig-towel" cx="${f(p.x)}" cy="${f(p.y)}" r="${f(p.r)}"/><circle class="fig-towel-in" cx="${f(p.x)}" cy="${f(p.y)}" r="${f(p.r * 0.45)}"/></g>`;
     case 'cushion':
       return `<rect class="fig-cushion" x="${f(p.x - p.w / 2)}" y="${f(p.y - p.h / 2)}" width="${f(p.w)}" height="${f(p.h)}" rx="${f(p.h / 2)}"/>`;
+    case 'rower':
+      return rowerSvg(p);
     default:
       return '';
   }
+}
+
+/** Static parts of the rowing machine (side view): rail, stands, flywheel housing, monitor, foot stretcher. */
+function rowerSvg(p) {
+  const { x0, x1, rail, r } = p;
+  const cy = rail - 10;
+  const d = { x: Math.sin(p.foot.a * RAD), y: Math.cos(p.foot.a * RAD) }; // sole direction (heel → toe)
+  const n = { x: -d.y, y: d.x }; // away from the leg
+  const off = BODY.foot / 2 + 2.2;
+  const heel = { x: p.foot.x - d.x * 5 + n.x * off, y: p.foot.y - d.y * 5 + n.y * off };
+  const toe = { x: p.foot.x + d.x * 15 + n.x * off, y: p.foot.y + d.y * 15 + n.y * off };
+  const brace = mid(heel, toe);
+  const mon = { x: x1 - 6, y: cy - r - 44 };
+  return `<g class="fig-prop fig-rower">
+    <path class="fig-prop-line" d="M${f(x0 + 6)} ${f(rail + 3)}V${FLOOR - 2}M${f(x0 - 2)} ${FLOOR - 2}H${f(x0 + 16)}M${f(x1)} ${f(cy + r - 2)}V${FLOOR - 2}M${f(x1 - 12)} ${FLOOR - 2}H${f(x1 + 14)}"/>
+    <path class="fig-prop-line" d="M${f(x1 + 4)} ${f(cy - r + 2)}L${f(mon.x + 2)} ${f(mon.y + 6)}"/>
+    <rect class="fig-prop-solid" x="${f(mon.x - 7)}" y="${f(mon.y - 4)}" width="14" height="10" rx="2" transform="rotate(-18 ${f(mon.x)} ${f(mon.y)})"/>
+    <rect class="fig-prop-solid" x="${f(x0)}" y="${f(rail)}" width="${f(x1 - x0)}" height="4" rx="2"/>
+    <circle class="fig-prop-soft fig-flywheel" cx="${f(x1)}" cy="${f(cy)}" r="${f(r)}"/>
+    <circle class="fig-prop-ring" cx="${f(x1)}" cy="${f(cy)}" r="${f(r)}"/>
+    <circle class="fig-prop-solid" cx="${f(x1)}" cy="${f(cy)}" r="3"/>
+    <path class="fig-prop-line" d="M${f(brace.x)} ${f(brace.y)}L${f(brace.x - 2)} ${f(rail + 1)}"/>
+    <path class="fig-prop-line fig-footplate" d="M${f(heel.x)} ${f(heel.y)}L${f(toe.x)} ${f(toe.y)}"/></g>`;
+}
+
+/** Moving parts of the rowing machine: seat under the hip, strap + handle to the hands. */
+function rowerSeatSvg(p, P) {
+  const x = P.hip.x;
+  const gap = p.rail - 3 - (p.seat + 5);
+  const carriage = gap > 0.5 ? `<rect class="fig-prop-solid" x="${f(x - 8)}" y="${f(p.seat + 4)}" width="16" height="${f(gap + 1)}" rx="1.5"/>` : '';
+  return `<g class="fig-prop fig-rower-seat">${carriage}<circle class="fig-prop-solid" cx="${f(x - 6)}" cy="${f(p.rail - 1.4)}" r="1.6"/><circle class="fig-prop-solid" cx="${f(x + 6)}" cy="${f(p.rail - 1.4)}" r="1.6"/>
+    <rect class="fig-prop-solid fig-seat" x="${f(x - 12)}" y="${f(p.seat)}" width="24" height="5" rx="2.5"/></g>`;
+}
+function rowerStrapSvg(p, P) {
+  const h = P.hands;
+  return `<path class="fig-strap" d="M${f(p.exit.x)} ${f(p.exit.y)}L${f(h.x)} ${f(h.y)}"/>`;
+}
+function rowerHandleSvg(P) {
+  const h = P.hands;
+  return `<circle class="fig-handle" cx="${f(h.x)}" cy="${f(h.y)}" r="2.8"/>`;
 }
 
 function matSvg(frame, bbox, top) {
@@ -483,6 +569,7 @@ export function buildScene(spec) {
   // a band drawn hand-to-hand replaces the bow (band drills in archery stance)
   const props = layoutProps(mergeProps(spec.props, pose0).filter((p) => !(handBand && p.type === 'bow')), pose0, P0, band);
   const hasMat = props.some((p) => p.type === 'mat');
+  const rower = props.find((p) => p.type === 'rower') || null;
 
   // body bounds over all keyframes
   let bb = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
@@ -536,7 +623,9 @@ export function buildScene(spec) {
       const onFloor = Math.max(P.footL.y, P.footR.y) > FLOOR - 9;
       if (onFloor) s += `<ellipse class="fig-shadow" cx="${f(fx)}" cy="${FLOOR}" rx="${f(sw)}" ry="2.6"/>`;
     }
+    if (rower) s += rowerSeatSvg(rower, P) + rowerStrapSvg(rower, P);
     s += poseSvg(pose, segments, opts);
+    if (rower) s += rowerHandleSvg(P);
     if (props.some((p) => p.type === 'bow')) s += bowSvg(P);
     if (band) {
       const a = resolvePoint(P, band.from, props);
@@ -547,7 +636,7 @@ export function buildScene(spec) {
   }
 
   return {
-    frame, props, mirror, keyframes: poses,
+    frame, props, mirror, keyframes: poses, loop: !!spec.loop && poses.length >= 3,
     /** full frame markup (in viewBox coordinates of `frame`) for a pose */
     render(pose = pose0) {
       return `<g class="fig-frame"${mirrorT}>${staticBack}<g class="fig-body">${figure(pose)}</g></g>`;
@@ -573,7 +662,7 @@ export function figureSvg(spec, { pair = false, label = 'Übungsabbildung', pose
     return `<svg class="fig-svg fig-svg--pair" viewBox="${viewBoxOf(vb)}" role="img" aria-label="${esc(label)}: Start- und Endposition">
       ${scene.render(K[0])}
       <path class="fig-pair-arrow" d="M${f(ax - gap * 0.3)} ${f(ay)}H${f(ax + gap * 0.3)}M${f(ax + gap * 0.3 - 6)} ${f(ay - 6)}L${f(ax + gap * 0.3)} ${f(ay)}L${f(ax + gap * 0.3 - 6)} ${f(ay + 6)}"/>
-      <g transform="translate(${f(fr.w + gap)} 0)">${scene.render(K[K.length - 1])}</g></svg>`;
+      <g transform="translate(${f(fr.w + gap)} 0)">${scene.render(K[scene.loop ? Math.ceil(K.length / 2) : K.length - 1])}</g></svg>`;
   }
   return `<svg class="fig-svg" viewBox="${viewBoxOf(fr)}" role="img" aria-label="${esc(label)}">${scene.render(pose || K[0])}</svg>`;
 }
@@ -598,6 +687,9 @@ export const FIGURE_CSS = `
   pt-figure .fig-prop-solid{fill:currentColor;opacity:.75}
   pt-figure .fig-step{opacity:.35}
   pt-figure .fig-prop-soft{fill:currentColor;opacity:.16}
+  pt-figure .fig-prop-ring{fill:none;stroke:currentColor;stroke-width:2.2;opacity:.6}
+  pt-figure .fig-strap{fill:none;stroke:var(--fig-prop,var(--muted,#5B6573));stroke-width:1.6;stroke-linecap:round;opacity:.9}
+  pt-figure .fig-handle{fill:var(--fig-prop,var(--muted,#5B6573));stroke:var(--fig-bg);stroke-width:1}
   pt-figure .fig-prop-wall{stroke:currentColor;stroke-width:3;stroke-linecap:round;opacity:.7}
   pt-figure .fig-prop-hatch{stroke:currentColor;stroke-width:1.4;opacity:.35;fill:none}
   pt-figure .fig-wall-bg{fill:var(--surface-2,#EEF1F4);opacity:.8}
@@ -636,11 +728,11 @@ export function figureSpecForExercise(ex, level = 0) {
   const lv = ex.levels?.[level] ?? ex.levels?.[0];
   return {
     ...ex.figure,
-    highlight: knee ? (ex.side === 'both' ? 'legs' : 'legL') : ex.block === 'archery' ? 'arms' : '',
+    highlight: ex.figure?.highlight ?? (knee ? (ex.side === 'both' ? 'legs' : ex.side === 'right' ? 'legR' : 'legL') : ex.block === 'archery' ? 'arms' : ''),
     highlightColor: ex.block === 'archery' ? 'accent' : 'primary',
     highlightLeftKnee: knee && ex.side === 'left',
     bandId: lv?.band ?? ex.levels?.find((l) => l.band)?.band ?? null,
-    tempo: lv?.tempo ?? null,
+    tempo: lv?.tempo ?? ex.figure?.tempo ?? null,
   };
 }
 
@@ -649,7 +741,7 @@ const HL_COLORS = { primary: 'var(--primary,#0E7C86)', accent: 'var(--accent,#E0
 
 export class PtFigure extends Base {
   static get observedAttributes() {
-    return ['exercise-id', 'poses', 'props', 'band', 'band-id', 'level', 'tempo', 'mirror', 'static', 'size', 'highlight', 'highlight-color', 'aspect'];
+    return ['exercise-id', 'poses', 'props', 'band', 'band-id', 'level', 'tempo', 'mirror', 'static', 'size', 'highlight', 'highlight-color', 'aspect', 'loop'];
   }
 
   connectedCallback() {
@@ -694,6 +786,7 @@ export class PtFigure extends Base {
     if (this.hasAttribute('highlight-color')) spec.highlightColor = this.getAttribute('highlight-color');
     if (this.hasAttribute('tempo')) spec.tempo = this.getAttribute('tempo');
     if (this.hasAttribute('mirror')) spec.mirror = this.getAttribute('mirror') !== 'false';
+    if (this.hasAttribute('loop')) spec.loop = this.getAttribute('loop') !== 'false';
     return spec;
   }
 
@@ -719,7 +812,7 @@ export class PtFigure extends Base {
     const sceneSpec = {
       poses: keyframes, segments: posesFile.segments, props: spec.props, band,
       bandColor: band ? (band.color || bandColor(spec.bandId || band.id)) : null,
-      highlight: spec.highlight, highlightLeftKnee: spec.highlightLeftKnee, mirror: spec.mirror,
+      highlight: spec.highlight, highlightLeftKnee: spec.highlightLeftKnee, mirror: spec.mirror, loop: !!spec.loop,
       aspect: parseFloat(this.getAttribute('aspect')),
     };
     const label = this.getAttribute('aria-label') || 'Übungsabbildung';
@@ -744,7 +837,7 @@ export class PtFigure extends Base {
       a.elapsed = now - a.t0;
       if (!a.last || now - a.last > 30) { // ~30 fps is plenty
         a.last = now;
-        a.body.innerHTML = a.scene.renderBody(poseAt(a.keyframes, a.tempo, a.elapsed));
+        a.body.innerHTML = a.scene.renderBody(poseAt(a.keyframes, a.tempo, a.elapsed, { loop: a.scene.loop }));
       }
       this._raf = requestAnimationFrame(step);
     };
