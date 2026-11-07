@@ -1,9 +1,10 @@
 // Shared helpers for the v2 screens (Eigene Workouts, Gesundheit, Rudern in Verlauf/Übungen).
 // Not a route. Pure helpers are Node-testable; DOM helpers only touch `document` when called.
-// (Kept separate from ui.js, which is owned by another work package.)
+// Labels and badge awarding delegate to ui.js; only v2-specific helpers live here.
 import { html, raw } from '../render.js';
-import { BLOCK_LABEL, EQUIPMENT_LABEL, toast } from './ui.js';
+import { BLOCK_LABEL, EQUIPMENT_LABEL, toast, awardBadges as uiAwardBadges } from './ui.js';
 import { confetti } from '../components/celebrate.js';
+import { lineChart } from '../components/charts.js';
 import { exerciseAvailable } from '../logic/progression.js';
 import { evaluateBadges, XP } from '../logic/motivation.js';
 import { isCardioSession } from '../logic/stats.js';
@@ -12,13 +13,10 @@ import { isCardioSession } from '../logic/stats.js';
 /* Labels & formatting                                                 */
 /* ------------------------------------------------------------------ */
 
-const EXTRA_EQUIP = { 'rowing-machine': 'Rudergerät' };
-const EXTRA_BLOCK = { cardio: 'Rudern' };
-
-/** Equipment label with v2 fallbacks. */
-export const equipLabel = (id) => EQUIPMENT_LABEL[id] ?? EXTRA_EQUIP[id] ?? id;
+/** Equipment label (labels live in ui.js, incl. „Rudergerät“). */
+export const equipLabel = (id) => EQUIPMENT_LABEL[id] ?? id;
 /** Block label incl. cardio („Rudern“). */
-export const blockLabel = (b) => BLOCK_LABEL[b] ?? EXTRA_BLOCK[b] ?? b;
+export const blockLabel = (b) => BLOCK_LABEL[b] ?? b;
 
 /** German number format (`1.234,5`). */
 export function fmtNum(n, digits = 0) {
@@ -101,10 +99,7 @@ export function availabilityChip(info) {
  * @returns {string[]} new badge ids
  */
 export function awardBadges(d, badgeDefs, today, now = new Date()) {
-  const ids = evaluateBadges(d, badgeDefs || [], { today });
-  for (const id of ids) d.state.badges = { ...(d.state.badges || {}), [id]: now.toISOString() };
-  d.state.xp = (d.state.xp || 0) + ids.length * XP.badge;
-  return ids;
+  return uiAwardBadges(d, badgeDefs, evaluateBadges, { today, now, xpPerBadge: XP.badge });
 }
 
 /**
@@ -138,45 +133,20 @@ export const ICON2 = {
 };
 
 /* ------------------------------------------------------------------ */
-/* Charts: line chart with a y offset (weight, resting HR, ...)        */
+/* Charts: fitted line chart (weight, resting HR, sleep …)             */
 /* ------------------------------------------------------------------ */
 
 /**
- * Compute a y window for values that don't start at 0.
- * @returns {{base: number, yMax: number}} plot y - base in [0, yMax]
+ * `lineChart` with a fitted y axis (`yMin: 'auto'`, no pain zones) and German number labels.
+ * `series[].dashed` renders a dashed goal line; `series[].mean` adds its 7-day mean.
  */
-export function yWindow(values, { pad = 1, step = 1, minSpan = 4 } = {}) {
-  const vs = values.filter((v) => Number.isFinite(v));
-  if (!vs.length) return { base: 0, yMax: 10 };
-  let lo = Math.floor((Math.min(...vs) - pad) / step) * step;
-  let hi = Math.ceil((Math.max(...vs) + pad) / step) * step;
-  if (hi - lo < minSpan) { const mid = (hi + lo) / 2; lo = Math.floor((mid - minSpan / 2) / step) * step; hi = lo + Math.ceil(minSpan / step) * step; }
-  if (hi - lo === 10) hi += step; // avoid the pain-zone special case of yMax 10
-  return { base: lo, yMax: hi - lo };
-}
-
-/**
- * Draw `lineChart` with values shifted by `base` and relabel y ticks / tooltips with real values.
- * `series[].dashed` renders the series as a dashed goal line; `series[].mean` adds its 7-day mean.
- */
-export function offsetLineChart(lineChart, container, series, { pad = 1, step = 1, minSpan = 4, digits = 1, unit = '', label, from, to } = {}) {
-  const { base, yMax } = yWindow(series.flatMap((s) => s.points.map((p) => p.y)), { pad, step, minSpan });
-  const shifted = series.map((s) => ({ ...s, points: s.points.map((p) => ({ x: p.x, y: p.y - base })) }));
-  const el = lineChart(container, { series: shifted, yMax }, { label, from, to, bands: false, mean: false });
-  for (const t of el.querySelectorAll('.grid text')) {
-    const v = Number(t.textContent);
-    if (Number.isFinite(v)) t.textContent = fmtNum(base + v, step < 1 ? 1 : 0);
-  }
-  for (const t of el.querySelectorAll('circle.dot > title')) {
-    t.textContent = t.textContent.replace(/(-?[\d.]+)$/, (m) => `${fmtNum(base + Number(m), digits)}${unit ? ' ' + unit : ''}`);
-  }
-  series.forEach((s) => {
-    if (!s.dashed) return;
-    const g = el.querySelector(`g.series[data-name="${CSS.escape(s.name)}"]`);
-    g?.querySelectorAll('path').forEach((p) => { p.setAttribute('class', 'goal-line'); p.removeAttribute('stroke'); });
-    g?.querySelectorAll('circle').forEach((c) => c.remove());
+export function fittedLineChart(container, series, { pad = 1, step = 1, minSpan = 4, digits = 1, unit = '', label, from, to } = {}) {
+  return lineChart(container, { series }, {
+    label, from, to, bands: false, mean: false,
+    yMin: 'auto', yRange: { pad, step, minSpan },
+    tickFormat: (v) => fmtNum(v, Number.isInteger(v) ? 0 : 1),
+    valueFormat: (v) => `${fmtNum(v, digits)}${unit ? ' ' + unit : ''}`,
   });
-  return el;
 }
 
 /* ------------------------------------------------------------------ */
@@ -246,7 +216,6 @@ const CSS_TEXT = `
 .v2-unit .input { padding-right: 46px; width: 100%; }
 .v2-unit > span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: var(--fs-sm); pointer-events: none; }
 .v2-field-err { color: var(--red-ink); font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
-.input.is-invalid { border-color: var(--red); }
 .v2-group-title { font-size: var(--fs-xs); font-weight: var(--fw-bold); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: var(--s-3) 0 var(--s-2); display: flex; align-items: center; gap: 6px; }
 .v2-group-title svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .v2-ready { display: flex; align-items: center; gap: var(--s-4); }

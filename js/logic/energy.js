@@ -1,6 +1,10 @@
 // Energy & weight goal estimates. PURE. All numbers are ESTIMATES („Schätzung“). See docs/SPEC.md §12.6.
 import { addDays, daysBetween } from '../util/date.js';
 import { isCardioSession } from './stats.js';
+import { estimateExerciseSeconds } from './duration.js';
+
+/** Strength/short/custom: if the measured active time is below this share of the estimate, use the estimate. */
+export const MIN_CLOCK_SHARE = 0.5;
 
 export const ACTIVITY_FACTORS = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725 };
 export const ACTIVITY_LABELS = { sedentary: 'Überwiegend sitzend', light: 'Leicht aktiv', moderate: 'Mäßig aktiv', active: 'Sehr aktiv' };
@@ -70,28 +74,53 @@ export const rpeFactor = (rpe) => (!isNum(rpe) ? 1 : rpe <= 3 ? 0.85 : rpe <= 6 
  * @param {import('../types.js').Profile} [profile]
  * @param {number|null} [latestWeight] kg (default 80)
  * @param {import('../types.js').Content} [content] optional, to read rowing level intensity
- * @returns {{kcal: number, method: 'display'|'watt'|'met', met: number|null, label: string}}
+ * @returns {{kcal: number, method: 'display'|'watt'|'met', met: number|null, label: string, durationSource?: 'clock'|'estimate'}}
  */
 export function sessionKcal(session, profile, latestWeight, content) {
   const kg = isNum(latestWeight) ? latestWeight : DEFAULT_WEIGHT_KG;
-  const sec = sessionDurationSec(session);
+  let sec = sessionDurationSec(session);
+  let durationSource = 'clock';
+  if (isCardioSession(session) && !(sec > 0)) {
+    // no rowing time entered and no clock time: use the planned rowing time (still a „Schätzung“)
+    const entries = (session.exercises || []).filter((e) => !e.skipped);
+    const est = performedSeconds(entries.map((e) => ({ ...e, sets: (e.sets || []).length ? e.sets.map(() => ({ done: true })) : [{ done: true }] })), content);
+    if (est > 0) { sec = est; durationSource = 'estimate'; }
+  }
   const h = sec / 3600;
   if (isCardioSession(session)) {
     const r = session.rowing || {};
     if (isNum(r.kcalDisplay) && r.kcalDisplay > 0) return { kcal: Math.round(r.kcalDisplay), method: 'display', met: null, label: ESTIMATE_LABEL };
-    if (isNum(r.avgWatt) && r.avgWatt > 0 && h > 0) return { kcal: Math.round((4 * r.avgWatt + 300) * h), method: 'watt', met: null, label: ESTIMATE_LABEL };
+    if (isNum(r.avgWatt) && r.avgWatt > 0 && h > 0) return { kcal: Math.round((4 * r.avgWatt + 300) * h), method: 'watt', met: null, label: ESTIMATE_LABEL, durationSource };
     const main = (session.exercises || []).find((e) => e.section === 'cardio');
     const ex = (content?.exercises || []).find((x) => x.id === main?.exerciseId);
     const intensity = ex?.levels?.[main?.level ?? 0]?.intensity;
     const rpe = session.post?.rpe ?? main?.rpe;
     const met = intensity === 'vigorous' || (isNum(rpe) && rpe >= 7) ? MET.rowVigorous : MET.rowModerate;
-    return { kcal: Math.round(met * kg * h), method: 'met', met, label: ESTIMATE_LABEL };
+    return { kcal: Math.round(met * kg * h), method: 'met', met, label: ESTIMATE_LABEL, durationSource };
   }
   const performed = (session?.exercises || []).filter((e) => !e.skipped && (e.sets || []).some((x) => x?.done));
   const knee = performed.filter((e) => e.section === 'knee').length;
   const share = performed.length ? knee / performed.length : 0.5;
   const met = r2((MET.kneeRehab * share + MET.strength * (1 - share)) * rpeFactor(session?.post?.rpe));
-  return { kcal: Math.round(met * kg * h), method: 'met', met, label: ESTIMATE_LABEL };
+  // Wall-clock time can be far too short (e.g. sets ticked off quickly, session logged afterwards).
+  // Fall back to the duration estimate of the performed sets when the clock shows < 50 % of it.
+  const estSec = performedSeconds(performed, content);
+  const useEstimate = estSec > 0 && sec < estSec * MIN_CLOCK_SHARE;
+  const hours = useEstimate ? estSec / 3600 : h;
+  return { kcal: Math.round(met * kg * hours), method: 'met', met, label: ESTIMATE_LABEL, durationSource: useEstimate ? 'estimate' : 'clock' };
+}
+
+/** Estimated seconds of the done sets (duration.js model) – 0 without content. */
+function performedSeconds(performed, content) {
+  const byId = new Map((content?.exercises || []).map((e) => [e.id, e]));
+  let sum = 0;
+  for (const e of performed) {
+    const ex = byId.get(e.exerciseId);
+    if (!ex) continue;
+    const done = (e.sets || []).filter((x) => x?.done).length;
+    sum += estimateExerciseSeconds({ level: e.level, override: e.override, plannedSets: done }, ex);
+  }
+  return sum;
 }
 
 /** Weights of the log as {date, kg}, oldest first. */

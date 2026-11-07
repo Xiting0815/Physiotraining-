@@ -9,8 +9,9 @@ import { inputValue, fieldText, entrySummary, reportTip, corrView } from '../js/
 import { filterSessions, sessionTitle, rowingLine, badgeHint, KIND_FILTERS } from '../js/views/history.js';
 import { filterExercises, cardDose } from '../js/views/exercises.js';
 import { rowingLevelPreview, rowingLevelText } from '../js/views/exercise-detail.js';
-import { availability, sessionKind, yWindow, fmtDistance, fmtClock, fmtPace, awardBadges } from '../js/views/v2-shared.js';
+import { availability, sessionKind, fmtDistance, fmtClock, fmtPace, awardBadges } from '../js/views/v2-shared.js';
 import { createCustomWorkout } from '../js/logic/custom-workouts.js';
+import { autoYRange, lineChartSvg } from '../js/components/charts.js';
 
 const load = (n) => JSON.parse(fs.readFileSync(new URL(`../data/${n}.json`, import.meta.url), 'utf8'));
 const content = { exercises: load('exercises').exercises, workouts: load('workouts').workouts, phases: load('phases').phases, badges: load('badges').badges };
@@ -113,8 +114,16 @@ test('v2 formatting & chart window & badge award', () => {
   assert.equal(fmtClock(65), '1:05');
   assert.equal(fmtClock(3725), '1:02:05');
   assert.equal(fmtPace(125), '2:05 /500 m');
-  const w = yWindow([93.2, 95.8], { pad: 0.5, step: 1 });
-  assert.ok(w.base <= 92.7 && w.base + w.yMax >= 96.3 && w.yMax !== 10);
+  const w = autoYRange([93.2, 95.8], { pad: 0.5, step: 1 });
+  assert.ok(w.yMin <= 92.7 && w.yMax >= 96.3 && w.yMax - w.yMin >= 4);
+  assert.deepEqual(autoYRange([], {}), { yMin: 0, yMax: 10 });
+  const svg = lineChartSvg({ series: [{ name: 'Gewicht', points: [{ x: '2026-11-01', y: 93.2 }, { x: '2026-11-05', y: 95.8 }] }, { name: 'Ziel', dashed: true, points: [{ x: '2026-11-01', y: 90 }, { x: '2026-11-05', y: 90 }] }] },
+    { yMin: 'auto', yRange: { pad: 0.5 }, tickFormat: (v) => `T${v}`, valueFormat: (v) => `${v} kg`, animate: false });
+  assert.match(svg, />T89</); // range includes the dashed goal line
+  assert.doesNotMatch(svg, /band-green/);
+  assert.match(svg, /class="goal-line"/);
+  assert.match(svg, /93\.2 kg/);
+  assert.match(lineChartSvg({ series: [{ name: 'S', points: [{ x: '2026-11-01', y: 3 }] }] }), /band-green/); // pain scale default
   const d = defaults();
   d.state.customWorkouts = [{ id: 'cw-1', name: 'x' }];
   const ids = awardBadges(d, content.badges, '2026-11-07');

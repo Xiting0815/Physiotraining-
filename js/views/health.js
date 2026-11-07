@@ -8,9 +8,9 @@ import { healthLogXp } from '../logic/motivation.js';
 import { weeklyReport, opReadiness, loadVsPain, sleepVsPain, stepsVsPain, weightInsight, MIN_POINTS } from '../logic/insights.js';
 import { goalProgress } from '../logic/energy.js';
 import { currentPhase } from '../logic/progression.js';
-import { lineChart, barChart, progressRing } from '../components/charts.js';
+import { barChart, progressRing } from '../components/charts.js';
 import { ICON, ensureViewStyles, applyFontScale, pageHeader, shortDate, toast, confirmDialog, trafficPill } from './ui.js';
-import { ensureV2Styles, ICON2, awardBadges, celebrateBadges, fmtNum, fmtDistance, meter, offsetLineChart } from './v2-shared.js';
+import { ensureV2Styles, ICON2, awardBadges, celebrateBadges, fmtNum, fmtDistance, meter, fittedLineChart } from './v2-shared.js';
 
 export const title = 'Gesundheit';
 
@@ -299,13 +299,13 @@ export function render(root, { store, content, query }) {
     root.querySelector('[data-goal-legend]').hidden = wSeries.length < 2;
     const wi = weightInsight(log, today);
     root.querySelector('[data-wnow]').textContent = wi.currentKg != null ? `Ø 7 Tage: ${de1(wi.currentKg)} kg` : '';
-    offsetLineChart(lineChart, root.querySelector('[data-c-weight]'), wSeries, { pad: 0.5, step: 1, minSpan: 4, digits: 1, unit: 'kg', label: 'Gewichtsverlauf mit 7-Tage-Mittel', from, to: today });
+    fittedLineChart(root.querySelector('[data-c-weight]'), wSeries, { pad: 0.5, step: 1, minSpan: 4, digits: 1, unit: 'kg', label: 'Gewichtsverlauf mit 7-Tage-Mittel', from, to: today });
     const wk = weeklyAverages(log, { weeks: ui.range === '4w' ? 4 : 13, today });
     barChart(root.querySelector('[data-c-steps]'), wk.map((x) => ({ label: `KW${isoWeekKey(x.weekStart).slice(-2)}`, value: Math.round(x.avg.steps ?? 0) })), {
       label: 'Durchschnittliche Schritte pro Tag je Woche', format: (v) => (v >= 1000 ? `${fmtNum(v / 1000, 1)}k` : fmtNum(v)),
     });
-    offsetLineChart(lineChart, root.querySelector('[data-c-sleep]'), [{ name: 'Schlaf', color: 'var(--chart-3)', points: series(log, 'sleepH', days, today), mean: true }], { pad: 0.5, step: 1, minSpan: 4, digits: 2, unit: 'h', label: 'Schlafdauer pro Nacht', from, to: today });
-    offsetLineChart(lineChart, root.querySelector('[data-c-hr]'), [{ name: 'Ruhepuls', color: 'var(--red)', points: series(log, 'restingHr', days, today), mean: true }], { pad: 2, step: 5, minSpan: 10, digits: 0, unit: 'bpm', label: 'Ruhepuls', from, to: today });
+    fittedLineChart(root.querySelector('[data-c-sleep]'), [{ name: 'Schlaf', color: 'var(--chart-3)', points: series(log, 'sleepH', days, today), mean: true }], { pad: 0.5, step: 1, minSpan: 4, digits: 2, unit: 'h', label: 'Schlafdauer pro Nacht', from, to: today });
+    fittedLineChart(root.querySelector('[data-c-hr]'), [{ name: 'Ruhepuls', color: 'var(--red)', points: series(log, 'restingHr', days, today), mean: true }], { pad: 2, step: 5, minSpan: 10, digits: 0, unit: 'bpm', label: 'Ruhepuls', from, to: today });
   };
 
   /* ------------------------------ page ------------------------------ */

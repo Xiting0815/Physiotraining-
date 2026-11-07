@@ -246,6 +246,33 @@ test('energy: BMR / TDEE / BMI and session kcal (display > watt > MET)', () => {
   assert.equal(sessionKcal({ ...strength, post: { rpe: 9 } }, profile, null).met, Math.round(3.15 * 1.25 * 100) / 100);
 });
 
+test('energy: strength kcal falls back to the duration estimate when the clock is implausibly short', () => {
+  const profile = { heightCm: 180, birthYear: 1986, sex: 'm', activityLevel: 'light' };
+  const exs = [{ exerciseId: 'quad-set', section: 'knee', level: 0, sets: [{ done: true }, { done: true }] },
+    { exerciseId: 'seated-row', section: 'archery', level: 0, sets: [{ done: true }, { done: true }] }];
+  const est = estimateExerciseSeconds({ level: 0, plannedSets: 2 }, ex('quad-set')) + estimateExerciseSeconds({ level: 0, plannedSets: 2 }, ex('seated-row'));
+  assert.ok(est > 120, String(est));
+  const quick = { status: 'done', startedAt: '2026-11-07T16:00:00.000Z', endedAt: '2026-11-07T16:01:00.000Z', post: { rpe: 5 }, exercises: exs };
+  const k = sessionKcal(quick, profile, 80, content);
+  assert.equal(k.durationSource, 'estimate');
+  assert.equal(k.label, 'Schätzung');
+  assert.equal(k.kcal, Math.round(k.met * 80 * est / 3600));
+  // plausible clock time (>= 50 % of the estimate) is used as is
+  const end = new Date(Date.parse(quick.startedAt) + est * 1000).toISOString();
+  const k2 = sessionKcal({ ...quick, endedAt: end }, profile, 80, content);
+  assert.equal(k2.durationSource, 'clock');
+  assert.equal(k2.kcal, Math.round(k2.met * 80 * est / 3600));
+  // without content: wall-clock only
+  assert.equal(sessionKcal(quick, profile, 80).durationSource, 'clock');
+  // rowing without any duration: planned rowing time
+  const row = { status: 'done', kind: 'cardio', startedAt: quick.startedAt, endedAt: quick.startedAt, rowing: { avgWatt: 100 },
+    exercises: [{ exerciseId: 'row-steady', section: 'cardio', level: 0, sets: [{ done: false }] }] };
+  const kr = sessionKcal(row, profile, 80, content);
+  assert.equal(kr.method, 'watt');
+  assert.equal(kr.durationSource, 'estimate');
+  assert.equal(kr.kcal, Math.round(700 * estimateExerciseSeconds({ level: 0 }, ex('row-steady')) / 3600));
+});
+
 const wlog = (start, kgs) => kgs.map((kg, i) => ({ date: addDays(start, i), weightKg: kg, source: 'samsung-health-manual' }));
 
 test('energy: weight goal progress, trend projection, warnings, calorie target', () => {

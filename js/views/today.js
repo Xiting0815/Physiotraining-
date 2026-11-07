@@ -1,7 +1,8 @@
 // Heute – see docs/SPEC.md §3.1, §8, §12.12.
 // Card order (priority): banners → post-op status → welcome → hero (next strength workout) → OP countdown with
 // schedule hint → recommendations → Kurztraining + Rudern → week rings → Gewicht-Ziel → Tagebuch + OP-Bereitschaft
-// → Wochenbericht (Mondays) → Eigene Workouts → XP → collapsed „Mehr für heute“ (quote, last session, badge).
+// → Wochenbericht (Mondays) → Eigene Workouts (only with favourites) → XP → collapsed „Mehr für heute“
+// (Eigene-Workouts CTA when none exist yet, quote, last session, badge). The week ring replaces the reminder line.
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE, daysBetween, addDays, parseISODate } from '../util/date.js';
 import { nextWorkout, applyRecommendation, getWorkout, phaseWorkouts } from '../logic/progression.js';
@@ -494,6 +495,7 @@ export function render(root, { store, content }) {
     const more = firstRun ? '' : html`<details class="disclosure pv-more" data-more ${moreOpen ? 'open' : ''}>
         <summary>Mehr für heute</summary>
         <div>
+          ${customs.length ? '' : customCard}
           <blockquote class="quote"><p>${dailyQuote(today, content.quotes)}</p><span class="quote__src">Gedanke des Tages</span></blockquote>
           ${last ? html`<p class="pv-sec-label">Letzte Einheit <a class="pv-sec-label__link" href="#/verlauf">Verlauf</a></p>
             <a class="card pv-last" href="#/verlauf?session=${encodeURIComponent(last.id)}">
@@ -549,12 +551,12 @@ export function render(root, { store, content }) {
       ${recBlock}
       ${shortCard}
       ${rowCard}
-      ${reminder && !firstRun && !postMode ? html`<div class="pv-reminder"><span aria-hidden="true">🌱</span><span>${reminder}</span></div>` : ''}
+      ${reminder && !firstRun && !postMode && !weekRings ? html`<div class="pv-reminder"><span aria-hidden="true">🌱</span><span>${reminder}</span></div>` : ''}
       ${weekRings}
       ${weightCard}
       ${tiles}
       ${reportCard}
-      ${customCard}
+      ${customs.length ? customCard : ''}
       ${firstRun ? '' : html`<a class="card" href="#/verlauf" style="display:block">${raw(xpBar({ xp: state.xp || 0, level: lvl, nextTitle }))}</a>`}
       ${more}
     `);

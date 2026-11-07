@@ -41,33 +41,62 @@ export function rollingMean(points, days = 7) {
 }
 
 /**
- * @param {{series: {name: string, color?: string, points: {x: string, y: number}[], mean?: boolean}[], yMax?: number}} data
- * @param {{label?: string, bands?: boolean, greenMax?: number, yellowMax?: number, mean?: boolean|'combined', meanDays?: number, width?: number, height?: number, from?: string, to?: string, animate?: boolean}} [opts]
+ * Fitted y range for values that should not start at 0 (weight, resting pulse, sleep …).
+ * Rounds outwards to `step`, adds `pad` and guarantees at least `minSpan`.
+ * @param {number[]} values @param {{pad?: number, step?: number, minSpan?: number}} [o]
+ * @returns {{yMin: number, yMax: number}}
+ */
+export function autoYRange(values, { pad = 1, step = 1, minSpan = 4 } = {}) {
+  const vs = (values || []).filter((v) => Number.isFinite(v));
+  if (!vs.length) return { yMin: 0, yMax: 10 };
+  let lo = Math.floor((Math.min(...vs) - pad) / step) * step;
+  let hi = Math.ceil((Math.max(...vs) + pad) / step) * step;
+  if (hi - lo < minSpan) {
+    const mid = (hi + lo) / 2;
+    lo = Math.floor((mid - minSpan / 2) / step) * step;
+    hi = lo + Math.ceil(minSpan / step) * step;
+  }
+  return { yMin: lo, yMax: hi };
+}
+
+/**
+ * @param {{series: {name: string, color?: string, points: {x: string, y: number}[], mean?: boolean, dashed?: boolean}[], yMax?: number, yMin?: number|'auto'}} data
+ * @param {{label?: string, bands?: boolean, greenMax?: number, yellowMax?: number, mean?: boolean|'combined', meanDays?: number, width?: number, height?: number, from?: string, to?: string, animate?: boolean,
+ *   yMin?: number|'auto', yRange?: {pad?: number, step?: number, minSpan?: number}, tickFormat?: (v: number) => string, valueFormat?: (v: number) => string}} [opts]
+ *   `yMin` (default 0): lower bound of the y axis; `'auto'` fits min and max to the data (see `autoYRange`,
+ *   options in `yRange`). Pain zones are only drawn for the 0–10 scale. `series[].dashed` draws a dashed
+ *   goal line without dots. `tickFormat` / `valueFormat` format y labels / tooltips.
  * @returns {string}
  */
 export function lineChartSvg(data, opts = {}) {
   const W = opts.width ?? 340, H = opts.height ?? 180;
   const P = { l: 26, r: 10, t: 10, b: 24 };
   const series = (data?.series || []).filter(Boolean);
-  const yMax = data?.yMax ?? 10;
-  const gMax = opts.greenMax ?? 2, yelMax = opts.yellowMax ?? 5;
   const all = series.flatMap((s) => s.points || []).filter((p) => p && p.y != null);
+  let yMin = data?.yMin ?? opts.yMin ?? 0;
+  let yMax = data?.yMax ?? 10;
+  if (yMin === 'auto') ({ yMin, yMax } = autoYRange(all.map((p) => p.y), opts.yRange));
+  if (!(yMax > yMin)) yMax = yMin + 1;
+  const painScale = yMin === 0 && yMax === 10;
+  const gMax = opts.greenMax ?? 2, yelMax = opts.yellowMax ?? 5;
   const label = opts.label || 'Liniendiagramm';
   const iw = W - P.l - P.r, ih = H - P.t - P.b;
-  const Y = (v) => P.t + ih - (Math.max(0, Math.min(yMax, v)) / yMax) * ih;
+  const Y = (v) => P.t + ih - ((Math.max(yMin, Math.min(yMax, v)) - yMin) / (yMax - yMin)) * ih;
+  const tickFmt = opts.tickFormat || f1;
+  const valFmt = opts.valueFormat || ((v) => String(v));
   let out = `<svg class="chart chart--line" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" xmlns="http://www.w3.org/2000/svg">`;
   out += `<title>${esc(label)}</title>`;
 
   // pain zones
-  if (opts.bands !== false && yMax === 10) {
+  if (opts.bands !== false && painScale) {
     out += `<rect class="band-green" x="${P.l}" y="${f1(Y(gMax + 0.5))}" width="${iw}" height="${f1(Y(0) - Y(gMax + 0.5))}"/>`;
     out += `<rect class="band-yellow" x="${P.l}" y="${f1(Y(yelMax + 0.5))}" width="${iw}" height="${f1(Y(gMax + 0.5) - Y(yelMax + 0.5))}"/>`;
     out += `<rect class="band-red" x="${P.l}" y="${f1(Y(yMax))}" width="${iw}" height="${f1(Y(yelMax + 0.5) - Y(yMax))}"/>`;
   }
   // grid + y labels
   out += '<g class="grid">';
-  const yTicks = yMax === 10 ? [0, 2, 5, 10] : [0, yMax / 2, yMax];
-  for (const t of yTicks) out += `<line x1="${P.l}" x2="${W - P.r}" y1="${f1(Y(t))}" y2="${f1(Y(t))}"/><text x="${P.l - 6}" y="${f1(Y(t) + 3.5)}" text-anchor="end">${f1(t)}</text>`;
+  const yTicks = painScale ? [0, 2, 5, 10] : [yMin, (yMin + yMax) / 2, yMax];
+  for (const t of yTicks) out += `<line x1="${P.l}" x2="${W - P.r}" y1="${f1(Y(t))}" y2="${f1(Y(t))}"/><text x="${P.l - 6}" y="${f1(Y(t) + 3.5)}" text-anchor="end">${esc(tickFmt(t))}</text>`;
   out += '</g>';
 
   if (!all.length) {
@@ -97,14 +126,18 @@ export function lineChartSvg(data, opts = {}) {
     const color = s.color || palette[i % palette.length];
     const showMean = s.mean ?? meanMode === true;
     out += `<g class="series" data-name="${esc(s.name)}">`;
+    if (s.dashed) {
+      out += `<path class="goal-line" d="${path(pts)}"><title>${esc(s.name)}: ${esc(valFmt(pts[0].y))}</title></path></g>`;
+      return;
+    }
     const rawCls = showMean ? ' line-raw' : meanMode === 'combined' ? ' line-thin' + anim : anim;
     out += `<path class="line${rawCls}" d="${path(pts)}" stroke="${color}" pathLength="1000"/>`;
     if (showMean) out += `<path class="line-mean${anim}" d="${path(rollingMean(pts, opts.meanDays ?? 7))}" stroke="${color}" pathLength="1000"/>`;
-    for (const p of pts) out += `<circle class="dot" cx="${f1(X(p.x))}" cy="${f1(Y(p.y))}" r="${showMean ? 2.5 : 3.5}" fill="${color}"><title>${esc(s.name)} ${dm(p.x)}: ${p.y}</title></circle>`;
+    for (const p of pts) out += `<circle class="dot" cx="${f1(X(p.x))}" cy="${f1(Y(p.y))}" r="${showMean ? 2.5 : 3.5}" fill="${color}"><title>${esc(s.name)} ${dm(p.x)}: ${esc(valFmt(p.y))}</title></circle>`;
     out += '</g>';
   });
   if (meanMode === 'combined') {
-    out += `<path class="line-mean${anim}" d="${path(rollingMean(all, opts.meanDays ?? 7))}" stroke="var(--text)" stroke-opacity="0.75" pathLength="1000"><title>Ø ${opts.meanDays ?? 7} Tage</title></path>`;
+    out += `<path class="line-mean${anim}" d="${path(rollingMean(series.filter((s) => !s.dashed).flatMap((s) => s.points || []).filter((p) => p && p.y != null), opts.meanDays ?? 7))}" stroke="var(--text)" stroke-opacity="0.75" pathLength="1000"><title>Ø ${opts.meanDays ?? 7} Tage</title></path>`;
   }
   return out + '</svg>';
 }
