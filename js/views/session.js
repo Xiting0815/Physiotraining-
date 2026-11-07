@@ -897,14 +897,13 @@ export function render(root, ctx) {
     ['distanceM', 'Distanz', 'm', 'numeric', 'z. B. 3200'],
     ['avgSpm', 'Ø Schlagzahl', 'SPM', 'decimal', 'z. B. 21'],
     ['avgWatt', 'Ø Leistung', 'Watt', 'decimal', 'z. B. 85'],
-    ['kcalDisplay', 'Kalorien (Display)', 'kcal', 'numeric', 'z. B. 160'],
+    ['kcalDisplay', 'Kalorien', 'kcal', 'numeric', 'z. B. 160'],
     ['avgHr', 'Ø Puls', 'bpm', 'numeric', 'optional'],
     ['maxHr', 'Max. Puls', 'bpm', 'numeric', 'optional'],
   ];
 
   function renderRowLog() {
     const title = titleOf(session).title;
-    const phases = rowingPhases(session, content);
     const rowed = H.rowedSecondsFromLog(session.rowTimer?.log);
     const r = session.rowing || {};
     const draft = screen.rowDraft = screen.rowDraft || {
@@ -930,7 +929,7 @@ export function render(root, ctx) {
         <div class="row-pace" data-slot="pace"><span>Pace</span><strong data-pace>–</strong></div>
         <div class="grid-2">${ROW_FIELDS.slice(4).map((f) => field(...f))}</div>
       </section>
-      <p class="text-xs muted">Phasen geplant: ${phases.length} · Kalorien ohne Display-Wert werden geschätzt (Schätzung).</p>
+      <p class="text-xs muted">Ohne Kalorien vom Display schätzt die App aus Watt bzw. Dauer und Intensität (Schätzung).</p>
       <div class="sticky-cta"><div class="ses-cta">
         <button type="button" class="btn btn--outline btn--prev" data-act="prev" aria-label="Zurück zum Timer">${raw(ICON.prev)}</button>
         <button type="button" class="btn btn--primary" data-act="rowlog-save">Speichern &amp; weiter</button>
