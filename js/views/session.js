@@ -266,7 +266,8 @@ export function render(root, ctx) {
     const stop = a.light === 'stop';
     const cardio = isCardio();
     const doctor = !!a.doctor;
-    const hasUpper = !cardio && session.exercises.some((e) => !H.isKneeEntry(e, content));
+    // post-op red flags (fever, redness, new swelling, pain > 5): no „upper body only“ offer – see a doctor first
+    const hasUpper = !cardio && !doctor && session.exercises.some((e) => !H.isKneeEntry(e, content));
     const slot = root.querySelector('[data-slot="stop"]');
     const title = doctor ? 'Bitte Arzt kontaktieren' : stop ? 'Heute lieber pausieren und Rücksprache halten' : cardio ? 'Heute locker rudern' : 'Heute schonend trainieren';
     paint(slot, html`
@@ -1178,7 +1179,7 @@ export function render(root, ctx) {
     const headline = cardio ? (light === 'green' ? 'Starke Ruderfahrt!' : light === 'yellow' ? 'Gut gerudert – Knie im Blick behalten.' : 'Gut, dass du auf dein Knie hörst.') : sc.headline;
     const kindChip = t.kind === 'strength' ? '' : html`<span class="chip chip--${cardio ? 'accent' : 'outline'} chip--sm">${t.kind === 'custom' ? 'Eigenes Workout' : t.kindLabel}</span>`;
     paint(root, html`
-      <header class="ses-top"><div class="ses-top__title"><span class="eyebrow truncate">${t.kind === 'short' ? `Kurztraining · ${t.title}` : t.title}</span><strong>${cardio ? 'Rudern abgeschlossen' : t.kind === 'short' ? 'Kurztraining geschafft' : 'Einheit abgeschlossen'}</strong></div>
+      <header class="ses-top"><div class="ses-top__title"><span class="eyebrow truncate">${t.title}</span><strong>${cardio ? 'Rudern abgeschlossen' : t.kind === 'short' ? 'Kurztraining geschafft' : 'Einheit abgeschlossen'}</strong></div>
         <span class="chip chip--gold">⚡ <span class="num">${gained}</span> XP</span></header>
       ${doctor ? html`<section class="card stop-card ses-doctor" role="alert">
           <div class="row"><span class="ses-doctor__icon" aria-hidden="true">🩺</span><h2 class="card__title mb-0">Bitte Arzt kontaktieren</h2></div>

@@ -128,7 +128,9 @@ export function render(root, { store, content }) {
     const last = done.at(-1);
     const lastLight = last ? sessionLight(last) : null;
     const reminder = reminderText(sessions, settings.weeklyGoal, today);
-    const recs = pendingRecommendations(sessions).filter((r) => !(taper && r.rec.action === 'progress'));
+    // after surgery, open suggestions from prehab sessions no longer apply (different protocol)
+    const recSessions = phase?.kind === 'postop' ? sessions.filter((s) => s.postOp) : sessions;
+    const recs = pendingRecommendations(recSessions).filter((r) => !(taper && r.rec.action === 'progress'));
     const badgeEntries = Object.entries(state.badges || {}).sort((a, b) => (a[1] < b[1] ? 1 : -1));
     const recentBadge = badgeEntries.length ? content.badges.find((b) => b.id === badgeEntries[0][0]) : null;
     const recentBadgeAt = badgeEntries[0]?.[1];

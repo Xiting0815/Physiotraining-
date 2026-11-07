@@ -1,8 +1,9 @@
 # Physiotraining – Knie & Bogen
 
-Mobile-first Offline-PWA als Trainingsbegleiter für die Knie-Prehab (Meniskus/Knorpel, OP voraussichtlich Januar 2027)
-kombiniert mit Rücken-/Schultertraining für Compound-Bogenschießen. 3 Einheiten pro Woche (~40 min), Workouts A/B/C,
-Ampel-Logik für die Belastungssteuerung und viel Motivation.
+Mobile-first Offline-PWA als Trainingsbegleiter für die Knie-Prehab (Meniskus/Knorpel, Mikrofraktur-OP links
+voraussichtlich am **05.01.2027**) kombiniert mit Rücken-/Schultertraining für Compound-Bogenschießen.
+3 Krafteinheiten pro Woche (max. 30 min, Workouts A/B/C) plus 3× Rudern (15–20 min), Kurztraining, eigene Workouts,
+Gesundheits-Tagebuch, Abnehm-Ziel, Ampel-Logik für die Belastungssteuerung und viel Motivation.
 
 > **Hinweis:** Diese App ersetzt keine ärztliche oder physiotherapeutische Beratung. Bei starken Schmerzen,
 > Blockieren, zunehmender Schwellung oder Nachtschmerz: Training stoppen und Rücksprache halten.
@@ -26,13 +27,48 @@ Ampel-Logik für die Belastungssteuerung und viel Motivation.
   Anleitung, Hinweisen fürs Knie, allen Stufen und manuellem Stufenwechsel.
 - **Verlauf** – Kalender mit Ampelfarben, Schmerzverlauf, Einheiten pro Woche, persönliche Rekorde,
   Abzeichen und alle Einheiten mit Detailansicht.
-- **Mehr** – OP-Termin, Wochenziel, Design (Auto/Hell/Dunkel), Schriftgröße, Satzpause, Ton, Vibration,
+- **Mehr** – OP-Termin, Wochenziel, Profil & Ziele, Gesundheit, Design (Auto/Hell/Dunkel), Schriftgröße, Satzpause, Ton, Vibration,
   Schmerzgrenzen, Reihenfolge der Bänder, Sicherung exportieren/importieren (JSON), alles löschen.
 - **Ausrüstung** – vorhandene Bänder und eine Einkaufsliste mit Budget zum Abhaken.
+
+### Neu in Version 2
+
+- **Rudern** (Rudergerät, z. B. MERACH) – eigene Ausdauer-Einheiten mit 15–20 Minuten (Grundlage, Intervalle,
+  Ausdauer je nach Phase), Wochenziel 3× bis zur OP. Geführter Timer mit Abschnitten, Intensität, Ziel-SPM/RPE und
+  dauerhaftem Hinweis „Stopp bei Schmerz > 5/10 / Blockieren“. Danach die Display-Werte eintragen (Zeit, Strecke,
+  SPM, Watt, kcal, Puls) → Pace pro 500 m, Bestwerte, Abzeichen. Die Knie-Ampel gilt auch beim Rudern; Rudern zählt
+  nicht für die A/B/C-Rotation. Nach der OP ist Rudern gesperrt.
+- **Kurztraining** – „Nur 15 Minuten?“: das Wichtigste der Phase in ca. 15 Minuten. Krafteinheiten bleiben
+  automatisch unter 30 Minuten (Sätze werden bei hohen Stufen gekürzt und markiert).
+- **Eigene Workouts** – aus der Übungsbibliothek zusammenstellen (Aufwärmen, Knie & Beine, Bogen/Rücken & Stütz,
+  Cool-down), sortieren, Live-Dauer „ca. N Min“, Hinweise bei Übungen außerhalb der aktuellen Phase; als Kopie eines
+  Plan-Workouts starten, duplizieren, löschen.
+- **Gesundheits-Tagebuch** – Gewicht, Körperfett, Bauchumfang, Schritte, aktive Minuten, Ruhe-/Trainingspuls,
+  Schlaf und Notiz pro Tag. Die Werte werden **manuell aus Samsung Health übertragen** (keine Verbindung zu
+  Samsung Health); Serie und +5 XP pro Tag.
+- **Abnehm-Ziel & Kalorien** – Profil (Größe, Geburtsjahr, Geschlecht, Aktivität), Zielgewicht und Datum,
+  Fortschritt auf Basis des 7-Tage-Mittels, nötiges Tempo (Warnung über 0,75 kg/Woche), Prognose aus dem Trend,
+  Tagesbedarf und Kalorienziel (Defizit 500–750 kcal, Mindestmenge). Kalorien pro Einheit (Rudergerät-Display,
+  Watt-Formel oder MET) – **alles ausdrücklich Schätzungen**, keine Ernährungsberatung.
+- **Auswertung** (Gesundheit) – Wochenbericht, OP-Bereitschaft (Heuristik, keine medizinische Beurteilung),
+  vorsichtige Zusammenhänge (Trainingslast ↔ Knie am Folgetag, Schlaf ↔ Knieschmerz, Schritte ↔ Knie, erst ab
+  8 Datenpunkten, „kein Beweis für Ursache und Wirkung“), Diagramme für Gewicht (mit Ziel-Linie), Schritte, Schlaf
+  und Ruhepuls mit angepasster y-Achse.
+- **Phasen-Zeitplan bis zur OP am 05.01.2027** – Plan und Heute zeigen, in welcher Phase du laut Zeitplan sein
+  solltest (Phase 1 bis 27.11., Phase 2 bis 18.12., Phase 3 mit OP-Woche ab 29.12.). Der OP-Termin wird in der
+  Willkommenskarte vorgeschlagen und muss bestätigt werden; Phasenwechsel bleiben kriterienbasiert und von dir bestätigt.
+- **Entlastungsphase nach der Mikrofraktur (Phase 4, 6 Wochen)** – Übungen im Sitzen und Liegen ohne Belastung des
+  linken Beins (Fußpumpe, Quadrizeps anspannen, Kniescheiben-Mobilisation, Fersengleiten im erlaubten Bereich,
+  gesundes Bein, Oberkörper/Bogen im Sitzen). **Startet erst nach der OP und nur, wenn du die Freigabe durch
+  Arzt/Physio bestätigst – das Protokoll deines Behandlungsteams hat immer Vorrang.** Belastende Übungen und Rudern
+  sind gesperrt; einzelne Übungen lassen sich passend zum Protokoll ein- oder ausschalten. Vor und nach jeder Einheit
+  werden Rötung/Überwärmung und Fieber abgefragt – bei Warnzeichen heißt es „Bitte Arzt kontaktieren“.
+- **Vorbereitung auf die Krücken** – Stütz-Dips, Trizeps, Abstützen im Sitz und Einbeinstand bereits vor der OP.
 - **Offline** – nach dem ersten Laden komplett offline nutzbar, installierbar als App.
 
 Technik: Vanilla JS (ES-Module), kein Build-Schritt, keine Abhängigkeiten. Alle Daten bleiben lokal im Browser
-(`localStorage`, Schlüssel `pt.v1`). Spezifikation: [`docs/SPEC.md`](docs/SPEC.md).
+(`localStorage`, Schlüssel `pt.v1`). Daten aus Version 1 werden beim ersten Start automatisch übernommen und um die
+neuen Felder ergänzt (keine Daten gehen verloren). Spezifikation: [`docs/SPEC.md`](docs/SPEC.md).
 
 ## Auf dem Handy installieren
 

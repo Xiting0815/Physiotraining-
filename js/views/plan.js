@@ -206,7 +206,7 @@ export function render(root, { store, content, navigate }) {
         <p class="muted">${phase.description}</p>
         <p class="hero__meta mb-0">
           <span>${raw(ICON.target)}<span class="num">${prog.sessionsInPhase}</span>&nbsp;Einheiten</span>
-          <span>${raw(ICON.calendar)}<span class="num">${prog.weeksInPhase ?? 0}</span>&nbsp;Wochen aktiv</span>
+          <span>${raw(ICON.calendar)}<span class="num">${prog.weeksInPhase ?? 0}</span>&nbsp;${(prog.weeksInPhase ?? 0) === 1 ? 'Woche' : 'Wochen'} aktiv</span>
           ${prog.sessionsInPhase ? html`<span>✓ <span class="num">${Math.round(prog.greenRatio * 100)} %</span>&nbsp;grün</span>` : ''}
         </p>
       </section>

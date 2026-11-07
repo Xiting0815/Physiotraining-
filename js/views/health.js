@@ -82,7 +82,7 @@ export function render(root, { store, content, query }) {
   ensureV2Styles();
   const today = todayISO();
   const ui = {
-    tab: ['eintragen', 'auswertung', 'diagramme'].includes(query.tab) ? query.tab : 'eintragen',
+    tab: ['eintragen', 'auswertung', 'diagramme'].includes(query.tab) ? query.tab : ['bericht', 'bereitschaft'].includes(query.focus) ? 'auswertung' : 'eintragen',
     date: /^\d{4}-\d{2}-\d{2}$/.test(query.date || '') && query.date <= today ? query.date : today,
     weekOf: today,
     range: '4w',

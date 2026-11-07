@@ -82,7 +82,9 @@ export function sessionKcal(session, profile, latestWeight, content) {
   let durationSource = 'clock';
   if (isCardioSession(session) && !(sec > 0)) {
     // no rowing time entered and no clock time: use the planned rowing time (still a „Schätzung“)
-    const entries = (session.exercises || []).filter((e) => !e.skipped);
+    // (timer sections skipped right away are stored as skipped – then use the whole plan)
+    const all = session.exercises || [];
+    const entries = all.some((e) => !e.skipped) ? all.filter((e) => !e.skipped) : all;
     const est = performedSeconds(entries.map((e) => ({ ...e, sets: (e.sets || []).length ? e.sets.map(() => ({ done: true })) : [{ done: true }] })), content);
     if (est > 0) { sec = est; durationSource = 'estimate'; }
   }
