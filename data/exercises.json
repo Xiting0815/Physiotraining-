@@ -4242,6 +4242,1001 @@
         "band": null,
         "mirror": false
       }
+    },
+    {
+      "category": "kardio",
+      "block": "cardio",
+      "equipment": [
+        "rowing-machine"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Füße in die Fußschlaufen, Riemen über den breitesten Teil des Fußes. Widerstand am MERACH auf eine niedrige bis mittlere Stufe stellen.",
+        "Reihenfolge im Zug: Beine – Oberkörper – Arme. Erst mit den Beinen abdrücken, dann leicht nach hinten lehnen (ca. 11 Uhr), zuletzt Griff zum unteren Rippenbogen ziehen.",
+        "Rückweg umgekehrt: Arme strecken – Oberkörper nach vorn (ca. 1 Uhr) – erst dann Knie beugen und kontrolliert nach vorn rollen.",
+        "Vorderer Umkehrpunkt (Catch) ruhig und kontrolliert: Schienbeine etwa senkrecht, nicht in die Endbeugung „knallen“.",
+        "Rücken lang, Schultern locker unten, gleichmäßig atmen (beim Zug aus, beim Vorrollen ein)."
+      ],
+      "cues": [
+        "Beine – Körper – Arme",
+        "Ruhig nach vorn rollen",
+        "Rücken lang, Schultern tief",
+        "Rückweg doppelt so lang wie der Zug"
+      ],
+      "mistakes": [
+        "Mit den Armen ziehen, bevor die Beine gestreckt sind",
+        "Am vorderen Umkehrpunkt ins Knie „fallen“",
+        "Rundrücken / zu weit zurücklehnen",
+        "Zu hohe Schlagzahl mit wenig Druck"
+      ],
+      "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "figure": {
+        "poses": [
+          "sit-row-start",
+          "sit-row-end"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false
+      },
+      "id": "row-technique-warmup",
+      "name": "Rudern – Technik-Aufwärmen",
+      "description": "Locker einrudern und dabei die Reihenfolge Beine – Körper – Arme aufbauen.",
+      "tags": [
+        "kreislauf",
+        "aufwaermen",
+        "rudern",
+        "technik"
+      ],
+      "levels": [
+        {
+          "label": "2 min locker (Technik-Aufbau)",
+          "sets": 1,
+          "seconds": 120,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "easy",
+          "targetSpm": [
+            16,
+            20
+          ],
+          "targetRpe": [
+            2,
+            3
+          ],
+          "phases": [
+            {
+              "label": "Nur Arme",
+              "seconds": 20,
+              "intensity": "easy"
+            },
+            {
+              "label": "Arme + Oberkörper",
+              "seconds": 20,
+              "intensity": "easy"
+            },
+            {
+              "label": "Halber Beinweg",
+              "seconds": 30,
+              "intensity": "easy"
+            },
+            {
+              "label": "Ganzer Schlag, locker",
+              "seconds": 50,
+              "intensity": "easy"
+            }
+          ]
+        },
+        {
+          "label": "3 min locker (Technik-Aufbau)",
+          "sets": 1,
+          "seconds": 180,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "easy",
+          "targetSpm": [
+            16,
+            20
+          ],
+          "targetRpe": [
+            2,
+            3
+          ],
+          "phases": [
+            {
+              "label": "Nur Arme",
+              "seconds": 30,
+              "intensity": "easy"
+            },
+            {
+              "label": "Arme + Oberkörper",
+              "seconds": 30,
+              "intensity": "easy"
+            },
+            {
+              "label": "Halber Beinweg",
+              "seconds": 30,
+              "intensity": "easy"
+            },
+            {
+              "label": "Ganzer Schlag, locker",
+              "seconds": 90,
+              "intensity": "easy"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "kardio",
+      "block": "cardio",
+      "equipment": [
+        "rowing-machine"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Füße in die Fußschlaufen, Riemen über den breitesten Teil des Fußes. Widerstand am MERACH auf eine niedrige bis mittlere Stufe stellen.",
+        "Reihenfolge im Zug: Beine – Oberkörper – Arme. Erst mit den Beinen abdrücken, dann leicht nach hinten lehnen (ca. 11 Uhr), zuletzt Griff zum unteren Rippenbogen ziehen.",
+        "Rückweg umgekehrt: Arme strecken – Oberkörper nach vorn (ca. 1 Uhr) – erst dann Knie beugen und kontrolliert nach vorn rollen.",
+        "Vorderer Umkehrpunkt (Catch) ruhig und kontrolliert: Schienbeine etwa senkrecht, nicht in die Endbeugung „knallen“.",
+        "Rücken lang, Schultern locker unten, gleichmäßig atmen (beim Zug aus, beim Vorrollen ein)."
+      ],
+      "cues": [
+        "Beine – Körper – Arme",
+        "Ruhig nach vorn rollen",
+        "Rücken lang, Schultern tief",
+        "Rückweg doppelt so lang wie der Zug"
+      ],
+      "mistakes": [
+        "Mit den Armen ziehen, bevor die Beine gestreckt sind",
+        "Am vorderen Umkehrpunkt ins Knie „fallen“",
+        "Rundrücken / zu weit zurücklehnen",
+        "Zu hohe Schlagzahl mit wenig Druck"
+      ],
+      "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "figure": {
+        "poses": [
+          "sit-row-start",
+          "sit-row-end"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false
+      },
+      "id": "row-steady",
+      "name": "Rudern – Grundlage",
+      "description": "Gleichmäßig rudern im Gesprächstempo – Ausdauer und Kalorienverbrauch ohne Stoßbelastung.",
+      "tags": [
+        "kreislauf",
+        "ausdauer",
+        "rudern",
+        "abnehmen"
+      ],
+      "levels": [
+        {
+          "label": "12 min gleichmäßig · RPE 4–5",
+          "sets": 1,
+          "seconds": 720,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        },
+        {
+          "label": "13 min gleichmäßig · RPE 4–5",
+          "sets": 1,
+          "seconds": 780,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        },
+        {
+          "label": "14 min gleichmäßig · RPE 4–5",
+          "sets": 1,
+          "seconds": 840,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        },
+        {
+          "label": "15 min gleichmäßig · RPE 4–5",
+          "sets": 1,
+          "seconds": 900,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "category": "kardio",
+      "block": "cardio",
+      "equipment": [
+        "rowing-machine"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Füße in die Fußschlaufen, Riemen über den breitesten Teil des Fußes. Widerstand am MERACH auf eine niedrige bis mittlere Stufe stellen.",
+        "Reihenfolge im Zug: Beine – Oberkörper – Arme. Erst mit den Beinen abdrücken, dann leicht nach hinten lehnen (ca. 11 Uhr), zuletzt Griff zum unteren Rippenbogen ziehen.",
+        "Rückweg umgekehrt: Arme strecken – Oberkörper nach vorn (ca. 1 Uhr) – erst dann Knie beugen und kontrolliert nach vorn rollen.",
+        "Vorderer Umkehrpunkt (Catch) ruhig und kontrolliert: Schienbeine etwa senkrecht, nicht in die Endbeugung „knallen“.",
+        "Rücken lang, Schultern locker unten, gleichmäßig atmen (beim Zug aus, beim Vorrollen ein).",
+        "Zügige Phase: mehr Druck pro Schlag, nicht nur höhere Schlagzahl. Lockere Phase: weiter rudern, ganz entspannt."
+      ],
+      "cues": [
+        "Beine – Körper – Arme",
+        "Ruhig nach vorn rollen",
+        "Rücken lang, Schultern tief",
+        "Rückweg doppelt so lang wie der Zug"
+      ],
+      "mistakes": [
+        "Mit den Armen ziehen, bevor die Beine gestreckt sind",
+        "Am vorderen Umkehrpunkt ins Knie „fallen“",
+        "Rundrücken / zu weit zurücklehnen",
+        "Zu hohe Schlagzahl mit wenig Druck"
+      ],
+      "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "postOpAllowed": false,
+      "figure": {
+        "poses": [
+          "sit-row-start",
+          "sit-row-end"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false
+      },
+      "id": "row-intervals",
+      "name": "Rudern – Intervalle",
+      "description": "Wechsel aus zügigen und lockeren Minuten – trainiert das Herz-Kreislauf-System effizient.",
+      "tags": [
+        "kreislauf",
+        "ausdauer",
+        "rudern",
+        "intervalle",
+        "abnehmen"
+      ],
+      "levels": [
+        {
+          "label": "4 × (1 min zügig / 1 min locker)",
+          "sets": 4,
+          "seconds": 60,
+          "tempo": null,
+          "band": null,
+          "rest": 60,
+          "intensity": "vigorous",
+          "restActive": true,
+          "targetSpm": [
+            22,
+            26
+          ],
+          "targetRpe": [
+            6,
+            7
+          ]
+        },
+        {
+          "label": "5 × (1 min zügig / 1 min locker)",
+          "sets": 5,
+          "seconds": 60,
+          "tempo": null,
+          "band": null,
+          "rest": 60,
+          "intensity": "vigorous",
+          "restActive": true,
+          "targetSpm": [
+            22,
+            26
+          ],
+          "targetRpe": [
+            6,
+            7
+          ]
+        },
+        {
+          "label": "6 × (1 min zügig / 1 min locker)",
+          "sets": 6,
+          "seconds": 60,
+          "tempo": null,
+          "band": null,
+          "rest": 60,
+          "intensity": "vigorous",
+          "restActive": true,
+          "targetSpm": [
+            22,
+            26
+          ],
+          "targetRpe": [
+            6,
+            7
+          ]
+        },
+        {
+          "label": "5 × (90 s zügig / 60 s locker)",
+          "sets": 5,
+          "seconds": 90,
+          "tempo": null,
+          "band": null,
+          "rest": 60,
+          "intensity": "vigorous",
+          "restActive": true,
+          "targetSpm": [
+            22,
+            26
+          ],
+          "targetRpe": [
+            6,
+            7
+          ]
+        },
+        {
+          "label": "6 × (90 s zügig / 60 s locker)",
+          "sets": 6,
+          "seconds": 90,
+          "tempo": null,
+          "band": null,
+          "rest": 60,
+          "intensity": "vigorous",
+          "restActive": true,
+          "targetSpm": [
+            22,
+            26
+          ],
+          "targetRpe": [
+            6,
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "category": "kardio",
+      "block": "cardio",
+      "equipment": [
+        "rowing-machine"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Füße in die Fußschlaufen, Riemen über den breitesten Teil des Fußes. Widerstand am MERACH auf eine niedrige bis mittlere Stufe stellen.",
+        "Reihenfolge im Zug: Beine – Oberkörper – Arme. Erst mit den Beinen abdrücken, dann leicht nach hinten lehnen (ca. 11 Uhr), zuletzt Griff zum unteren Rippenbogen ziehen.",
+        "Rückweg umgekehrt: Arme strecken – Oberkörper nach vorn (ca. 1 Uhr) – erst dann Knie beugen und kontrolliert nach vorn rollen.",
+        "Vorderer Umkehrpunkt (Catch) ruhig und kontrolliert: Schienbeine etwa senkrecht, nicht in die Endbeugung „knallen“.",
+        "Rücken lang, Schultern locker unten, gleichmäßig atmen (beim Zug aus, beim Vorrollen ein)."
+      ],
+      "cues": [
+        "Beine – Körper – Arme",
+        "Ruhig nach vorn rollen",
+        "Rücken lang, Schultern tief",
+        "Rückweg doppelt so lang wie der Zug"
+      ],
+      "mistakes": [
+        "Mit den Armen ziehen, bevor die Beine gestreckt sind",
+        "Am vorderen Umkehrpunkt ins Knie „fallen“",
+        "Rundrücken / zu weit zurücklehnen",
+        "Zu hohe Schlagzahl mit wenig Druck"
+      ],
+      "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p3-op-vorbereitung",
+      "postOpAllowed": false,
+      "figure": {
+        "poses": [
+          "sit-row-start",
+          "sit-row-end"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false
+      },
+      "id": "row-endurance",
+      "name": "Rudern – Ausdauer",
+      "description": "Längere ruhige Einheit – Grundlagenausdauer für die Zeit nach der OP sichern.",
+      "tags": [
+        "kreislauf",
+        "ausdauer",
+        "rudern",
+        "abnehmen"
+      ],
+      "levels": [
+        {
+          "label": "14 min ruhig · RPE 4–5",
+          "sets": 1,
+          "seconds": 840,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        },
+        {
+          "label": "15 min ruhig · RPE 4–5",
+          "sets": 1,
+          "seconds": 900,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        },
+        {
+          "label": "16 min ruhig · RPE 4–5",
+          "sets": 1,
+          "seconds": 960,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "category": "kardio",
+      "block": "cardio",
+      "equipment": [
+        "rowing-machine"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Füße in die Fußschlaufen, Riemen über den breitesten Teil des Fußes. Widerstand am MERACH auf eine niedrige bis mittlere Stufe stellen.",
+        "Reihenfolge im Zug: Beine – Oberkörper – Arme. Erst mit den Beinen abdrücken, dann leicht nach hinten lehnen (ca. 11 Uhr), zuletzt Griff zum unteren Rippenbogen ziehen.",
+        "Rückweg umgekehrt: Arme strecken – Oberkörper nach vorn (ca. 1 Uhr) – erst dann Knie beugen und kontrolliert nach vorn rollen.",
+        "Vorderer Umkehrpunkt (Catch) ruhig und kontrolliert: Schienbeine etwa senkrecht, nicht in die Endbeugung „knallen“.",
+        "Rücken lang, Schultern locker unten, gleichmäßig atmen (beim Zug aus, beim Vorrollen ein)."
+      ],
+      "cues": [
+        "Beine – Körper – Arme",
+        "Ruhig nach vorn rollen",
+        "Rücken lang, Schultern tief",
+        "Rückweg doppelt so lang wie der Zug"
+      ],
+      "mistakes": [
+        "Mit den Armen ziehen, bevor die Beine gestreckt sind",
+        "Am vorderen Umkehrpunkt ins Knie „fallen“",
+        "Rundrücken / zu weit zurücklehnen",
+        "Zu hohe Schlagzahl mit wenig Druck"
+      ],
+      "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "figure": {
+        "poses": [
+          "sit-row-start",
+          "sit-row-end"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false
+      },
+      "id": "row-cooldown",
+      "name": "Rudern – Ausrudern",
+      "description": "Ganz locker ausrudern, Puls und Atmung beruhigen.",
+      "tags": [
+        "kreislauf",
+        "rudern",
+        "entspannung"
+      ],
+      "levels": [
+        {
+          "label": "2 min ganz locker",
+          "sets": 1,
+          "seconds": 120,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "intensity": "easy",
+          "targetSpm": [
+            16,
+            18
+          ],
+          "targetRpe": [
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chair-dip",
+      "name": "Stütz-Dips am Stuhl",
+      "description": "Trizeps und Schulterstütz für die Krückenzeit – kontrolliert und mit kleiner Bewegung.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "chair"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Stabilen Stuhl (ohne Rollen) an die Wand stellen. Vorn auf die Kante setzen, Hände neben dem Gesäß greifen die Kante, Finger nach vorn.",
+        "Gesäß nach vorn von der Sitzfläche schieben, Füße hüftbreit, Knie ca. 90° (Stufe 1: Gewicht überwiegend auf den Beinen).",
+        "Ellbogen nach hinten beugen und den Körper nur ein kleines Stück (max. 60–70° im Ellbogen) absenken.",
+        "Über die Handballen wieder hochdrücken, Schultern bleiben tief."
+      ],
+      "cues": [
+        "Schultern weg von den Ohren",
+        "Ellbogen zeigen nach hinten",
+        "Kleine, saubere Bewegung"
+      ],
+      "mistakes": [
+        "Zu tief absenken (Schulter vorn überlastet)",
+        "Schultern hochziehen",
+        "Mit den Beinen Schwung holen"
+      ],
+      "kneeNote": "Füße flach, Knie ca. 90° ohne Druck. Linkes Bein darf entlastet nach vorn gestellt werden. Bei Knieschmerz Füße näher heranziehen.",
+      "levels": [
+        {
+          "label": "Beine tragen mit · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-0-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Beine tragen mit · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-0-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Weniger Beinhilfe · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-0-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Linkes Bein entlastet · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-0-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "band-triceps-extension",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kruecken",
+        "trizeps",
+        "stuetz",
+        "schulterstabilitaet"
+      ],
+      "figure": {
+        "poses": [
+          "sit-chair",
+          "sit-chair-high"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "band-triceps-extension",
+      "name": "Trizeps-Strecken mit Band",
+      "description": "Arme gegen das Band nach unten strecken – Kraft zum Abstützen auf Krücken.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Band oben in der Tür fixieren (Türanker), Enden in beiden Händen, mit Blick zur Tür stehen oder sitzen.",
+        "Oberarme eng am Körper, Ellbogen ca. 90° gebeugt.",
+        "Unterarme nach unten strecken, bis die Arme gerade sind, kurz halten.",
+        "Langsam zurück bis 90°."
+      ],
+      "cues": [
+        "Oberarme bleiben am Körper",
+        "Handgelenke gerade",
+        "Schultern tief"
+      ],
+      "mistakes": [
+        "Ellbogen wandern nach vorn",
+        "Oberkörper beugt sich mit",
+        "Band schnellt zurück"
+      ],
+      "kneeNote": "Im Sitzen ausführbar – das Knie hat Pause. Im Stehen Gewicht auf beide Beine verteilen.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": "chair-dip",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kruecken",
+        "trizeps",
+        "stuetz"
+      ],
+      "figure": {
+        "poses": [
+          "stand-arm-forward-bent",
+          "stand-arms-down"
+        ],
+        "props": [
+          "door"
+        ],
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false
+      }
+    },
+    {
+      "id": "seated-press-up",
+      "name": "Abstützen im Sitz (Krücken-Stütz)",
+      "description": "Mit den Armen das Gesäß vom Stuhl heben und halten – genau die Kraft, die du an Krücken brauchst.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "chair"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Auf einen stabilen Stuhl mit Armlehnen setzen (alternativ zwei stabile Bücherstapel neben dem Gesäß).",
+        "Hände auf die Armlehnen, Arme fast gestreckt.",
+        "Schultern aktiv nach unten drücken und das Gesäß wenige Zentimeter von der Sitzfläche heben.",
+        "Halten, ruhig atmen, langsam wieder absetzen."
+      ],
+      "cues": [
+        "Schultern weg von den Ohren",
+        "Lang machen",
+        "Ruhig atmen"
+      ],
+      "mistakes": [
+        "Schultern zu den Ohren",
+        "Luft anhalten",
+        "Mit den Beinen voll mitdrücken"
+      ],
+      "kneeNote": "Füße bleiben locker am Boden (rechts darf leicht mithelfen, links entlastet) – so wie später mit Krücken.",
+      "levels": [
+        {
+          "label": "Beine helfen mit · 2 × 5 × 5 s",
+          "sets": 2,
+          "reps": 5,
+          "hold": 5,
+          "tempo": null,
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Beine helfen mit · 2 × 5 × 10 s",
+          "sets": 2,
+          "reps": 5,
+          "hold": 10,
+          "tempo": null,
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Links entlastet · 3 × 5 × 10 s",
+          "sets": 3,
+          "reps": 5,
+          "hold": 10,
+          "tempo": null,
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Nur rechts Bodenkontakt · 3 × 5 × 15 s",
+          "sets": 3,
+          "reps": 5,
+          "hold": 15,
+          "tempo": null,
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kruecken",
+        "stuetz",
+        "latissimus",
+        "schulterstabilitaet"
+      ],
+      "figure": {
+        "poses": [
+          "sit-chair",
+          "sit-chair-high"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      }
+    },
+    {
+      "id": "right-leg-sit-to-stand",
+      "name": "Aufstehen mit Schwerpunkt rechts",
+      "description": "Das gesunde rechte Bein kräftigen – es trägt dich nach der OP durch die Krückenzeit.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "chair"
+      ],
+      "type": "reps",
+      "side": "right",
+      "instructions": [
+        "Auf einen stabilen Stuhl setzen, rechter Fuß unter dem Knie, linker Fuß etwas nach vorn gestellt.",
+        "Oberkörper leicht nach vorn, Gewicht deutlich aufs rechte Bein.",
+        "Über das rechte Bein aufstehen, links berührt nur leicht den Boden.",
+        "Langsam (3 s) wieder hinsetzen."
+      ],
+      "cues": [
+        "Rechtes Knie über den Zehen",
+        "Langsam absetzen",
+        "Brust raus"
+      ],
+      "mistakes": [
+        "Rechtes Knie fällt nach innen",
+        "Plumpsen lassen",
+        "Mit dem linken Bein voll mitdrücken"
+      ],
+      "kneeNote": "Das linke Knie wird nur leicht belastet. Höhere Sitzfläche (Kissen) macht es leichter. Kein Schmerz links über 2–3/10.",
+      "levels": [
+        {
+          "label": "Hohe Sitzfläche · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Normale Höhe · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Normale Höhe · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Links nur Zehenkontakt · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 75
+        }
+      ],
+      "regressTo": "sit-to-stand",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kruecken",
+        "rechtes-bein",
+        "quadrizeps",
+        "geschlossene-kette"
+      ],
+      "figure": {
+        "poses": [
+          "sit-chair",
+          "sit-to-stand-mid",
+          "sit-to-stand-end"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": true
+      }
+    },
+    {
+      "id": "single-leg-stance-reach",
+      "name": "Einbeinstand links mit Armreichen",
+      "description": "Kontrolle des linken Beins: Standbein stabil halten, während die Arme in verschiedene Richtungen reichen.",
+      "category": "stabilitaet",
+      "block": "knee",
+      "equipment": [
+        "none"
+      ],
+      "type": "hold",
+      "side": "left",
+      "instructions": [
+        "Neben eine Stuhllehne oder Wand stellen (Hand in Reichweite).",
+        "Auf das linke Bein stellen, Knie ganz leicht gebeugt, nicht durchgedrückt.",
+        "Mit dem rechten Arm langsam nach vorn, zur Seite und nach oben reichen, ohne dass das Knie nach innen fällt.",
+        "Halten, dann Arm wechseln."
+      ],
+      "cues": [
+        "Knie über dem 2. Zeh",
+        "Becken waagerecht",
+        "Oberschenkel aktiv"
+      ],
+      "mistakes": [
+        "Knie fällt nach innen",
+        "Knie durchgedrückt",
+        "Hüfte kippt zur Seite"
+      ],
+      "kneeNote": "Schmerzfrei bis leicht (≤ 2/10). Bei Unsicherheit sofort abstützen – kein Wegknicken riskieren.",
+      "levels": [
+        {
+          "label": "Mit Fingerkontakt · 2 × 3 × 10 s",
+          "sets": 2,
+          "reps": 3,
+          "hold": 10,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "Freihändig · 2 × 3 × 10 s",
+          "sets": 2,
+          "reps": 3,
+          "hold": 10,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "Freihändig · 3 × 3 × 15 s",
+          "sets": 3,
+          "reps": 3,
+          "hold": 15,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Auf Kissen · 3 × 3 × 15 s",
+          "sets": 3,
+          "reps": 3,
+          "hold": 15,
+          "tempo": null,
+          "band": null,
+          "rest": 30
+        }
+      ],
+      "regressTo": "single-leg-stance",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "balance",
+        "propriozeption",
+        "standbein",
+        "quadrizeps"
+      ],
+      "figure": {
+        "poses": [
+          "stand-single-left",
+          "stand-arms-forward-high"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false
+      }
     }
   ]
 }
