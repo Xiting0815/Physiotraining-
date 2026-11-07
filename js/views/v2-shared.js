@@ -2,7 +2,8 @@
 // Not a route. Pure helpers are Node-testable; DOM helpers only touch `document` when called.
 // (Kept separate from ui.js, which is owned by another work package.)
 import { html, raw } from '../render.js';
-import { BLOCK_LABEL, EQUIPMENT_LABEL } from './ui.js';
+import { BLOCK_LABEL, EQUIPMENT_LABEL, toast } from './ui.js';
+import { confetti } from '../components/celebrate.js';
 import { exerciseAvailable } from '../logic/progression.js';
 import { evaluateBadges, XP } from '../logic/motivation.js';
 import { isCardioSession } from '../logic/stats.js';
@@ -106,6 +107,18 @@ export function awardBadges(d, badgeDefs, today, now = new Date()) {
   return ids;
 }
 
+/**
+ * Toast + confetti for newly earned badges. More than two are combined into one toast.
+ * @param {string[]} ids @param {any[]} badgeDefs
+ */
+export function celebrateBadges(ids, badgeDefs) {
+  const list = (ids || []).map((id) => (badgeDefs || []).find((b) => b.id === id)).filter(Boolean);
+  if (!list.length) return;
+  if (list.length <= 2) for (const b of list) toast(`Neues Abzeichen: ${b.name}`, { kind: 'gold', icon: b.icon || '🏅', ms: 3800 });
+  else toast(`${list.length} neue Abzeichen: ${list.map((b) => b.name).join(', ')}`, { kind: 'gold', icon: list[0].icon || '🏅', ms: 4200 });
+  confetti();
+}
+
 /* ------------------------------------------------------------------ */
 /* Icons                                                               */
 /* ------------------------------------------------------------------ */
@@ -196,7 +209,8 @@ const CSS_TEXT = `
 .v2-item { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); background: var(--surface); border: 1px solid color-mix(in srgb, var(--border) 80%, transparent); border-radius: var(--radius-sm); box-shadow: var(--shadow-1); }
 .v2-item__num { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: var(--fs-xs); font-weight: var(--fw-bold); background: var(--surface-2); color: var(--muted); }
 .v2-item__body { flex: 1; min-width: 0; }
-.v2-item__name { display: block; font-weight: var(--fw-semibold); line-height: 1.25; }
+.v2-item__name { display: block; font-weight: var(--fw-semibold); line-height: 1.25; color: var(--text); text-decoration: none; }
+.v2-item__name:hover { color: var(--primary-ink); text-decoration: underline; }
 .v2-item__sub { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; color: var(--muted); font-size: var(--fs-xs); margin-top: 2px; }
 .v2-item__btns { display: flex; gap: 2px; flex: none; }
 .v2-item__btns .btn { width: 40px; min-height: 40px; padding: 0; }

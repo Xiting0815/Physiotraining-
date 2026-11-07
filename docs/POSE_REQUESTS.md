@@ -29,3 +29,22 @@ Under load the knee must stay ≤ 60° flexion (later ≤ 90°). These existing 
 - `bridge-heel-chair-down`/`-up` — knees 71–75°; heel-on-chair bridge is done with knees only ~20–30° flexed (legs nearly straight, heels on the seat).
 - `serratus-punch-start`/`-end` are supine (and identical); the exercise is standing with a band anchored behind → uses the new `stand-arm-forward-bent`/`-reach` instead.
 - `lat-pulldown-start`/`-end` are standing; the exercise is seated on the chair → uses the new `sit-arms-overhead`/`sit-pulldown-end`.
+
+## v2 (rowing, crutch preparation, post-op) — done
+
+Placeholder figures of the v2 exercises were replaced by dedicated poses (generated in `tools/gen-poses.mjs`):
+
+- Rowing machine prop `rower` (pose-level prop object: rail, seat carriage that follows the hip, flywheel housing
+  with monitor, foot stretcher, strap + handle drawn from the flywheel to the hands; feet are locked to the stretcher
+  during animation) and the cycle `row-catch` → `row-drive` → `row-finish` → `row-recovery`
+  (figure `loop: true`, `tempo: "2-0-1"` = drive 1 s / recovery 2 s) _(row-technique-warmup, row-steady,
+  row-intervals, row-endurance, row-cooldown)_
+- `chair-dip-up` / `chair-dip-down` — hands on the front edge behind, right knee ~90°, left leg long, heel resting _(chair-dip)_
+- `stand-triceps-ext-start` / `-end` — facing the door, high anchor _(band-triceps-extension)_
+- `seated-press-up-down` / `-up` — chair with armrests (`chair.arms`), buttocks lift, feet stay _(seated-press-up)_
+- `sit-right-load` → `stand-from-chair-right-mid` → `stand-right-load` — weight on the right, left foot forward _(right-leg-sit-to-stand)_
+- `stand-single-left-reach-start` / `-forward` / `-up` _(single-leg-stance-reach)_
+- `long-sit-patella-up` / `-down` — long sitting, hands at the left knee (exercise mirrored so the left leg is in front) _(patella-mobilization)_
+- `supine-glute-relax` / `supine-glute-set` — supine, legs long _(glute-set)_
+- `supine-right-leg-tuck` / `supine-right-leg-press` — band from the right sole to the hands, left leg long _(right-leg-band-press)_
+- `supine-ankle-up` / `supine-ankle-down` _(ankle-pumps)_

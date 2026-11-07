@@ -9,9 +9,8 @@ import { weeklyReport, opReadiness, loadVsPain, sleepVsPain, stepsVsPain, weight
 import { goalProgress } from '../logic/energy.js';
 import { currentPhase } from '../logic/progression.js';
 import { lineChart, barChart, progressRing } from '../components/charts.js';
-import { confetti } from '../components/celebrate.js';
 import { ICON, ensureViewStyles, applyFontScale, pageHeader, shortDate, toast, confirmDialog, trafficPill } from './ui.js';
-import { ensureV2Styles, ICON2, awardBadges, fmtNum, fmtDistance, meter, offsetLineChart } from './v2-shared.js';
+import { ensureV2Styles, ICON2, awardBadges, celebrateBadges, fmtNum, fmtDistance, meter, offsetLineChart } from './v2-shared.js';
 
 export const title = 'Gesundheit';
 
@@ -23,7 +22,7 @@ export const FIELD_GROUPS = [
   { title: 'Schlaf', icon: 'moon', fields: ['sleepH'] },
 ];
 const DIGITS = { weightKg: 1, bodyFatPct: 1, waistCm: 1, sleepH: 2 };
-const SHORT = { weightKg: '⚖️', bodyFatPct: 'KF', waistCm: 'Bauch', steps: '👣', activeMin: '⏱️', restingHr: '❤️', avgTrainingHr: 'Ø♥ Training', sleepH: '😴' };
+const SHORT = { weightKg: '⚖️', bodyFatPct: 'KF', waistCm: '📏', steps: '👣', activeMin: '⏱️', restingHr: '❤️', avgTrainingHr: '🏃', sleepH: '😴' };
 const PART_LABEL = {
   criteria: 'Ausstiegskriterien der Phasen',
   strength: 'Kraftstufen Knie & Stütz',
@@ -286,7 +285,7 @@ export function render(root, { store, content, query }) {
     <section class="card"><div class="card__header"><h2 class="card__title">Schritte</h2><span class="card__sub">Ø pro Tag und Woche</span></div><div data-c-steps></div></section>
     <section class="card"><div class="card__header"><h2 class="card__title">Schlaf</h2><span class="card__sub">Stunden pro Nacht</span></div><div data-c-sleep></div>
       <div class="chart-legend"><span><i style="--c:var(--chart-3);opacity:.5"></i>Nacht</span><span><i style="--c:var(--chart-3)"></i>Ø 7 Tage</span></div></section>
-    <section class="card"><div class="card__header"><h2 class="card__title">Ruhepuls</h2><span class="card__sub">bpm – sinkt oft mit wachsender Fitness</span></div><div data-c-hr></div>
+    <section class="card"><div class="card__header"><h2 class="card__title">Ruhepuls</h2><span class="card__sub">bpm · sinkt oft mit der Fitness</span></div><div data-c-hr></div>
       <div class="chart-legend"><span><i style="--c:var(--red);opacity:.5"></i>Tageswert</span><span><i style="--c:var(--red)"></i>Ø 7 Tage</span></div></section>`;
 
   const drawCharts = (data) => {
@@ -358,11 +357,7 @@ export function render(root, { store, content, query }) {
       badges = awardBadges(d, content.badges, today);
     });
     toast(existed ? 'Eintrag aktualisiert' : `Eintrag gespeichert${xp ? ` · +${xp} XP` : ''}`, { kind: xp ? 'gold' : 'success', icon: xp ? '⭐' : '✓' });
-    for (const id of badges) {
-      const b = content.badges.find((x) => x.id === id);
-      if (b) toast(`Neues Abzeichen: ${b.name}`, { kind: 'gold', icon: b.icon || '🏅', ms: 3800 });
-    }
-    if (badges.length) confetti();
+    celebrateBadges(badges, content.badges);
   };
 
   const onClick = async (e) => {

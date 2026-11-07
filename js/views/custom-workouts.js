@@ -4,9 +4,8 @@ import { todayISO } from '../util/date.js';
 import { estimateWorkoutMinutes, MAX_SESSION_MIN } from '../logic/duration.js';
 import { toWorkout, deleteCustomWorkout, duplicateAsCustom } from '../logic/custom-workouts.js';
 import { phaseWorkouts, currentPhase } from '../logic/progression.js';
-import { confetti } from '../components/celebrate.js';
 import { ICON, ensureViewStyles, applyFontScale, pageHeader, workoutSplit, shortDate, toast, confirmDialog } from './ui.js';
-import { ensureV2Styles, ICON2, awardBadges } from './v2-shared.js';
+import { ensureV2Styles, ICON2, awardBadges, celebrateBadges } from './v2-shared.js';
 
 export const title = 'Eigene Workouts';
 
@@ -46,7 +45,7 @@ export function render(root, { store, content, navigate }) {
 
     paint(root, html`
       ${pageHeader({
-        title: 'Eigene Workouts', eyebrow: list.length ? `${list.length} ${list.length === 1 ? 'Workout' : 'Workouts'} · selbst zusammengestellt` : 'Dein Training, deine Auswahl', back: '#/plan', backLabel: 'Zurück zum Plan',
+        title: 'Eigene Workouts', eyebrow: list.length ? `${list.length} ${list.length === 1 ? 'Workout' : 'Workouts'}` : 'Dein Training, deine Auswahl', back: '#/plan', backLabel: 'Zurück zum Plan',
         actions: list.length ? html`<a class="btn btn--primary btn--sm" href="#/eigene/neu">${raw(ICON.plus)} Neu</a>` : '',
       })}
 
@@ -97,14 +96,6 @@ export function render(root, { store, content, navigate }) {
     `);
   };
 
-  const celebrateBadges = (ids) => {
-    for (const id of ids) {
-      const b = content.badges.find((x) => x.id === id);
-      if (b) toast(`Neues Abzeichen: ${b.name}`, { kind: 'gold', icon: b.icon || '🏅', ms: 3600 });
-    }
-    if (ids.length) confetti();
-  };
-
   const onClick = async (e) => {
     const dup = e.target.closest('[data-dup]');
     const tpl = e.target.closest('[data-tpl]');
@@ -124,7 +115,7 @@ export function render(root, { store, content, navigate }) {
         return;
       }
       toast(`„${created.name}“ angelegt`, { icon: '📋' });
-      celebrateBadges(badges);
+      celebrateBadges(badges, content.badges);
       if (tpl) navigate(`/eigene/${created.id}`);
       return;
     }

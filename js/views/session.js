@@ -395,7 +395,7 @@ export function render(root, ctx) {
           ${entry.lighter ? html`<span class="chip chip--green">Leichtere Variante</span>` : ''}
           ${entry.trimmed ? html`<span class="chip chip--outline" title="Sätze gekürzt, damit die Einheit ins Zeitbudget passt">⏱ gekürzt für ${w?.maxMinutes ?? 30} Min</span>` : ''}
         </div>
-        ${session.postOp && ex.postOpNote ? html`<p class="ses-postop mb-0"><strong>Nach der OP:</strong> ${ex.postOpNote}</p>` : ''}
+        ${session.postOp && ex.postOpNote ? html`<p class="ses-postop">🩺 ${/^nach der op/i.test(ex.postOpNote) ? '' : html`<strong>Nach der OP:</strong> `}${ex.postOpNote}</p>` : ''}
         <div class="ses-dose mt-4">
           ${doseItems(dose)}
           <button type="button" class="ses-edit" data-act="adjust" aria-label="Vorgabe anpassen (Wdh., Halten, Band)">${raw(ICON.edit)}</button>
@@ -852,7 +852,6 @@ export function render(root, ctx) {
         paintPhase(true);
         paintClock();
         persist();
-        H.toast('Nächster Abschnitt', { icon: '⏭', kind: '', ms: 1200 });
       },
       sharp: (b) => {
         main.sharpPain = !main.sharpPain;

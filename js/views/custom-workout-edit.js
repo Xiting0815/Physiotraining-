@@ -6,9 +6,8 @@ import { levelOf } from '../logic/progression.js';
 import {
   CUSTOM_BLOCKS, MAX_CUSTOM_ITEMS, toWorkout, normalizeCustom, validateCustomWorkout, createCustomWorkout, updateCustomWorkout,
 } from '../logic/custom-workouts.js';
-import { confetti } from '../components/celebrate.js';
 import { ICON, ensureViewStyles, applyFontScale, pageHeader, doseText, figureThumb, toast, openSheet, confirmDialog } from './ui.js';
-import { ensureV2Styles, availability, availabilityChip, awardBadges, blockLabel, meter } from './v2-shared.js';
+import { ensureV2Styles, availability, availabilityChip, awardBadges, celebrateBadges, blockLabel, meter } from './v2-shared.js';
 import { filterExercises } from './exercises.js';
 
 export const title = 'Eigenes Workout';
@@ -150,7 +149,7 @@ export function render(root, { store, content, params, navigate }) {
                 <button class="btn btn--danger btn--sm" data-rm="${sec.id}:${i}" aria-label="${ex.name} entfernen">${raw(ICON.trash)}</button>
               </span>
             </li>`;
-          })}</ol>` : html`<p class="v2-empty-sec">${sec.id === 'warmup' || sec.id === 'cooldown' ? 'Optional – ' : ''}noch keine Übung. Tippe auf „+ Übung“.</p>`}
+          })}</ol>` : html`<p class="v2-empty-sec">${sec.id === 'warmup' || sec.id === 'cooldown' ? 'Optional. ' : ''}Noch keine Übung – tippe auf „+ Übung“.</p>`}
         </section>`;
       })}
 
@@ -163,7 +162,8 @@ export function render(root, { store, content, params, navigate }) {
         <div class="v2-durbar__row">
           <div class="grow">
             <span class="eyebrow">Geschätzte Dauer</span>
-            <div><span class="v2-durbar__min">ca. ${minutes} Min</span> <span class="text-sm muted">· ${count}/${MAX_CUSTOM_ITEMS} Übungen</span></div>
+            <div class="v2-durbar__min">ca. ${minutes} Min</div>
+            <div class="text-xs muted num">${count}/${MAX_CUSTOM_ITEMS} Übungen</div>
           </div>
           <button class="btn btn--primary" data-save>${raw(ICON.check)} Speichern</button>
         </div>
@@ -217,7 +217,7 @@ export function render(root, { store, content, params, navigate }) {
               <span class="v2-pick__sub"><span class="chip chip--sm ${ex.block === 'knee' ? 'chip--knee' : ex.block === 'archery' || cardio ? 'chip--archery' : ''}">${blockLabel(ex.block)}</span>
               ${cardio ? html`<span class="chip chip--sm v2-chip--stop">nur als Rudereinheit</span>` : html`<span class="num">${doseText(ex, lvl)}</span>`}
               ${cardio ? '' : availabilityChip(av)}</span></span>
-            <span class="v2-pick__add" aria-hidden="true">${raw(added ? ICON.check : ICON.plus)}</span>
+            ${cardio ? '' : html`<span class="v2-pick__add" aria-hidden="true">${raw(added ? ICON.check : ICON.plus)}</span>`}
           </button></li>`;
         })}</ul>`);
     };
@@ -262,11 +262,7 @@ export function render(root, { store, content, params, navigate }) {
     }
     dirty = false;
     toast(isNew ? `„${result.workout.name}“ gespeichert – bereit zum Training!` : 'Änderungen gespeichert', { icon: isNew ? '🎉' : '✓' });
-    for (const id of badges) {
-      const b = content.badges.find((x) => x.id === id);
-      if (b) toast(`Neues Abzeichen: ${b.name}`, { kind: 'gold', icon: b.icon || '🏅', ms: 3800 });
-    }
-    if (badges.length) confetti();
+    celebrateBadges(badges, content.badges);
     navigate('/eigene');
   };
 

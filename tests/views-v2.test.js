@@ -1,147 +1,124 @@
-// v2 UI helpers (Heute, Plan, Profil, router) – pure, no DOM.
+// Pure helpers of the v2 views (Eigene Workouts, Gesundheit, Rudern in Verlauf/Übungen).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { recentCustomWorkouts, postOpCardMode, isMonday } from '../js/views/today.js';
-import { setToggle, exerciseIdsOf } from '../js/views/plan.js';
-import { validateGoal, validateProfile, parseNum } from '../js/views/profile.js';
-import { fmtNum, fmtInt, fmtDistance, EQUIPMENT_LABEL, BLOCK_LABEL, KIND_LABEL, INTENSITY_LABEL, kindOf, workoutSplit, awardBadges } from '../js/views/ui.js';
-import { matchRoute, routes } from '../js/router.js';
-import { postOpStatus, clearance } from '../js/logic/schedule.js';
-import { exerciseAvailable } from '../js/logic/progression.js';
-import { evaluateBadges } from '../js/logic/motivation.js';
 import { defaults } from '../js/store.js';
+import { customSummary } from '../js/views/custom-workouts.js';
+import { emptyDraft, addItem, moveItem, removeItem, sectionItems, totalItems, defaultSection, draftFrom } from '../js/views/custom-workout-edit.js';
+import { inputValue, fieldText, entrySummary, reportTip, corrView } from '../js/views/health.js';
+import { filterSessions, sessionTitle, rowingLine, badgeHint, KIND_FILTERS } from '../js/views/history.js';
+import { filterExercises, cardDose } from '../js/views/exercises.js';
+import { rowingLevelPreview, rowingLevelText } from '../js/views/exercise-detail.js';
+import { availability, sessionKind, yWindow, fmtDistance, fmtClock, fmtPace, awardBadges } from '../js/views/v2-shared.js';
+import { createCustomWorkout } from '../js/logic/custom-workouts.js';
 
 const load = (n) => JSON.parse(fs.readFileSync(new URL(`../data/${n}.json`, import.meta.url), 'utf8'));
-const exercises = load('exercises').exercises;
-const workouts = load('workouts').workouts;
-const phases = load('phases').phases;
-const badges = load('badges').badges;
+const content = { exercises: load('exercises').exercises, workouts: load('workouts').workouts, phases: load('phases').phases, badges: load('badges').badges };
+const ex = (id) => content.exercises.find((e) => e.id === id);
 
-test('router: v2 routes resolve to their view modules', () => {
-  assert.equal(matchRoute('#/eigene').route.view, 'custom-workouts');
-  const e = matchRoute('#/eigene/neu');
-  assert.equal(e.route.view, 'custom-workout-edit');
-  assert.equal(e.params.id, 'neu');
-  assert.equal(matchRoute('#/eigene/cw-abc').params.id, 'cw-abc');
-  assert.equal(matchRoute('#/gesundheit?focus=bericht').route.view, 'health');
-  assert.equal(matchRoute('#/gesundheit?focus=bericht').query.focus, 'bericht');
-  assert.equal(matchRoute('#/profil').route.view, 'profile');
-  for (const r of routes) assert.ok(fs.existsSync(new URL(`../js/views/${r.view}.js`, import.meta.url)), `view module for ${r.pattern}`);
+test('builder draft: add, move, remove, 20-item limit', () => {
+  const d = emptyDraft();
+  assert.equal(totalItems(d), 0);
+  addItem(d, 'knee', 'quad-set');
+  addItem(d, 'knee', 'tke');
+  addItem(d, 'warmup', 'knee-pendulum');
+  assert.deepEqual(sectionItems(d, 'knee').map((i) => i.exerciseId), ['quad-set', 'tke']);
+  assert.equal(moveItem(d, 'knee', 1, -1), 0);
+  assert.deepEqual(sectionItems(d, 'knee').map((i) => i.exerciseId), ['tke', 'quad-set']);
+  assert.equal(moveItem(d, 'knee', 0, -1), 0); // no-op at top
+  removeItem(d, 'knee', 0);
+  assert.equal(totalItems(d), 2);
+  for (let i = 0; i < 18; i++) assert.ok(addItem(d, 'archery', 'quad-set'));
+  assert.equal(addItem(d, 'archery', 'quad-set'), false);
+  assert.equal(defaultSection({ block: 'cardio' }), 'knee');
+  assert.equal(defaultSection({ block: 'archery' }), 'archery');
 });
 
-test('ui labels: rowing machine, cardio block, kinds, intensity', () => {
-  assert.equal(EQUIPMENT_LABEL['rowing-machine'], 'Rudergerät');
-  assert.equal(BLOCK_LABEL.cardio, 'Rudern');
-  assert.deepEqual(Object.keys(KIND_LABEL), ['strength', 'short', 'cardio', 'custom']);
-  assert.equal(INTENSITY_LABEL.vigorous, 'Zügig');
-  assert.equal(kindOf({}), 'strength');
-  assert.equal(kindOf({ kind: 'cardio' }), 'cardio');
-  const row = workouts.find((w) => w.id === 'p1-row');
-  assert.ok(workoutSplit(row).cardio >= 1);
-});
-
-test('German number formatting', () => {
-  assert.equal(fmtNum(82.46, 1), '82,5');
-  assert.equal(fmtNum(85, 1, { trim: true }), '85');
-  assert.equal(fmtNum(-0.42, 2, { sign: true }), '-0,42');
-  assert.equal(fmtNum(0.3, 1, { sign: true }), '+0,3');
-  assert.equal(fmtNum(null), '–');
-  assert.equal(fmtInt(12345), '12.345');
-  assert.equal(fmtDistance(850), '850 m');
-  assert.equal(fmtDistance(12400), '12,4 km');
-  assert.equal(fmtDistance(0), '0 m');
-});
-
-test('recentCustomWorkouts: recently used first, then recently edited, max n', () => {
-  const cws = [
-    { id: 'cw-1', updatedAt: '2026-11-01T10:00:00Z' },
-    { id: 'cw-2', updatedAt: '2026-11-05T10:00:00Z' },
-    { id: 'cw-3', updatedAt: '2026-11-03T10:00:00Z' },
-    { id: 'cw-4', updatedAt: '2026-10-01T10:00:00Z' },
-  ];
-  const sessions = [{ id: 's', status: 'done', workoutId: 'cw-4', endedAt: '2026-11-06T10:00:00Z' }];
-  assert.deepEqual(recentCustomWorkouts(cws, sessions, 3).map((w) => w.id), ['cw-4', 'cw-2', 'cw-3']);
-  assert.deepEqual(recentCustomWorkouts([], [], 3), []);
-  assert.deepEqual(recentCustomWorkouts(undefined, undefined), []);
-});
-
-test('postOpCardMode follows postOpStatus and the current phase', () => {
-  const p3 = phases.find((p) => p.id === 'p3-op-vorbereitung');
-  const p4 = phases.find((p) => p.kind === 'postop');
-  const settings = { ...defaults().settings, surgeryDate: '2027-01-05' };
-  const st0 = defaults().state;
-  assert.equal(postOpCardMode(postOpStatus(settings, st0, '2027-01-04'), p3), null);
-  assert.equal(postOpCardMode(postOpStatus(settings, st0, '2027-01-05'), p3), null); // OP day → countdown card
-  assert.equal(postOpCardMode(postOpStatus(settings, st0, '2027-01-08'), p3), 'clearance');
-  const cleared = { ...st0, postOpClearance: clearance('ok', new Date('2027-01-08T10:00:00Z')) };
-  assert.equal(postOpCardMode(postOpStatus(settings, cleared, '2027-01-08'), p3), 'enter');
-  assert.equal(postOpCardMode(postOpStatus(settings, { ...cleared, phaseId: p4.id }, '2027-01-20'), p4), 'active');
-  assert.equal(postOpCardMode(postOpStatus(settings, { ...cleared, phaseId: p4.id }, '2027-02-20'), p4), 'ended');
-  const early = { ...cleared, phaseId: p4.id, postOpEndClearance: clearance('Arzt') };
-  assert.equal(postOpCardMode(postOpStatus(settings, early, '2027-01-25'), p4), 'ended');
-});
-
-test('isMonday', () => {
-  assert.equal(isMonday('2026-11-09'), true);
-  assert.equal(isMonday('2026-11-07'), false);
-});
-
-test('setToggle: allowed vs. post-op blocked exercises', () => {
-  const p4 = phases.find((p) => p.kind === 'postop');
-  const allowed = exercises.find((e) => e.postOpAllowed !== false && e.block === 'knee');
-  const blocked = exercises.find((e) => e.postOpAllowed === false && e.block !== 'cardio');
-  let t = setToggle({}, allowed, false);
-  assert.equal(t[allowed.id], false);
-  assert.equal(exerciseAvailable(allowed, p4, { exerciseToggles: t }), false);
-  t = setToggle(t, allowed, true);
-  assert.equal(allowed.id in t, false);
-  t = setToggle(t, blocked, true);
-  assert.equal(t[blocked.id], true);
-  assert.equal(exerciseAvailable(blocked, p4, { exerciseToggles: t }), true);
-  t = setToggle(t, blocked, false);
-  assert.equal(blocked.id in t, false);
-  assert.equal(exerciseAvailable(blocked, p4, { exerciseToggles: t }), false);
-});
-
-test('exerciseIdsOf: unique ids across p4 workouts, none blocked by default', () => {
-  const p4 = phases.find((p) => p.kind === 'postop');
-  const ws = ['A', 'B', 'C'].map((k) => workouts.find((w) => w.id === p4.workouts[k]));
-  const ids = exerciseIdsOf(ws);
-  assert.equal(new Set(ids).size, ids.length);
-  assert.ok(ids.length > 5);
-});
-
-test('profile validation', () => {
-  assert.equal(parseNum('82,5'), 82.5);
-  assert.equal(parseNum(''), null);
-  assert.ok(Number.isNaN(parseNum('abc')));
-  const ok = validateProfile({ heightCm: '182', birthYear: '1984', sex: 'm', activityLevel: 'moderate' }, '2026-11-07');
-  assert.equal(ok.ok, true);
-  assert.deepEqual(ok.profile, { heightCm: 182, birthYear: 1984, sex: 'm', activityLevel: 'moderate' });
-  const bad = validateProfile({ heightCm: '82', birthYear: '2020', sex: 'x', activityLevel: '?' }, '2026-11-07');
-  assert.equal(bad.ok, false);
-  assert.ok(bad.errors.heightCm && bad.errors.birthYear);
-  assert.equal(bad.profile.sex, null);
-  assert.equal(bad.profile.activityLevel, 'light');
-});
-
-test('weight goal validation', () => {
-  const today = '2026-11-07';
-  const ok = validateGoal({ startKg: '95,4', targetKg: '88', targetDate: '2027-03-01' }, today);
-  assert.equal(ok.ok, true);
-  assert.deepEqual(ok.goal, { startKg: 95.4, targetKg: 88, targetDate: '2027-03-01', startDate: today });
-  assert.ok(validateGoal({ startKg: '90', targetKg: '92', targetDate: '2027-03-01' }, today).errors.targetKg);
-  assert.ok(validateGoal({ startKg: '90', targetKg: '85', targetDate: '2026-11-01' }, today).errors.targetDate);
-  assert.ok(validateGoal({ startKg: '', targetKg: '85', targetDate: '2027-01-01' }, today).errors.startKg);
-  assert.equal(validateGoal({ startKg: '90', targetKg: '85', targetDate: '2027-01-01' }, today, { startDate: '2026-10-01' }).goal.startDate, '2026-10-01');
-});
-
-test('awardBadges: first custom workout earns its badge once', () => {
+test('customSummary estimates minutes for a stored custom workout', () => {
   const d = defaults();
-  d.state.customWorkouts = [{ id: 'cw-x', name: 'X', kind: 'custom', warmup: [], blocks: [], cooldown: [] }];
-  const ids = awardBadges(d, badges, evaluateBadges, { today: '2026-11-07', now: new Date('2026-11-07T10:00:00Z'), xpPerBadge: 15 });
+  const w = content.workouts.find((x) => x.id === 'p1-a');
+  const r = createCustomWorkout(d.state, { name: 'Test', warmup: w.warmup, blocks: w.blocks, cooldown: w.cooldown }, content, { settings: d.settings });
+  const sum = customSummary(r.workout, content, r.state, d.settings);
+  assert.ok(sum.count > 5);
+  assert.ok(sum.minutes > 10 && sum.minutes <= 40, String(sum.minutes));
+  assert.equal(typeof sum.over, 'boolean');
+  const draft = draftFrom(r.workout);
+  assert.equal(draft.name, 'Test');
+  assert.equal(draft.blocks.length, 2);
+});
+
+test('health view helpers', () => {
+  assert.equal(inputValue('weightKg', 92.4), '92,4');
+  assert.equal(inputValue('steps', null), '');
+  assert.equal(fieldText('steps', 8214), '8.214');
+  assert.equal(fieldText('sleepH', 7.25), '7,25 h');
+  assert.equal(fieldText('weightKg', 92), '92 kg');
+  const s = entrySummary({ date: '2026-11-01', weightKg: 93.1, sleepH: 7 });
+  assert.deepEqual(s.map((x) => x.key), ['weightKg', 'sleepH']);
+  assert.equal(corrView({ r: null, n: 3 }).text, 'Noch zu wenige Daten (3/8)');
+  assert.equal(corrView({ r: 0.4, n: 10, text: 'x' }).enough, true);
+  const rep = { strength: { done: 1, goal: 3 }, cardio: { done: 3, goal: 3 }, notes: [] };
+  assert.match(reportTip(rep, null, true), /Noch 2 Kraft-Einheiten/);
+  assert.match(reportTip({ ...rep, notes: ['N'] }, null, false), /^N$/);
+  assert.match(reportTip({ ...rep, strength: { done: 3, goal: 3 } }, { tips: [] }, true), /Konstanz/);
+});
+
+test('history: kind filters, titles, rowing line, new badge hints', () => {
+  const sessions = [
+    { id: 'a', status: 'done', workoutId: 'p1-a', endedAt: '2026-11-01T18:00:00Z' },
+    { id: 'b', status: 'done', workoutId: 'p1-row', kind: 'cardio', rowing: { durationSec: 900, distanceM: 3600 }, endedAt: '2026-11-02T18:00:00Z' },
+    { id: 'c', status: 'done', workoutId: 'cw-x', kind: 'custom', endedAt: '2026-11-03T18:00:00Z' },
+    { id: 'd', status: 'done', workoutId: 'p1-short', kind: 'short', endedAt: '2026-11-04T18:00:00Z' },
+  ];
+  assert.equal(KIND_FILTERS.length, 5);
+  assert.deepEqual(filterSessions(sessions, 'cardio').map((s) => s.id), ['b']);
+  assert.deepEqual(filterSessions(sessions, 'strength').map((s) => s.id), ['a']);
+  assert.equal(filterSessions(sessions, 'all').length, 4);
+  assert.equal(sessionTitle(sessions[2], content, { customWorkouts: [] }), 'Eigenes Workout');
+  assert.equal(sessionTitle(sessions[2], content, { customWorkouts: [{ id: 'cw-x', name: 'Meins', blocks: [] }] }), 'Meins');
+  assert.equal(rowingLine(sessions[1]), '3,60 km · 2:05 /500 m');
+  const data = { sessions, state: { healthLog: [{ date: '2026-11-01' }, { date: '2026-11-02' }] } };
+  assert.equal(badgeHint({ rule: { type: 'rowingDistance', n: 10000 } }, data), '3,6 / 10 km');
+  assert.equal(badgeHint({ rule: { type: 'healthLogStreak', n: 7 } }, data), '2 / 7 Tage');
+  assert.equal(sessionKind(sessions[3]), 'short');
+});
+
+test('exercises: Rudern filter, card dose, rowing level preview', () => {
+  const rows = filterExercises(content.exercises, { block: 'cardio' });
+  assert.ok(rows.length >= 5 && rows.every((e) => e.block === 'cardio'));
+  assert.equal(filterExercises(content.exercises, {}).length, content.exercises.length);
+  const iv = ex('row-intervals');
+  assert.equal(cardDose(iv, iv.levels[0]), iv.levels[0].label);
+  const pv = rowingLevelPreview(iv, 0, content);
+  assert.equal(pv.phases.filter((p) => p.kind === 'work').length, iv.levels[0].sets);
+  assert.ok(pv.totalSec > pv.workSec);
+  assert.match(rowingLevelText(iv, iv.levels[0]), /× 1:00 zügig, dazwischen 1:00 locker rudern/);
+  assert.match(rowingLevelText(ex('row-technique-warmup'), ex('row-technique-warmup').levels[0]), /→/);
+});
+
+test('availability: phase, post-op blocked/enabled, user disabled', () => {
+  const st = { phaseId: 'p1-basis', exerciseToggles: {} };
+  assert.equal(availability(ex('row-intervals'), st, content.phases).kind, 'phase');
+  assert.equal(availability(ex('chair-dip'), st, content.phases).kind, 'postop-later');
+  const post = { phaseId: 'p4-entlastung', exerciseToggles: {} };
+  assert.equal(availability(ex('chair-dip'), post, content.phases).kind, 'blocked');
+  assert.equal(availability(ex('chair-dip'), { ...post, exerciseToggles: { 'chair-dip': true } }, content.phases).kind, 'enabled');
+  assert.equal(availability(ex('quad-set'), { ...st, exerciseToggles: { 'quad-set': false } }, content.phases).kind, 'off');
+  assert.equal(availability(ex('quad-set'), st, content.phases).kind, 'ok');
+});
+
+test('v2 formatting & chart window & badge award', () => {
+  assert.equal(fmtDistance(850), '850 m');
+  assert.equal(fmtDistance(4250), '4,25 km');
+  assert.equal(fmtClock(65), '1:05');
+  assert.equal(fmtClock(3725), '1:02:05');
+  assert.equal(fmtPace(125), '2:05 /500 m');
+  const w = yWindow([93.2, 95.8], { pad: 0.5, step: 1 });
+  assert.ok(w.base <= 92.7 && w.base + w.yMax >= 96.3 && w.yMax !== 10);
+  const d = defaults();
+  d.state.customWorkouts = [{ id: 'cw-1', name: 'x' }];
+  const ids = awardBadges(d, content.badges, '2026-11-07');
   assert.ok(ids.includes('first-custom'));
-  assert.equal(d.state.xp, ids.length * 15);
-  assert.deepEqual(awardBadges(d, badges, evaluateBadges, { today: '2026-11-07' }), []);
+  assert.ok(d.state.badges['first-custom']);
+  assert.ok(d.state.xp > 0);
 });

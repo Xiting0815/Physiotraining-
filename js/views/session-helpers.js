@@ -654,7 +654,7 @@ export function recCardsHtml(session, content) {
   const list = visibleRecommendations(session);
   if (!list.length) {
     const holds = (session?.recommendations || []).filter((r) => r.action === 'hold').length;
-    return html`<section class="card card--tight"><p class="mb-0"><strong>Alles bleibt, wie es ist.</strong> <span class="muted">${holds ? `${holds} Übungen: Stufe halten – Qualität sammeln.` : 'Keine Änderung nötig.'}</span></p></section>`;
+    return html`<section class="card card--tight"><p class="mb-0"><strong>Alles bleibt, wie es ist.</strong> <span class="muted">${holds ? `${holds} ${holds === 1 ? 'Übung' : 'Übungen'}: Stufe halten – Qualität sammeln.` : 'Keine Änderung nötig.'}</span></p></section>`;
   }
   return html`${list.map(({ rec, index }) => {
     const t = recText(rec, content);
@@ -795,7 +795,7 @@ const CSS = `
 .row-phase.is-new{animation:pop-in .45s var(--spring) both}
 .row-sub{color:var(--muted);font-size:var(--fs-sm);margin:0}
 .row-targets{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s-2);margin:var(--s-3) 0 var(--s-2)}
-.row-int{background:var(--c);color:#fff;border-color:transparent}
+.row-int{background:var(--c);color:var(--surface);border-color:transparent}
 .row-clock{font-size:var(--fs-timer);font-weight:var(--fw-black);font-variant-numeric:tabular-nums;letter-spacing:-.04em;line-height:1;margin:var(--s-2) 0;color:var(--text)}
 .row-bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--c) 18%,var(--surface-2));overflow:hidden}
 .row-bar>span{display:block;height:100%;width:0;background:var(--c);border-radius:inherit;transition:width .25s linear}
@@ -815,7 +815,7 @@ const CSS = `
 .row-pace{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-2);padding:var(--s-3);border-radius:var(--radius-sm);background:var(--primary-soft);color:var(--primary-ink);font-weight:var(--fw-bold)}
 .row-pace strong{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
 .ses-hero-icon{font-size:56px;line-height:1;display:block;margin-bottom:var(--s-2)}
-.ses-postop{border-left:4px solid var(--stop);padding:var(--s-2) var(--s-3);background:var(--stop-soft);border-radius:var(--radius-sm);font-size:var(--fs-sm);margin:var(--s-2) 0 0}
+.ses-postop{border-left:4px solid var(--stop);padding:var(--s-2) var(--s-3);background:var(--stop-soft);border-radius:var(--radius-sm);font-size:var(--fs-sm);margin:var(--s-3) 0 var(--s-2)}
 .ses-doctor .card__title{font-size:var(--fs-xl)}
 .ses-doctor .ses-doctor__icon{font-size:40px;line-height:1}
 @media (prefers-reduced-motion: reduce){.ses-float,.ses-pulse,.ses-shake,.row-phase.is-new{animation:none}}
