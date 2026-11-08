@@ -27,7 +27,7 @@ Gesundheits-Tagebuch, Abnehm-Ziel, Ampel-Logik für die Belastungssteuerung und 
   Anleitung, Hinweisen fürs Knie, allen Stufen und manuellem Stufenwechsel.
 - **Verlauf** – Kalender mit Ampelfarben, Schmerzverlauf, Einheiten pro Woche, persönliche Rekorde,
   Abzeichen und alle Einheiten mit Detailansicht.
-- **Mehr** – OP-Termin, Wochenziel, Profil & Ziele, Gesundheit, Design (Auto/Hell/Dunkel), Schriftgröße, Satzpause, Ton, Vibration,
+- **Mehr** – OP-Termin, Wochenziel, Profil & Ziele, Gesundheit, Daten importieren (RENPHO / Samsung Health), Design (Auto/Hell/Dunkel), Schriftgröße, Satzpause, Ton, Vibration,
   Schmerzgrenzen, Reihenfolge der Bänder, Sicherung exportieren/importieren (JSON), alles löschen.
 - **Ausrüstung** – vorhandene Bänder und eine Einkaufsliste mit Budget zum Abhaken.
 
@@ -44,8 +44,9 @@ Gesundheits-Tagebuch, Abnehm-Ziel, Ampel-Logik für die Belastungssteuerung und 
   Cool-down), sortieren, Live-Dauer „ca. N Min“, Hinweise bei Übungen außerhalb der aktuellen Phase; als Kopie eines
   Plan-Workouts starten, duplizieren, löschen.
 - **Gesundheits-Tagebuch** – Gewicht, Körperfett, Bauchumfang, Schritte, aktive Minuten, Ruhe-/Trainingspuls,
-  Schlaf und Notiz pro Tag. Die Werte werden **manuell aus Samsung Health übertragen** (keine Verbindung zu
-  Samsung Health); Serie und +5 XP pro Tag.
+  Schlaf und Notiz pro Tag. Die Werte werden von Hand eingetragen oder – seit Version 3 – per **Import** aus
+  RENPHO-Screenshots bzw. dem Samsung-Health-Export übernommen (keine Live-Verbindung zu Samsung Health);
+  Serie und +5 XP pro Tag.
 - **Abnehm-Ziel & Kalorien** – Profil (Größe, Geburtsjahr, Geschlecht, Aktivität), Zielgewicht und Datum,
   Fortschritt auf Basis des 7-Tage-Mittels, nötiges Tempo (Warnung über 0,75 kg/Woche), Prognose aus dem Trend,
   Tagesbedarf und Kalorienziel (Defizit 500–750 kcal, Mindestmenge). Kalorien pro Einheit (Rudergerät-Display,
@@ -65,6 +66,51 @@ Gesundheits-Tagebuch, Abnehm-Ziel, Ampel-Logik für die Belastungssteuerung und 
   werden Rötung/Überwärmung und Fieber abgefragt – bei Warnzeichen heißt es „Bitte Arzt kontaktieren“.
 - **Vorbereitung auf die Krücken** – Stütz-Dips, Trizeps, Abstützen im Sitz und Einbeinstand bereits vor der OP.
 - **Offline** – nach dem ersten Laden komplett offline nutzbar, installierbar als App.
+
+### Neu in Version 3 – Import
+
+Unter **Mehr → Daten importieren (RENPHO / Samsung Health)** oder im Tagebuch über **„Importieren“**.
+Vor dem Übernehmen zeigt die App immer eine Vorschau: Werte lassen sich korrigieren, auffällige Werte sind
+markiert, und du wählst „Zusammenführen“ (vorhandene Werte bleiben) oder „Überschreiben“.
+
+- **RENPHO-Screenshot-Import** – Screenshot der Messung in der RENPHO-App auswählen; die Texterkennung (OCR)
+  läuft **offline direkt auf dem Handy**, es wird nichts hochgeladen. Beim ersten Mal werden einmalig ca.
+  **7,5 MB** (Texterkennung + Sprachdaten) geladen und danach für die Offline-Nutzung gespeichert.
+- **Teilen an PhysioBogen** – in der Galerie oder in Samsung Health/„Eigene Dateien“ einen Screenshot oder die
+  Samsung-Export-Datei (ZIP/CSV) über **„Teilen“ → PhysioBogen** direkt an die installierte App schicken.
+  Hinweis: Nach dem Update kann es **1–2 Tage dauern**, bis Android die Teilen-Option anzeigt (Chrome
+  aktualisiert die installierte App im Hintergrund). Erscheint sie nicht, die App deinstallieren und über Chrome
+  neu installieren. Die Daten liegen im Browser-Speicher von Chrome (nicht in der App selbst) und bleiben dabei
+  normalerweise erhalten – fragt Chrome beim Deinstallieren, ob auch die Website-Daten gelöscht werden sollen,
+  das bitte **nicht** bestätigen. Sicherheitshalber vorher unter **Mehr → Sicherung exportieren** ein Backup
+  speichern.
+- **Samsung Health Export** – Schritt für Schritt:
+  1. Samsung Health öffnen → Menü (☰ bzw. ⋮) → **Einstellungen**.
+  2. **„Persönliche Daten herunterladen“** wählen und bestätigen (ggf. mit dem Samsung-Konto anmelden).
+  3. Warten, bis „Download abgeschlossen“ erscheint. Der Ordner `samsunghealth_<name>_<Datum>` liegt unter
+     **Eigene Dateien → Interner Speicher → Download → Samsung Health**.
+  4. Den Ordner in „Eigene Dateien“ lange drücken → **Komprimieren** (ZIP) – oder einzelne CSV-Dateien nehmen.
+  5. In PhysioBogen **Daten importieren → Samsung Health** die ZIP/CSV auswählen (oder per „Teilen“ schicken),
+     Vorschau prüfen, **„Übernehmen“**.
+  Die Menüführung kann je nach Samsung-Health-Version leicht abweichen. Übernommen werden Gewicht und Körperzusammensetzung, Schritte, aktive Minuten, Schlaf und Ruhepuls
+  (pro Tag zusammengefasst).
+- **Alle Waagen-Werte** – das Tagebuch speichert jetzt die komplette Körperzusammensetzung: Gewicht, BMI,
+  Körperfett (% und kg), Unterhautfett, Viszeralfett, Muskelmasse, Skelettmuskel (% und kg), Knochenmasse,
+  fettfreie Masse, Körperwasser, Protein, metabolisches Alter und Grundumsatz – mit Quelle („RENPHO“,
+  „Samsung“) je Wert.
+- **Grundumsatz** – liegt ein Waagen-Wert der letzten 14 Tage vor, wird der Grundumsatz als **Mittel aus Waage
+  und Formel** (Mifflin–St Jeor) berechnet, sonst aus dem vorhandenen Wert. Er fließt in Tagesbedarf und
+  Kalorienziel ein – weiterhin eine Schätzung.
+- **Auswertung Fett/Muskel** – Karte „Körperzusammensetzung“: Veränderung von Fett- und Muskelmasse über 2 bzw.
+  4 Wochen (z. B. „Fett verloren, Muskeln gehalten“), mit Tipps (Krafttraining beibehalten, genug Eiweiß,
+  moderates Defizit); zusätzliche Diagramme für Körperfett, Skelettmuskelmasse und Viszeralfett.
+- **Einschränkungen**
+  - Das Samsung-Format wurde anhand **öffentlicher Beispiel-Exporte** umgesetzt und **nicht mit deinem echten
+    Export geprüft**. Fehlen Werte oder sehen sie falsch aus, bitte in der Vorschau korrigieren bzw. melden.
+  - Körperfett und Muskelmasse von Haushaltswaagen (BIA) schwanken je nach Wasserhaushalt, Essen und Training
+    um 1–2 kg. Nur Trends über Wochen vergleichen und immer gleich messen (morgens, nüchtern, nach dem
+    Toilettengang, barfuß).
+  - Die Texterkennung kann sich verlesen – Werte in der Vorschau kurz prüfen.
 
 Technik: Vanilla JS (ES-Module), kein Build-Schritt, keine Abhängigkeiten. Alle Daten bleiben lokal im Browser
 (`localStorage`, Schlüssel `pt.v1`). Daten aus Version 1 werden beim ersten Start automatisch übernommen und um die

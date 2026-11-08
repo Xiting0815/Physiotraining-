@@ -10,12 +10,18 @@
 //   - activate: delete caches of older versions, claim clients.
 //   - updates: the new worker waits; the page shows "Update verfügbar – neu laden" and posts
 //     {type: 'SKIP_WAITING'} when the user taps it.
+//   - vendor/tesseract/** (offline OCR, ~7 MB): NOT precached. Cache-first in its own cache OCR_CACHE,
+//     filled on first use (js/import/ocr.js prefetches with a progress bar). The name only depends on the
+//     tesseract.js version, so app updates keep it (SPEC §13).
+//   - Web Share Target (manifest share_target): POST ./share-target (multipart: files[], title, text, url)
+//     → files/text stored in Cache SHARE_CACHE under ./__share__/<id>/<n> → 303 to ./#/import?shared=1,
+//     where js/views/import.js picks them up (and deletes them after import/discard).
 //
 // CACHE_VERSION and PRECACHE are rewritten by `node tools/gen-precache.mjs` – run it after adding,
 // removing or changing app files (the version is a content hash, so any change triggers an update).
 
 // <precache-version>
-const CACHE_VERSION = '20764a118a';
+const CACHE_VERSION = 'ea126143f8';
 // </precache-version>
 const CACHE_PREFIX = 'physio-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
@@ -47,6 +53,11 @@ const PRECACHE = [
   'js/components/pt-pain-scale.js',
   'js/components/pt-timer.js',
   'js/content.js',
+  'js/import/common.js',
+  'js/import/ocr.js',
+  'js/import/renpho.js',
+  'js/import/samsung.js',
+  'js/import/zip.js',
   'js/logic/cardio.js',
   'js/logic/custom-workouts.js',
   'js/logic/duration.js',
@@ -72,6 +83,7 @@ const PRECACHE = [
   'js/views/exercises.js',
   'js/views/health.js',
   'js/views/history.js',
+  'js/views/import.js',
   'js/views/next-day.js',
   'js/views/plan.js',
   'js/views/profile.js',
@@ -84,6 +96,11 @@ const PRECACHE = [
   'manifest.webmanifest',
 ];
 // </precache>
+
+// keep in sync with js/import/ocr.js (OCR_CACHE) and js/views/import.js (SHARE_CACHE / SHARE_PREFIX)
+const OCR_CACHE = 'pt-ocr-5.1.1';
+const SHARE_CACHE = 'pt-share';
+const SHARE_PREFIX = '__share__/';
 
 const scopeUrl = (path) => new URL(path, self.registration.scope).href;
 const DATA_TIMEOUT_MS = 3000;
@@ -99,7 +116,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME)
+      .filter((k) => (k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME) || (k.startsWith('pt-ocr-') && k !== OCR_CACHE))
       .map((k) => caches.delete(k)));
     await self.clients.claim();
   })());
@@ -113,11 +130,19 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   const scope = new URL(self.registration.scope);
   if (!url.pathname.startsWith(scope.pathname)) return;
+  if (req.method === 'POST' && url.pathname === scope.pathname + 'share-target') {
+    event.respondWith(receiveShare(req));
+    return;
+  }
+  if (req.method !== 'GET') return;
+  if (url.pathname.startsWith(scope.pathname + 'vendor/tesseract/')) {
+    event.respondWith(ocrAsset(req));
+    return;
+  }
 
   if (req.mode === 'navigate') {
     event.respondWith(appShell(req));
@@ -176,4 +201,51 @@ function withTimeout(promise, ms) {
     const t = setTimeout(() => reject(new Error('timeout')), ms);
     promise.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
   });
+}
+
+/** OCR engine + language data: cache-first in OCR_CACHE (lazy, survives app updates). */
+async function ocrAsset(req) {
+  const cache = await caches.open(OCR_CACHE);
+  const key = req.url.split('#')[0].split('?')[0];
+  const cached = await cache.match(key);
+  if (cached) return cached;
+  try {
+    const res = await fetch(key, { cache: 'no-cache' });
+    if (res.ok) cache.put(key, res.clone());
+    return res;
+  } catch {
+    return new Response('', { status: 504, statusText: 'Offline' });
+  }
+}
+
+/** Web Share Target: keep shared files/text for #/import, then redirect there (303 → GET). */
+async function receiveShare(req) {
+  const target = scopeUrl('./#/import?shared=1');
+  try {
+    const form = await req.formData();
+    const cache = await caches.open(SHARE_CACHE);
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const now = String(Date.now());
+    let n = 0;
+    for (const f of form.getAll('files')) {
+      if (!f || typeof f === 'string' || !f.size) continue;
+      const name = f.name || `datei-${n + 1}`;
+      await cache.put(scopeUrl(`${SHARE_PREFIX}${id}/${n++}`), new Response(f, { headers: {
+        'Content-Type': f.type || 'application/octet-stream', 'X-Share-Kind': 'file',
+        'X-Share-Name': encodeURIComponent(name), 'X-Share-Time': now,
+      } }));
+    }
+    const title = String(form.get('title') || '');
+    const text = String(form.get('text') || '');
+    const url = String(form.get('url') || '');
+    if (text.trim() || (!n && (title.trim() || url.trim()))) {
+      await cache.put(scopeUrl(`${SHARE_PREFIX}${id}/${n++}`), new Response(JSON.stringify({ title, text, url }), { headers: {
+        'Content-Type': 'application/json', 'X-Share-Kind': 'text',
+        'X-Share-Name': encodeURIComponent(title || 'Geteilter Text'), 'X-Share-Time': now,
+      } }));
+    }
+  } catch (err) {
+    console.warn('share-target failed', err);
+  }
+  return Response.redirect(target, 303);
 }

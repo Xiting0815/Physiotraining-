@@ -3,6 +3,9 @@
 //   node tools/gen-precache.mjs          rewrite PRECACHE + CACHE_VERSION in sw.js
 //   node tools/gen-precache.mjs --check  exit 1 if sw.js is out of date (for CI / QA)
 //
+// vendor/tesseract/** (offline OCR, ~7 MB) is deliberately NOT precached: sw.js caches it lazily in its own
+// cache on first use (SPEC §13). EXCLUDE keeps it out even if a scanned dir ever contains vendor files.
+//
 // Scans index.html, manifest.webmanifest, css/**, js/**, data/*.json and icons/* and writes the
 // sorted, relative list between the `// <precache>` markers in sw.js. CACHE_VERSION becomes a
 // short content hash of all listed files, so every content change installs a new SW version
@@ -23,6 +26,9 @@ const DIRS = [
   { dir: 'icons', ext: /\.(png|svg|ico|webp)$/ },
 ];
 
+/** Never precached (lazy runtime cache in sw.js). */
+export const EXCLUDE = [/^vendor\//, /(^|\/)tesseract\//];
+
 async function walk(rel, ext) {
   let entries;
   try { entries = await readdir(path.join(root, rel), { withFileTypes: true }); } catch { return []; }
@@ -42,7 +48,7 @@ export async function collectFiles() {
     try { await readFile(path.join(root, f)); files.push(f); } catch { /* missing */ }
   }
   for (const { dir, ext } of DIRS) files.push(...await walk(dir, ext));
-  return files.sort((a, b) => a.localeCompare(b, 'en'));
+  return files.filter((f) => !EXCLUDE.some((re) => re.test(f))).sort((a, b) => a.localeCompare(b, 'en'));
 }
 
 export async function contentHash(files) {
