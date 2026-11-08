@@ -1,7 +1,7 @@
 // Workout rotation, levels, phases. PURE. See docs/SPEC.md §5.3, §7.7.
 import { addDays, daysBetween, startOfIsoWeek, todayISO } from '../util/date.js';
 import { dayOf, doneSessions, sessionLight, sessionsPerWeek, streak } from './stats.js';
-import { cappedSets, fitPlanToMinutes, workoutItems, MAX_SESSION_MIN, MAX_SESSION_WITH_ROW_MIN } from './duration.js';
+import { cappedSets, estimateWorkoutMinutes, fitPlanToMinutes, workoutItems, MAX_SESSION_MIN, MAX_SESSION_WITH_ROW_MIN } from './duration.js';
 
 /** Workout kinds (v2). Missing `kind` = "strength". */
 export const WORKOUT_KINDS = ['strength', 'short', 'cardio', 'custom'];
@@ -416,4 +416,22 @@ export function phaseProgress(state, phase, sessions, opts = {}) {
     suggestReady: total > 0 && criteria.every((c) => c.ticked || c.met === true),
     weeksInPhase: sessionsPerWeek(inPhase).size,
   };
+}
+
+/**
+ * v4: „ca. N Min“ of a workout as the session would actually be planned (rowing warm-up per
+ * `settings.rowWarmupDefault` unless `opts.rowWarmup` is given, sets fitted to the time budget).
+ * Keeps Heute/Plan consistent with the session start screen.
+ * @param {import('../types.js').Workout} workout
+ * @param {import('../types.js').State} state
+ * @param {import('../types.js').Content} content
+ * @param {import('../types.js').Settings} settings
+ * @param {{rowWarmup?: boolean, taper?: boolean}} [opts]
+ * @returns {{minutes: number, rowWarmup: boolean}}
+ */
+export function plannedWorkoutMinutes(workout, state, content, settings, { rowWarmup, taper = false } = {}) {
+  if (!workout) return { minutes: 0, rowWarmup: false };
+  const plan = buildSessionPlan(workout, state, content, { settings, rowWarmup, rowFinisher: false, taper: taper && workoutKind(workout) !== 'cardio' });
+  const minutes = plan.exercises.length ? estimateWorkoutMinutes(plan, content, state, settings) : estimateWorkoutMinutes(workout, content, state, settings);
+  return { minutes, rowWarmup: !!plan.rowWarmup };
 }

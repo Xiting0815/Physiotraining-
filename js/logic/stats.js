@@ -57,6 +57,18 @@ export function inSessionRowingSec(s) {
   const fin = posNum(s.finisherRowing?.durationSec) ? s.finisherRowing.durationSec : timerSec(s, true);
   return warm + fin;
 }
+/**
+ * v4: the rowing parts of a strength session separately: `{warmupSec, finisherSec}` (same sources as
+ * inSessionRowingSec). Cardio sessions → zeros.
+ * @param {Session} s
+ */
+export function inSessionRowingParts(s) {
+  if (!s || isCardioSession(s)) return { warmupSec: 0, finisherSec: 0 };
+  return {
+    warmupSec: posNum(s.warmupRowing?.durationSec) ? s.warmupRowing.durationSec : timerSec(s, false),
+    finisherSec: posNum(s.finisherRowing?.durationSec) ? s.finisherRowing.durationSec : timerSec(s, true),
+  };
+}
 /** Alias of inSessionRowingSec (name of the first v4 draft). */
 export const warmupRowingSec = inSessionRowingSec;
 /** Done strength-type sessions (strength, short, custom – everything except cardio). @param {Session[]} sessions */

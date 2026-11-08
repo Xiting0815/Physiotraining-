@@ -10,7 +10,7 @@ import {
 } from './ui.js';
 
 export const title = 'Mehr';
-export const APP_VERSION = '3.1.0';
+export const APP_VERSION = '4.0.0';
 
 const REST_OPTIONS = [null, 30, 45, 60, 90, 120];
 const FONT_SCALES = [{ v: 1, l: 'Normal' }, { v: 1.125, l: 'Groß' }, { v: 1.25, l: 'Sehr groß' }];
@@ -174,6 +174,9 @@ export function render(root, { store, content, query }) {
             ${REST_OPTIONS.map((v) => html`<option value="${v ?? ''}" ${(s.restDefault ?? null) === v ? 'selected' : ''}>${v == null ? 'Wie in der Übung vorgesehen' : `${v} Sekunden`}</option>`)}
           </select>
         </div>
+        <p class="field__label mb-2 mt-4">Rudern im Krafttraining</p>
+        <label class="switch-row"><span>Mit 10 Min. Rudern aufwärmen<span class="pv-setting-row__hint">Standard beim Start (Phase 1–3) – vor jedem Training umschaltbar</span></span><input type="checkbox" class="switch" name="rowWarmupDefault" ${s.rowWarmupDefault !== false ? 'checked' : ''}></label>
+        <label class="switch-row"><span>Ruder-Finisher vorschlagen<span class="pv-setting-row__hint">„Ja“ als Vorauswahl, wenn nach dem Kraftteil gefragt wird – nur bei grüner Knie-Ampel</span></span><input type="checkbox" class="switch" name="rowFinisherDefault" ${s.rowFinisherDefault ? 'checked' : ''}></label>
       </section>
 
       <h2 class="section-title">Sprachansagen</h2>
@@ -280,7 +283,7 @@ export function render(root, { store, content, query }) {
       toast(t.value ? `OP-Termin: ${formatDE(t.value, { weekday: false })}` : 'OP-Termin entfernt', { icon: '📅' });
     } else if (t.name === 'theme') set((s) => { s.theme = t.value; });
     else if (t.name === 'fontScale') set((s) => { s.fontScale = Number(t.value); });
-    else if (t.name === 'sound' || t.name === 'vibration' || t.name === 'voiceEnabled' || t.name === 'beepsWithVoice') set((s) => { s[t.name] = t.checked; });
+    else if (t.name === 'sound' || t.name === 'vibration' || t.name === 'voiceEnabled' || t.name === 'beepsWithVoice' || t.name === 'rowWarmupDefault' || t.name === 'rowFinisherDefault') set((s) => { s[t.name] = t.checked; });
     else if (t.name === 'voiceRate' || t.name === 'voiceVolume') set((s) => { s[t.name] = Number(t.value); });
     else if (t.name === 'ownsRower') {
       set((s) => {

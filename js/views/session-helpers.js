@@ -5,7 +5,7 @@
 import { evaluateSession, finalizeWithNextDay, recommendLevels, thresholds, LIGHT_LABELS, worst } from '../logic/traffic-light.js';
 import { rotationAfter, applyRecommendation, getWorkout, workoutKind } from '../logic/progression.js';
 import { xpFor, levelFor, evaluateBadges, sessionScore, XP } from '../logic/motivation.js';
-import { doneSessions, sessionLight, personalRecords, newRecords, dayOf, isCardioSession } from '../logic/stats.js';
+import { doneSessions, sessionLight, personalRecords, newRecords, dayOf, isCardioSession, inSessionRowingParts } from '../logic/stats.js';
 import { rowingRecords, pacePer500, INTENSITY_LABELS } from '../logic/cardio.js';
 import { sessionKcal, bodyWeightKg } from '../logic/energy.js';
 import { exerciseCuePlan } from '../logic/cues.js';
@@ -168,7 +168,8 @@ export const needsDoctor = (reasons) => (reasons || []).some((r) => String(r).st
 /** Pre-check choice „Nur Oberkörper“: knee entries are skipped (mutates + returns session). */
 export function applyUpperBodyOnly(session, content) {
   for (const e of session.exercises || []) {
-    if (isKneeEntry(e, content)) { e.skipped = true; e.skipReason = 'precheck'; }
+    // v4: the rowing warm-up / finisher loads the knee too → skipped as well
+    if (isKneeEntry(e, content) || e.section === 'cardio') { e.skipped = true; e.skipReason = 'precheck'; }
   }
   session.mode = 'upper';
   return session;
@@ -361,6 +362,29 @@ export function formatDistance(m) {
   return `${Math.round(m).toLocaleString('de-DE')} m`;
 }
 
+/** 2140 → "2,1 km", 850 → "850 m" (short form for summaries). */
+export function formatKm(m) {
+  if (typeof m !== 'number' || !Number.isFinite(m) || m <= 0) return '';
+  return m >= 1000 ? `${(m / 1000).toFixed(1).replace('.', ',')} km` : `${Math.round(m)} m`;
+}
+
+/**
+ * v4: rowing parts of a strength session for the summary: `[{key: 'warmup'|'finisher', label, minutes, text}]`,
+ * e.g. „Aufwärmen 10 Min · 2,1 km“, „Finisher 8 Min“. Empty for cardio sessions or without rowing.
+ */
+export function rowingPartsSummary(session) {
+  const parts = inSessionRowingParts(session);
+  const out = [];
+  for (const [key, label, sec, log] of [['warmup', 'Aufwärmen', parts.warmupSec, session?.warmupRowing], ['finisher', 'Finisher', parts.finisherSec, session?.finisherRowing]]) {
+    if (!(sec > 0)) continue;
+    const minutes = Math.max(1, Math.round(sec / 60));
+    const km = formatKm(log?.distanceM);
+    const kcal = typeof log?.kcalDisplay === 'number' && log.kcalDisplay > 0 ? `${Math.round(log.kcalDisplay)} kcal` : '';
+    out.push({ key, label, minutes, text: [`${label} ${minutes} Min`, km, kcal].filter(Boolean).join(' · ') });
+  }
+  return out;
+}
+
 /** Seconds → "m:ss" (or "h:mm:ss"). */
 export function formatClock(sec) {
   const t = Math.max(0, Math.round(Number(sec) || 0));
@@ -484,6 +508,8 @@ export const timerBlock = (section) => (section === 'knee' ? 'knee' : section ==
 
 /** Spoken text for a rowing phase (SPEC §15, voice guidance): "Zügig rudern", "Locker rudern", "Ausrudern", drills by label. */
 export function rowPhaseSay(phase, content, session) {
+  // technique drills carry their own spoken text (row-warmup-10: „Nur Arme, Beine bleiben lang“ …)
+  if (phase?.say) return phase.set === 1 && phase.sets > 1 ? `Technik: ${phase.say}` : phase.say;
   const lab = rowPhaseLabel(phase, content, session);
   if (lab.big === 'Locker ausrudern') return 'Ausrudern';
   return lab.big;
@@ -507,6 +533,7 @@ export function rowPhaseLabel(phase, content, session) {
   if (isDrill) big = phase.label;
   else if (phase.kind === 'rest') big = phase.label === 'Pause' ? 'Pause' : 'Locker rudern';
   else if (entry?.section === 'cooldown') big = 'Locker ausrudern';
+  else if (entry?.finisher && phase.kind === 'work') big = 'Zügig rudern'; // v4 finisher intervals: fast / easy
   else if (phase.intensity === 'vigorous') big = 'Zügig rudern';
   else if (phase.intensity === 'easy') big = 'Locker rudern';
   else big = 'Gleichmäßig rudern';

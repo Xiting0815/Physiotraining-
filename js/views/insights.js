@@ -102,6 +102,7 @@ export function render(root, { store, content, query }) {
           ${kpi(html`<span class="num">${fmtNum(rep.load)}</span>${loadDelta == null ? '' : html`<small>${loadDelta > 0 ? '+' : ''}${loadDelta} %</small>`}`, 'Trainingslast')}
           ${kpi(html`${rep.avgNextDayPain == null ? '–' : html`<span class="num">${fmtNum(rep.avgNextDayPain, 1)}</span>${painDelta == null ? '' : html`<small>${painDelta < -0.2 ? '↓ besser' : painDelta > 0.2 ? '↑ höher' : '→ stabil'}</small>`}`}`, 'Knie Folgetag Ø')}
         </div>
+        ${rep.cardio.inSessionMinutes ? html`<p class="text-sm muted mt-2 mb-0">🚣 Rudern im Krafttraining (Aufwärmen/Finisher): <span class="num">${rep.cardio.inSessionMinutes}</span> Min${rep.cardio.inSessionDistanceM ? html` · <span class="num">${fmtDistance(rep.cardio.inSessionDistanceM)}</span>` : ''} – zählt nicht als Rudereinheit.</p>` : ''}
         ${['green', 'yellow', 'red', 'stop'].some((l) => rep.lights[l]) ? html`<div class="chip-row mt-4">
           ${['green', 'yellow', 'red', 'stop'].filter((l) => rep.lights[l]).map((l) => html`<span class="row" style="gap:4px">${trafficPill(l)}<span class="num text-sm">× ${rep.lights[l]}</span></span>`)}
         </div>` : ''}

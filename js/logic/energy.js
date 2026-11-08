@@ -1,5 +1,5 @@
 // Energy estimate per session (kcal). PURE. All numbers are ESTIMATES („Schätzung“). See docs/SPEC.md §12.6, §14.
-import { isCardioSession } from './stats.js';
+import { isCardioSession, inSessionRowingParts } from './stats.js';
 import { estimateExerciseSeconds } from './duration.js';
 
 /** Strength/short/custom: if the measured active time is below this share of the estimate, use the estimate. */
@@ -66,16 +66,52 @@ export function sessionKcal(session, weightKg, content) {
     const met = intensity === 'vigorous' || (isNum(rpe) && rpe >= 7) ? MET.rowVigorous : MET.rowModerate;
     return { kcal: Math.round(met * kg * h), method: 'met', met, label: ESTIMATE_LABEL, durationSource };
   }
-  const performed = (session?.exercises || []).filter((e) => !e.skipped && (e.sets || []).some((x) => x?.done));
+  // v4: rowing warm-up / finisher inside a strength session → own kcal (display value if entered, else rowing MET);
+  // the strength MET only applies to the remaining time.
+  const row = inSessionRowingKcal(session, kg, content);
+  const performed = (session?.exercises || []).filter((e) => e.section !== 'cardio' && !e.skipped && (e.sets || []).some((x) => x?.done));
   const knee = performed.filter((e) => e.section === 'knee').length;
   const share = performed.length ? knee / performed.length : 0.5;
   const met = r2((MET.kneeRehab * share + MET.strength * (1 - share)) * rpeFactor(session?.post?.rpe));
   // Wall-clock time can be far too short (e.g. sets ticked off quickly, session logged afterwards).
   // Fall back to the duration estimate of the performed sets when the clock shows < 50 % of it.
+  const strengthSec = Math.max(0, sec - row.sec);
   const estSec = performedSeconds(performed, content);
-  const useEstimate = estSec > 0 && sec < estSec * MIN_CLOCK_SHARE;
-  const hours = useEstimate ? estSec / 3600 : h;
-  return { kcal: Math.round(met * kg * hours), method: 'met', met, label: ESTIMATE_LABEL, durationSource: useEstimate ? 'estimate' : 'clock' };
+  const useEstimate = estSec > 0 && strengthSec < estSec * MIN_CLOCK_SHARE;
+  const hours = useEstimate ? estSec / 3600 : strengthSec / 3600;
+  const strengthKcal = performed.length || !row.sec ? met * kg * hours : 0;
+  return {
+    kcal: Math.round(strengthKcal + row.kcal), method: 'met', met, label: ESTIMATE_LABEL, durationSource: useEstimate ? 'estimate' : 'clock',
+    ...(row.sec > 0 || row.kcal > 0 ? { rowingKcal: Math.round(row.kcal), rowingSec: row.sec } : {}),
+  };
+}
+
+const ROW_MET = { easy: MET.rowEasy, moderate: MET.rowModerate, vigorous: MET.rowVigorous };
+
+/**
+ * v4: kcal of the rowing parts inside a strength session (warm-up + finisher). Per part: display kcal
+ * (`warmupRowing.kcalDisplay` / `finisherRowing.kcalDisplay`) if entered, else work seconds × MET of the level
+ * intensity + remaining (active rest) seconds × easy MET. → `{kcal, sec}`
+ */
+export function inSessionRowingKcal(session, weightKg, content) {
+  const kg = isNum(weightKg) && weightKg > 0 ? weightKg : DEFAULT_WEIGHT_KG;
+  const parts = inSessionRowingParts(session);
+  let kcal = 0;
+  for (const [key, fin, sec] of [['warmupRowing', false, parts.warmupSec], ['finisherRowing', true, parts.finisherSec]]) {
+    const disp = session?.[key]?.kcalDisplay;
+    if (isNum(disp) && disp > 0) { kcal += disp; continue; }
+    if (!(sec > 0)) continue;
+    let work = 0, metWork = MET.rowModerate;
+    for (const e of session.exercises || []) {
+      if (e?.section !== 'cardio' || e.skipped || !!e.finisher !== fin) continue;
+      const ex = (content?.exercises || []).find((x) => x.id === e.exerciseId);
+      metWork = ROW_MET[ex?.levels?.[e.level ?? 0]?.intensity] ?? MET.rowModerate;
+      for (const st of e.sets || []) if (st?.done && isNum(st.seconds)) work += st.seconds;
+    }
+    work = Math.min(work, sec);
+    kcal += (metWork * work + MET.rowEasy * (sec - work)) * kg / 3600;
+  }
+  return { kcal, sec: parts.warmupSec + parts.finisherSec };
 }
 
 /** Estimated seconds of the done sets (duration.js model) – 0 without content. */

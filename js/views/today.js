@@ -5,7 +5,7 @@
 // (Eigene-Workouts CTA when none exist yet, quote, last session, badge). The week ring replaces the reminder line.
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE, daysBetween, addDays, parseISODate } from '../util/date.js';
-import { nextWorkout, applyRecommendation, getWorkout, phaseWorkouts } from '../logic/progression.js';
+import { nextWorkout, applyRecommendation, getWorkout, phaseWorkouts, plannedWorkoutMinutes } from '../logic/progression.js';
 import { weeklyProgress, streak, sessionLight, dayOf, cardioProgress, sameDayLoadHint, isCardioSession } from '../logic/stats.js';
 import { XP, levelFor, LEVELS, dailyQuote, opCountdown, reminderText } from '../logic/motivation.js';
 import { taperActive } from '../logic/traffic-light.js';
@@ -113,7 +113,10 @@ export function render(root, { store, content }) {
     const active = state.activeSession;
     const activeW = active ? getWorkout(active.workoutId, content, state) : null;
     const w = activeW || nextWorkout(state, content.phases, content.workouts);
-    const wMin = w ? estimateWorkoutMinutes(w, content, state, settings) : 0;
+    // v4: same estimate as the session start (rowing warm-up per default, sets fitted to the budget)
+    const wPlan = active && Array.isArray(active.exercises) ? { minutes: estimateWorkoutMinutes(active, content, state, settings), rowWarmup: !!active.rowWarmup }
+      : w ? plannedWorkoutMinutes(w, state, content, settings) : { minutes: 0, rowWarmup: false };
+    const wMin = wPlan.minutes;
     const split = workoutSplit(w);
     const wk = weeklyProgress(sessions, settings.weeklyGoal, today);
     const st = streak(sessions, settings.weeklyGoal, today);
@@ -315,6 +318,7 @@ export function render(root, { store, content }) {
         <p class="hero__meta">
           <span>${raw(ICON.clock)}ca. ${wMin} Min</span>
           <span>${raw(ICON.list)}${split.total} Übungen</span>
+          ${wPlan.rowWarmup ? html`<span>🚣 mit 10 Min Rudern</span>` : ''}
           ${taper ? html`<span>🌙 Taper</span>` : ''}
           ${isPostOpPhase ? html`<span>🪑 im Sitzen/Liegen</span>` : ''}
         </p>

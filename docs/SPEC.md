@@ -1376,9 +1376,13 @@ p2/p3 `row-finisher-intervals`, none in p4).
   from them and returns `warmupMinutes`, `warmupCount`; `cardio.rowingLogs(sessions)`, `rowingTotals()` (now
   `{sessions, warmups, distanceM, durationSec, kcalDisplay}`), `rowingRecords()` and the `rowingDistance` badges
   include them. Personal hold/rep records and `totalHoldSeconds` ignore sections `warmup`/`cooldown`/`cardio`.
-- ⚠ Not in my files (for the UI/insights owners): `insights.weeklyReport().cardio.minutes` still counts only
-  rowing sessions; `traffic-light.recommendLevels` may add a „Höchste Stufe“ hold for `row-warmup-10`
-  (single level) – harmless, can be filtered by `e.section === 'cardio' && exercise.levels.length === 1`.
+- Resolved in the v4 integration: `insights.weeklyReport().cardio` adds `inSessionMinutes`, `inSessionDistanceM`,
+  `inSessionCount` (rowing inside strength sessions, shown separately); `recommendLevels` skips single-level rowing
+  entries inside strength sessions (no „Höchste Stufe“ card for `row-warmup-10`); `energy.sessionKcal` adds the
+  rowing parts (`inSessionRowingKcal`: display kcal, else work × level MET + active rest × easy MET) and applies the
+  strength MET only to the remaining time; the session UI never plans the finisher up front (`rowFinisher: false`)
+  but always asks after the strength part (`rowFinisherDefault` only preselects „Ja“); Heute/Plan use
+  `progression.plannedWorkoutMinutes` (= the start screen's estimate).
 
 ### 15.4 Duration model & budgets — `duration.js`
 

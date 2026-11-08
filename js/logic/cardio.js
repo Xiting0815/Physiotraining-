@@ -36,7 +36,7 @@ export function rowingPhases(plan, content) {
     if (!lvl) return;
     const base = { exerciseId: ex.id, entryIndex, targetSpm: lvl.targetSpm ?? null, targetRpe: lvl.targetRpe ?? null };
     if (Array.isArray(lvl.phases) && lvl.phases.length) {
-      lvl.phases.forEach((p, i) => out.push({ ...base, label: p.label, seconds: p.seconds, intensity: p.intensity ?? lvl.intensity ?? 'easy', kind: 'work', set: i + 1, sets: lvl.phases.length }));
+      lvl.phases.forEach((p, i) => out.push({ ...base, label: p.label, ...(p.say ? { say: p.say } : {}), seconds: p.seconds, intensity: p.intensity ?? lvl.intensity ?? 'easy', kind: 'work', set: i + 1, sets: lvl.phases.length }));
       return;
     }
     const sets = Math.max(1, e.plannedSets ?? lvl.sets ?? 1);

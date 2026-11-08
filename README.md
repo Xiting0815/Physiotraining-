@@ -64,6 +64,35 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
 - **Vorbereitung auf die Krücken** – Stütz-Dips, Trizeps, Abstützen im Sitz und Einbeinstand bereits vor der OP.
 - **Offline** – nach dem ersten Laden komplett offline nutzbar, installierbar als App.
 
+### Neu in Version 4
+
+- **Sprachansagen** – eine deutsche Stimme führt durch jede Übung: „Bereit machen: Übungsname … Drei, Zwei, Eins –
+  Anspannen“, „Loslassen“, „Seite wechseln“, „Pause, 45 Sekunden“, „Übung fertig. Nächste Übung: …“ – ohne
+  Wiederholungen laut mitzuzählen. Unter **Mehr → Sprachansagen** stellst du Tempo und Lautstärke ein und kannst mit
+  **„Stimme testen“** prüfen, ob dein Handy eine deutsche Stimme hat (sonst gibt es unterschiedliche Signaltöne).
+- **5 Sekunden „Bereit machen“** vor jedem Satz und **mindestens 5 Sekunden „Loslassen/Entspannen“** zwischen zwei
+  Halte-Wiederholungen – Zeit, um in Position zu kommen und kurz zu lockern.
+- **Mobilisation vorher, Dehnen nachher** – jedes Krafttraining startet mit 3–4 Minuten knieschonender Mobilisation
+  (Beinpendel mit Wandkontakt, Hüftkreisen, Band-Dislocates, Rotation der Brustwirbelsäule – kein tiefes Beugen des
+  linken Knies, kein Knien) und endet mit statischem Dehnen (Hüftbeuger in kurzer Schrittstellung, Waden,
+  Brust/Lat, Unterarme für Zug- und Bogenhand …). Ehrlich gesagt: **Dehnen hilft kaum gegen Muskelkater** – es ist
+  gut für Beweglichkeit, Haltung und zum Runterkommen.
+- **4-7-8-Atmung** zum Abschluss jedes Krafttrainings: 4 s einatmen, 7 s halten, 8 s ausatmen – ruhig angesagt
+  („Einatmen / Halten / Ausatmen“), ohne Pieptöne. Bei Schwindel einfach normal weiteratmen.
+- **Rudern als Aufwärmen** – in Phase 1–3 kann das Krafttraining mit 10 Minuten lockerem Rudern beginnen (2 Minuten
+  Technik: nur Arme → Arme + Oberkörper → halber Beinweg → ganzer Schlag, dann 8 Minuten locker). Vor jedem Start
+  umschaltbar („Mit 10 Min. Rudern aufwärmen“, Dauer „ca. N Min“ passt sich live an), Standard unter
+  **Mehr → Darstellung & Training**. Danach optional Zeit, Strecke und kcal vom Display eintragen.
+- **Ruder-Finisher bei grüner Ampel** – nach dem Kraftteil fragt die App „Noch 5–10 Min. rudern?“, aber nur, wenn
+  dein Knie heute im grünen Bereich war (kein Schmerz über 2/10, keine Schwellung, kein Blockieren/Wegknicken, kein
+  stechender Schmerz). Aufwärm- und Finisher-Minuten zählen für Ruder-Minuten, Strecke und Kalorien, aber nicht als
+  eigene Rudereinheit im Wochenziel.
+- **Lange Ruder-Einheiten fürs Abnehmen** – „Rudern – Grundlage lang“ (25–29 Minuten, locker bis gleichmäßig) in
+  jeder Phase vor der OP. Wichtig und ehrlich: Kalorien kommen vor allem aus dem gesamten Wochenumfang – **der größte
+  Hebel beim Abnehmen ist die Ernährung**; die App zeigt Trainings-Kalorien nur als Schätzung.
+- **Tipp: App im Vordergrund lassen.** Der Bildschirm bleibt während des Trainings an. Wenn du das Handy sperrst oder
+  zu einer anderen App wechselst, kann Android die Sprachansagen anhalten.
+
 ### Version 3.1 – Fokus Training
 
 Die Importe (RENPHO-Screenshot, Samsung-Health-Export, Teilen an die App), das Gesundheits-Tagebuch und das

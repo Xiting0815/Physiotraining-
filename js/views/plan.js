@@ -1,7 +1,7 @@
 // Plan – see docs/SPEC.md §3.4, §5.3, §12.9, §12.10, §12.12.
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE } from '../util/date.js';
-import { phaseProgress, nextWorkout, levelOf, phaseWorkouts, exerciseAvailable } from '../logic/progression.js';
+import { phaseProgress, nextWorkout, levelOf, phaseWorkouts, exerciseAvailable, plannedWorkoutMinutes } from '../logic/progression.js';
 import { estimateWorkoutMinutes } from '../logic/duration.js';
 import { cardioMainLabel } from '../logic/cardio.js';
 import { duplicateAsCustom } from '../logic/custom-workouts.js';
@@ -84,7 +84,9 @@ export function render(root, { store, content, navigate }) {
     const schedOf = (id) => sched?.find((x) => x.phaseId === id) ?? null;
     const hint = scheduleHint(phases, settings, state, today);
     const pw = phaseWorkouts(phase, content.workouts);
-    const minutes = (w) => estimateWorkoutMinutes(w, content, state, settings);
+    // v4: as planned at the session start (rowing warm-up per default, fitted to the time budget)
+    const minutes = (w) => (w.phaseId === state.phaseId ? plannedWorkoutMinutes(w, state, content, settings).minutes : estimateWorkoutMinutes(w, content, state, settings));
+    const withRow = (w) => w.phaseId === state.phaseId && plannedWorkoutMinutes(w, state, content, settings).rowWarmup;
     const nextGate = nextPhase ? canEnterPhase(nextPhase, settings, state, today) : { ok: true, reasons: [] };
     const post = postOpStatus(settings, state, today);
 
@@ -119,7 +121,7 @@ export function render(root, { store, content, navigate }) {
       const lbl = kind === 'cardio' ? cardioMainLabel(w, content, state) : '';
       const sub = kind === 'cardio'
         ? `ca. ${minutes(w)} Min${lbl ? ` · ${lbl}` : ''}`
-        : `ca. ${minutes(w)} Min · ${split.knee} Knie · ${split.archery} Bogen`;
+        : `ca. ${minutes(w)} Min${withRow(w) ? ' inkl. 10 Min Rudern' : ''} · ${split.knee} Knie · ${split.archery} Bogen`;
       return html`<details class="card pv-workout" data-wid="${w.id}" ${open.has(w.id) ? 'open' : ''}>
         <summary class="pv-workout__head" style="margin:0;list-style:none">
           <span class="pv-letter${isNext ? ' is-next' : ''}" ${kind === 'cardio' ? html`style="background:var(--accent-soft);color:var(--accent-ink)"` : ''}>${badge}</span>
@@ -261,7 +263,7 @@ export function render(root, { store, content, navigate }) {
       ${pw.short ? html`<h2 class="section-title">Kurztraining <span class="count">~15 Min</span></h2>${workoutCard(pw.short, KIND_ICON.short)}` : ''}
 
       ${pw.cardio.length ? html`<h2 class="section-title">Rudern</h2>
-        <p class="pv-count mt-0">Separate Ausdauer-Einheiten, 3× pro Woche. Die Schmerz-Ampel gilt auch beim Rudern.</p>
+        <p class="pv-count mt-0">Separate Ausdauer-Einheiten, 3× pro Woche. Die Schmerz-Ampel gilt auch beim Rudern. „Grundlage lang“ (25–29 Min) hilft beim Abnehmen – die Kalorien kommen vor allem aus dem Wochenumfang, der größte Hebel bleibt die Ernährung.</p>
         ${pw.cardio.map((w) => workoutCard(w, KIND_ICON.cardio))}`
         : isPostOp ? html`<div class="pv-callout pv-callout--warn"><span class="pv-callout__icon" aria-hidden="true">🚣</span><p class="text-sm">Rudern ist in der Entlastungsphase nicht erlaubt – es kommt erst wieder, wenn dein Team es freigibt.</p></div>` : ''}
 

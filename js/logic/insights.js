@@ -2,7 +2,7 @@
 // Correlations are descriptive only (Pearson r, ≥ MIN_POINTS pairs) and worded cautiously – never causal.
 // See docs/SPEC.md §12.11, §14 (v3.1: health-log / weight insights removed).
 import { addDays, startOfIsoWeek, toISODate } from '../util/date.js';
-import { cardioSessions, dayOf, doneSessions, isCardioSession, sessionLight, strengthSessions } from './stats.js';
+import { cardioSessions, dayOf, doneSessions, inSessionRowingSec, isCardioSession, sessionLight, strengthSessions } from './stats.js';
 import { phaseProgress, levelOf } from './progression.js';
 import { sessionDurationSec, sessionKcal, bodyWeightKg } from './energy.js';
 
@@ -109,7 +109,15 @@ export function weeklyReport(data, content, today, { weekOf } = {}) {
   return {
     weekStart: wk, weekEnd: end,
     strength: { done: strength.length, goal },
-    cardio: { done: cardio.length, goal: cGoal, minutes: Math.round(cardio.reduce((a, s) => a + (s.rowing?.durationSec ?? 0), 0) / 60), distanceM: cardio.reduce((a, s) => a + (s.rowing?.distanceM ?? 0), 0) },
+    cardio: {
+      done: cardio.length, goal: cGoal,
+      minutes: Math.round(cardio.reduce((a, s) => a + (s.rowing?.durationSec ?? 0), 0) / 60),
+      distanceM: cardio.reduce((a, s) => a + (s.rowing?.distanceM ?? 0), 0),
+      // v4: rowing inside strength sessions (warm-up + finisher) – reported separately, not part of the cardio goal
+      inSessionMinutes: Math.round(strength.reduce((a, s) => a + inSessionRowingSec(s), 0) / 60),
+      inSessionDistanceM: strength.reduce((a, s) => a + (s.warmupRowing?.distanceM ?? 0) + (s.finisherRowing?.distanceM ?? 0), 0),
+      inSessionCount: strength.filter((s) => inSessionRowingSec(s) > 0).length,
+    },
     lights, avgPrePain: prePain(week), avgNextDayPain: avgNd, prevAvgNextDayPain: prevNd,
     load: week.reduce((a, s) => a + sessionLoad(s), 0), prevLoad: prev.reduce((a, s) => a + sessionLoad(s), 0),
     kcal, highlights, notes,

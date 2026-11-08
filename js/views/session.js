@@ -6,7 +6,7 @@
 // The active session lives in store.state.activeSession and is persisted after every tap
 // (cursor {index, set, step}); reloading #/session resumes it. Summary: #/session?summary=<id>.
 import { html, raw, render as paint } from '../render.js';
-import { nextWorkout, buildSessionPlan, getWorkout, workoutKind } from '../logic/progression.js';
+import { nextWorkout, buildSessionPlan, getWorkout, workoutKind, canRowWarmup, finisherPlan, finisherEligible, appendFinisher } from '../logic/progression.js';
 import { estimateWorkoutMinutes } from '../logic/duration.js';
 import { rowingPhases, validateRowing, INTENSITY_LABELS } from '../logic/cardio.js';
 import { sameDayLoadHint } from '../logic/stats.js';
@@ -17,6 +17,7 @@ import { unlock, beep, vibrate } from '../util/audio.js';
 import { say, cancel as voiceCancel, unlock as voiceUnlock, countdownWord, voiceActive, cueVibrate } from '../util/voice.js';
 import { targetFace, confetti } from '../components/celebrate.js';
 import { xpBar } from '../components/charts.js';
+import { cueWordsFor } from '../logic/cues.js';
 import * as H from './session-helpers.js';
 
 export const title = 'Training';
@@ -46,6 +47,8 @@ export function render(root, ctx) {
   const titleOf = (s) => H.sessionTitle(s, content, store.getState());
   const isCardio = () => session?.kind === 'cardio';
   const phaseOf = (s) => content.phases.find((p) => p.id === s?.phaseId);
+  /** v4: rowing warm-up / finisher entry inside a strength-type session (runs with the rowing timer). */
+  const isRowEntry = (e) => !!e && e.section === 'cardio' && !isCardio();
 
   /** @type {any} working copy of the active session */
   let session = null;
@@ -175,6 +178,9 @@ export function render(root, ctx) {
     const vis = session.exercises.filter(H.isVisible);
     const count = (sec) => vis.filter((e) => e.section === sec).length;
     const minutes = estimateWorkoutMinutes(session, content, store.getState(), settings());
+    // v4: rowing warm-up toggle (p1–p3 strength only, before any set is done)
+    const rowOpt = !cardio && session.kind === 'strength' && !!w && canRowWarmup(w, store.getState(), content)
+      && !session.exercises.some((e) => H.doneCount(e) > 0);
     const loadHint = sameDayLoadHint(store.getSessions(), todayISO(), cardio ? 'cardio' : 'strength');
     const eyebrow = t.kind === 'strength' ? (phase?.name ?? '') : `${t.kindLabel}${phase ? ` · ${phase.name}` : ''}`;
     paint(root, html`
@@ -188,13 +194,17 @@ export function render(root, ctx) {
         </div>
         ${w?.description ? html`<p class="hero__meta" style="display:block;margin-bottom:var(--s-2)">${w.description}</p>` : ''}
         <p class="hero__meta">
-          <span>${raw(ICON.clock)}ca. ${minutes} Min</span>
-          <span>${raw(ICON.list)}${cardio ? `${rowingPhases(session, content).length} Abschnitte` : `${vis.length} Übungen`}</span>
+          <span>${raw(ICON.clock)}ca. <span class="num" data-min>${minutes}</span>&nbsp;Min</span>
+          <span>${raw(ICON.list)}${cardio ? `${rowingPhases(session, content).length} Abschnitte` : html`<span class="num" data-count>${vis.length}</span>&nbsp;Übungen`}</span>
         </p>
         ${cardio ? '' : html`<div class="hero__split" aria-hidden="true">
           <span style="flex:${count('warmup') || 0.5}"></span><span class="is-knee" style="flex:${count('knee') || 0.01}"></span><span class="is-archery" style="flex:${count('archery') || 0.01}"></span><span style="flex:${count('cooldown') || 0.5}"></span>
         </div>`}
       </section>
+      ${rowOpt ? html`<section class="card ses-rowopt">
+        <label class="switch-row"><span>🚣 Mit 10 Min. Rudern aufwärmen<small class="muted ses-rowopt__hint" style="display:block;font-weight:400;margin-top:2px" data-row-hint>${session.rowWarmup ? 'Ersetzt das allgemeine Aufwärmen – danach kurz Schultern & Brustwirbelsäule für den Bogen.' : 'Aus: klassisches Mobilisations-Aufwärmen (ca. 3–4 Min).'}</small></span>
+          <input type="checkbox" class="switch" data-f="rowWarmup" ${session.rowWarmup ? 'checked' : ''}></label>
+      </section>` : ''}
       ${session.taper ? html`<div class="banner banner--accent"><span class="banner__icon">🗓️</span><span class="banner__body"><span class="banner__title">OP-Woche</span><span class="banner__text">Weniger Umfang, gleiche Qualität.</span></span></div>` : ''}
       ${loadHint ? html`<div class="banner banner--gold"><span class="banner__icon">⚖️</span><span class="banner__body"><span class="banner__title">Heute schon trainiert</span><span class="banner__text">${loadHint}</span></span></div>` : ''}
       ${postOp && phase?.redFlagNote ? html`<div class="banner" style="--c:var(--stop);--c-soft:var(--stop-soft);--c-ink:var(--stop-ink)"><span class="banner__icon">🩺</span><span class="banner__body"><span class="banner__title">Entlastungsphase – Warnzeichen</span><span class="banner__text">${phase.redFlagNote}</span></span></div>` : ''}
@@ -220,6 +230,7 @@ export function render(root, ctx) {
     onChange = (e) => {
       const t = /** @type {any} */ (e.target);
       if (e.type === 'input') return;
+      if (t.dataset?.f === 'rowWarmup') { setRowWarmup(t.checked); return; }
       if (t.tagName === 'PT-PAIN-SCALE' && t.dataset.f === 'pain') draft.pain = e.detail?.value ?? t.value;
       else if (t.name === 'pre-swelling') draft.swelling = Number(t.value);
       else if (t.dataset?.f === 'locking') draft.mechanical.locking = t.checked;
@@ -262,6 +273,22 @@ export function render(root, ctx) {
       const a = assess(store.getSessions().filter((s) => s.id !== session.id));
       if (a.showCard) showStopCard(a, false);
     }
+  }
+
+  /** v4: rebuild the plan with/without the rowing warm-up (start screen toggle); updates „ca. N Min“ live. */
+  function setRowWarmup(on) {
+    const w = workoutOf(session);
+    const data = store.get();
+    if (!w) return;
+    const keep = { id: session.id, kind: session.kind, workoutName: session.workoutName, pausedMs: session.pausedMs || 0, startedAt: session.startedAt, pre: session.pre, cursor: session.cursor };
+    session = Object.assign(buildSessionPlan(w, data.state, content, { taper: !!session.taper, history: data.sessions, settings: data.settings, rowWarmup: on, rowFinisher: false }), keep);
+    if (saved) persist();
+    const min = root.querySelector('[data-min]');
+    if (min) min.textContent = String(estimateWorkoutMinutes(session, content, data.state, settings()));
+    const cnt = root.querySelector('[data-count]');
+    if (cnt) cnt.textContent = String(session.exercises.filter(H.isVisible).length);
+    const hint = root.querySelector('[data-row-hint]');
+    if (hint) hint.textContent = session.rowWarmup ? 'Ersetzt das allgemeine Aufwärmen – danach kurz Schultern & Brustwirbelsäule für den Bogen.' : 'Aus: klassisches Mobilisations-Aufwärmen (ca. 3–4 Min).';
   }
 
   function showStopCard(a, scroll = true) {
@@ -505,11 +532,90 @@ export function render(root, ctx) {
   }
 
   function go(target, from) {
+    if (maybeOfferFinisher(target, from)) return;
+    goTo(target, from);
+  }
+
+  function goTo(target, from) {
     if (target < 0) session.cursor = { index: from, set: 0, step: 'post' };
     else session.cursor = { index: target, set: H.doneCount(session.exercises[target]), step: 'exercise' };
     persist();
     show();
     scrollTop();
+  }
+
+  /**
+   * v4 (SPEC §15.6): leaving the strength part (next target is the cool-down or the end) → offer the rowing
+   * finisher once, only at a green knee light (finisherEligible) and when the phase has one (finisherPlan).
+   * @returns {boolean} true when the offer screen is shown
+   */
+  function maybeOfferFinisher(target, from) {
+    if (isCardio() || (session.kind ?? 'strength') !== 'strength' || session.finisherAsked || session.exercises.some((e) => e.finisher)) return false;
+    const cool = session.exercises.findIndex((e) => e.section === 'cooldown');
+    const boundary = cool < 0 ? session.exercises.length : cool;
+    if (!(from < boundary && (target < 0 || target >= boundary))) return false;
+    const f = finisherPlan(workoutOf(session), store.getState(), content, { taper: !!session.taper });
+    if (!f) return false;
+    session.finisherAsked = true;
+    const el = finisherEligible(session, settings());
+    if (!el.ok) { session.finisherSkipped = el.reasons; return false; }
+    delete session.finisherSkipped;
+    session.cursor = { index: from, set: 0, step: 'finisher', target };
+    persist();
+    show();
+    scrollTop();
+    return true;
+  }
+
+  function renderFinisherOffer() {
+    const from = session.cursor.index;
+    const target = session.cursor.target ?? -1;
+    const w = workoutOf(session);
+    const f = finisherPlan(w, store.getState(), content, { taper: !!session.taper });
+    const ex = f && exById(f.exerciseId);
+    if (!f || !ex) { session.cursor = { index: from, set: 0, step: 'exercise' }; goTo(target, from); return; }
+    const lvl = ex.levels[f.level] || {};
+    const yes = !!settings().rowFinisherDefault;
+    paint(root, html`
+      ${topBar(titleOf(session).title, 'Kraftteil geschafft')}
+      <section class="card card--accent ses-fin mt-2">
+        <span class="traffic traffic--green">${LIGHT_LABELS.green}</span>
+        <h1 class="ses-big-q mt-4">Noch 5–10 Min. rudern? 🚣</h1>
+        <p>Dein Knie war heute im grünen Bereich. Ein kurzer Ruder-Finisher bringt extra Ausdauer und Kalorien – ganz freiwillig.</p>
+        <p class="hero__meta mb-0"><span>${raw(ICON.clock)}ca. ${f.minutes} Min</span><span>${lvl.label || ex.name}</span></p>
+      </section>
+      <div class="ses-choices">
+        <button type="button" class="btn ${yes ? 'btn--accent' : 'btn--outline'} btn--block btn--session" data-act="fin-yes"><span aria-hidden="true">🚣</span><span>Ja, noch rudern<small>${ex.name}</small></span></button>
+        <button type="button" class="btn ${yes ? 'btn--outline' : 'btn--primary'} btn--block btn--session" data-act="fin-no"><span aria-hidden="true">🧘</span><span>Nein, weiter zum Dehnen<small>Cool-down mit 4-7-8-Atmung</small></span></button>
+      </div>
+      <p class="text-xs muted mt-4">Stopp bei Schmerz &gt; 5/10, stechendem Schmerz, Blockieren oder Wegknicken – die Ampel gilt auch beim Finisher.</p>
+      <button type="button" class="btn btn--ghost btn--block" data-act="fin-back">Zurück zur letzten Übung</button>
+    `);
+    setCta(false);
+    say('Kraftteil geschafft. Noch fünf bis zehn Minuten rudern?', { priority: 'high', interrupt: true, cue: 'exercise-done' });
+    onChange = () => {};
+    actions = {
+      menu: openMenu,
+      'fin-yes': () => {
+        unlock();
+        voiceUnlock();
+        session = appendFinisher(session, w, store.getState(), content);
+        session.finisherAccepted = true;
+        const i = session.exercises.findIndex((e) => e.finisher);
+        session.cursor = { index: i, set: 0, step: 'exercise' };
+        persist();
+        show();
+        scrollTop();
+      },
+      'fin-no': () => {
+        session.finisherDeclined = true;
+        goTo(target, from);
+      },
+      'fin-back': () => {
+        session.finisherAsked = false;
+        goTo(from, from);
+      },
+    };
   }
 
   function refreshSets(entry, dose) {
@@ -561,8 +667,12 @@ export function render(root, ctx) {
     const idx = session.exercises.indexOf(entry);
     const n = H.nextIndex(session, idx < 0 ? session.cursor.index : idx);
     const nextEx = n >= 0 ? exById(session.exercises[n].exerciseId) : null;
+    const ex = exById(entry.exerciseId);
+    // holds (stretches/isometrics) end with the release word first: „Lösen. Übung fertig …“
+    const rw = ex?.type === 'hold' ? cueWordsFor(ex).release : '';
+    const release = rw ? `${rw}. ` : '';
     cueVibrate('exercise-done');
-    say(H.exerciseDoneAnnouncement(nextEx?.name), { priority: 'high', interrupt: true, cue: 'exercise-done' });
+    say(release + H.exerciseDoneAnnouncement(nextEx?.name), { priority: 'high', interrupt: true, cue: 'exercise-done' });
   }
 
   /** Does this exercise run its sets through the work timer (prep + cues)? */
@@ -698,18 +808,36 @@ export function render(root, ctx) {
   }
 
   function renderRow() {
-    const phases = rowingPhases(session, content);
-    if (!phases.length) { session.cursor = { index: 0, set: 0, step: 'rowlog' }; persist(); return show(); }
+    // v4: inside a strength session only the current rowing entry (warm-up or finisher) runs with this timer
+    const seg = !isCardio();
+    const segIdx = seg ? session.cursor.index : -1;
+    const segEntry = seg ? session.exercises[segIdx] : null;
+    const phases = seg
+      ? rowingPhases({ exercises: session.exercises.map((e, i) => (i === segIdx ? { ...e, skipped: false } : { skipped: true })) }, content)
+      : rowingPhases(session, content);
+    if (!phases.length) {
+      if (seg) { goTo(H.nextIndex(session, segIdx), segIdx); return; }
+      session.cursor = { index: 0, set: 0, step: 'rowlog' }; persist(); return show();
+    }
+    if (seg && session.rowTimer?.entry !== segIdx) {
+      // a rowing part that was already rowed earlier (navigated back) shows as done; values stay untouched
+      const rowedBefore = H.doneCount(segEntry) > 0;
+      session.rowTimer = { ...H.newRowTimer(), entry: segIdx, ...(rowedBefore ? { done: true, restored: true } : {}) };
+    }
     const t = session.rowTimer = session.rowTimer || H.newRowTimer();
-    const mainIdx = H.mainCardioIndex(session);
+    const mainIdx = seg ? segIdx : H.mainCardioIndex(session);
     const main = session.exercises[mainIdx] || null;
     const mainEx = main && exById(main.exerciseId);
     const techEx = mainEx || exById(session.exercises[0]?.exerciseId);
     const title = titleOf(session).title;
+    const segName = segEntry?.finisher ? 'Ruder-Finisher' : 'Rudern zum Aufwärmen';
     screen = { lastSec: null, phaseIdx: -1, loop: 0, wake: null, rowRunning: false };
     paint(root, html`
-      ${topBar(title, 'Rudern', { xp: false })}
-      <section class="card row-timer" data-slot="rt" aria-live="off">
+      ${topBar(title, seg ? segName : 'Rudern', { xp: false })}
+      ${seg ? progressBar(segIdx, 'exercise') : ''}
+      ${seg ? html`<div class="row row--between"><div class="block-header block-header--cardio" style="margin:0"><span class="block-header__dot"></span>${segEntry.finisher ? 'Finisher · Rudern' : 'Aufwärmen · Rudern'}</div>
+        <button type="button" class="btn btn--ghost btn--sm" data-act="overview">${raw(ICON.list)}Übersicht</button></div>` : ''}
+      <section class="card row-timer ${seg ? 'mt-4' : ''}" data-slot="rt" aria-live="off">
         <p class="eyebrow" data-r="eyebrow"></p>
         <h1 class="row-phase" data-r="big"></h1>
         <p class="row-sub" data-r="sub"></p>
@@ -739,6 +867,7 @@ export function render(root, ctx) {
           ${techEx?.kneeNote ? html`<p class="ses-consult mb-0">🦵 ${techEx.kneeNote}</p>` : ''}
         </div>
       </details>
+      ${seg && !t.done ? html`<button type="button" class="btn btn--ghost btn--block" data-act="row-omit">${segEntry.finisher ? 'Finisher auslassen' : 'Rudern heute auslassen'}</button>` : ''}
       <div class="sticky-cta"><button type="button" class="btn btn--primary btn--block btn--session" data-act="row-end" data-r="end">Rudern beenden</button></div>
     `);
     setCta(true);
@@ -751,12 +880,12 @@ export function render(root, ctx) {
         card.className = 'card row-timer row-timer--done';
         $('eyebrow').textContent = 'Alle Abschnitte geschafft';
         $('big').textContent = 'Geschafft! 🎉';
-        $('sub').textContent = 'Stark gerudert. Jetzt noch die Werte vom Display eintragen.';
+        $('sub').textContent = seg ? 'Stark gerudert. Werte vom Display kannst du gleich kurz eintragen (optional).' : 'Stark gerudert. Jetzt noch die Werte vom Display eintragen.';
         $('targets').innerHTML = '';
         $('next').hidden = true;
         $('toggle').hidden = true;
         $('skip').hidden = true;
-        $('end').textContent = 'Werte eintragen';
+        $('end').textContent = seg ? 'Weiter' : 'Werte eintragen';
         $('end').classList.add('ses-pulse');
         return;
       }
@@ -841,7 +970,7 @@ export function render(root, ctx) {
       screen.rowRunning = false;
       releaseWake();
       vibrate([200, 100, 200]);
-      say('Rudern geschafft. Stark! Jetzt noch die Werte vom Display eintragen.', { priority: 'high', interrupt: true, cue: 'exercise-done' });
+      say(seg ? (segEntry.finisher ? 'Finisher geschafft. Stark! Gleich geht es zum Dehnen.' : 'Aufwärmen geschafft. Gleich geht es weiter.') : 'Rudern geschafft. Stark! Jetzt noch die Werte vom Display eintragen.', { priority: 'high', interrupt: true, cue: 'exercise-done' });
       persist();
       paintPhase(true);
       paintClock();
@@ -873,12 +1002,13 @@ export function render(root, ctx) {
       releaseWake();
       const log = t.log.slice();
       if (!t.done) log[t.idx] = Math.min(phases[t.idx].seconds, Math.round(H.rowPhaseElapsed(t, Date.now()) / 1000));
-      H.applyRowingLog(session, phases, log, content);
+      if (!t.restored) H.applyRowingLog(session, phases, log, content);
       const rowedMain = main && !main.skipped;
       if (rowedMain && main.painDuring == null) {
         nudge(root.querySelector('[data-slot="pain"]'), 'Kurz eintragen: Knieschmerz beim Rudern.');
         return;
       }
+      if (seg && main?.skipped) { persist(); goTo(H.nextIndex(session, segIdx), segIdx); return; }
       session.cursor = { index: Math.max(0, mainIdx), set: 0, step: 'rowlog' };
       persist();
       show();
@@ -905,6 +1035,16 @@ export function render(root, ctx) {
     };
     actions = {
       menu: () => { if (screen.rowRunning) setRunning(false); openMenu(); },
+      overview: () => { if (screen.rowRunning) setRunning(false); openOverview(); },
+      'row-omit': () => {
+        screen.cleanupRow?.();
+        voiceCancel();
+        if (H.rowingTimes(t, phases, Date.now()).rowed > 0) { goLog(); return; }
+        segEntry.skipped = true;
+        session.rowTimer = null;
+        H.toast(segEntry.finisher ? 'Finisher ausgelassen' : 'Rudern ausgelassen', { icon: '↷', kind: '' });
+        goTo(H.nextIndex(session, segIdx), segIdx);
+      },
       'row-toggle': () => setRunning(!screen.rowRunning),
       'row-skip': () => {
         if (t.done) return;
@@ -965,7 +1105,79 @@ export function render(root, ctx) {
     ['maxHr', 'Max. Puls', 'bpm', 'numeric', 'optional'],
   ];
 
+  /** v4: quick display values (time, distance, kcal) of the rowing warm-up / finisher → warmupRowing / finisherRowing. */
+  function renderSegRowLog() {
+    const idx = session.cursor.index;
+    const entry = session.exercises[idx];
+    if (!entry) { goTo(-1, idx); return; }
+    const key = entry.finisher ? 'finisherRowing' : 'warmupRowing';
+    const fromTimer = session.rowTimer?.entry === idx && !session.rowTimer?.restored ? H.rowedSecondsFromLog(session.rowTimer.log) : 0;
+    const rowed = fromTimer || (entry.sets || []).reduce((a, x) => a + (x?.done && typeof x.seconds === 'number' ? x.seconds : 0), 0);
+    const r = session[key] || {};
+    const draft = screen.rowDraft = screen.rowDraft || {
+      duration: r.durationSec != null ? H.formatClock(r.durationSec) : rowed >= 60 ? H.formatClock(rowed) : '',
+      distanceM: r.distanceM != null ? String(r.distanceM) : '',
+      kcalDisplay: r.kcalDisplay != null ? String(r.kcalDisplay) : '',
+    };
+    const field = (k, label, unit, mode, ph) => html`<label class="field">
+        <span class="field__label">${label} <span class="muted">(${unit})</span></span>
+        <input class="input" type="text" inputmode="${mode}" autocomplete="off" data-row="${k}" value="${draft[k]}" placeholder="${ph}">
+        <span class="ses-err" data-err="${k}" hidden></span></label>`;
+    paint(root, html`
+      ${topBar(titleOf(session).title, entry.finisher ? 'Finisher · Werte' : 'Aufwärmen · Werte')}
+      <h1 class="ses-big-q">Kurz die Werte vom Display? 📟</h1>
+      <p class="muted">Optional – ohne Eingabe zählt die Zeit vom Timer. Mit Kalorien vom Display wird die Schätzung genauer.</p>
+      <section class="card row-form stack">
+        <label class="field">
+          <span class="field__label">Zeit <span class="muted">(Min:Sek)</span></span>
+          <input class="input" type="text" inputmode="numeric" autocomplete="off" data-row="duration" value="${draft.duration}" placeholder="z. B. 10:00">
+          <span class="field__hint">${rowed > 0 ? `Vom Timer: ${H.formatClock(rowed)} gerudert` : 'Leer lassen = Zeit vom Timer'}</span>
+          <span class="ses-err" data-err="durationSec" hidden></span>
+        </label>
+        <div class="grid-2">${field('distanceM', 'Distanz', 'm', 'numeric', 'z. B. 2100')}${field('kcalDisplay', 'Kalorien', 'kcal', 'numeric', 'z. B. 80')}</div>
+      </section>
+      <div class="sticky-cta"><div class="ses-cta">
+        <button type="button" class="btn btn--outline btn--prev" data-act="prev" aria-label="Zurück zum Timer">${raw(ICON.prev)}</button>
+        <button type="button" class="btn btn--primary" data-act="rowlog-save">Speichern &amp; weiter</button>
+      </div></div>
+    `);
+    setCta(true);
+    onChange = (e) => {
+      const el = /** @type {any} */ (e.target);
+      const k = el.dataset?.row;
+      if (!k) return;
+      draft[k] = el.value;
+      const err = root.querySelector(`[data-err="${k === 'duration' ? 'durationSec' : k}"]`);
+      if (err) err.hidden = true;
+    };
+    actions = {
+      menu: openMenu,
+      prev: () => { session.cursor = { index: idx, set: 0, step: 'exercise' }; persist(); show(); scrollTop(); },
+      'rowlog-save': () => {
+        const durationSec = H.parseClock(draft.duration);
+        const inp = { durationSec: Number.isNaN(durationSec) ? 'x' : durationSec, distanceM: draft.distanceM, kcalDisplay: draft.kcalDisplay };
+        const res = validateRowing(inp);
+        root.querySelectorAll('[data-err]').forEach((x) => { x.hidden = true; });
+        if (!res.ok) {
+          let first = null;
+          for (const [k, msg] of Object.entries(res.errors)) {
+            const el = root.querySelector(`[data-err="${k}"]`);
+            if (el) { el.textContent = k === 'durationSec' && Number.isNaN(durationSec) ? 'Bitte als Min:Sek eingeben, z. B. 10:00.' : msg; el.hidden = false; first = first || el; }
+          }
+          nudge(first?.closest('.field'), 'Bitte die markierten Werte prüfen.');
+          return;
+        }
+        const value = { ...res.value };
+        if (value.durationSec == null && rowed > 0) value.durationSec = rowed; // incl. active rest of intervals
+        session[key] = value; // never session.rowing on strength sessions (SPEC §15.3)
+        session.rowTimer = null;
+        go(H.nextIndex(session, idx), idx);
+      },
+    };
+  }
+
   function renderRowLog() {
+    if (!isCardio()) { renderSegRowLog(); return; }
     const title = titleOf(session).title;
     const rowed = H.rowedSecondsFromLog(session.rowTimer?.log);
     const r = session.rowing || {};
@@ -1117,7 +1329,7 @@ export function render(root, ctx) {
       lastSec = e.section;
       const d = H.doneCount(e);
       const status = !H.isVisible(e) ? 'heute ausgelassen' : e.skipped ? 'übersprungen' : `${d}/${e.plannedSets ?? 1} Sätze`;
-      const icon = e.section === 'archery' ? '🏹' : e.section === 'knee' ? '🦵' : e.section === 'warmup' ? '🔥' : '🧘';
+      const icon = e.section === 'archery' ? '🏹' : e.section === 'knee' ? '🦵' : e.section === 'warmup' ? '🔥' : e.section === 'cardio' ? '🚣' : '🧘';
       return html`${head}<li><button type="button" class="list-item ${i === cur ? 'is-cur' : ''}" ${H.isVisible(e) ? html`data-value="${i}"` : 'disabled'} style="width:100%;text-align:left">
         <span class="list-item__icon ${e.section === 'archery' ? 'list-item__icon--accent' : e.section === 'knee' ? '' : 'list-item__icon--neutral'}">${d >= (e.plannedSets ?? 1) ? '✓' : icon}</span>
         <span class="list-item__body"><span class="list-item__title">${ex?.name ?? e.exerciseId}</span><span class="list-item__sub">${status}</span></span></button></li>`;
@@ -1239,6 +1451,8 @@ export function render(root, ctx) {
     const doctor = H.needsDoctor(s.traffic?.reasons) && (light === 'stop');
     const pace = cardio ? H.paceLabel(s.rowing) : null;
     const r = s.rowing || {};
+    const rowParts = cardio ? [] : H.rowingPartsSummary(s); // v4: rowing warm-up / finisher inside the strength session
+    const finisherNote = !cardio && s.finisherSkipped?.length ? s.finisherSkipped[0] : '';
     const headline = cardio ? (light === 'green' ? 'Starke Ruderfahrt!' : light === 'yellow' ? 'Gut gerudert – Knie im Blick behalten.' : 'Gut, dass du auf dein Knie hörst.') : sc.headline;
     const kindChip = t.kind === 'strength' ? '' : html`<span class="chip chip--${cardio ? 'accent' : 'outline'} chip--sm">${t.kind === 'custom' ? 'Eigenes Workout' : t.kindLabel}</span>`;
     paint(root, html`
@@ -1276,11 +1490,17 @@ export function render(root, ctx) {
         <p class="text-xs muted mt-2">Rudern zählt nicht für die A/B/C-Rotation – dein nächstes Krafttraining bleibt unverändert.</p>`
       : html`
         <div class="grid-2 mt-4">
-          <div class="stat"><span class="stat__value">${dur.value}<span class="stat__unit">${dur.unit}</span></span><span class="stat__label">Dauer</span></div>
+          <div class="stat"><span class="stat__value">${dur.value}<span class="stat__unit">${dur.unit}</span></span><span class="stat__label">${rowParts.length ? 'Gesamtzeit' : 'Dauer'}</span></div>
           <div class="stat"><span class="stat__value">${tot.done}<span class="stat__unit">/${tot.planned}</span></span><span class="stat__label">Sätze</span></div>
           <div class="stat"><span class="stat__value">${hold >= 60 ? formatDuration(hold) : hold}<span class="stat__unit">${hold >= 60 ? 'min' : 's'}</span></span><span class="stat__label">Gehalten</span></div>
-          <div class="stat stat--gold" data-kcal><span class="stat__value">${energy.kcal}<span class="stat__unit">kcal</span></span><span class="stat__label">Kalorien · Schätzung</span></div>
-        </div>`}
+          <div class="stat stat--gold" data-kcal><span class="stat__value">${energy.kcal}<span class="stat__unit">kcal</span></span><span class="stat__label">${rowParts.length ? 'Kalorien + Rudern' : 'Kalorien · Schätzung'}</span></div>
+        </div>
+        ${rowParts.length ? html`<section class="card ses-rowparts mt-4" data-rowparts>
+          <p class="field__label mb-2">🚣 Rudern in dieser Einheit</p>
+          <p class="mb-0">${rowParts.map((x) => x.text).join('; ')}</p>
+          <p class="text-xs muted mt-2 mb-0">Zählt für Ruder-Minuten und Distanz – nicht als eigene Rudereinheit im Wochenziel. Kalorien: Schätzung (mit Display-Wert, wenn eingetragen).</p>
+        </section>` : ''}
+        ${finisherNote ? html`<p class="text-xs muted mt-2" data-finisher-note>Kein Ruder-Finisher heute: ${finisherNote}</p>` : ''}`}
       ${loadHint ? html`<div class="banner banner--gold mt-4"><span class="banner__icon">⚖️</span><span class="banner__body"><span class="banner__title">Rudern + Kraft am selben Tag</span><span class="banner__text">${loadHint}</span></span></div>` : ''}
       <section class="card mt-4">
         <h2 class="card__title">Warum ${LIGHT_LABELS[light].split(' – ')[0]}?</h2>
@@ -1378,7 +1598,8 @@ export function render(root, ctx) {
     const step = session.cursor?.step || 'pre';
     if (step === 'row') renderRow();
     else if (step === 'rowlog') renderRowLog();
-    else if (step === 'exercise') renderExercise();
+    else if (step === 'finisher') renderFinisherOffer();
+    else if (step === 'exercise') { if (isRowEntry(session.exercises[session.cursor.index])) renderRow(); else renderExercise(); }
     else if (step === 'post') renderPost();
     else renderPre();
     if (step === 'exercise') holdScreenAwake(); else letScreenSleep();
@@ -1416,7 +1637,7 @@ export function render(root, ctx) {
       delete session.pausedAt;
       persist();
     }
-    if (['exercise', 'post', 'row', 'rowlog'].includes(session.cursor?.step)) {
+    if (['exercise', 'post', 'row', 'rowlog', 'finisher'].includes(session.cursor?.step)) {
       setTimeout(() => H.toast('Willkommen zurück – weiter geht’s!', { icon: '▶', kind: 'success' }), 300);
     }
   } else {
@@ -1428,7 +1649,9 @@ export function render(root, ctx) {
     const kind = workoutKind(workout);
     // Taper (§5.2) only concerns the strength-type prehab sessions; rowing stays as planned up to the OP day.
     const taper = kind !== 'cardio' && taperActive(data.settings.surgeryDate, todayISO());
-    session = buildSessionPlan(workout, data.state, content, { taper, history: data.sessions, settings: data.settings });
+    // v4: rowing warm-up per settings.rowWarmupDefault (toggle on the start screen); the finisher is always asked
+    // after the strength part (renderFinisherOffer), never planned up front.
+    session = buildSessionPlan(workout, data.state, content, { taper, history: data.sessions, settings: data.settings, rowFinisher: false });
     session.kind = kind;
     session.workoutName = workout.name;
     session.pausedMs = 0;

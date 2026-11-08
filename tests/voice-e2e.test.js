@@ -101,7 +101,7 @@ test('voice cues in the browser: hold + tempo exercise, gaps ≥ 5 s, no console
       'Bereit machen: Quadrizeps anspannen (Quad Set)', 'Drei', 'Zwei', 'Eins', 'Anspannen', 'Loslassen', 'Anspannen',
       'Loslassen. Satz geschafft. Pause, 12 Sekunden', 'Gleich geht\'s weiter',
       'Bereit machen. Satz 2 von 2', 'Drei', 'Zwei', 'Eins', 'Anspannen', 'Loslassen', 'Anspannen',
-      'Übung fertig. Nächste Übung: Wirbelsäulen-Welle im Sitzen',
+      'Loslassen. Übung fertig. Nächste Übung: Wirbelsäulen-Welle im Sitzen',
     ]);
     assert.ok(hold.every((u) => u.lang === 'de-DE'));
     assert.ok(at('Anspannen') - hold[0].t >= 5000, 'prep ≥ 5 s before set 1');

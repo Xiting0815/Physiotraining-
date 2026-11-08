@@ -349,6 +349,9 @@ export function recommendLevels(session, history, state, content, settings, { to
     if (e.section !== 'knee' && e.section !== 'archery' && e.section !== 'cardio') continue;
     seen.add(e.exerciseId);
     const ex = exById.get(e.exerciseId);
+    // v4: rowing warm-up / finisher with a single level inside a strength session → nothing to suggest
+    // (avoids a pointless „Höchste Stufe“ hold card for row-warmup-10).
+    if (e.section === 'cardio' && session.kind !== 'cardio' && !(session.kind == null && session.rowing) && (ex?.levels?.length ?? 1) <= 1) continue;
     const id = e.exerciseId;
     const from = levelOf(state, id, ex);
     const block = e.section;
