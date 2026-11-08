@@ -39,9 +39,38 @@ export function bmr(profile, weightKg, today) {
   return Math.round(10 * weightKg + 6.25 * profile.heightCm - 5 * age + s);
 }
 
-/** TDEE = BMR × activity factor (default "light"). */
-export function tdee(profile, weightKg, today) {
-  const b = bmr(profile, weightKg, today);
+/** Scale BMR values older than this many days are ignored by bmrInfo. */
+export const SCALE_BMR_MAX_AGE_DAYS = 14;
+export const BMR_METHOD_LABELS = { mean: 'Mittel aus Waage und Formel', scale: 'Waage (BIA)', formula: 'Formel (Mifflin–St Jeor)' };
+
+/**
+ * BMR used for TDEE: mean of the scale's BMR (latest entry with `bmrKcal` ≤ 14 days old, ≤ today) and
+ * Mifflin–St Jeor when both exist, else whichever exists. Weight default = currentWeight(log, today).
+ * @param {import('../types.js').Profile} profile
+ * @param {import('../types.js').HealthEntry[]} healthLog
+ * @param {string} today
+ * @param {number|null} [weightKg]
+ * @returns {{kcal: number|null, method: 'mean'|'scale'|'formula'|null, scaleKcal: number|null, scaleDate: string|null,
+ *   formulaKcal: number|null, label: string}}
+ */
+export function bmrInfo(profile, healthLog, today, weightKg) {
+  const kg = isNum(weightKg) ? weightKg : currentWeight(healthLog, today);
+  const formulaKcal = bmr(profile, kg ?? NaN, today);
+  const scale = (Array.isArray(healthLog) ? healthLog : [])
+    .filter((e) => e && isNum(e.bmrKcal) && typeof e.date === 'string' && e.date <= today && daysBetween(e.date, today) <= SCALE_BMR_MAX_AGE_DAYS)
+    .sort((a, b) => (a.date < b.date ? -1 : 1)).at(-1);
+  const scaleKcal = scale ? Math.round(scale.bmrKcal) : null;
+  const method = scaleKcal != null && formulaKcal != null ? 'mean' : scaleKcal != null ? 'scale' : formulaKcal != null ? 'formula' : null;
+  const kcal = method === 'mean' ? Math.round((scaleKcal + formulaKcal) / 2) : (scaleKcal ?? formulaKcal);
+  return { kcal, method, scaleKcal, scaleDate: scale?.date ?? null, formulaKcal, label: ESTIMATE_LABEL };
+}
+
+/**
+ * TDEE = BMR × activity factor (default "light"). Without `healthLog`: Mifflin–St Jeor only (v2 behaviour);
+ * with `healthLog`: BMR from bmrInfo (scale/formula mean).
+ */
+export function tdee(profile, weightKg, today, healthLog) {
+  const b = healthLog ? bmrInfo(profile, healthLog, today, weightKg).kcal : bmr(profile, weightKg, today);
   if (b == null) return null;
   return Math.round(b * (ACTIVITY_FACTORS[profile?.activityLevel] ?? ACTIVITY_FACTORS.light));
 }
@@ -201,11 +230,13 @@ export function goalProgress(healthLog, goal, today, profile) {
 /**
  * Suggested daily calorie target („Schätzung“): TDEE − deficit, deficit = requiredKgPerWeek·7700/7 clamped to
  * 500–750 kcal (0 when the goal is reached / no goal), never below 1500 (m) / 1200 (w) / 1350 (d).
- * @returns {null|{kcal: number, tdee: number, deficit: number, floorApplied: boolean, label: string}}
+ * TDEE uses bmrInfo (scale BMR ≤ 14 days old averaged with Mifflin–St Jeor).
+ * @returns {null|{kcal: number, tdee: number, deficit: number, floorApplied: boolean, label: string, bmr: ReturnType<typeof bmrInfo>}}
  */
 export function calorieTarget(profile, healthLog, goal, today) {
   const kg = currentWeight(healthLog, today);
-  const t = tdee(profile, kg ?? NaN, today);
+  const info = bmrInfo(profile, healthLog, today, kg);
+  const t = tdee(profile, kg ?? NaN, today, healthLog || []);
   if (t == null) return null;
   const gp = goalProgress(healthLog, goal, today, profile);
   let deficit = 0;
@@ -217,7 +248,7 @@ export function calorieTarget(profile, healthLog, goal, today) {
   let kcal = t - deficit;
   const floorApplied = kcal < floor;
   if (floorApplied) kcal = floor;
-  return { kcal: Math.round(kcal), tdee: t, deficit: Math.round(t - kcal), floorApplied, label: ESTIMATE_LABEL };
+  return { kcal: Math.round(kcal), tdee: t, deficit: Math.round(t - kcal), floorApplied, label: ESTIMATE_LABEL, bmr: info };
 }
 
 /**

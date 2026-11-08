@@ -155,10 +155,27 @@
 /** @typedef {{targetKg: number, targetDate: string, startKg: number, startDate: string}} WeightGoal */
 /** @typedef {{durationSec?: number, distanceM?: number, avgSpm?: number, avgWatt?: number, kcalDisplay?: number, avgHr?: number, maxHr?: number}} RowingLog */
 /**
- * @typedef {Object} HealthEntry
+ * @typedef {Object} HealthEntry  (v2; body composition, measuredAt & sources added in v3 – all optional, §13)
  * @property {string} date "YYYY-MM-DD" (one entry per date)
  * @property {number} [weightKg]
+ * @property {number} [bmi]
  * @property {number} [bodyFatPct]
+ * @property {number} [bodyFatKg]
+ * @property {number} [subcutFatPct]
+ * @property {number} [visceralFat]       scale index (RENPHO 1–59, Samsung vfa_level)
+ * @property {number} [musclePct]
+ * @property {number} [muscleKg]
+ * @property {number} [skeletalMusclePct]
+ * @property {number} [skeletalMuscleKg]
+ * @property {number} [bonePct]
+ * @property {number} [boneKg]
+ * @property {number} [fatFreeKg]
+ * @property {number} [metabolicAge]
+ * @property {number} [bmrKcal]           basal metabolic rate shown by the scale
+ * @property {number} [waterPct]
+ * @property {number} [waterKg]
+ * @property {number} [proteinPct]
+ * @property {number} [proteinKg]
  * @property {number} [waistCm]
  * @property {number} [steps]
  * @property {number} [activeMin]
@@ -166,7 +183,18 @@
  * @property {number} [avgTrainingHr]
  * @property {number} [sleepH]
  * @property {string} [note]
- * @property {'samsung-health-manual'} source
+ * @property {string} [measuredAt]        ISO date-time of the (latest) measurement – used by import merge
+ * @property {Record<string, HealthFieldSource>} [sources] per-field origin
+ * @property {'samsung-health-manual'|'samsung-export'|'renpho-ocr'|'csv'|'import'} source  legacy entry-level source
+ */
+/** @typedef {'manual'|'renpho-ocr'|'samsung-export'|'csv'} HealthFieldSource */
+/**
+ * @typedef {Object} ImportPreviewRow
+ * @property {string} date
+ * @property {string} field  key of HEALTH_FIELDS or "note"
+ * @property {number|string|null} old
+ * @property {number|string|null} new
+ * @property {'new'|'changed'|'same'|'conflict'} status
  */
 /**
  * @typedef {Object} CustomWorkout

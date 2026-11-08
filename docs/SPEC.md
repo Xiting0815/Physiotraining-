@@ -1054,3 +1054,169 @@ Sports Health review 2021 (https://pmc.ncbi.nlm.nih.gov/articles/PMC8167347). Pr
 - Plan: show phase schedule, short + rowing workouts per phase, p4 locked state with `canEnterPhase` reasons.
 - Verlauf: cardio sessions in the list/heatmap (icon), rowing totals, per-week bars with strength + rowing.
 - `sw.js` precache must be regenerated (`node tools/gen-precache.mjs`) for the new logic modules.
+
+## 13. v3 – Import & Körperzusammensetzung
+
+New context: user ≈ 102 kg, BMI ≈ 32, **RENPHO body-composition scale** (BIA), **Samsung Galaxy S25 Ultra with
+Samsung Health**. Goal: lose fat while **preserving muscle** before the knee surgery on 2027-01-05. Typing ~20 scale
+values per day is unrealistic → import from a RENPHO screenshot (OCR, other package) or the Samsung Health data
+export. Everything is **additive**; `SCHEMA_VERSION` stays 1, old entries stay valid unchanged.
+
+### 13.1 Health entry model (extends §12.7)
+
+`HealthEntry` (all fields optional except `date`/`source`):
+
+| group | fields (unit) |
+|---|---|
+| Körper | `weightKg`, `bmi`, `bodyFatPct` (%), `bodyFatKg`, `subcutFatPct` (%), `visceralFat` (scale index), `musclePct` (%), `muscleKg`, `skeletalMusclePct` (%), `skeletalMuscleKg`, `bonePct` (%), `boneKg`, `fatFreeKg`, `metabolicAge` (J.), `bmrKcal` (kcal), `waterPct` (%), `waterKg`, `proteinPct` (%), `proteinKg`, `waistCm` |
+| Aktivität | `steps`, `activeMin` |
+| Herz & Schlaf | `restingHr`, `avgTrainingHr`, `sleepH` |
+
+plus `note`, **`measuredAt`** (ISO date-time of the latest underlying measurement, optional) and
+**`sources`** `{[field]: "manual"|"renpho-ocr"|"samsung-export"|"csv"}` (only for fields present). The legacy
+entry-level `source` stays (`"samsung-health-manual"` default; imports set `"samsung-export"`, `"renpho-ocr"`, …).
+
+`HEALTH_FIELDS[k] = {label, unit, min, max, step, group, digits?, int?, comp?}` — `group` ∈ `HEALTH_GROUPS =
+["Körper", "Aktivität", "Herz & Schlaf"]`, `comp: true` = body-composition field (collapsible
+„Körperzusammensetzung“ in the form, list `BODY_COMP_FIELDS`), `int: true` = stored rounded to an integer
+(steps, activeMin, HR, metabolicAge, bmrKcal), others rounded to 2 decimals (`roundField(k, n)`). Ranges are
+generous (e.g. visceralFat 1–60, bmrKcal 800–4000, muscleKg 10–150, skeletalMuscleKg 5–100, boneKg 0.5–10).
+`validateEntry` keeps a parseable `measuredAt` and valid `sources` (unknown values / fields not in the entry are
+dropped); `upsertEntry` merges `sources` (a `null` field also removes its source); `mergeLogs` keeps the source of
+the value that wins. `SOURCE_LABELS = {manual: "Manuell", "renpho-ocr": "RENPHO", "samsung-export": "Samsung", csv: "CSV"}`.
+`manualSources(prevEntry, entry)` (used by the form): unchanged values keep their source, changed/new ones become
+`"manual"`; the form keeps `measuredAt` only if nothing was changed by hand.
+
+### 13.2 Folder `js/import/` (pure modules, no storage access)
+
+| file | owner | purpose |
+|---|---|---|
+| `common.js` | health/import package | `normalizeNumber`, `previewImport`, `applyImport` (§13.3) |
+| `zip.js` | health/import package | minimal ZIP reader (§13.4) |
+| `samsung.js` | health/import package | Samsung Health export parser (§13.5) |
+| `ocr.js`, `renpho.js` | OCR package | RENPHO screenshot OCR → entries (same entry shape, `sources[k] = "renpho-ocr"`) |
+
+The import view (`#/import`, other package) calls the parsers, shows `previewImport`, lets the user pick
+merge/overwrite and then `store.update((d) => { d.state = applyImport(d.state, entries, {mode, today}).state; })`.
+
+### 13.3 Import contract — `js/import/common.js`
+
+```js
+normalizeNumber(v, {integer = false} = {}) → number | null
+// "102,10" → 102.1 · "1.234,5" → 1234.5 · "1,234.5" → 1234.5 · " 25,3 % " → 25.3 · "1 958 kcal" → 1958 · "−1,5" → -1.5
+// both separators: the last one is the decimal mark; one separator used several times = thousands;
+// {integer: true}: a single separator followed by exactly 3 digits = thousands ("8.214" → 8214, else 8.214)
+
+previewImport(state, incomingEntries) → {
+  rows: [{date, field, old, new, status: "new"|"changed"|"same"|"conflict"}],   // sorted by date, HEALTH_FIELDS order, then "note"
+  counts: {new, changed, same, conflict, days, newDays, invalid},
+  invalid: [{date, errors}]                                                    // entries failing validateEntry (skipped)
+}
+
+applyImport(state, incomingEntries, {mode: "merge"|"overwrite" = "merge", today?}) → {state, added, updated, skipped, xp}
+```
+
+- `state` = `data.state` (uses `state.healthLog`); returns a **new** state object, input untouched.
+- Incoming entry shape = `HealthEntry` (§13.1) with `sources` set for every field (and `measuredAt` when known);
+  values may be numbers or locale strings (validated with `validateEntry`).
+- Field status (per date & field): `new` = the existing entry has no value (or no entry for the date);
+  `same` = equal after rounding; `changed` = different and the incoming `measuredAt` is **newer** than the existing
+  entry's `measuredAt`; `conflict` = different otherwise (existing entry has no `measuredAt` – e.g. manual – or is
+  newer/equal, or incoming has none).
+- **merge:** writes `new` + `changed` (fill empty fields, newer `measuredAt` wins per field); conflicts keep the
+  existing value. **overwrite:** writes `new` + `changed` + `conflict` (incoming wins; fields absent from the import
+  are kept). Written fields take the incoming source; the entry's `measuredAt` becomes the incoming one when an
+  existing value was replaced (or when both have one and the incoming is newer).
+- `added` = dates created, `updated` = existing dates changed, `skipped` = incoming entries that changed nothing
+  + invalid ones.
+- **XP:** bulk imports earn **no** XP, except the normal daily rule: `+XP.healthLog` (5) when `today` is passed and
+  the import creates the entry for `today` (added to `state.xp`, returned as `xp`). Badges: callers may run
+  `evaluateBadges` afterwards as after a manual save.
+
+### 13.4 ZIP reader — `js/import/zip.js`
+
+`isZip(src) → Promise<boolean>`, `listEntries(blob|ArrayBuffer|Uint8Array) → Promise<[{name, dir, method, size,
+compressedSize, crc32, offset, blob}]>` (EOCD search over the last 64 KB, central directory, UTF-8 names),
+`readBytes(entry)`, `readText(entry)` (UTF-8, BOM removed). Methods 0 (stored) and 8 (deflate via
+`DecompressionStream('deflate-raw')`); only the needed byte ranges are read (`Blob.slice`). No ZIP64 /
+encryption (German `Error`). CRC is not verified. Tests build ZIPs with Node's `zlib` at test time.
+
+### 13.5 Samsung Health export — `js/import/samsung.js`
+
+Export in the app: Samsung Health → Einstellungen → **„Persönliche Daten herunterladen“** → folder
+`samsunghealth_<user>_<YYYYMMDDhhmmss>/` (zip it on the phone or pick single CSVs).
+
+`parseSamsungExport(fileOrBlob, {name?}) → Promise<{entries, summary, warnings}>` (ZIP or a single CSV);
+`parseSamsungTexts([{name, text}])` is the synchronous core (tests). `summary = {files: [{name, type, rows, used}],
+days, fields[], fieldCounts{}, range: {from, to}|null, apps[] (pkg_names other than Samsung Health, e.g. RENPHO
+via Health Connect), heightCm}`; `warnings[]` German. Entries: one per local date, `source: "samsung-export"`,
+`sources[k] = "samsung-export"`, `measuredAt` = latest record time of that day (UTC ISO).
+
+**Format (verified against real exports 2020–2026 in public repositories):**
+- One CSV per type, name `com.samsung.health.<type>.<ts>.csv` or `com.samsung.shealth.<type>.<ts>.csv`; plus
+  `jsons/` and `files/` (ignored). Line 1 = metadata (`com.samsung.health.weight,6311013,12`), line 2 = header,
+  rows usually end with a trailing comma; UTF-8 with BOM. Some headers are namespaced
+  (`com.samsung.health.sleep.start_time`) → everything up to the last `.` is stripped. Unknown columns are ignored.
+- `start_time` / `end_time` = **UTC** `YYYY-MM-DD HH:MM:SS.mmm`; `time_offset` (`UTC+0100`) → local date.
+  Without offset the device time zone is used; ISO strings with their own offset keep their date.
+- Daily files use `day_time` = epoch ms of the local day at 00:00 UTC (or a date string).
+- Excel-mangled dates (`2/3/2024 11:25:47 AM`, `1.68636E+12`) are skipped with a warning.
+
+**Mapping / aggregation:**
+- `weight` (and a possible `body_composition` file): columns `weight→weightKg`, `body_fat→bodyFatPct`,
+  `body_fat_mass→bodyFatKg`, `skeletal_muscle→skeletalMusclePct` (verified: = mass/weight·100),
+  `skeletal_muscle_mass→skeletalMuscleKg`, `muscle_mass→muscleKg`, `fat_free_mass→fatFreeKg`,
+  `basal_metabolic_rate→bmrKcal`, `total_body_water→waterKg` (kg), `vfa_level→visceralFat`; `height` →
+  `summary.heightCm`; `fat_free` (%) ignored. **Last value per field and local day** (a later weight-only
+  measurement replaces the weight, body-fat values of the morning stay). Duplicate `datauuid`s are dropped,
+  implausible values (outside `HEALTH_FIELDS` ranges) ignored with a warning.
+- `step_daily_trend`: `count` per `day_time`; rows with `source_type = -2` are Samsung's merged total of all
+  devices → max of those; else max over the per-device rows (phone `0`, watch e.g. `106`).
+  Fallback `activity.day_summary.step_count`.
+- `activity.day_summary`: `active_time` (ms) → `activeMin`.
+- `sleep`: every record's `end_time - start_time`, assigned to the **local wake-up date**, overlapping records
+  (phone + watch) merged, then summed (naps included) → `sleepH`.
+- `tracker.heart_rate`: hourly bins, `heart_rate` = bin mean → `restingHr` = **lowest bin mean of the local day**
+  (30–140 bpm).
+- `exercise`: `mean_heart_rate`, weighted by `duration` → `avgTrainingHr`.
+
+**Uncertainty (documented on purpose):** Samsung publishes no data dictionary; column sets change between app
+versions. Not observed in real exports (accepted if they appear): a separate `body_composition` file, columns
+`bmi`, `bone_mass`, `metabolic_age`, `visceral_fat(_level)`, `body_water` (%), `subcutaneous_fat`, `protein`.
+Whether RENPHO data synced via Health Connect appears in `com.samsung.health.weight` (and with which `pkg_name`;
+fixtures assume `com.renpho.health`) is unverified. `restingHr` is a proxy (no explicit resting value in the
+export); exercise column names follow the namespaced pattern but were not verified. Fixtures:
+`tests/fixtures/samsung/` (headers copied from real exports, values invented).
+
+### 13.6 Energy — BMR choice (`js/logic/energy.js`)
+
+`bmrInfo(profile, log, today, weightKg?) → {kcal, method: "mean"|"scale"|"formula"|null, scaleKcal, scaleDate,
+formulaKcal, label: "Schätzung"}`: scale BMR = latest `bmrKcal` with date ≤ today and ≤ **14 days** old
+(`SCALE_BMR_MAX_AGE_DAYS`); formula = Mifflin–St Jeor (`bmr`, weight default `currentWeight`). Both → rounded
+mean, else whichever exists. `tdee(profile, kg, today, log?)` uses `bmrInfo` when a log is passed (without a log:
+v2 behaviour). `calorieTarget` uses it and returns `bmr: bmrInfo(...)` additionally. `BMR_METHOD_LABELS` for the UI.
+
+### 13.7 Insight — `bodyCompositionInsight(log, today)` (`js/logic/insights.js`)
+
+Windows of 2 and 4 weeks ending today; per window the mean of the **last 7 days** vs. the mean of the **first 7
+days** for `weightKg`, `fatKg` (`bodyFatKg` or weight·%), `bodyFatPct`, `muscleKg`, `skeletalMuscleKg` (kg or
+weight·%), `visceralFat`. Classification on the 4-week window if it has start/end fat values, else 2 weeks;
+muscle = skeletal muscle (fallback muscle mass); tolerance ±0.5 kg (`COMP_TOLERANCE`):
+`recomp` „Fett verloren, Muskeln aufgebaut“, `fat-lost-muscle-kept` „Fett verloren, Muskeln gehalten“,
+`fat-and-muscle-lost` „Fett und Muskeln verloren“, `fat-lost` (no muscle data), `muscle-lost` „Muskelmasse
+gesunken“, `fat-gained`, `stable`, `insufficient`. Returns `{status, label, text, tips[], caution, basis: 2|4|null,
+windows[{weeks, from, to, start, end, delta}], latest}`. `caution` (`BIA_CAUTION`): consumer BIA scales fluctuate
+with hydration/food/training by 1–2 kg – compare trends over weeks, measure at the same time of day (morning,
+fasted, after the toilet, barefoot). Tips: muscle loss → keep strength training, enough protein, moderate deficit;
+weight loss > 1 kg/week → warning.
+
+### 13.8 UI (`js/views/health.js`)
+
+- Tagebuch: prominent **„Importieren“** button (→ `#/import`) in the hero; form groups Körper (weight, body fat,
+  waist) · collapsible **„Körperzusammensetzung“** (`BODY_COMP_FIELDS`) · Aktivität · Herz & Schlaf; source badges
+  („RENPHO“, „Samsung“) next to field labels and in the entry list (chips limited to the main values + „+N Werte“).
+- Diagramme: additional cards Körperfett (%), Skelettmuskelmasse (kg), Viszeralfett (fitted y-axis,
+  `yMin: 'auto'`), hidden while the log has no such value.
+- Auswertung: card „Körperzusammensetzung“ (status chip, deltas, tips, BIA caution) with **Grundumsatz**
+  (used / scale / formula, method, date).
+- Regenerate the precache after adding the import modules: `node tools/gen-precache.mjs`.

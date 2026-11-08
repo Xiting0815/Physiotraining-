@@ -248,3 +248,109 @@ export function weightInsight(healthLog, today) {
     : `Trend: ${de(k)} kg pro Woche schwerer (letzte 3 Wochen).`;
   return { currentKg: cur, kgPerWeek: k, n: t.n, text };
 }
+
+/* ------------------------------------------------------------------ */
+/* Body composition (v3, §13.7)                                        */
+/* ------------------------------------------------------------------ */
+
+/** Changes smaller than this (kg / index points) count as „gehalten“ – BIA noise is larger than that. */
+export const COMP_TOLERANCE = { fatKg: 0.5, muscleKg: 0.5, weightKg: 0.5, visceralFat: 1 };
+export const BIA_CAUTION = 'Körperfett- und Muskelwerte einer Körperanalyse-Waage (BIA) schwanken mit Wasserhaushalt, Essen und Training um 1–2 kg. Vergleiche Trends über Wochen statt einzelner Tage und miss immer zur gleichen Tageszeit – am besten morgens nüchtern, nach dem WC, barfuß.';
+
+/** Fat kg of an entry (bodyFatKg or weight × %). */
+const fatKgOf = (e) => (isNum(e.bodyFatKg) ? e.bodyFatKg : isNum(e.weightKg) && isNum(e.bodyFatPct) ? (e.weightKg * e.bodyFatPct) / 100 : null);
+/** Skeletal muscle kg of an entry (kg or weight × %). */
+const smKgOf = (e) => (isNum(e.skeletalMuscleKg) ? e.skeletalMuscleKg : isNum(e.weightKg) && isNum(e.skeletalMusclePct) ? (e.weightKg * e.skeletalMusclePct) / 100 : null);
+const COMP_GETTERS = {
+  weightKg: (e) => (isNum(e.weightKg) ? e.weightKg : null),
+  fatKg: fatKgOf,
+  bodyFatPct: (e) => (isNum(e.bodyFatPct) ? e.bodyFatPct : null),
+  muscleKg: (e) => (isNum(e.muscleKg) ? e.muscleKg : null),
+  skeletalMuscleKg: smKgOf,
+  visceralFat: (e) => (isNum(e.visceralFat) ? e.visceralFat : null),
+};
+
+/** Mean of a getter over entries in [from, to]. */
+const blockMean = (log, get, from, to) => mean((log || []).filter((e) => e && e.date >= from && e.date <= to).map(get).filter(isNum));
+
+/**
+ * Change of one window: mean of the last 7 days vs. mean of the first 7 days of a `weeks`-week window ending today.
+ * @returns {{weeks: number, from: string, to: string, delta: Record<string, number|null>, start: Record<string, number|null>, end: Record<string, number|null>}}
+ */
+function compWindow(log, today, weeks) {
+  const from = addDays(today, -(weeks * 7 - 1));
+  const startTo = addDays(from, 6);
+  const endFrom = addDays(today, -6);
+  const start = {}, end = {}, delta = {};
+  for (const [k, get] of Object.entries(COMP_GETTERS)) {
+    start[k] = r2(blockMean(log, get, from, startTo));
+    end[k] = r2(blockMean(log, get, endFrom, today));
+    delta[k] = start[k] != null && end[k] != null ? r2(end[k] - start[k]) : null;
+  }
+  return { weeks, from, to: today, start, end, delta };
+}
+
+const STATUS_LABELS = {
+  'recomp': 'Fett verloren, Muskeln aufgebaut',
+  'fat-lost-muscle-kept': 'Fett verloren, Muskeln gehalten',
+  'fat-and-muscle-lost': 'Fett und Muskeln verloren',
+  'fat-lost': 'Fett verloren',
+  'muscle-lost': 'Muskelmasse gesunken',
+  'fat-gained': 'Fettmasse gestiegen',
+  'stable': 'Stabil',
+  'insufficient': 'Noch zu wenige Messungen',
+};
+
+/**
+ * Body-composition trend over 2 and 4 weeks (weight, fat kg, muscle / skeletal muscle kg, visceral fat).
+ * Classification uses the 4-week window when it has start and end values, else the 2-week one.
+ * Muscle = skeletal muscle kg if available, else muscle mass kg.
+ * @param {import('../types.js').HealthEntry[]} log
+ * @param {string} today
+ * @returns {{status: 'recomp'|'fat-lost-muscle-kept'|'fat-and-muscle-lost'|'fat-lost'|'muscle-lost'|'fat-gained'|'stable'|'insufficient',
+ *   label: string, text: string, tips: string[], caution: string, basis: 2|4|null,
+ *   windows: {weeks: number, from: string, to: string, delta: Record<string, number|null>, start: Record<string, number|null>, end: Record<string, number|null>}[],
+ *   latest: {date: string, weightKg?: number, bodyFatPct?: number, fatKg?: number, skeletalMuscleKg?: number, muscleKg?: number, visceralFat?: number}|null}}
+ */
+export function bodyCompositionInsight(log, today) {
+  const list = (Array.isArray(log) ? log : []).filter((e) => e && typeof e.date === 'string' && e.date <= today).sort((a, b) => (a.date < b.date ? -1 : 1));
+  const windows = [compWindow(list, today, 2), compWindow(list, today, 4)];
+  const lastComp = list.filter((e) => fatKgOf(e) != null || smKgOf(e) != null || isNum(e.muscleKg) || isNum(e.visceralFat)).at(-1);
+  const latest = lastComp ? { date: lastComp.date } : null;
+  if (lastComp) {
+    for (const [k, get] of Object.entries(COMP_GETTERS)) { const v = get(lastComp); if (v != null) latest[k] = r2(v); }
+  }
+  const caution = BIA_CAUTION;
+  const pick = [windows[1], windows[0]].find((w) => w.delta.fatKg != null || w.delta.weightKg != null);
+  if (!pick || pick.delta.fatKg == null) {
+    const w = pick?.delta.weightKg;
+    const text = w == null ? 'Für einen Trend bitte mindestens 2 Wochen lang regelmäßig mit der Körperanalyse-Waage messen.'
+      : `Gewicht ${w <= 0 ? '−' : '+'}${de(Math.abs(w), 1)} kg in ${pick.weeks} Wochen – für Fett und Muskeln fehlen noch Waagenwerte am Anfang und Ende des Zeitraums.`;
+    return { status: 'insufficient', label: STATUS_LABELS.insufficient, text, tips: [], caution, basis: null, windows, latest };
+  }
+  const d = pick.delta;
+  const muscle = d.skeletalMuscleKg ?? d.muscleKg;
+  const muscleName = d.skeletalMuscleKg != null ? 'Skelettmuskulatur' : 'Muskelmasse';
+  const T = COMP_TOLERANCE;
+  let status;
+  if (d.fatKg <= -T.fatKg) {
+    if (muscle == null) status = 'fat-lost';
+    else if (muscle >= T.muscleKg) status = 'recomp';
+    else if (muscle > -T.muscleKg) status = 'fat-lost-muscle-kept';
+    else status = 'fat-and-muscle-lost';
+  } else if (d.fatKg >= T.fatKg) status = 'fat-gained';
+  else status = muscle != null && muscle <= -T.muscleKg ? 'muscle-lost' : 'stable';
+  const sg = (v, u = 'kg', dg = 1) => `${v < 0 ? '−' : v > 0 ? '+' : '±'}${de(Math.abs(v), dg)}${u ? ' ' + u : ''}`;
+  const parts = [];
+  if (d.weightKg != null) parts.push(`Gewicht ${sg(d.weightKg)}`);
+  parts.push(`Fett ${sg(d.fatKg)}`);
+  if (muscle != null) parts.push(`${muscleName} ${sg(muscle)}`);
+  if (d.visceralFat != null) parts.push(`Viszeralfett ${sg(d.visceralFat, '', 1)}`);
+  const text = `${STATUS_LABELS[status]}: ${parts.join(', ')} in ${pick.weeks} Wochen (Wochenmittel).`;
+  const tips = [];
+  if (status === 'fat-and-muscle-lost' || status === 'muscle-lost') tips.push('Um Muskeln vor der OP zu erhalten: Krafttraining regelmäßig weiterführen, genug Eiweiß essen und das Defizit nicht zu groß wählen.');
+  if (status === 'fat-lost-muscle-kept' || status === 'recomp') tips.push('Genau so soll es sein – Muskeln sind dein Polster für die Reha nach der OP.');
+  if (status === 'fat-gained') tips.push('Einzelne Wochen schwanken – schau auf den Verlauf über 4 Wochen.');
+  if (d.weightKg != null && d.weightKg / pick.weeks < -1) tips.push('Du nimmst sehr schnell ab (> 1 kg/Woche) – das kostet oft Muskeln.');
+  return { status, label: STATUS_LABELS[status], text, tips, caution, basis: pick.weeks, windows, latest };
+}

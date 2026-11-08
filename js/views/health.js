@@ -1,12 +1,13 @@
-// Gesundheit – Tagebuch (Samsung-Health-Werte), Auswertung, Diagramme. See docs/SPEC.md §12.6, §12.7, §12.11, §12.12.
+// Gesundheit – Tagebuch (manuell, RENPHO, Samsung Health), Auswertung, Diagramme. See docs/SPEC.md §12.6, §12.7, §12.11, §12.12, §13.
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, addDays, startOfIsoWeek, isoWeekKey, formatDE, parseISODate } from '../util/date.js';
 import {
-  HEALTH_FIELDS, validateEntry, upsertEntry, removeEntry, entryFor, latest, series, weeklyAverages, logStreak,
+  HEALTH_FIELDS, BODY_COMP_FIELDS, SOURCE_LABELS, validateEntry, upsertEntry, removeEntry, entryFor, latest, series, weeklyAverages, logStreak,
+  manualSources,
 } from '../logic/health.js';
 import { healthLogXp } from '../logic/motivation.js';
-import { weeklyReport, opReadiness, loadVsPain, sleepVsPain, stepsVsPain, weightInsight, MIN_POINTS } from '../logic/insights.js';
-import { goalProgress } from '../logic/energy.js';
+import { weeklyReport, opReadiness, loadVsPain, sleepVsPain, stepsVsPain, weightInsight, bodyCompositionInsight, MIN_POINTS } from '../logic/insights.js';
+import { goalProgress, bmrInfo, BMR_METHOD_LABELS } from '../logic/energy.js';
 import { currentPhase } from '../logic/progression.js';
 import { barChart, progressRing } from '../components/charts.js';
 import { ICON, ensureViewStyles, applyFontScale, pageHeader, shortDate, toast, confirmDialog, trafficPill } from './ui.js';
@@ -14,15 +15,47 @@ import { ensureV2Styles, ICON2, awardBadges, celebrateBadges, fmtNum, fmtDistanc
 
 export const title = 'Gesundheit';
 
-/** Form groups (order of HEALTH_FIELDS in the UI). */
+/** Form groups (order in the UI). `collapsible`: rendered inside a <details> („Körperzusammensetzung“). */
 export const FIELD_GROUPS = [
   { title: 'Körper', icon: 'scale', fields: ['weightKg', 'bodyFatPct', 'waistCm'] },
+  { title: 'Körperzusammensetzung', icon: 'scale', fields: BODY_COMP_FIELDS, collapsible: true },
   { title: 'Aktivität', icon: 'steps', fields: ['steps', 'activeMin'] },
-  { title: 'Herz', icon: 'heart', fields: ['restingHr', 'avgTrainingHr'] },
-  { title: 'Schlaf', icon: 'moon', fields: ['sleepH'] },
+  { title: 'Herz & Schlaf', icon: 'heart', fields: ['restingHr', 'avgTrainingHr', 'sleepH'] },
 ];
-const DIGITS = { weightKg: 1, bodyFatPct: 1, waistCm: 1, sleepH: 2 };
-const SHORT = { weightKg: '⚖️', bodyFatPct: 'KF', waistCm: '📏', steps: '👣', activeMin: '⏱️', restingHr: '❤️', avgTrainingHr: '🏃', sleepH: '😴' };
+/** Chips shown in the entry list (others are counted as „+N“). */
+const SHORT = { weightKg: '⚖️', bodyFatPct: 'KF', skeletalMuscleKg: '💪', visceralFat: 'VF', waistCm: '📏', steps: '👣', activeMin: '⏱️', restingHr: '❤️', avgTrainingHr: '🏃', sleepH: '😴' };
+/** Badge text of a field source (manual → null). */
+export const sourceBadge = (src) => (src && src !== 'manual' ? SOURCE_LABELS[src] ?? null : null);
+/** Distinct non-manual source badges of an entry, e.g. ['RENPHO', 'Samsung']. */
+export function entrySources(entry) {
+  return [...new Set(Object.values(entry?.sources || {}).map(sourceBadge).filter(Boolean))];
+}
+const HEALTH_CSS = `
+.hl-src { display: inline-flex; align-items: center; margin-left: 6px; padding: 0 6px; border-radius: 999px; font-size: 10px; font-weight: 700; line-height: 16px; letter-spacing: .02em; vertical-align: middle; background: var(--accent-soft); color: var(--accent-ink); }
+.hl-src--samsung { background: var(--primary-soft); color: var(--primary-ink); }
+.hl-comp { margin: var(--s-2) 0 var(--s-3); }
+.hl-comp > summary { gap: var(--s-2); }
+.hl-comp > summary .hl-comp__n { margin-left: auto; margin-right: var(--s-2); font-weight: 400; font-size: var(--fs-xs); color: var(--muted); }
+.hl-comp .v2-form-grid { padding-top: var(--s-2); }
+.hl-grid .field { display: flex; flex-direction: column; justify-content: flex-end; }
+.hl-grid .field__label { display: flex; flex-wrap: wrap; align-items: center; column-gap: 0; row-gap: 2px; }
+.hl-import { display: flex; gap: var(--s-2); flex-wrap: wrap; margin-top: var(--s-3); }
+.hl-import .btn { flex: 1 1 auto; }
+.hl-comp-kpis .v2-kpi__v small { margin-left: 2px; }
+.hl-bmr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin: var(--s-3) 0 0; }
+.hl-bmr > div { background: var(--surface-2); border-radius: var(--radius-sm); padding: var(--s-2); min-width: 0; }
+.hl-bmr dt { font-size: var(--fs-xs); color: var(--muted); }
+.hl-bmr dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+`;
+function ensureHealthStyles() {
+  if (typeof document === 'undefined' || document.getElementById('hl-styles')) return;
+  const st = document.createElement('style');
+  st.id = 'hl-styles';
+  st.textContent = HEALTH_CSS;
+  document.head.appendChild(st);
+}
+const srcClass = (b) => (b === 'Samsung' ? 'hl-src hl-src--samsung' : 'hl-src');
+const COMP_STATUS_CHIP = { 'recomp': 'chip--green', 'fat-lost-muscle-kept': 'chip--green', 'fat-lost': 'chip--green', 'fat-and-muscle-lost': 'chip--gold', 'muscle-lost': 'chip--gold', 'fat-gained': 'chip--outline', 'stable': 'chip--outline', 'insufficient': 'chip--outline' };
 const PART_LABEL = {
   criteria: 'Ausstiegskriterien der Phasen',
   strength: 'Kraftstufen Knie & Stütz',
@@ -41,7 +74,7 @@ export function inputValue(field, v) {
 export function fieldText(field, v) {
   const f = HEALTH_FIELDS[field];
   if (v == null || !f) return '–';
-  const n = Number(v).toLocaleString('de-DE', { maximumFractionDigits: DIGITS[field] ?? 0 });
+  const n = Number(v).toLocaleString('de-DE', { maximumFractionDigits: f.digits ?? 0 });
   return f.unit ? `${n} ${f.unit}` : n;
 }
 
@@ -80,6 +113,7 @@ const signed = (n, d = 1) => (n > 0 ? '+' : n < 0 ? '−' : '±') + fmtNum(Math.
 export function render(root, { store, content, query }) {
   ensureViewStyles();
   ensureV2Styles();
+  ensureHealthStyles();
   const today = todayISO();
   const ui = {
     tab: ['eintragen', 'auswertung', 'diagramme'].includes(query.tab) ? query.tab : ['bericht', 'bereitschaft'].includes(query.focus) ? 'auswertung' : 'eintragen',
@@ -87,6 +121,7 @@ export function render(root, { store, content, query }) {
     weekOf: today,
     range: '4w',
     showAll: false,
+    compOpen: false,
     errors: {},
   };
 
@@ -106,9 +141,10 @@ export function render(root, { store, content, query }) {
       const f = HEALTH_FIELDS[k];
       const last = latest(log, k, today);
       const err = ui.errors[k];
-      const int = k === 'steps' || k === 'activeMin' || k.endsWith('Hr');
+      const int = !!f.int;
+      const badge = sourceBadge(entry?.sources?.[k]);
       return html`<div class="field">
-        <label class="field__label" for="hf-${k}">${f.label}</label>
+        <label class="field__label" for="hf-${k}">${f.label}${badge ? html`<span class="${srcClass(badge)}" title="Quelle: ${badge}">${badge}</span>` : ''}</label>
         <div class="v2-unit"><input class="input ${err ? 'is-invalid' : ''}" id="hf-${k}" name="${k}" type="text" inputmode="${int ? 'numeric' : 'decimal'}" autocomplete="off"
           value="${inputValue(k, entry?.[k])}" placeholder="${last ? inputValue(k, last.value) : ''}" ${err ? html`aria-invalid="true" aria-describedby="hf-${k}-err"` : ''}>${f.unit ? html`<span>${f.unit}</span>` : ''}</div>
         ${err ? html`<span class="v2-field-err" id="hf-${k}-err">${err}</span>` : ''}
@@ -123,6 +159,10 @@ export function render(root, { store, content, query }) {
             <p class="hero__meta mb-0"><span>${streakN ? `🔥 ${streakN} ${streakN === 1 ? 'Tag' : 'Tage'} in Folge` : 'Starte deine Serie – jeder Eintrag zählt.'}</span><span>+5 XP pro Tag</span></p>
           </div>
         </div>
+        <div class="hl-import">
+          <a class="btn btn--primary btn--lg" href="#/import" data-import>${raw(ICON2.sparkles)} Importieren</a>
+        </div>
+        <p class="text-xs mt-2 mb-0" style="opacity:.85">RENPHO-Screenshot oder Samsung-Health-Export einlesen – statt alles abzutippen.</p>
       </section>
 
       <form class="card" data-form novalidate>
@@ -135,8 +175,17 @@ export function render(root, { store, content, query }) {
           <input class="input" id="hf-date" type="date" name="date" value="${ui.date}" max="${today}" data-date>
           ${ui.date !== today ? html`<button type="button" class="btn btn--ghost btn--sm" data-today style="align-self:flex-start">Zurück zu heute</button>` : ''}
         </div>
-        ${FIELD_GROUPS.map((g) => html`<p class="v2-group-title">${raw(ICON2[g.icon])}${g.title}</p>
-          <div class="v2-form-grid">${g.fields.map(field)}</div>`)}
+        ${FIELD_GROUPS.map((g) => {
+          if (!g.collapsible) return html`<p class="v2-group-title">${raw(ICON2[g.icon])}${g.title}</p>
+          <div class="v2-form-grid hl-grid">${g.fields.map(field)}</div>`;
+          const filled = g.fields.filter((k) => entry?.[k] != null).length;
+          const open = ui.compOpen || g.fields.some((k) => ui.errors[k]);
+          return html`<details class="disclosure hl-comp" data-comp ${open ? 'open' : ''}>
+            <summary>${g.title}<span class="hl-comp__n">${filled ? `${filled} Werte` : 'Waage (BIA)'}</span></summary>
+            <p class="text-xs muted mb-0">Werte deiner Körperanalyse-Waage (z. B. RENPHO). Alles optional – am einfachsten per Import.</p>
+            <div class="v2-form-grid hl-grid">${g.fields.map(field)}</div>
+          </details>`;
+        })}
         <div class="field">
           <label class="field__label" for="hf-note">Notiz</label>
           <textarea class="textarea" id="hf-note" name="note" maxlength="500" rows="2" placeholder="z. B. schlecht geschlafen, Knie etwas steif">${entry?.note ?? ''}</textarea>
@@ -147,6 +196,7 @@ export function render(root, { store, content, query }) {
           <summary>So findest du die Werte in Samsung Health</summary>
           <ol class="v2-hint-steps">
             <li><strong>Gewicht, Körperfett:</strong> Startseite → Kachel „Körperzusammensetzung“ bzw. „Gewicht“ – Wert vom Morgen nehmen (nüchtern, nach dem WC).</li>
+            <li><strong>RENPHO-Waage:</strong> In der RENPHO-App die Messung öffnen – alle Werte (Muskelmasse, Viszeralfett, Grundumsatz …) stehen dort. Schneller: Screenshot über „Importieren“ einlesen.</li>
             <li><strong>Bauchumfang:</strong> selbst messen, auf Nabelhöhe, entspannt ausatmen.</li>
             <li><strong>Schritte, aktive Minuten:</strong> Kachel „Schritte“ bzw. „Aktivität / Aktive Zeit“ – den Tageswert vom Vortag übernehmen, wenn du morgens einträgst.</li>
             <li><strong>Ruhepuls:</strong> Kachel „Herzfrequenz“ → Tagesübersicht, Wert „Ruhe“ (oder morgens im Liegen messen).</li>
@@ -168,10 +218,13 @@ export function render(root, { store, content, query }) {
       <ul class="list list--card">
         ${visible.map((e) => {
           const d = parseISODate(e.date);
-          const chips = entrySummary(e);
+          const all = entrySummary(e);
+          const chips = all.filter((c) => SHORT[c.key]);
+          const more = all.length - chips.length;
+          const srcs = entrySources(e);
           return html`<li class="v2-entry">
             <span class="v2-entry__date"><b class="num">${String(d.getDate()).padStart(2, '0')}</b><span>${shortDate(e.date).slice(0, 3)} ${String(d.getMonth() + 1).padStart(2, '0')}.</span></span>
-            <span class="v2-entry__vals">${chips.map((c) => html`<span title="${c.label}"><span aria-hidden="true">${c.icon}</span> <span class="sr-only">${c.label}: </span>${c.text}</span>`)}${e.note ? html`<span class="muted">„${e.note}“</span>` : ''}</span>
+            <span class="v2-entry__vals">${chips.map((c) => html`<span title="${c.label}"><span aria-hidden="true">${c.icon}</span> <span class="sr-only">${c.label}: </span>${c.text}</span>`)}${more > 0 ? html`<span class="muted">+${more} Werte</span>` : ''}${srcs.map((b) => html`<span class="${srcClass(b)}">${b}</span>`)}${e.note ? html`<span class="muted">„${e.note}“</span>` : ''}</span>
             <span class="v2-entry__btns">
               <button class="btn btn--outline btn--sm" data-edit="${e.date}" aria-label="Eintrag vom ${formatDE(e.date)} bearbeiten">${raw(ICON2.edit)}</button>
               <button class="btn btn--danger btn--sm" data-del="${e.date}" aria-label="Eintrag vom ${formatDE(e.date)} löschen">${raw(ICON.trash)}</button>
@@ -202,6 +255,13 @@ export function render(root, { store, content, query }) {
     const painDelta = rep.avgNextDayPain != null && rep.prevAvgNextDayPain != null ? rep.avgNextDayPain - rep.prevAvgNextDayPain : null;
     const kpi = (v, l, met = false) => html`<div class="v2-kpi ${met ? 'is-met' : ''}"><span class="v2-kpi__v">${v}</span><span class="v2-kpi__l">${l}</span></div>`;
     const wDelta = rep.weight.deltaKg;
+    const bc = bodyCompositionInsight(log, today);
+    const bi = bmrInfo(data.settings.profile, log, today);
+    const compDelta = (k, unit = 'kg') => {
+      const w = bc.windows.find((x) => x.weeks === 4 && x.delta[k] != null) ?? bc.windows.find((x) => x.delta[k] != null);
+      return w ? html`<span class="num">${signed(w.delta[k])}</span><small>${unit}</small>` : '–';
+    };
+    const compVal = (k, unit = 'kg') => (bc.latest?.[k] != null ? `${de1(bc.latest[k])}${unit ? ' ' + unit : ''}` : null);
 
     return html`
       ${ready ? html`<section class="card">
@@ -270,6 +330,29 @@ export function render(root, { store, content, query }) {
           ${gp.warnings.map((w) => html`<p class="text-sm mt-2 mb-0" style="color:var(--yellow-ink)">⚠️ ${w}</p>`)}
           <a class="btn btn--ghost btn--sm mt-2" href="#/profil">Ziel anpassen</a>`
         : html`<a class="btn btn--soft btn--block" href="#/profil">${raw(ICON.target)} Gewichtsziel festlegen</a>`}
+      </section>
+
+      <section class="card" data-comp-card>
+        <div class="card__header"><div><p class="eyebrow">Körperanalyse-Waage · Trend</p><h2 class="card__title">Körperzusammensetzung</h2>
+          <span class="chip chip--sm ${COMP_STATUS_CHIP[bc.status]} mt-2">${bc.label}</span></div></div>
+        <p class="text-sm">${bc.text.startsWith(bc.label + ': ') ? bc.text.slice(bc.label.length + 2).replace(/^./, (c) => c.toUpperCase()) : bc.text}</p>
+        ${bc.status !== 'insufficient' ? html`<div class="v2-kpis hl-comp-kpis">
+          ${kpi(compDelta('weightKg'), compVal('weightKg') ? `Gewicht · ${compVal('weightKg')}` : 'Gewicht')}
+          ${kpi(compDelta('fatKg'), compVal('fatKg') ? `Fettmasse · ${compVal('fatKg')}` : 'Fettmasse', (bc.windows.at(-1).delta.fatKg ?? bc.windows[0].delta.fatKg ?? 0) < 0)}
+          ${kpi(compDelta(bc.latest?.skeletalMuscleKg != null ? 'skeletalMuscleKg' : 'muscleKg'), bc.latest?.skeletalMuscleKg != null ? `Skelettmuskel · ${compVal('skeletalMuscleKg')}` : compVal('muscleKg') ? `Muskelmasse · ${compVal('muscleKg')}` : 'Muskeln')}
+          ${kpi(compDelta('visceralFat', ''), compVal('visceralFat', '') ? `Viszeralfett · ${compVal('visceralFat', '')}` : 'Viszeralfett')}
+        </div>
+        <p class="text-xs muted mt-2 mb-0">Veränderung Wochenmittel über ${bc.basis} Wochen${bc.latest ? ` · letzte Messung ${formatDE(bc.latest.date, { weekday: false })}` : ''}.</p>` : ''}
+        ${bc.tips.length ? html`<ul class="v2-tips">${bc.tips.map((t) => html`<li>${t}</li>`)}</ul>` : ''}
+        <p class="text-xs muted mt-2 mb-0">ℹ️ ${bc.caution}</p>
+        <h3 class="text-sm mt-4 mb-0">Grundumsatz <small class="muted">(Schätzung)</small></h3>
+        ${bi.kcal != null ? html`<dl class="hl-bmr">
+          <div><dt>Verwendet</dt><dd>${fmtNum(bi.kcal)} kcal</dd></div>
+          <div><dt>Waage</dt><dd>${bi.scaleKcal != null ? `${fmtNum(bi.scaleKcal)} kcal` : '–'}</dd></div>
+          <div><dt>Formel</dt><dd>${bi.formulaKcal != null ? `${fmtNum(bi.formulaKcal)} kcal` : '–'}</dd></div>
+        </dl>
+        <p class="text-xs muted mt-2 mb-0">${BMR_METHOD_LABELS[bi.method]}${bi.scaleDate ? ` · Waage vom ${formatDE(bi.scaleDate, { weekday: false })}` : ''}. Waagenwerte gelten 14 Tage; sind beide da, wird der Mittelwert für Tagesbedarf und Kalorienziel genutzt.</p>`
+        : html`<p class="text-sm mb-0">Trag dein Profil ein oder importiere einen Waagen-Wert, dann schätzt die App deinen Grundumsatz. <a href="#/profil">Profil öffnen</a></p>`}
       </section>`;
   };
 
@@ -282,6 +365,12 @@ export function render(root, { store, content, query }) {
     <section class="card"><div class="card__header"><h2 class="card__title">Gewicht</h2><span class="card__sub" data-wnow></span></div>
       <div data-c-weight></div>
       <div class="chart-legend"><span><i style="--c:var(--chart-1);opacity:.5"></i>Tageswert</span><span><i style="--c:var(--chart-1)"></i>Ø 7 Tage</span><span data-goal-legend><i style="--c:var(--gold)"></i>Ziel</span></div></section>
+    <section class="card" data-comp-chart="bodyFatPct"><div class="card__header"><h2 class="card__title">Körperfett</h2><span class="card__sub">% · Waage (BIA)</span></div><div data-c-fat></div>
+      <div class="chart-legend"><span><i style="--c:var(--accent);opacity:.5"></i>Messung</span><span><i style="--c:var(--accent)"></i>Ø 7 Tage</span></div></section>
+    <section class="card" data-comp-chart="skeletalMuscleKg"><div class="card__header"><h2 class="card__title">Skelettmuskelmasse</h2><span class="card__sub">kg · soll beim Abnehmen bleiben</span></div><div data-c-muscle></div>
+      <div class="chart-legend"><span><i style="--c:var(--chart-2);opacity:.5"></i>Messung</span><span><i style="--c:var(--chart-2)"></i>Ø 7 Tage</span></div></section>
+    <section class="card" data-comp-chart="visceralFat"><div class="card__header"><h2 class="card__title">Viszeralfett</h2><span class="card__sub">Index der Waage · Bauchfett</span></div><div data-c-visc></div>
+      <div class="chart-legend"><span><i style="--c:var(--gold);opacity:.5"></i>Messung</span><span><i style="--c:var(--gold)"></i>Ø 7 Tage</span></div></section>
     <section class="card"><div class="card__header"><h2 class="card__title">Schritte</h2><span class="card__sub">Ø pro Tag und Woche</span></div><div data-c-steps></div></section>
     <section class="card"><div class="card__header"><h2 class="card__title">Schlaf</h2><span class="card__sub">Stunden pro Nacht</span></div><div data-c-sleep></div>
       <div class="chart-legend"><span><i style="--c:var(--chart-3);opacity:.5"></i>Nacht</span><span><i style="--c:var(--chart-3)"></i>Ø 7 Tage</span></div></section>
@@ -300,6 +389,17 @@ export function render(root, { store, content, query }) {
     const wi = weightInsight(log, today);
     root.querySelector('[data-wnow]').textContent = wi.currentKg != null ? `Ø 7 Tage: ${de1(wi.currentKg)} kg` : '';
     fittedLineChart(root.querySelector('[data-c-weight]'), wSeries, { pad: 0.5, step: 1, minSpan: 4, digits: 1, unit: 'kg', label: 'Gewichtsverlauf mit 7-Tage-Mittel', from, to: today });
+    const comp = [
+      ['bodyFatPct', '[data-c-fat]', 'var(--accent)', { pad: 0.5, step: 1, minSpan: 3, digits: 1, unit: '%', label: 'Körperfettanteil' }],
+      ['skeletalMuscleKg', '[data-c-muscle]', 'var(--chart-2)', { pad: 0.5, step: 1, minSpan: 3, digits: 1, unit: 'kg', label: 'Skelettmuskelmasse' }],
+      ['visceralFat', '[data-c-visc]', 'var(--gold)', { pad: 1, step: 1, minSpan: 4, digits: 1, unit: '', label: 'Viszeralfett-Index' }],
+    ];
+    for (const [k, sel, color, o] of comp) {
+      const card = root.querySelector(`[data-comp-chart="${k}"]`);
+      const pts = series(log, k, days, today);
+      card.hidden = !log.some((e) => typeof e[k] === 'number');
+      if (!card.hidden) fittedLineChart(root.querySelector(sel), [{ name: HEALTH_FIELDS[k].label, color, points: pts, mean: true }], { ...o, from, to: today });
+    }
     const wk = weeklyAverages(log, { weeks: ui.range === '4w' ? 4 : 13, today });
     barChart(root.querySelector('[data-c-steps]'), wk.map((x) => ({ label: `KW${isoWeekKey(x.weekStart).slice(-2)}`, value: Math.round(x.avg.steps ?? 0) })), {
       label: 'Durchschnittliche Schritte pro Tag je Woche', format: (v) => (v >= 1000 ? `${fmtNum(v / 1000, 1)}k` : fmtNum(v)),
@@ -350,9 +450,15 @@ export function render(root, { store, content, query }) {
     let existed = false;
     store.update((d) => {
       const prev = d.state.healthLog || [];
-      existed = prev.some((x) => x.date === v.entry.date);
+      const old = prev.find((x) => x.date === v.entry.date);
+      existed = !!old;
       xp = healthLogXp(prev, v.entry.date);
-      d.state.healthLog = upsertEntry(prev, v.entry, { replace: true });
+      const next = { ...v.entry, source: old?.source ?? v.entry.source };
+      const src = manualSources(old, next);
+      if (src) next.sources = src;
+      // keep the import time only while no value was changed by hand (manual values are then protected on re-import)
+      if (old?.measuredAt && src && !Object.values(src).includes('manual')) next.measuredAt = old.measuredAt;
+      d.state.healthLog = upsertEntry(prev, next, { replace: true });
       d.state.xp = (d.state.xp || 0) + xp;
       badges = awardBadges(d, content.badges, today);
     });
@@ -388,6 +494,10 @@ export function render(root, { store, content, query }) {
     }
   };
 
+  const onToggle = (e) => {
+    if (e.target.matches?.('[data-comp]')) ui.compOpen = e.target.open;
+  };
+
   const onChange = (e) => {
     const t = e.target;
     if (t.name === 'tab') { ui.tab = t.value; ui.errors = {}; syncUrl(); draw(); return; }
@@ -405,12 +515,14 @@ export function render(root, { store, content, query }) {
   root.addEventListener('submit', onSubmit);
   root.addEventListener('click', onClick);
   root.addEventListener('change', onChange);
+  root.addEventListener('toggle', onToggle, true);
   const unsub = store.subscribe(draw);
   return () => {
     unsub();
     root.removeEventListener('submit', onSubmit);
     root.removeEventListener('click', onClick);
     root.removeEventListener('change', onChange);
+    root.removeEventListener('toggle', onToggle, true);
     document.querySelectorAll('dialog.modal[open]').forEach((d) => d.close());
   };
 }

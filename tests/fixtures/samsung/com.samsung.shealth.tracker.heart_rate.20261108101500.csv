@@ -1,0 +1,8 @@
+﻿com.samsung.shealth.tracker.heart_rate,6311013,3
+source,tag_id,com.samsung.health.heart_rate.create_sh_ver,com.samsung.health.heart_rate.heart_beat_count,com.samsung.health.heart_rate.start_time,com.samsung.health.heart_rate.custom,com.samsung.health.heart_rate.binning_data,com.samsung.health.heart_rate.modify_sh_ver,com.samsung.health.heart_rate.update_time,com.samsung.health.heart_rate.create_time,com.samsung.health.heart_rate.client_data_id,com.samsung.health.heart_rate.max,com.samsung.health.heart_rate.min,com.samsung.health.heart_rate.client_data_ver,com.samsung.health.heart_rate.time_offset,com.samsung.health.heart_rate.deviceuuid,com.samsung.health.heart_rate.comment,com.samsung.health.heart_rate.pkg_name,com.samsung.health.heart_rate.end_time,com.samsung.health.heart_rate.datauuid,com.samsung.health.heart_rate.heart_rate
+,21313,,1,2026-11-01 03:00:00.000,,,,,,,68.0,55.0,,UTC+0100,WatchGW7aa,,com.sec.android.app.shealth,2026-11-01 03:59:59.999,h1,61.0,
+,21313,,1,2026-11-01 04:00:00.000,,,,,,,64.0,54.0,,UTC+0100,WatchGW7aa,,com.sec.android.app.shealth,2026-11-01 04:59:59.999,h2,58.0,
+,21313,,1,2026-11-01 15:00:00.000,,,,,,,132.0,71.0,,UTC+0100,WatchGW7aa,,com.sec.android.app.shealth,2026-11-01 15:59:59.999,h3,96.0,
+,21313,,1,2026-11-01 23:30:00.000,,,,,,,60.0,52.0,,UTC+0100,WatchGW7aa,,com.sec.android.app.shealth,2026-11-01 23:59:59.999,h4,57.0,
+,21313,,1,2026-11-02 10:00:00.000,,,,,,,90.0,66.0,,UTC+0100,WatchGW7aa,,com.sec.android.app.shealth,2026-11-02 10:59:59.999,h5,74.0,
+,21313,,1,2026-11-02 11:00:00.000,,,,,,,,,,UTC+0100,WatchGW7aa,,com.sec.android.app.shealth,2026-11-02 11:59:59.999,h6,250.0,
