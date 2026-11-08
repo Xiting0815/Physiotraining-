@@ -1,6 +1,6 @@
 // Heute – see docs/SPEC.md §3.1, §8, §12.12.
 // Card order (priority): banners → post-op status → welcome → hero (next strength workout) → OP countdown with
-// schedule hint → recommendations → Kurztraining + Rudern → week rings → Gewicht-Ziel → Tagebuch + OP-Bereitschaft
+// schedule hint → recommendations → Kurztraining + Rudern → week rings → OP-Bereitschaft (→ #/auswertung)
 // → Wochenbericht (Mondays) → Eigene Workouts (only with favourites) → XP → collapsed „Mehr für heute“
 // (Eigene-Workouts CTA when none exist yet, quote, last session, badge). The week ring replaces the reminder line.
 import { html, raw, render as paint } from '../render.js';
@@ -11,8 +11,6 @@ import { XP, levelFor, LEVELS, dailyQuote, opCountdown, reminderText } from '../
 import { taperActive } from '../logic/traffic-light.js';
 import { estimateWorkoutMinutes } from '../logic/duration.js';
 import { cardioMainLabel } from '../logic/cardio.js';
-import { goalProgress, calorieTarget } from '../logic/energy.js';
-import { entryFor, logStreak } from '../logic/health.js';
 import { weeklyReport, opReadiness } from '../logic/insights.js';
 import { scheduleHint, suggestedSurgeryDate, postOpStatus, canEnterPhase, clearance, POSTOP_DAYS } from '../logic/schedule.js';
 import { progressRing, streakFlame, xpBar } from '../components/charts.js';
@@ -131,7 +129,8 @@ export function render(root, { store, content }) {
     // after surgery, open suggestions from prehab sessions no longer apply (different protocol)
     const recSessions = phase?.kind === 'postop' ? sessions.filter((s) => s.postOp) : sessions;
     const recs = pendingRecommendations(recSessions).filter((r) => !(taper && r.rec.action === 'progress'));
-    const badgeEntries = Object.entries(state.badges || {}).sort((a, b) => (a[1] < b[1] ? 1 : -1));
+    // stored ids of removed badges (v3.1: weight/diary badges) stay in state but are never shown
+    const badgeEntries = Object.entries(state.badges || {}).filter(([id]) => content.badges.some((b) => b.id === id)).sort((a, b) => (a[1] < b[1] ? 1 : -1));
     const recentBadge = badgeEntries.length ? content.badges.find((b) => b.id === badgeEntries[0][0]) : null;
     const recentBadgeAt = badgeEntries[0]?.[1];
     const goalMet = wk.goal > 0 && wk.done >= wk.goal;
@@ -152,11 +151,6 @@ export function render(root, { store, content }) {
     const rowingAllowed = !post.surgeryPassed && !isPostOpPhase;
     const cardio = cardioProgress(sessions, settings.cardioGoalPerWeek ?? 3, today);
     const cardioMet = cardio.goal > 0 && cardio.done >= cardio.goal;
-    const log = state.healthLog || [];
-    const todayEntry = entryFor(log, today);
-    const logRun = logStreak(log, today);
-    const gp = goalProgress(log, settings.weightGoal, today, settings.profile);
-    const kcalT = gp ? calorieTarget(settings.profile, log, settings.weightGoal, today) : null;
     const readiness = !post.surgeryPassed && !isPostOpPhase && done.length ? opReadiness(data, content, today) : null;
     const report = isMonday(today) && done.length ? weeklyReport(data, content, today, { weekOf: addDays(today, -7) }) : null;
     const customs = recentCustomWorkouts(state.customWorkouts, sessions, 3);
@@ -396,58 +390,23 @@ export function render(root, { store, content }) {
         </a>
       </div>`;
 
-    /* ---------------- Gewicht-Ziel ---------------- */
-    const weightCard = firstRun ? '' : !gp
-      ? html`<section class="card pv-quick" aria-labelledby="goal-title">
-          <span class="pv-icon-badge pv-icon-badge--gold" aria-hidden="true">${raw(ICON.scale)}</span>
-          <div class="grow"><p class="eyebrow mb-0">Gewicht-Ziel</p>
-            <h3 class="pv-quick__title" id="goal-title">Ziel festlegen</h3>
-            <p class="pv-quick__sub">Zielgewicht und Datum – die App zeigt Fortschritt, Tempo und eine Kalorien-Schätzung.</p></div>
-          <a class="btn btn--soft btn--sm" href="#/profil?focus=ziel">Ziel festlegen</a>
-        </section>`
-      : html`<section class="card pv-goal" aria-labelledby="goal-title">
-          <div class="pv-goal__head">
-            ${raw(progressRing({ value: gp.ratio, label: gp.lostKg != null ? fmtNum(Math.max(0, gp.lostKg), 1) : '–', unit: 'kg weg', size: 'md', variant: gp.reached ? 'gold' : 'primary', ariaLabel: `${Math.round(gp.ratio * 100)} % des Gewicht-Ziels` }))}
-            <div class="grow">
-              <p class="eyebrow mb-0">Gewicht-Ziel · ${fmtNum(gp.targetKg, 1, { trim: true })} kg</p>
-              <h3 class="pv-quick__title" id="goal-title">${gp.reached ? 'Ziel erreicht! 🏆' : gp.currentKg == null ? 'Gewicht eintragen' : html`Noch <span class="num">${fmtNum(gp.remainingKg, 1)}</span> kg`}</h3>
-              <p class="pv-quick__sub">${gp.currentKg != null ? html`Aktuell <strong class="num">${fmtNum(gp.currentKg, 1)} kg</strong> (7-Tage-Schnitt) · Start ${fmtNum(gp.startKg, 1)} kg` : 'Trag dein Gewicht im Tagebuch ein, dann rechnen wir los.'}</p>
-            </div>
-          </div>
-          ${gp.currentKg != null && !gp.reached ? html`<dl class="pv-kv">
-            <div><dt>Nötig</dt><dd class="num">${gp.requiredKgPerWeek != null ? html`${fmtNum(gp.requiredKgPerWeek, 2)} <small>kg/Woche</small>` : '–'}</dd></div>
-            <div><dt>Trend</dt><dd class="num">${gp.trendKgPerWeek != null ? html`${fmtNum(gp.trendKgPerWeek, 2, { sign: true })} <small>kg/Woche</small>` : html`– <small>zu wenig Daten</small>`}</dd></div>
-            <div><dt>Prognose</dt><dd class="num">${gp.projectedDate ? html`${shortDate(gp.projectedDate).slice(5)}<small>${String(gp.projectedDate).slice(0, 4)}</small>` : '–'}</dd></div>
-          </dl>
-          <p class="pv-goal__track ${gp.onTrack === true ? 'is-on' : gp.onTrack === false ? 'is-off' : ''}">${gp.onTrack === true ? '✓ Im Plan – weiter so, ganz in Ruhe.' : gp.onTrack === false ? '↻ Etwas langsamer als geplant – kein Stress, Regelmäßigkeit zählt.' : 'Wieg dich an mindestens 4 Tagen, dann gibt es einen Trend.'}${settings.weightGoal?.targetDate ? ` Ziel bis ${formatDE(settings.weightGoal.targetDate, { weekday: false })}.` : ''}</p>` : ''}
-          ${gp.warnings.map((t) => html`<div class="pv-callout pv-callout--warn mb-2"><span class="pv-callout__icon" aria-hidden="true">⚠️</span><p class="text-sm">${t}</p></div>`)}
-          <div class="pv-goal__foot">
-            <span class="text-sm">${kcalT ? html`🍽️ ca. <strong class="num">${kcalT.kcal}</strong> kcal/Tag <span class="muted">(${kcalT.label})</span>` : html`<a href="#/profil">Profil ergänzen</a> <span class="muted">für eine Kalorien-Schätzung</span>`}</span>
-            <a class="btn btn--ghost btn--sm" href="#/profil?focus=ziel">Ziel ändern</a>
-          </div>
-        </section>`;
-
-    /* ---------------- Tagebuch + OP-Bereitschaft ---------------- */
-    const diary = html`<a class="card card--tight pv-tile" href="#/gesundheit" aria-label="Tagebuch heute ${todayEntry ? 'eingetragen' : 'offen'}">
-        <p class="eyebrow mb-0">Tagebuch heute</p>
-        <span class="pv-tile__icon ${todayEntry ? 'is-done' : ''}" aria-hidden="true">${todayEntry ? raw(ICON.check) : raw(ICON.book)}</span>
-        <span class="pv-tile__title">${todayEntry ? 'Eingetragen ✓' : 'Jetzt eintragen'}</span>
-        <span class="pv-mini__note">${logRun ? `🔥 ${logRun} ${logRun === 1 ? 'Tag' : 'Tage'} in Folge` : `+${XP.healthLog ?? 5} XP · 1 Minute`}</span>
-      </a>`;
-    const ready = readiness ? html`<a class="card card--tight pv-tile" href="#/gesundheit?focus=bereitschaft" aria-label="OP-Bereitschaft ${readiness.score} von 100">
-        <p class="eyebrow mb-0">OP-Bereitschaft</p>
+    /* ---------------- OP-Bereitschaft ---------------- */
+    const tiles = readiness && !firstRun ? html`<a class="card pv-report pv-ready" href="#/auswertung?focus=bereitschaft" aria-label="OP-Bereitschaft ${readiness.score} von 100: ${readiness.label} – zur Auswertung">
         ${raw(progressRing({ value: readiness.score, max: 100, label: readiness.score, size: 'sm', variant: readiness.score >= 80 ? 'gold' : 'primary', ariaLabel: `${readiness.score} von 100: ${readiness.label}` }))}
-        <span class="pv-tile__title">${readiness.label}</span>
-        ${readiness.tips[0] ? html`<span class="pv-mini__note pv-tile__tip">${readiness.tips[0]}</span>` : ''}
+        <span class="grow">
+          <span class="eyebrow">OP-Bereitschaft</span>
+          <span class="list-item__title">${readiness.label}</span>
+          ${readiness.tips[0] ? html`<span class="list-item__sub pv-ready__tip">${readiness.tips[0]}</span>` : ''}
+        </span>
+        ${raw(ICON.chev)}
       </a>` : '';
-    const tiles = firstRun ? '' : html`<div class="grid-2 mb-4 pv-tiles${ready ? '' : ' is-single'}">${diary}${ready}</div>`;
 
     /* ---------------- Wochenbericht (Mondays) ---------------- */
-    const reportCard = report ? html`<a class="card pv-report" href="#/gesundheit?focus=bericht">
+    const reportCard = report ? html`<a class="card pv-report" href="#/auswertung?focus=bericht">
         <span class="pv-icon-badge pv-icon-badge--gold" aria-hidden="true">📊</span>
         <span class="grow">
           <span class="eyebrow">Wochenbericht · ${shortDate(report.weekStart)} – ${shortDate(report.weekEnd)}</span>
-          <span class="list-item__title">Kraft ${report.strength.done}/${report.strength.goal} · Rudern ${report.cardio.done}/${report.cardio.goal}${report.weight.deltaKg != null ? ` · ${fmtNum(report.weight.deltaKg, 1, { sign: true })} kg` : ''}</span>
+          <span class="list-item__title">Kraft ${report.strength.done}/${report.strength.goal} · Rudern ${report.cardio.done}/${report.cardio.goal}</span>
           <span class="list-item__sub">${report.highlights[0] ?? report.notes[0] ?? 'Neue Woche, neuer Pfeil im Köcher.'}</span>
         </span>
         ${raw(ICON.chev)}
@@ -555,7 +514,6 @@ export function render(root, { store, content }) {
       ${rowCard}
       ${reminder && !firstRun && !postMode && !weekRings ? html`<div class="pv-reminder"><span aria-hidden="true">🌱</span><span>${reminder}</span></div>` : ''}
       ${weekRings}
-      ${weightCard}
       ${tiles}
       ${reportCard}
       ${customs.length ? customCard : ''}

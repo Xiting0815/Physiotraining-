@@ -3,14 +3,13 @@ import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE, daysBetween } from '../util/date.js';
 import { defaults } from '../store.js';
 import { suggestedSurgeryDate } from '../logic/schedule.js';
-import { entryFor } from '../logic/health.js';
 import { downloadBackup, readBackupFile } from '../util/export-import.js';
 import {
   ICON, ensureViewStyles, applyFontScale, pageHeader, confirmDialog, toast, openSheet, equipmentItems,
 } from './ui.js';
 
 export const title = 'Mehr';
-export const APP_VERSION = '3.0.0';
+export const APP_VERSION = '3.1.0';
 
 const REST_OPTIONS = [null, 30, 45, 60, 90, 120];
 const FONT_SCALES = [{ v: 1, l: 'Normal' }, { v: 1.125, l: 'Groß' }, { v: 1.25, l: 'Sehr groß' }];
@@ -100,8 +99,7 @@ export function render(root, { store, content, query }) {
     const suggested = suggestedSurgeryDate(s);
     const ownsRower = (s.ownedEquipment || []).includes('rowing-machine');
     const customCount = (data.state.customWorkouts || []).length;
-    const logged = !!entryFor(data.state.healthLog || [], today);
-    const goal = s.weightGoal;
+    const kg = s.profile?.weightKg;
 
     paint(root, html`
       ${pageHeader({ title: 'Mehr', eyebrow: 'Einstellungen & Daten' })}
@@ -124,17 +122,13 @@ export function render(root, { store, content, query }) {
       </section>
 
       <ul class="list list--card">
+        <li><a class="list-item" href="#/auswertung">
+          <span class="list-item__icon list-item__icon--gold">${raw(ICON.chart)}</span>
+          <span class="list-item__body"><span class="list-item__title">Auswertung</span><span class="list-item__sub">OP-Bereitschaft, Wochenbericht, Trainingslast ↔ Knie</span></span>
+          ${raw(ICON.chev)}</a></li>
         <li><a class="list-item" href="#/profil">
           <span class="list-item__icon">${raw(ICON.user)}</span>
-          <span class="list-item__body"><span class="list-item__title">Profil & Ziele</span><span class="list-item__sub">${goal ? `Ziel ${String(goal.targetKg).replace('.', ',')} kg bis ${formatDE(goal.targetDate, { weekday: false })}` : 'Gewicht-Ziel, Körperdaten, Rudern pro Woche'}</span></span>
-          ${raw(ICON.chev)}</a></li>
-        <li><a class="list-item" href="#/gesundheit">
-          <span class="list-item__icon list-item__icon--gold">${raw(ICON.book)}</span>
-          <span class="list-item__body"><span class="list-item__title">Gesundheits-Tagebuch</span><span class="list-item__sub">${logged ? 'Heute eingetragen ✓ · Auswertungen & Wochenbericht' : 'Gewicht, Schlaf, Schritte · Wochenbericht'}</span></span>
-          ${raw(ICON.chev)}</a></li>
-        <li><a class="list-item" href="#/import">
-          <span class="list-item__icon list-item__icon--gold">${raw(ICON.upload)}</span>
-          <span class="list-item__body"><span class="list-item__title">Daten importieren (RENPHO / Samsung Health)</span><span class="list-item__sub">Waagen-Screenshot oder Samsung-Export übernehmen</span></span>
+          <span class="list-item__body"><span class="list-item__title">Trainingsziele</span><span class="list-item__sub">${typeof kg === 'number' ? `Rudern pro Woche · ${String(kg).replace('.', ',')} kg für die Kalorienschätzung` : 'Rudern pro Woche, Körpergewicht für die Kalorienschätzung'}</span></span>
           ${raw(ICON.chev)}</a></li>
         <li><a class="list-item" href="#/eigene">
           <span class="list-item__icon list-item__icon--accent">${raw(ICON.puzzle)}</span>

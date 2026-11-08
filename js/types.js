@@ -147,55 +147,16 @@
  * @property {string|null} lastBackupAt ISO timestamp of the last JSON export
  * @property {number} cardioGoalPerWeek   v2 rowing sessions per week (default 3)
  * @property {string} surgeryDateSuggested v2 pre-fill value ("2027-01-05"), never auto-applied
- * @property {Profile} profile            v2
- * @property {WeightGoal|null} weightGoal v2
+ * @property {Profile} profile            v2; v3.1: only weightKg is used (kcal estimate per session)
+ * @property {any} [weightGoal]           legacy (v2/v3 weight goal) – unused since v3.1, kept untouched
  */
 
-/** @typedef {{heightCm: number|null, birthYear: number|null, sex: 'm'|'w'|'d'|null, activityLevel: 'sedentary'|'light'|'moderate'|'active'}} Profile */
-/** @typedef {{targetKg: number, targetDate: string, startKg: number, startDate: string}} WeightGoal */
+/**
+ * v3.1 (SPEC §14): `weightKg` feeds the kcal estimate. Legacy keys of v2/v3 (heightCm, birthYear, sex,
+ * activityLevel) may still be present in stored data and are ignored.
+ * @typedef {{weightKg: number|null}} Profile
+ */
 /** @typedef {{durationSec?: number, distanceM?: number, avgSpm?: number, avgWatt?: number, kcalDisplay?: number, avgHr?: number, maxHr?: number}} RowingLog */
-/**
- * @typedef {Object} HealthEntry  (v2; body composition, measuredAt & sources added in v3 – all optional, §13)
- * @property {string} date "YYYY-MM-DD" (one entry per date)
- * @property {number} [weightKg]
- * @property {number} [bmi]
- * @property {number} [bodyFatPct]
- * @property {number} [bodyFatKg]
- * @property {number} [subcutFatPct]
- * @property {number} [visceralFat]       scale index (RENPHO 1–59, Samsung vfa_level)
- * @property {number} [musclePct]
- * @property {number} [muscleKg]
- * @property {number} [skeletalMusclePct]
- * @property {number} [skeletalMuscleKg]
- * @property {number} [bonePct]
- * @property {number} [boneKg]
- * @property {number} [fatFreeKg]
- * @property {number} [metabolicAge]
- * @property {number} [bmrKcal]           basal metabolic rate shown by the scale
- * @property {number} [waterPct]
- * @property {number} [waterKg]
- * @property {number} [proteinPct]
- * @property {number} [proteinKg]
- * @property {number} [waistCm]
- * @property {number} [steps]
- * @property {number} [activeMin]
- * @property {number} [restingHr]
- * @property {number} [avgTrainingHr]
- * @property {number} [sleepH]
- * @property {string} [note]
- * @property {string} [measuredAt]        ISO date-time of the (latest) measurement – used by import merge
- * @property {Record<string, HealthFieldSource>} [sources] per-field origin
- * @property {'samsung-health-manual'|'samsung-export'|'renpho-ocr'|'csv'|'import'} source  legacy entry-level source
- */
-/** @typedef {'manual'|'renpho-ocr'|'samsung-export'|'csv'} HealthFieldSource */
-/**
- * @typedef {Object} ImportPreviewRow
- * @property {string} date
- * @property {string} field  key of HEALTH_FIELDS or "note"
- * @property {number|string|null} old
- * @property {number|string|null} new
- * @property {'new'|'changed'|'same'|'conflict'} status
- */
 /**
  * @typedef {Object} CustomWorkout
  * @property {string} id  "cw-…"
@@ -206,6 +167,7 @@
  * @property {WorkoutItem[]} warmup
  * @property {{id: 'knee'|'archery', title: string, items: WorkoutItem[]}[]} blocks
  * @property {WorkoutItem[]} cooldown
+ */
 
 /** @typedef {{done: boolean, reps?: number|null, hold?: number|null, seconds?: number|null, band?: string|null, at: string}} SetLog */
 
@@ -300,7 +262,7 @@
  * @property {boolean} welcomeDone      first-run welcome card on Heute hidden by the user
  * @property {boolean} bandsConfirmed   band order confirmed in the welcome card
  * @property {CustomWorkout[]} customWorkouts v2
- * @property {HealthEntry[]} healthLog        v2 sorted by date
+ * @property {any[]} [healthLog]             legacy v2/v3 diary – unused since v3.1, kept untouched (and in backups)
  * @property {Record<string, boolean>} exerciseToggles v2 false = disabled, true = enabled despite postOpAllowed=false
  * @property {{confirmedAt: string, note: string}|null} postOpClearance    v2
  * @property {{confirmedAt: string, note: string}|null} postOpEndClearance v2

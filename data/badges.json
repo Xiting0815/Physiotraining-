@@ -14,10 +14,6 @@
     {"id": "first-row", "name": "Erste Ruderfahrt", "description": "Erste Rudereinheit abgeschlossen.", "icon": "🚣", "rule": {"type": "cardioCount", "n": 1}},
     {"id": "row-10km", "name": "10 km gerudert", "description": "Insgesamt 10 Kilometer auf dem Rudergerät.", "icon": "🌊", "rule": {"type": "rowingDistance", "n": 10000}},
     {"id": "row-50km", "name": "50 km gerudert", "description": "Insgesamt 50 Kilometer auf dem Rudergerät.", "icon": "⛵", "rule": {"type": "rowingDistance", "n": 50000}},
-    {"id": "first-custom", "name": "Erstes eigenes Workout", "description": "Ein eigenes Workout zusammengestellt.", "icon": "🛠️", "rule": {"type": "customWorkout", "n": 1}},
-    {"id": "minus-2kg", "name": "−2 kg", "description": "2 Kilo leichter als zu Beginn (7-Tage-Schnitt).", "icon": "📉", "rule": {"type": "weightLost", "n": 2}},
-    {"id": "minus-5kg", "name": "−5 kg", "description": "5 Kilo leichter als zu Beginn (7-Tage-Schnitt).", "icon": "🏆", "rule": {"type": "weightLost", "n": 5}},
-    {"id": "goal-reached", "name": "Ziel erreicht", "description": "Zielgewicht erreicht.", "icon": "🎉", "rule": {"type": "weightGoalReached"}},
-    {"id": "log-7", "name": "7 Tage Tagebuch", "description": "7 Tage in Folge Gesundheitswerte eingetragen.", "icon": "📒", "rule": {"type": "healthLogStreak", "n": 7}}
+    {"id": "first-custom", "name": "Erstes eigenes Workout", "description": "Ein eigenes Workout zusammengestellt.", "icon": "🛠️", "rule": {"type": "customWorkout", "n": 1}}
   ]
 }

@@ -7,7 +7,7 @@ import { rotationAfter, applyRecommendation, getWorkout, workoutKind } from '../
 import { xpFor, levelFor, evaluateBadges, sessionScore, XP } from '../logic/motivation.js';
 import { doneSessions, sessionLight, personalRecords, newRecords, dayOf, isCardioSession } from '../logic/stats.js';
 import { rowingRecords, pacePer500, INTENSITY_LABELS } from '../logic/cardio.js';
-import { sessionKcal, currentWeight } from '../logic/energy.js';
+import { sessionKcal, bodyWeightKg } from '../logic/energy.js';
 import { todayISO, toISODate } from '../util/date.js';
 import { html, raw } from '../render.js';
 
@@ -279,7 +279,7 @@ export function finishSession(data, active, content, { now = new Date() } = {}) 
   const nextRec = personalRecords([...history, s], settings);
   const recKeys = newRecords(prevRec, nextRec);
   const rowRecs = isCardioSession(s) ? newRowingRecords(history, s) : [];
-  const kc = sessionKcal(s, settings?.profile, currentWeight(d.state.healthLog || [], today), content);
+  const kc = sessionKcal(s, bodyWeightKg(settings), content);
   s.energy = { kcal: kc.kcal, method: kc.method };
 
   const xpBefore = d.state.xp || 0;
@@ -325,7 +325,7 @@ export function energyOf(session, data, content, today = todayISO()) {
   if (session?.energy && typeof session.energy.kcal === 'number') {
     return { kcal: session.energy.kcal, method: session.energy.method, label: energyLabel(session.energy.method) };
   }
-  const k = sessionKcal(session, data?.settings?.profile, currentWeight(data?.state?.healthLog || [], today), content);
+  const k = sessionKcal(session, bodyWeightKg(data?.settings), content);
   return { kcal: k.kcal, method: k.method, label: energyLabel(k.method) };
 }
 /** „vom Display“ for display kcal, else „Schätzung“. */

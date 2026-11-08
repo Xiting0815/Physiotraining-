@@ -3,7 +3,6 @@
 // touch the DOM / store only when called.
 import { exportData, get, importData, migrate as storeMigrate, migrations as storeMigrations, SCHEMA_VERSION } from '../store.js';
 import { todayISO } from './date.js';
-import { mergeLogs } from '../logic/health.js';
 import { mergeCustomWorkouts } from '../logic/custom-workouts.js';
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -80,6 +79,18 @@ export function migrateBackup(obj, { migrations = storeMigrations, target = SCHE
 const sessionTime = (s) => String(s.startedAt || s.endedAt || '');
 
 /**
+ * Legacy health log (v2/v3 diary, unused since v3.1 but kept in backups): merge by date, fields of the
+ * current entry win, incoming fields fill gaps. Sorted by date (oldest first); invalid entries dropped.
+ */
+export function mergeLegacyLog(current, incoming) {
+  const m = new Map();
+  const valid = (list) => (Array.isArray(list) ? list : []).filter((e) => isObj(e) && typeof e.date === 'string');
+  for (const e of valid(incoming)) m.set(e.date, { ...e });
+  for (const e of valid(current)) m.set(e.date, { ...(m.get(e.date) || {}), ...e });
+  return [...m.values()].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+}
+
+/**
  * Merge `incoming` into `current` by session id (both already migrated).
  * - sessions: union by id; on conflict the current one wins unless only the incoming one has a
  *   next-day check-in; sorted by startedAt (oldest first).
@@ -118,17 +129,18 @@ export function mergeBackups(current, incoming) {
     const b = is.records?.[k];
     if (b && (!a || (b[field] ?? -Infinity) > (a[field] ?? -Infinity))) records[k] = b;
   }
-  // v2: health log by date, custom workouts by id (newer updatedAt wins), profile/weightGoal/toggles: current wins, gaps filled.
+  // v2: custom workouts by id (newer updatedAt wins), profile/toggles: current wins, gaps filled.
+  // Legacy (v3.1 unused, kept untouched): healthLog by date, weightGoal current wins.
   const csets = cur.settings || {};
   const isets = inc.settings || {};
   const profile = { ...(isets.profile || {}) };
   for (const [k, v] of Object.entries(csets.profile || {})) if (v != null || !(k in profile)) profile[k] = v;
   return {
     ...cur,
-    settings: { ...csets, profile, weightGoal: csets.weightGoal ?? isets.weightGoal ?? null },
+    settings: { ...csets, profile, ...('weightGoal' in csets || 'weightGoal' in isets ? { weightGoal: csets.weightGoal ?? isets.weightGoal ?? null } : {}) },
     state: {
       ...cs, exerciseLevels, exitCriteriaDone, badges, records, xp: Math.max(cs.xp || 0, is.xp || 0),
-      healthLog: mergeLogs(cs.healthLog, is.healthLog),
+      ...(cs.healthLog || is.healthLog ? { healthLog: mergeLegacyLog(cs.healthLog, is.healthLog) } : {}),
       customWorkouts: mergeCustomWorkouts(cs.customWorkouts, is.customWorkouts),
       exerciseToggles: { ...(is.exerciseToggles || {}), ...(cs.exerciseToggles || {}) },
       postOpClearance: cs.postOpClearance ?? is.postOpClearance ?? null,

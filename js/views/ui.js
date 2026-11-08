@@ -61,8 +61,7 @@ export const ICON = {
   knee: svg('<path d="M9 3v7l-2 5 3 6M15 3v6l1 5-2 7"/>'),
   bow: svg('<path d="M6 3c8 3 8 15 0 18M6 3v18M3 12h16M16 9l3 3-3 3"/>'),
   row: svg('<circle cx="6" cy="6" r="2"/><path d="M7 8l3 5h5M3 19h18M10 13l-3 6M15 13l3-6 3-1"/>'),
-  scale: svg('<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 9a5 5 0 0 1 8 0l-3 2.5"/>'),
-  book: svg('<path d="M5 4.5h10a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10M9 8h5"/>'),
+  chart: svg('<path d="M4 20h16M7 16v-5M12 16V6M17 16v-8"/>'),
   user: svg('<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/>'),
   heart: svg('<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>'),
   bolt: svg('<path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/>'),
@@ -556,33 +555,18 @@ a.card.pv-badge-row, .pv-badge-row { display: flex; align-items: center; gap: va
 .pv-quick__sub { margin: 0; font-size: var(--fs-sm); color: var(--muted); line-height: 1.35; }
 .pv-quick .btn { flex: none; }
 .pv-quick .btn svg, .pv-start .btn svg { width: 14px; height: 14px; }
-.pv-row-card__head, .pv-goal__head, .pv-postop-card__head { display: flex; align-items: center; gap: var(--s-3); }
+.pv-row-card__head, .pv-postop-card__head { display: flex; align-items: center; gap: var(--s-3); }
 .pv-row-card__head .ring, .pv-postop-card__head .ring { flex: none; }
-.pv-goal__head .ring { flex: none; --size: 96px; }
 .pv-start-list { list-style: none; margin: var(--s-3) 0 0; padding: 0; display: flex; flex-direction: column; }
 .pv-start { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) 0; min-height: var(--tap); }
 .pv-start + .pv-start { border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
 .pv-start__body { flex: 1; min-width: 0; }
 .pv-start__name { display: block; font-weight: var(--fw-semibold); line-height: 1.3; }
 .pv-start__meta { display: block; font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
-.pv-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin: var(--s-3) 0 var(--s-2); }
-.pv-kv > div { background: var(--surface-2); border-radius: var(--radius-sm); padding: var(--s-2); min-width: 0; }
-.pv-kv dt { font-size: var(--fs-xs); color: var(--muted); font-weight: var(--fw-semibold); }
-.pv-kv dd { margin: 0; font-weight: var(--fw-bold); font-size: var(--fs-sm); line-height: 1.3; }
-.pv-kv dd small { display: block; font-size: var(--fs-xs); font-weight: var(--fw-semibold); color: var(--muted); }
-.pv-goal__track { font-size: var(--fs-sm); color: var(--muted); margin: 0 0 var(--s-3); }
-.pv-goal__track.is-on { color: var(--green-ink); }
-.pv-goal__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); flex-wrap: wrap; border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); padding-top: var(--s-2); }
-a.card.pv-tile, .pv-tile { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--s-2); justify-content: flex-start; }
-.pv-tile__icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary-ink); }
-.pv-tile__icon svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.pv-tile__icon.is-done { background: var(--green); color: #fff; }
-.pv-tile__icon.is-done svg { stroke-width: 3; }
-.pv-tile__title { font-weight: var(--fw-bold); line-height: 1.25; }
-.pv-tile__tip { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400; }
-.pv-tiles.is-single { grid-template-columns: minmax(0, 1fr); }
 a.card.pv-report, .pv-report { display: flex; align-items: center; gap: var(--s-3); }
 .pv-report .eyebrow { display: block; margin: 0; }
+.pv-ready .ring { flex: none; }
+.pv-ready__tip { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .pv-postop { }
 .pv-postop__lead { color: var(--on-hero-muted); margin: 0 0 var(--s-3); }
 .pv-postop-card { border: 2px solid color-mix(in srgb, var(--primary) 28%, transparent); }

@@ -5,8 +5,7 @@ import { streak, trends, personalRecords, totalHoldSeconds, sessionLight, dayOf,
 import { sessionScore, levelFor } from '../logic/motivation.js';
 import { getWorkout } from '../logic/progression.js';
 import { rowingTotals, rowingRecords, pacePer500 } from '../logic/cardio.js';
-import { sessionKcal, currentWeight } from '../logic/energy.js';
-import { longestLogStreak } from '../logic/health.js';
+import { sessionKcal, bodyWeightKg } from '../logic/energy.js';
 import { ensureV2Styles, ICON2, sessionKind, fmtNum, fmtDistance, fmtClock, fmtPace, KCAL_METHOD_LABEL } from './v2-shared.js';
 import { lineChart, barChart, calendarHeatmap } from '../components/charts.js';
 import { targetFace } from '../components/celebrate.js';
@@ -42,9 +41,6 @@ export function badgeHint(badge, data) {
       return `${km(Math.min(rule.n ?? 10000, rowingTotals(done).distanceM))} / ${km(rule.n ?? 10000)} km`;
     }
     case 'customWorkout': return 'eigenes Workout bauen';
-    case 'weightLost': return `${rule.n ?? 2} kg leichter`;
-    case 'weightGoalReached': return 'Gewichtsziel erreichen';
-    case 'healthLogStreak': return `${Math.min(rule.n ?? 7, longestLogStreak(data?.state?.healthLog || []))} / ${rule.n ?? 7} Tage`;
     default: return badge?.description ?? '';
   }
 }
@@ -99,7 +95,7 @@ export function render(root, { store, content, query }) {
   let barMode = 'strength';
   const exName = (id) => content.exercises.find((e) => e.id === id)?.name ?? id;
   const sTitle = (s) => sessionTitle(s, content, store.getState());
-  const kcalOf = (s, data) => sessionKcal(s, data.settings.profile, currentWeight(data.state.healthLog || [], dayOf(s)), content);
+  const kcalOf = (s, data) => sessionKcal(s, bodyWeightKg(data.settings), content);
 
   const draw = () => {
     const data = store.get();

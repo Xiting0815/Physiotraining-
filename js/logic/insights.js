@@ -1,11 +1,10 @@
-// Analysis layer: weekly report, load vs. pain, simple correlations, OP readiness, weight trend. PURE.
+// Analysis layer (training only): weekly report, load vs. pain, OP readiness. PURE.
 // Correlations are descriptive only (Pearson r, ≥ MIN_POINTS pairs) and worded cautiously – never causal.
-// See docs/SPEC.md §12.11.
+// See docs/SPEC.md §12.11, §14 (v3.1: health-log / weight insights removed).
 import { addDays, startOfIsoWeek, toISODate } from '../util/date.js';
 import { cardioSessions, dayOf, doneSessions, isCardioSession, sessionLight, strengthSessions } from './stats.js';
 import { phaseProgress, levelOf } from './progression.js';
-import { sessionDurationSec, sessionKcal, currentWeight, weightTrend } from './energy.js';
-import { meanOf } from './health.js';
+import { sessionDurationSec, sessionKcal, bodyWeightKg } from './energy.js';
 
 export const MIN_POINTS = 8;
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -17,25 +16,6 @@ const de = (v, d = 2) => String(Math.round(v * 10 ** d) / 10 ** d).replace('.', 
 export function sessionLoad(session) {
   const rpe = isNum(session?.post?.rpe) ? session.post.rpe : 5;
   return Math.round(rpe * (sessionDurationSec(session) / 60));
-}
-
-/**
- * Knee pain per day: next-day check-in pain on its check-in date wins, else max pre-session pain of that day.
- * @returns {Map<string, number>}
- */
-export function dailyPain(sessions) {
-  const fromNd = new Map();
-  const fromPre = new Map();
-  for (const s of doneSessions(sessions)) {
-    if (isNum(s.nextDay?.pain)) {
-      const d = s.nextDay.at ? toISODate(new Date(s.nextDay.at)) : addDays(dayOf(s), 1);
-      fromNd.set(d, Math.max(fromNd.get(d) ?? 0, s.nextDay.pain));
-    }
-    if (isNum(s.pre?.pain)) fromPre.set(dayOf(s), Math.max(fromPre.get(dayOf(s)) ?? 0, s.pre.pain));
-  }
-  const out = new Map(fromPre);
-  for (const [d, v] of fromNd) out.set(d, v);
-  return out;
 }
 
 /** Pearson correlation; null with < MIN_POINTS pairs or zero variance. */
@@ -88,36 +68,6 @@ export function loadVsPain(sessions, { today, days = 56 } = {}) {
   return { points, r: r2(r), n: points.length, text: correlationText(r, points.length, { x: 'höherer Trainingslast', more: 'höher am Folgetag', less: 'niedriger am Folgetag' }), weekly };
 }
 
-/** Pairs of a health field on day d (+ offset) with knee pain on day d + painOffset. */
-function healthPainPairs(healthLog, sessions, field, painOffset, { today, days }) {
-  const pain = dailyPain(sessions);
-  const t = today ?? [...pain.keys()].sort().at(-1);
-  if (!t) return { xs: [], ys: [], pairs: [] };
-  const from = addDays(t, -(days - 1));
-  const pairs = [];
-  for (const e of healthLog || []) {
-    if (!isNum(e?.[field]) || e.date < from || e.date > t) continue;
-    const p = pain.get(addDays(e.date, painOffset));
-    if (isNum(p)) pairs.push({ date: e.date, x: e[field], pain: p });
-  }
-  pairs.sort((a, b) => (a.date < b.date ? -1 : 1));
-  return { xs: pairs.map((p) => p.x), ys: pairs.map((p) => p.pain), pairs };
-}
-
-/** Sleep (logged on the wake-up date d) vs. knee pain on day d. */
-export function sleepVsPain(healthLog, sessions, { today, days = 90 } = {}) {
-  const { xs, ys, pairs } = healthPainPairs(healthLog, sessions, 'sleepH', 0, { today, days });
-  const r = pearson(xs, ys);
-  return { pairs, r: r2(r), n: pairs.length, text: correlationText(r, pairs.length, { x: 'mehr Schlaf', more: 'höher', less: 'niedriger' }) };
-}
-
-/** Steps on day d vs. knee pain on day d + 1. */
-export function stepsVsPain(healthLog, sessions, { today, days = 90 } = {}) {
-  const { xs, ys, pairs } = healthPainPairs(healthLog, sessions, 'steps', 1, { today, days });
-  const r = pearson(xs, ys);
-  return { pairs, r: r2(r), n: pairs.length, text: correlationText(r, pairs.length, { x: 'mehr Schritten am Vortag', more: 'höher', less: 'niedriger' }) };
-}
-
 /**
  * Weekly report for the ISO week containing `weekOf` (default: today).
  * @param {import('../types.js').Data} data
@@ -130,7 +80,6 @@ export function weeklyReport(data, content, today, { weekOf } = {}) {
   const end = addDays(wk, 6);
   const prevWk = addDays(wk, -7);
   const settings = data?.settings || {};
-  const log = data?.state?.healthLog || [];
   const all = doneSessions(data?.sessions);
   const inWeek = (s, a, b) => dayOf(s) >= a && dayOf(s) <= b;
   const week = all.filter((s) => inWeek(s, wk, end));
@@ -143,12 +92,8 @@ export function weeklyReport(data, content, today, { weekOf } = {}) {
   const strength = strengthSessions(week);
   const avgNd = ndPain(week);
   const prevNd = ndPain(prev);
-  const startKg = currentWeight(log, addDays(wk, -1));
-  const endKg = currentWeight(log, end < today ? end : today);
-  const kcal = week.reduce((a, s) => a + sessionKcal(s, settings.profile, currentWeight(log, dayOf(s)), content).kcal, 0);
-  const health = {};
-  for (const k of ['sleepH', 'steps', 'restingHr', 'activeMin']) { const m = meanOf(log, k, wk, end); if (m != null) health[k] = r2(m); }
-  const logDays = log.filter((e) => e.date >= wk && e.date <= end).length;
+  const kg = bodyWeightKg(settings);
+  const kcal = week.reduce((a, s) => a + sessionKcal(s, kg, content).kcal, 0);
   const highlights = [];
   const notes = [];
   const goal = settings.weeklyGoal ?? 3;
@@ -156,7 +101,6 @@ export function weeklyReport(data, content, today, { weekOf } = {}) {
   if (strength.length >= goal) highlights.push(`Krafttraining-Ziel erreicht (${strength.length}/${goal}).`);
   if (cardio.length >= cGoal) highlights.push(`Ruder-Ziel erreicht (${cardio.length}/${cGoal}).`);
   if (week.length && lights.green === week.length) highlights.push('Alle Einheiten grün.');
-  if (startKg != null && endKg != null && endKg < startKg) highlights.push(`Gewicht ${de(startKg - endKg, 1)} kg leichter (7-Tage-Schnitt).`);
   if (lights.red + lights.stop > 0) notes.push('Diese Woche gab es rote Ampeln – Belastung im Blick behalten.');
   if (avgNd != null && prevNd != null && avgNd > prevNd + 1) notes.push('Folgetag-Schmerz höher als in der Vorwoche – eher halten statt steigern.');
   const sameDay = new Set();
@@ -168,8 +112,7 @@ export function weeklyReport(data, content, today, { weekOf } = {}) {
     cardio: { done: cardio.length, goal: cGoal, minutes: Math.round(cardio.reduce((a, s) => a + (s.rowing?.durationSec ?? 0), 0) / 60), distanceM: cardio.reduce((a, s) => a + (s.rowing?.distanceM ?? 0), 0) },
     lights, avgPrePain: prePain(week), avgNextDayPain: avgNd, prevAvgNextDayPain: prevNd,
     load: week.reduce((a, s) => a + sessionLoad(s), 0), prevLoad: prev.reduce((a, s) => a + sessionLoad(s), 0),
-    kcal, weight: { startKg, endKg, deltaKg: startKg != null && endKg != null ? r2(endKg - startKg) : null },
-    health, logDays, highlights, notes,
+    kcal, highlights, notes,
   };
 }
 
@@ -231,126 +174,4 @@ export function opReadiness(data, content, today) {
   const score = Math.round(Object.values(parts).reduce((a, p) => a + (p.score * p.weight) / 100, 0));
   const label = score >= 80 ? 'Sehr gut vorbereitet' : score >= 60 ? 'Auf gutem Weg' : score >= 40 ? 'Im Aufbau' : 'Am Anfang';
   return { score, label, parts, tips };
-}
-
-/**
- * Weight trend summary for cards/charts.
- * @returns {{currentKg: number|null, kgPerWeek: number|null, n: number, text: string}}
- */
-export function weightInsight(healthLog, today) {
-  const cur = currentWeight(healthLog, today);
-  const t = weightTrend(healthLog, today);
-  if (cur == null) return { currentKg: null, kgPerWeek: null, n: 0, text: 'Noch kein Gewicht eingetragen.' };
-  if (!t) return { currentKg: cur, kgPerWeek: null, n: 0, text: 'Für einen Trend bitte an mindestens 4 Tagen in 3 Wochen wiegen.' };
-  const k = t.kgPerWeek;
-  const text = Math.abs(k) < 0.1 ? 'Gewicht stabil in den letzten 3 Wochen.'
-    : k < 0 ? `Trend: ${de(-k)} kg pro Woche leichter (letzte 3 Wochen).${k < -1 ? ' Das ist sehr schnell – genug essen, vor allem Eiweiß.' : ''}`
-    : `Trend: ${de(k)} kg pro Woche schwerer (letzte 3 Wochen).`;
-  return { currentKg: cur, kgPerWeek: k, n: t.n, text };
-}
-
-/* ------------------------------------------------------------------ */
-/* Body composition (v3, §13.7)                                        */
-/* ------------------------------------------------------------------ */
-
-/** Changes smaller than this (kg / index points) count as „gehalten“ – BIA noise is larger than that. */
-export const COMP_TOLERANCE = { fatKg: 0.5, muscleKg: 0.5, weightKg: 0.5, visceralFat: 1 };
-export const BIA_CAUTION = 'Körperfett- und Muskelwerte einer Körperanalyse-Waage (BIA) schwanken mit Wasserhaushalt, Essen und Training um 1–2 kg. Vergleiche Trends über Wochen statt einzelner Tage und miss immer zur gleichen Tageszeit – am besten morgens nüchtern, nach dem WC, barfuß.';
-
-/** Fat kg of an entry (bodyFatKg or weight × %). */
-const fatKgOf = (e) => (isNum(e.bodyFatKg) ? e.bodyFatKg : isNum(e.weightKg) && isNum(e.bodyFatPct) ? (e.weightKg * e.bodyFatPct) / 100 : null);
-/** Skeletal muscle kg of an entry (kg or weight × %). */
-const smKgOf = (e) => (isNum(e.skeletalMuscleKg) ? e.skeletalMuscleKg : isNum(e.weightKg) && isNum(e.skeletalMusclePct) ? (e.weightKg * e.skeletalMusclePct) / 100 : null);
-const COMP_GETTERS = {
-  weightKg: (e) => (isNum(e.weightKg) ? e.weightKg : null),
-  fatKg: fatKgOf,
-  bodyFatPct: (e) => (isNum(e.bodyFatPct) ? e.bodyFatPct : null),
-  muscleKg: (e) => (isNum(e.muscleKg) ? e.muscleKg : null),
-  skeletalMuscleKg: smKgOf,
-  visceralFat: (e) => (isNum(e.visceralFat) ? e.visceralFat : null),
-};
-
-/** Mean of a getter over entries in [from, to]. */
-const blockMean = (log, get, from, to) => mean((log || []).filter((e) => e && e.date >= from && e.date <= to).map(get).filter(isNum));
-
-/**
- * Change of one window: mean of the last 7 days vs. mean of the first 7 days of a `weeks`-week window ending today.
- * @returns {{weeks: number, from: string, to: string, delta: Record<string, number|null>, start: Record<string, number|null>, end: Record<string, number|null>}}
- */
-function compWindow(log, today, weeks) {
-  const from = addDays(today, -(weeks * 7 - 1));
-  const startTo = addDays(from, 6);
-  const endFrom = addDays(today, -6);
-  const start = {}, end = {}, delta = {};
-  for (const [k, get] of Object.entries(COMP_GETTERS)) {
-    start[k] = r2(blockMean(log, get, from, startTo));
-    end[k] = r2(blockMean(log, get, endFrom, today));
-    delta[k] = start[k] != null && end[k] != null ? r2(end[k] - start[k]) : null;
-  }
-  return { weeks, from, to: today, start, end, delta };
-}
-
-const STATUS_LABELS = {
-  'recomp': 'Fett verloren, Muskeln aufgebaut',
-  'fat-lost-muscle-kept': 'Fett verloren, Muskeln gehalten',
-  'fat-and-muscle-lost': 'Fett und Muskeln verloren',
-  'fat-lost': 'Fett verloren',
-  'muscle-lost': 'Muskelmasse gesunken',
-  'fat-gained': 'Fettmasse gestiegen',
-  'stable': 'Stabil',
-  'insufficient': 'Noch zu wenige Messungen',
-};
-
-/**
- * Body-composition trend over 2 and 4 weeks (weight, fat kg, muscle / skeletal muscle kg, visceral fat).
- * Classification uses the 4-week window when it has start and end values, else the 2-week one.
- * Muscle = skeletal muscle kg if available, else muscle mass kg.
- * @param {import('../types.js').HealthEntry[]} log
- * @param {string} today
- * @returns {{status: 'recomp'|'fat-lost-muscle-kept'|'fat-and-muscle-lost'|'fat-lost'|'muscle-lost'|'fat-gained'|'stable'|'insufficient',
- *   label: string, text: string, tips: string[], caution: string, basis: 2|4|null,
- *   windows: {weeks: number, from: string, to: string, delta: Record<string, number|null>, start: Record<string, number|null>, end: Record<string, number|null>}[],
- *   latest: {date: string, weightKg?: number, bodyFatPct?: number, fatKg?: number, skeletalMuscleKg?: number, muscleKg?: number, visceralFat?: number}|null}}
- */
-export function bodyCompositionInsight(log, today) {
-  const list = (Array.isArray(log) ? log : []).filter((e) => e && typeof e.date === 'string' && e.date <= today).sort((a, b) => (a.date < b.date ? -1 : 1));
-  const windows = [compWindow(list, today, 2), compWindow(list, today, 4)];
-  const lastComp = list.filter((e) => fatKgOf(e) != null || smKgOf(e) != null || isNum(e.muscleKg) || isNum(e.visceralFat)).at(-1);
-  const latest = lastComp ? { date: lastComp.date } : null;
-  if (lastComp) {
-    for (const [k, get] of Object.entries(COMP_GETTERS)) { const v = get(lastComp); if (v != null) latest[k] = r2(v); }
-  }
-  const caution = BIA_CAUTION;
-  const pick = [windows[1], windows[0]].find((w) => w.delta.fatKg != null || w.delta.weightKg != null);
-  if (!pick || pick.delta.fatKg == null) {
-    const w = pick?.delta.weightKg;
-    const text = w == null ? 'Für einen Trend bitte mindestens 2 Wochen lang regelmäßig mit der Körperanalyse-Waage messen.'
-      : `Gewicht ${w <= 0 ? '−' : '+'}${de(Math.abs(w), 1)} kg in ${pick.weeks} Wochen – für Fett und Muskeln fehlen noch Waagenwerte am Anfang und Ende des Zeitraums.`;
-    return { status: 'insufficient', label: STATUS_LABELS.insufficient, text, tips: [], caution, basis: null, windows, latest };
-  }
-  const d = pick.delta;
-  const muscle = d.skeletalMuscleKg ?? d.muscleKg;
-  const muscleName = d.skeletalMuscleKg != null ? 'Skelettmuskulatur' : 'Muskelmasse';
-  const T = COMP_TOLERANCE;
-  let status;
-  if (d.fatKg <= -T.fatKg) {
-    if (muscle == null) status = 'fat-lost';
-    else if (muscle >= T.muscleKg) status = 'recomp';
-    else if (muscle > -T.muscleKg) status = 'fat-lost-muscle-kept';
-    else status = 'fat-and-muscle-lost';
-  } else if (d.fatKg >= T.fatKg) status = 'fat-gained';
-  else status = muscle != null && muscle <= -T.muscleKg ? 'muscle-lost' : 'stable';
-  const sg = (v, u = 'kg', dg = 1) => `${v < 0 ? '−' : v > 0 ? '+' : '±'}${de(Math.abs(v), dg)}${u ? ' ' + u : ''}`;
-  const parts = [];
-  if (d.weightKg != null) parts.push(`Gewicht ${sg(d.weightKg)}`);
-  parts.push(`Fett ${sg(d.fatKg)}`);
-  if (muscle != null) parts.push(`${muscleName} ${sg(muscle)}`);
-  if (d.visceralFat != null) parts.push(`Viszeralfett ${sg(d.visceralFat, '', 1)}`);
-  const text = `${STATUS_LABELS[status]}: ${parts.join(', ')} in ${pick.weeks} Wochen (Wochenmittel).`;
-  const tips = [];
-  if (status === 'fat-and-muscle-lost' || status === 'muscle-lost') tips.push('Um Muskeln vor der OP zu erhalten: Krafttraining regelmäßig weiterführen, genug Eiweiß essen und das Defizit nicht zu groß wählen.');
-  if (status === 'fat-lost-muscle-kept' || status === 'recomp') tips.push('Genau so soll es sein – Muskeln sind dein Polster für die Reha nach der OP.');
-  if (status === 'fat-gained') tips.push('Einzelne Wochen schwanken – schau auf den Verlauf über 4 Wochen.');
-  if (d.weightKg != null && d.weightKg / pick.weeks < -1) tips.push('Du nimmst sehr schnell ab (> 1 kg/Woche) – das kostet oft Muskeln.');
-  return { status, label: STATUS_LABELS[status], text, tips, caution, basis: pick.weeks, windows, latest };
 }

@@ -38,8 +38,9 @@ export function defaults() {
       // v2 (additive, SPEC §12.2)
       cardioGoalPerWeek: 3,
       surgeryDateSuggested: '2027-01-05', // pre-fill only – never copied into surgeryDate automatically
-      profile: { heightCm: null, birthYear: null, sex: null, activityLevel: 'light' },
-      weightGoal: null,                    // { targetKg, targetDate, startKg, startDate }
+      // v3.1 (SPEC §14): only the body weight for the kcal estimate per session. Legacy keys of older versions
+      // (heightCm, birthYear, sex, activityLevel; settings.weightGoal) stay untouched in stored data but are unused.
+      profile: { weightKg: null },
     },
     state: {
       phaseId: 'p1-basis',
@@ -56,7 +57,7 @@ export function defaults() {
       bandsConfirmed: false,
       // v2 (additive, SPEC §12.2)
       customWorkouts: [],
-      healthLog: [],
+      // (state.healthLog of v2/v3 is no longer created; existing logs stay untouched and are kept in backups)
       exerciseToggles: {},                 // exerciseId → false (disabled) | true (enabled despite postOpAllowed=false)
       postOpClearance: null,               // { confirmedAt, note } – unlocks phase p4 after the surgery date
       postOpEndClearance: null,            // { confirmedAt, note } – doctor's release ends p4 early
@@ -83,6 +84,26 @@ function mergeDefaults(def, data) {
   return out;
 }
 
+const isKg = (v) => typeof v === 'number' && Number.isFinite(v) && v >= 30 && v <= 300;
+
+/**
+ * v3.1 (SPEC §14): when the stored profile has no `weightKg` key yet, prefill it from the latest
+ * weight of the legacy health log (if any). Runs once – afterwards the key exists (possibly null).
+ * Never touches `state.healthLog` / `settings.weightGoal`.
+ */
+export function prefillWeight(data) {
+  if (!isObj(data)) return data;
+  const prof = isObj(data.settings?.profile) ? data.settings.profile : null;
+  if (prof && 'weightKg' in prof) return data;
+  const log = Array.isArray(data.state?.healthLog) ? data.state.healthLog : [];
+  const last = log.filter((e) => isObj(e) && typeof e.date === 'string' && isKg(e.weightKg))
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)).at(-1);
+  if (!last) return data;
+  if (!isObj(data.settings)) data.settings = {};
+  data.settings.profile = { ...(prof || {}), weightKg: Math.round(last.weightKg * 10) / 10 };
+  return data;
+}
+
 /** @param {any} data @returns {import('./types.js').Data} */
 export function migrate(data) {
   if (!isObj(data)) return defaults();
@@ -95,7 +116,7 @@ export function migrate(data) {
     v += 1;
     d.schemaVersion = v;
   }
-  d = mergeDefaults(defaults(), d);
+  d = mergeDefaults(defaults(), prefillWeight(d));
   if (!Array.isArray(d.sessions)) d.sessions = [];
   d.schemaVersion = SCHEMA_VERSION;
   return d;

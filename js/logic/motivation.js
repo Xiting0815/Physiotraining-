@@ -2,15 +2,14 @@
 import { daysBetween, startOfIsoWeek } from '../util/date.js';
 import { dayOf, doneSessions, isCardioSession, newRecords, personalRecords, sessionLight, strengthSessions, totalHoldSeconds, weeklyProgress } from './stats.js';
 import { rowingTotals } from './cardio.js';
-import { longestLogStreak } from './health.js';
-import { currentWeight, goalProgress } from './energy.js';
 
 // Balanced for ~3 sessions/week: a typical session (35–50 sets) yields ~130–180 XP incl. check-in,
 // so the top title takes ~75 sessions (~6 months); early levels come every 1–2 weeks.
-// v2 (SPEC §12.8): 30-min strength sessions (~18–24 sets) ≈ 75–95 XP, rowing 15–20 min ≈ 50–60 XP,
-// daily health log +5 (once per date). 3 strength + 3 rowing + 7 logs per week ≈ 450–480 XP → Robin Hood ≈ 6 months.
+// v2 (SPEC §12.8): 30-min strength sessions (~18–24 sets) ≈ 75–95 XP, rowing 15–20 min ≈ 50–60 XP.
+// 3 strength + 3 rowing (+ check-ins) per week ≈ 420–450 XP → Robin Hood ≈ 6–7 months.
+// v3.1 (SPEC §14): the health-log XP (+5/day) was removed together with the diary.
 export const XP = { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15,
-  cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20, healthLog: 5 };
+  cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20 };
 
 export const LEVELS = [
   { title: 'Novize', min: 0 },
@@ -59,15 +58,6 @@ export function cardioXp(session) {
   return Math.round((session?.status === 'done' ? XP.cardioBase : 0) + XP.cardioPerMin * min);
 }
 
-/**
- * Health-log XP: +XP.healthLog when `date` had no entry in `prevLog` (one award per date).
- * @param {import('../types.js').HealthEntry[]} prevLog log BEFORE the upsert
- * @param {string} date
- */
-export function healthLogXp(prevLog, date) {
-  return (prevLog || []).some((e) => e?.date === date) ? 0 : XP.healthLog;
-}
-
 /** @param {number} xp */
 export function levelFor(xp) {
   const x = Number.isFinite(xp) ? Math.max(0, xp) : 0;
@@ -102,7 +92,6 @@ function anyRecordBeaten(sessions, settings) {
 export function badgeRuleMet(rule, data, opts = {}) {
   const sessions = doneSessions(data?.sessions);
   const settings = data?.settings;
-  const today = opts.today ?? null;
   switch (rule?.type) {
     case 'sessionsCount':
       return sessions.length >= (rule.n ?? 1);
@@ -112,24 +101,6 @@ export function badgeRuleMet(rule, data, opts = {}) {
       return rowingTotals(sessions).distanceM >= (rule.n ?? 10000);
     case 'customWorkout':
       return (data?.state?.customWorkouts || []).length >= (rule.n ?? 1) || sessions.some((s) => s.kind === 'custom');
-    case 'weightLost': {
-      const log = data?.state?.healthLog || [];
-      const t = today ?? log.map((e) => e.date).sort().at(-1);
-      if (!t) return false;
-      const cur = currentWeight(log, t);
-      const firstW = log.filter((e) => typeof e.weightKg === 'number').sort((a, b) => (a.date < b.date ? -1 : 1))[0]?.weightKg;
-      const start = data?.settings?.weightGoal?.startKg ?? firstW;
-      return cur != null && start != null && start - cur >= (rule.n ?? 2) - 1e-9;
-    }
-    case 'weightGoalReached': {
-      const log = data?.state?.healthLog || [];
-      const t = today ?? log.map((e) => e.date).sort().at(-1);
-      const g = data?.settings?.weightGoal;
-      if (!t || !g || typeof g.targetKg !== 'number') return false;
-      return !!goalProgress(log, g, t)?.reached;
-    }
-    case 'healthLogStreak':
-      return longestLogStreak(data?.state?.healthLog || []) >= (rule.n ?? 7);
     case 'weekSessions': {
       const m = new Map();
       for (const s of strengthSessions(sessions)) { const wk = startOfIsoWeek(dayOf(s)); m.set(wk, (m.get(wk) ?? 0) + 1); }
@@ -161,14 +132,16 @@ export function badgeRuleMet(rule, data, opts = {}) {
 }
 
 /**
+ * Only ids of `badgeDefs` are evaluated/returned. Stored ids without a definition (e.g. the weight/diary
+ * badges removed in v3.1) stay untouched in `state.badges` and are simply ignored (never shown, never crash).
  * @param {import('../types.js').Data} data
  * @param {import('../types.js').Badge[]} badgeDefs
  * @param {{today?: string}} [opts]
  * @returns {string[]} newly earned badge ids (not yet in `state.badges`), in badgeDefs order
  */
 export function evaluateBadges(data, badgeDefs, opts = {}) {
-  const have = data?.state?.badges || {};
-  return (badgeDefs || []).filter((b) => b && !have[b.id] && badgeRuleMet(b.rule, data, opts)).map((b) => b.id);
+  const have = data?.state?.badges && typeof data.state.badges === 'object' ? data.state.badges : {};
+  return (badgeDefs || []).filter((b) => b && b.id && !have[b.id] && badgeRuleMet(b.rule, data, opts)).map((b) => b.id);
 }
 
 /**

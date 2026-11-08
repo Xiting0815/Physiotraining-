@@ -14,10 +14,8 @@ export const routes = [
   // v2 (SPEC §12.12)
   { pattern: '/eigene', view: 'custom-workouts', tab: 'plan', title: 'Eigene Workouts' },
   { pattern: '/eigene/:id', view: 'custom-workout-edit', tab: 'plan', title: 'Eigenes Workout' },
-  { pattern: '/gesundheit', view: 'health', tab: 'mehr', title: 'Gesundheit' },
-  { pattern: '/profil', view: 'profile', tab: 'mehr', title: 'Profil & Ziele' },
-  // v3 (SPEC §13): RENPHO screenshot OCR + Samsung Health export + Web Share Target (sw.js → ?shared=1)
-  { pattern: '/import', view: 'import', tab: 'mehr', title: 'Daten importieren' },
+  { pattern: '/auswertung', view: 'insights', tab: 'verlauf', title: 'Auswertung' },
+  { pattern: '/profil', view: 'profile', tab: 'mehr', title: 'Trainingsziele' },
 ];
 
 export const DEFAULT_PATH = '/heute';
