@@ -7,7 +7,7 @@ import {
   estimateExerciseSeconds, estimateWorkoutMinutes, setupSeconds, effectiveDose, workoutItems,
   MAX_SESSION_WITH_ROW_MIN, STRENGTH_SESSION_MIN, DEFAULT_PREP_SEC,
 } from '../js/logic/duration.js';
-import { buildSessionPlan, canRowWarmup, planBudgetMinutes, workoutKind, phaseWorkouts } from '../js/logic/progression.js';
+import { buildSessionPlan, canRowWarmup, planBudgetMinutes, workoutKind, phaseWorkouts, finisherPlan, appendFinisher, finisherEligible } from '../js/logic/progression.js';
 import { exerciseCuePlan, cuePlanSeconds, cueWordsFor, cueKind, tempoParts, CUE_PHASES, DEFAULT_CUE_WORDS, BREATH_CUE_WORDS } from '../js/logic/cues.js';
 import { isCardioSession, cardioProgress, warmupRowingSec, personalRecords, totalHoldSeconds, weeklyProgress } from '../js/logic/stats.js';
 import { rowingTotals, rowingRecords } from '../js/logic/cardio.js';
@@ -294,10 +294,92 @@ test('v4 settings defaults', () => {
   assert.equal(d.prepSeconds, 5);
   assert.equal(d.holdRelaxSeconds, 5);
   assert.equal(d.rowWarmupDefault, true);
-  assert.equal(d.cardioGoalPerWeek, 2);
+  assert.equal(d.cardioGoalPerWeek, 3);
+  assert.equal(d.rowFinisherDefault, false);
   assert.equal(d.voiceEnabled, true);
-  const m = store.migrate({ schemaVersion: 1, settings: { cardioGoalPerWeek: 3, prepSeconds: 8 }, state: {}, sessions: [] });
-  assert.equal(m.settings.cardioGoalPerWeek, 3);
+  const m = store.migrate({ schemaVersion: 1, settings: { cardioGoalPerWeek: 2, prepSeconds: 8 }, state: {}, sessions: [] });
+  assert.equal(m.settings.cardioGoalPerWeek, 2, 'stored goal is kept');
   assert.equal(m.settings.prepSeconds, 8);
   assert.equal(m.settings.rowWarmupDefault, true);
+});
+
+// ---------------------------------------------------------------------------- v4b: breathing, finisher, long rowing
+test('v4 breathing 4-7-8: 4 rounds, inhale / breath-hold / exhale cues, at the end of every strength cool-down', () => {
+  const b = ex('breathing-reset');
+  assert.deepEqual(b.levels[0].breath, { inhale: 4, hold: 7, exhale: 8, rounds: 4 });
+  assert.equal(b.levels[0].seconds, 76);
+  assert.match(b.description, /Schwindel/);
+  const plan = exerciseCuePlan({ level: 0 }, b, {});
+  const breath = plan.filter((p) => ['inhale', 'breath-hold', 'exhale'].includes(p.phase));
+  assert.equal(breath.length, 12);
+  assert.deepEqual(breath.slice(0, 3).map((p) => [p.phase, p.seconds, p.say]), [['inhale', 4, 'Einatmen'], ['breath-hold', 7, 'Halten'], ['exhale', 8, 'Ausatmen']]);
+  assert.deepEqual(breath.map((p) => p.repIndex), [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]);
+  for (const w of strength) assert.equal(w.cooldown.at(-1).exerciseId, 'breathing-reset', w.id);
+});
+
+test('v4 rowing finisher: offered in p1–p3 strength only, inserted before the cool-down, total ≤ ~50 min', () => {
+  assert.equal(finisherPlan(wo('p1-a'), fresh(wo('p1-a')), content).exerciseId, 'row-finisher-short');
+  assert.equal(finisherPlan(wo('p2-a'), fresh(wo('p2-a')), content).exerciseId, 'row-finisher-intervals');
+  assert.equal(finisherPlan(wo('p4-a'), fresh(wo('p4-a')), content), null, 'never after surgery');
+  assert.equal(finisherPlan(wo('p1-short'), fresh(wo('p1-a')), content), null);
+  assert.equal(finisherPlan(wo('p1-a'), fresh(wo('p1-a')), content, { taper: true }), null);
+  for (const w of strength.filter((x) => !postop(x))) {
+    const f = finisherPlan(w, fresh(w), content);
+    assert.ok(f.seconds >= 270 && f.seconds <= 600, `${w.id} finisher ${f.seconds} s`);
+    const plan = buildSessionPlan(w, fresh(w), content, { settings, rowWarmup: true, rowFinisher: true });
+    assert.equal(plan.rowFinisher, true);
+    assert.equal(plan.finisherRowing, null);
+    const i = plan.exercises.findIndex((e) => e.finisher);
+    assert.equal(plan.exercises[i].section, 'cardio');
+    assert.equal(plan.exercises[i + 1].section, 'cooldown', 'finisher right after the strength part');
+    const total = estimateWorkoutMinutes(plan, content, null, settings);
+    assert.ok(total <= 51 && total <= plan.budgetMin, `${w.id}: ${total} min (budget ${plan.budgetMin})`);
+    const maxPlan = buildSessionPlan(w, fresh(w, maxLevels), content, { settings, rowWarmup: true, rowFinisher: true });
+    assert.ok(estimateWorkoutMinutes(maxPlan, content, null, settings) <= maxPlan.budgetMin, `${w.id} max levels`);
+  }
+  // default off; settings.rowFinisherDefault switches it on; appendFinisher is idempotent
+  const w = wo('p1-a');
+  const plain = buildSessionPlan(w, fresh(w), content, { settings });
+  assert.ok(!plain.exercises.some((e) => e.finisher));
+  assert.ok(buildSessionPlan(w, fresh(w), content, { settings: { rowFinisherDefault: true } }).rowFinisher);
+  const once = appendFinisher(plain, w, fresh(w), content);
+  assert.notEqual(once, plain);
+  assert.equal(appendFinisher(once, w, fresh(w), content), once);
+  assert.equal(once.budgetMin, plain.budgetMin + finisherPlan(w, fresh(w), content).minutes);
+  const p4 = wo('p4-a');
+  const p4plan = buildSessionPlan(p4, fresh(p4), content, { rowFinisher: true });
+  assert.ok(!p4plan.exercises.some((e) => e.finisher));
+});
+
+test('v4 finisherEligible: only at a green knee light of the running session', () => {
+  const g = { painThresholds: { greenMax: 2 } };
+  const base = { kind: 'strength', pre: { pain: 1, swelling: 0, mechanical: { locking: false, givingWay: false } },
+    exercises: [{ exerciseId: 'quad-set', section: 'knee', painDuring: 2, sharpPain: false, skipped: false }] };
+  assert.deepEqual(finisherEligible(base, g), { ok: true, reasons: [] });
+  assert.equal(finisherEligible({ ...base, exercises: [{ ...base.exercises[0], painDuring: 3 }] }, g).ok, false);
+  assert.equal(finisherEligible({ ...base, exercises: [{ ...base.exercises[0], sharpPain: true }] }, g).ok, false);
+  assert.equal(finisherEligible({ ...base, pre: { ...base.pre, pain: 3 } }, g).ok, false);
+  assert.equal(finisherEligible({ ...base, pre: { ...base.pre, swelling: 1 } }, g).ok, false);
+  assert.equal(finisherEligible({ ...base, postOp: true }, g).ok, false);
+  assert.equal(finisherEligible({ ...base, taper: true }, g).ok, false);
+  assert.equal(finisherEligible({ ...base, kind: 'cardio' }, g).ok, false);
+  assert.match(finisherEligible({ ...base, exercises: [{ ...base.exercises[0], painDuring: 4 }] }, g).reasons[0], /über 2\/10/);
+});
+
+test('v4 rowing: long base session per prehab phase (25–30 min) with honest kcal text; finisher counts as rowing', () => {
+  for (const p of content.phases.filter((x) => x.kind !== 'postop')) {
+    const id = `${p.id.slice(0, 2)}-row-long`;
+    assert.ok(p.cardio.includes(id), `${p.id} has ${id}`);
+    const w = wo(id);
+    assert.match(w.description, /Ernährung/);
+    for (const lv of [{}, maxLevels]) {
+      const m = estimateWorkoutMinutes(w, content, fresh(w, lv), settings);
+      assert.ok(m >= 25 && m <= 30, `${id}: ${m}`);
+    }
+  }
+  const s = S('2026-11-09', { rowWarmup: true, rowFinisher: true, warmupRowing: { durationSec: 600, distanceM: 2000 }, finisherRowing: null,
+    exercises: [{ exerciseId: 'row-finisher-short', section: 'cardio', finisher: true, skipped: false, sets: [{ done: true, seconds: 270 }] }] });
+  assert.equal(warmupRowingSec(s), 870);
+  assert.equal(rowingTotals([s]).durationSec, 870);
+  assert.equal(cardioProgress([s], 3, '2026-11-10').done, 0);
 });

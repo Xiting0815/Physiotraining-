@@ -85,8 +85,8 @@ export function pacePer500(r) {
 }
 
 /**
- * v4: rowing logs of all done sessions: cardio sessions (`rowing`) and strength sessions with a rowing warm-up
- * (`warmupRowing`, durationSec falls back to `warmupRowingSec`). → `[{session, log, warmup}]`.
+ * v4: rowing logs of all done sessions: cardio sessions (`rowing`) and strength sessions with rowing inside
+ * (`warmupRowing` + `finisherRowing` merged, durationSec = `inSessionRowingSec`). → `[{session, log, warmup}]`.
  * @param {import('../types.js').Session[]} sessions
  */
 export function rowingLogs(sessions) {
@@ -94,7 +94,14 @@ export function rowingLogs(sessions) {
   for (const s of doneSessions(sessions)) {
     if (cardioSessions([s]).length) { out.push({ session: s, log: s.rowing || {}, warmup: false }); continue; }
     const sec = warmupRowingSec(s);
-    if (sec > 0 || s.warmupRowing) out.push({ session: s, log: { ...(s.warmupRowing || {}), ...(sec > 0 ? { durationSec: sec } : {}) }, warmup: true });
+    if (!(sec > 0 || s.warmupRowing || s.finisherRowing)) continue;
+    // warm-up and finisher of one session are merged into one log (distance/kcal added, avg values from the warm-up)
+    const w = s.warmupRowing || {};
+    const f = s.finisherRowing || {};
+    const log = { ...f, ...w };
+    for (const k of ['distanceM', 'kcalDisplay']) if (w[k] != null || f[k] != null) log[k] = (w[k] ?? 0) + (f[k] ?? 0);
+    if (sec > 0) log.durationSec = sec;
+    out.push({ session: s, log, warmup: true });
   }
   return out;
 }

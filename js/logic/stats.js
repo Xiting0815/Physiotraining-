@@ -34,22 +34,31 @@ function worstOf(lights) {
  */
 export const isCardioSession = (s) => s?.kind === 'cardio' || (s?.kind == null && s?.rowing != null && typeof s.rowing === 'object');
 
-/**
- * v4 (SPEC §15.3): seconds rowed in the warm-up of a strength session: `warmupRowing.durationSec` if entered,
- * else Σ `seconds` of the done sets of performed `section: "cardio"` entries. Cardio sessions → 0.
- * @param {Session} s
- */
-export function warmupRowingSec(s) {
-  if (!s || isCardioSession(s)) return 0;
-  const d = s.warmupRowing?.durationSec;
-  if (typeof d === 'number' && Number.isFinite(d) && d > 0) return d;
+const posNum = (v) => typeof v === 'number' && Number.isFinite(v) && v > 0;
+/** Σ seconds of done sets of performed cardio entries (finisher or not). */
+function timerSec(s, finisher) {
   let sum = 0;
   for (const e of s.exercises || []) {
-    if (e?.section !== 'cardio' || e.skipped) continue;
+    if (e?.section !== 'cardio' || e.skipped || !!e.finisher !== finisher) continue;
     for (const set of e.sets || []) if (set?.done && typeof set.seconds === 'number') sum += set.seconds;
   }
   return sum;
 }
+
+/**
+ * v4 (SPEC §15.3/§15.6): seconds rowed INSIDE a strength session: rowing warm-up (`warmupRowing.durationSec`, else
+ * the done timer seconds of the non-finisher `section: "cardio"` entries) + rowing finisher (`finisherRowing.durationSec`,
+ * else the done timer seconds of the `finisher: true` entries). Cardio sessions → 0.
+ * @param {Session} s
+ */
+export function inSessionRowingSec(s) {
+  if (!s || isCardioSession(s)) return 0;
+  const warm = posNum(s.warmupRowing?.durationSec) ? s.warmupRowing.durationSec : timerSec(s, false);
+  const fin = posNum(s.finisherRowing?.durationSec) ? s.finisherRowing.durationSec : timerSec(s, true);
+  return warm + fin;
+}
+/** Alias of inSessionRowingSec (name of the first v4 draft). */
+export const warmupRowingSec = inSessionRowingSec;
 /** Done strength-type sessions (strength, short, custom – everything except cardio). @param {Session[]} sessions */
 export const strengthSessions = (sessions) => doneSessions(sessions).filter((s) => !isCardioSession(s));
 /** Done cardio (rowing) sessions. @param {Session[]} sessions */
@@ -114,9 +123,9 @@ export function weeklyProgress(sessions, weeklyGoal, today) {
 }
 
 /**
- * v2: rowing sessions this ISO week vs `settings.cardioGoalPerWeek` (default 2 since v4).
+ * v2: rowing sessions this ISO week vs `settings.cardioGoalPerWeek` (default 3).
  * v4: `done`/`ratio` count only separate rowing (cardio) sessions; `minutes`/`distanceM` also include the rowing
- * warm-ups of strength sessions (`warmupMinutes`, `warmupCount` show that part separately).
+ * warm-ups and finishers of strength sessions (`warmupMinutes`, `warmupCount` show that part separately).
  * @param {Session[]} sessions @param {number} cardioGoal @param {string} today
  * @returns {{done: number, goal: number, ratio: number, minutes: number, distanceM: number, warmupMinutes: number, warmupCount: number}}
  */
@@ -127,8 +136,8 @@ export function cardioProgress(sessions, cardioGoal, today) {
   const warm = inWeek.filter((s) => warmupRowingSec(s) > 0);
   const warmSec = warm.reduce((a, s) => a + warmupRowingSec(s), 0);
   const minutes = Math.round((list.reduce((a, s) => a + (s.rowing?.durationSec ?? 0), 0) + warmSec) / 60);
-  const distanceM = list.reduce((a, s) => a + (s.rowing?.distanceM ?? 0), 0) + warm.reduce((a, s) => a + (s.warmupRowing?.distanceM ?? 0), 0);
-  const goal = cardioGoal ?? 2;
+  const distanceM = list.reduce((a, s) => a + (s.rowing?.distanceM ?? 0), 0) + warm.reduce((a, s) => a + (s.warmupRowing?.distanceM ?? 0) + (s.finisherRowing?.distanceM ?? 0), 0);
+  const goal = cardioGoal ?? 3;
   return { done: list.length, goal, ratio: goal > 0 ? Math.min(1, list.length / goal) : 0, minutes, distanceM, warmupMinutes: Math.round(warmSec / 60), warmupCount: warm.length };
 }
 

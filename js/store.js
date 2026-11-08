@@ -35,8 +35,8 @@ export function defaults() {
       fontScale: 1,
       ownedEquipment: [],
       lastBackupAt: null,
-      // v2 (additive, SPEC §12.2); v4: default 2 separate rowing sessions (stored values are kept by migrate)
-      cardioGoalPerWeek: 2,
+      // v2 (additive, SPEC §12.2); v4: stays 3 separate rowing sessions (weight loss is an additional goal)
+      cardioGoalPerWeek: 3,
       surgeryDateSuggested: '2027-01-05', // pre-fill only – never copied into surgeryDate automatically
       // v3.1 (SPEC §14): only the body weight for the kcal estimate per session. Legacy keys of older versions
       // (heightCm, birthYear, sex, activityLevel; settings.weightGoal) stay untouched in stored data but are unused.
@@ -45,6 +45,7 @@ export function defaults() {
       prepSeconds: 5,          // „Bereit machen“ before every set (0–30 s)
       holdRelaxSeconds: 5,     // „Loslassen“ between hold reps, minimum (0–30 s)
       rowWarmupDefault: true,  // strength sessions p1–p3 start with 10 min rowing (per-session toggle)
+      rowFinisherDefault: false, // optional rowing finisher after the strength part (only offered at a green knee light)
       voiceEnabled: true,      // German speech cues (js/util/voice.js; `sound: false` silences everything)
       voiceRate: 1.05,
       voiceVolume: 1,

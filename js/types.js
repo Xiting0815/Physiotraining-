@@ -18,6 +18,7 @@
  * @property {BandId|null} [band]
  * @property {number} rest       seconds between sets (rowing intervals: easy rowing when restActive)
  * @property {'easy'|'moderate'|'vigorous'} [intensity]  v2 rowing
+ * @property {{inhale: number, hold: number, exhale: number, rounds: number}} [breath] v4 breathing pattern (4-7-8)
  * @property {[number, number]} [targetSpm]  v2 rowing strokes/min range
  * @property {[number, number]} [targetRpe]  v2 rowing RPE range
  * @property {boolean} [restActive]          v2 rowing: rest = easy rowing
@@ -30,14 +31,14 @@
  * v4 spoken words of an exercise (SPEC §15.5). All optional; defaults by cue kind (cues.DEFAULT_CUE_WORDS).
  * `up` = first movement of a rep (figure start → end pose), `hold` = pause / isometric or stretch hold,
  * `down` = return movement, `release` = end of a hold, `switch` = change sides, `work` = start of a timed block.
- * @typedef {{up?: string, hold?: string, down?: string, release?: string, switch?: string, work?: string}} CueWords
+ * @typedef {{up?: string, hold?: string, down?: string, release?: string, switch?: string, work?: string, inhale?: string, breathHold?: string, exhale?: string}} CueWords
  */
 
 /**
  * v4 one step of a cue plan (cues.exerciseCuePlan). `say` is spoken at the start ('' = silent), then `seconds` pass
  * (0 = marker). `setIndex`/`repIndex` 0-based (null when not applicable), `side` 1|2 for perSide exercises.
  * @typedef {Object} CuePhase
- * @property {'prep'|'work'|'hold'|'relax'|'switch'|'rep-up'|'rep-hold'|'rep-down'|'rest'|'set-done'|'exercise-done'} phase
+ * @property {'prep'|'work'|'hold'|'relax'|'switch'|'rep-up'|'rep-hold'|'rep-down'|'inhale'|'breath-hold'|'exhale'|'rest'|'set-done'|'exercise-done'} phase
  * @property {number} seconds
  * @property {string} say
  * @property {number|null} setIndex
@@ -117,7 +118,8 @@
  * @property {'prehab'|'postop'} [kind]  v2, default "prehab"
  * @property {number} [plannedWeeks]     v2 schedule recommendation
  * @property {string} [short]            v2 Kurztraining workout id
- * @property {string[]} [cardio]         v2 rowing workout ids (empty after surgery)
+ * @property {string[]} [cardio]         v2 rowing workout ids (empty after surgery); v4 incl. `pN-row-long`
+ * @property {string} [rowFinisher]      v4 rowing finisher exercise id (prehab only)
  * @property {string} [clearanceNote]    v2 postop
  * @property {string} [gaitNote]         v2 postop
  * @property {string} [redFlagNote]      v2 postop
@@ -179,10 +181,11 @@
  * @property {number} fontScale         1 | 1.125 | 1.25 (applied to <html> font-size)
  * @property {string[]} ownedEquipment  equipment ids the user owns (Ausrüstung)
  * @property {string|null} lastBackupAt ISO timestamp of the last JSON export
- * @property {number} cardioGoalPerWeek   v2 separate rowing sessions per week (default 2 since v4; was 3)
+ * @property {number} cardioGoalPerWeek   v2 separate rowing sessions per week (default 3)
  * @property {number} prepSeconds         v4 „Bereit machen“ seconds before every set (default 5)
  * @property {number} holdRelaxSeconds    v4 minimum „Loslassen“ seconds between hold reps (default 5)
  * @property {boolean} rowWarmupDefault   v4 strength sessions p1–p3 start with 10 min rowing (default true)
+ * @property {boolean} rowFinisherDefault v4 add the optional rowing finisher to strength plans (default false)
  * @property {boolean} voiceEnabled       v4 German speech cues (default true; `sound: false` silences all)
  * @property {number} voiceRate           v4 speech rate (default 1.05)
  * @property {number} voiceVolume         v4 speech volume 0–1 (default 1)
@@ -225,6 +228,7 @@
  * @property {string} [note]
  * @property {number} [plannedSets]
  * @property {boolean} [trimmed]
+ * @property {boolean} [finisher]  v4 rowing finisher entry (section "cardio")
  */
 
 /**
@@ -290,6 +294,8 @@
  * @property {{kcal: number, method: string}} [energy] v2 optional stored estimate
  * @property {boolean} [rowWarmup]    v4 strength/short/custom plans: the plan starts with the rowing warm-up
  * @property {RowingLog|null} [warmupRowing] v4 display values of the rowing warm-up (strength sessions only)
+ * @property {boolean} [rowFinisher]  v4 the plan contains the rowing finisher (entry `finisher: true`)
+ * @property {RowingLog|null} [finisherRowing] v4 display values of the rowing finisher
  * @property {number} [budgetMin]     v4 time budget the plan was fitted to (32 / 42 with rowing / 16 short / 30 custom)
  */
 

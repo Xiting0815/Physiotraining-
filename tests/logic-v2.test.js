@@ -400,7 +400,7 @@ test('badges v2: rowing, custom workout (v3.1: weight/diary badges removed)', ()
 test('store v2 defaults: additive keys, no schema bump, surgery date never set silently', () => {
   const d = store.defaults();
   assert.equal(store.SCHEMA_VERSION, 1);
-  assert.equal(d.settings.cardioGoalPerWeek, 2, 'v4 default: 2 separate rowing sessions');
+  assert.equal(d.settings.cardioGoalPerWeek, 3);
   assert.equal(d.settings.surgeryDate, null);
   assert.equal(d.settings.surgeryDateSuggested, '2027-01-05');
   assert.deepEqual(d.settings.profile, { weightKg: null });
@@ -413,7 +413,7 @@ test('store v2 defaults: additive keys, no schema bump, surgery date never set s
   const old = { schemaVersion: 1, settings: { surgeryDate: '2027-01-15', weeklyGoal: 3 }, state: { phaseId: 'p1-basis', xp: 50 }, sessions: [] };
   const m = store.migrate(old);
   assert.equal(m.settings.surgeryDate, '2027-01-15');
-  assert.equal(m.settings.cardioGoalPerWeek, 2);
+  assert.equal(m.settings.cardioGoalPerWeek, 3);
   assert.equal(store.migrate({ ...old, settings: { ...old.settings, cardioGoalPerWeek: 3 } }).settings.cardioGoalPerWeek, 3, 'stored goal is kept');
   assert.deepEqual(m.settings.profile, { weightKg: null });
   // v2/v3 data: weightGoal / healthLog / legacy profile keys stay untouched, weightKg prefilled from the latest log weight

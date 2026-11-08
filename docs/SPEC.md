@@ -1287,3 +1287,181 @@ Health**; PhysioBogen no longer duplicates them. `APP_VERSION` 3.1.0, `SCHEMA_VE
 - Service worker `activate` deletes the legacy caches `pt-share` and every `pt-ocr-*` (≈ 7 MB) besides old
   `physio-*` versions.
 
+
+## 15. v4 – Sprachführung, Dehnen, Rudern als Aufwärmen
+
+Feedback after the first real sessions (right-handed compound archer, left meniscus tear + cartilage damage,
+microfracture OP 2027-01-05, then 6 weeks non-weight-bearing p4; doctor cleared full rowing pre-op; weight loss is an
+additional goal). Everything is **additive**: no signature from §7/§12 was removed, `SCHEMA_VERSION` stays 1, new
+settings are filled in by `migrate()`'s deep merge (stored values always win). Tests: `tests/logic-v4.test.js`.
+
+### 15.1 Settings (store.defaults)
+
+| key | default | meaning |
+|---|---|---|
+| `prepSeconds` | 5 | „Bereit machen“ phase before **every set** (0–30, clamped by `duration.prepSeconds`) |
+| `holdRelaxSeconds` | 5 | minimum „Loslassen“ pause between two hold reps (0–30, `duration.holdRelaxSeconds`) |
+| `rowWarmupDefault` | true | strength sessions p1–p3 start with 10 min rowing (per-session toggle in the session start UI) |
+| `rowFinisherDefault` | false | add the optional rowing finisher to strength plans (normally the session asks after the strength part) |
+| `voiceEnabled` | true | German speech cues (`js/util/voice.js`); `sound: false` silences voice and tones |
+| `voiceRate` | 1.05 | speech rate (0.7–1.5) |
+| `voiceVolume` | 1 | speech volume (0–1) |
+| `beepsWithVoice` | true | soft tick under the voice on phase changes |
+| `cardioGoalPerWeek` | **3** (unchanged) | separate rowing sessions per week (warm-ups/finishers do not count, §15.3) |
+
+### 15.2 Content
+
+**Dynamic warm-up (block `warmup`, category `mobilitaet`, 3–4 min, knee-safe – no deep left knee flexion, no
+kneeling):** new `leg-swing-front` (hand on the wall, small arc), `leg-swing-side` (hands on a chair),
+`hip-circles-standing` (both feet down), `ankle-circles-seated`, `band-dislocate` (light band, wide grip); existing
+`seated-thoracic-rotation`, `seated-spine-wave` (seated cat-cow), `shoulder-circles` (level 0 now 30 s), `ankle-pumps`.
+Leg swings/hip circles: `postOpAllowed: false`. p4 warm-ups are seated/supine only (ankle pumps, shoulder circles,
+spine wave, thoracic rotation, band dislocates – `postOpNote` „im Sitzen“).
+
+**Static stretching (block `cooldown`, category `dehnung`, `type: "hold"`, `side: "perSide"`, levels 20 s / 30 s per
+side, `setupSec: 5`):** `hip-flexor-stretch-standing` (short split stance, back knee almost straight, front knee
+≤ 30°; **no heel-to-buttock quad stretch** – deep flexion loads meniscus/cartilage, explained in `kneeNote`),
+`hip-flexor-stretch-supine` (side `left`; right knee to chest, left leg stays long – p4 variant),
+`hamstring-stretch-band` (supine, knee straight), `figure-4-stretch-supine` (careful flexion; not post-op),
+`seated-pec-stretch` (both sides, 2 × 20 s), `lat-side-stretch`, `cross-body-shoulder-stretch`,
+`forearm-flexor-stretch` (draw + bow hand), `neck-side-stretch`; existing `doorway-pec-stretch`,
+`hamstring-stretch-seated`, `calf-stretch-wall` converted from `timed` to `hold`. Every stretch description says
+honestly: stretching hardly prevents DOMS; it is for mobility, relaxation and posture.
+
+**4-7-8 breathing:** `breathing-reset` („Atemübung 4-7-8 in Rückenlage“) is now `type: "timed"` with
+`level.breath = {inhale: 4, hold: 7, exhale: 8, rounds: 4}` (`seconds: 76`; level 1: 6 rounds = 114 s). Description:
+„Bei Schwindel einfach normal weiteratmen; das lange Ausatmen beruhigt den Puls.“ It closes every strength cool-down.
+
+**Workouts** (`data/workouts.json` v3): every strength workout (p1–p4) = warm-up 4 mobility items (`maxSets: 1`) +
+knee/archery blocks + cool-down 4 stretches + `breathing-reset` (~5 min). p4: only seated/supine items, no standing on
+the left leg. Short workouts: `mobility-flow-short` / `stretch-flow-short` (p4: `mobility-flow-seated` /
+`stretch-flow-seated`) – compact 2-min `timed` flows whose `level.phases` (`{label, seconds, say}`, Σ = `seconds`)
+are announced one by one. Budget tweaks: p2-b dropped `straight-leg-raise`, p4-short dropped `glute-set`, a few
+`maxSets: 1`; leg swings/ankle circles level 0 = 15 s per side.
+
+New/changed fields: Exercise `setupSec?` (setup seconds for the estimate, default 20; flows/stretches/mobility 5),
+`cueWords?` (§15.5); Level `breath?`, `phases[].say?`; WorkoutItem `keepWithRow?`; Workout `rowWarmup?`
+(rowing exercise id, p1–p3 strength: `"row-warmup-10"`), `maxMinutesWithRow?` (42), `durationMinWithRow?` (estimate
+at level 0 with rowing, kept in sync by a test); Phase `rowFinisher?` (exercise id; p1 `row-finisher-short`,
+p2/p3 `row-finisher-intervals`, none in p4).
+
+### 15.3 Rowing as warm-up — `progression.js`
+
+- Exercise `row-warmup-10` (block `cardio`, `postOpAllowed: false`, one level, `seconds: 600`): `level.phases` = 4 ×
+  30 s technique (arms → arms + body → half slide → full stroke) + 480 s „Locker rudern · RPE 3–4“, `targetSpm
+  [18, 22]`, `targetRpe [3, 4]`. It **replaces the general part** of the mobility warm-up; the warm-up items marked
+  `keepWithRow: true` (band dislocates + thoracic rotation / spine wave, ≈ 1.5 min for shoulders/T-spine for the bow)
+  follow the rowing. Session ≈ 38–41 min.
+- `canRowWarmup(workout, state, content) → boolean` – workout has `rowWarmup`, kind strength, current phase not
+  post-op, phaseMin reached, `exerciseAvailable` (user toggle). Never in p4, never for short/custom/cardio.
+- `buildSessionPlan(w, state, content, {…, rowWarmup, rowFinisher})`: `rowWarmup` defaults to
+  `settings.rowWarmupDefault ?? false`. When applied: first entry `{exerciseId: "row-warmup-10", section: "cardio",
+  plannedSets: 1}`, then only the `keepWithRow` warm-up items. Plan fields: `rowWarmup: boolean` (every non-cardio
+  plan), `warmupRowing: null` (only with rowing; display values via `cardio.validateRowing` →
+  `session.warmupRowing = value`), `budgetMin` (time budget the plan was fitted to).
+- **Never** write `session.rowing` for strength sessions: a `rowing` object classifies legacy sessions as cardio and
+  replaces the session duration in `energy.sessionDurationSec`. Rowing values inside strength sessions live in
+  `warmupRowing` / `finisherRowing`.
+- Session UI for the `cardio` entry: run it with the rowing timer (`cardio.rowingPhases` or `exerciseCuePlan`), mark
+  the set `{done, seconds}`, ask „Knieschmerz beim Rudern“ (`painDuring`, counts for the traffic light like knee
+  entries), optional display values. `workoutItems(w, {rowWarmup})` and
+  `estimateWorkoutMinutes(w, content, state, settings, {rowWarmup: true})` give the variant for labels
+  („ca. 32 Min · mit Rudern ca. 40 Min“; or use `durationMinWithRow`).
+- **Counting (decision):** the weekly cardio goal (`cardioProgress().done/ratio`, `streak(..., {cardio: true})`,
+  `cardioCount` badge, A/B/C rotation) counts **only separate rowing sessions**. A strength session with rowing stays a
+  strength session (`isCardioSession` → false: `kind === "cardio"`, or legacy sessions without `kind` that have a
+  `rowing` object). Its rowing minutes/distance **do** count: `stats.inSessionRowingSec(s)` (alias
+  `warmupRowingSec`) = `warmupRowing.durationSec` (else done timer seconds of non-finisher cardio entries) +
+  `finisherRowing.durationSec` (else done finisher timer seconds); `cardioProgress()` adds `minutes`/`distanceM`
+  from them and returns `warmupMinutes`, `warmupCount`; `cardio.rowingLogs(sessions)`, `rowingTotals()` (now
+  `{sessions, warmups, distanceM, durationSec, kcalDisplay}`), `rowingRecords()` and the `rowingDistance` badges
+  include them. Personal hold/rep records and `totalHoldSeconds` ignore sections `warmup`/`cooldown`/`cardio`.
+- ⚠ Not in my files (for the UI/insights owners): `insights.weeklyReport().cardio.minutes` still counts only
+  rowing sessions; `traffic-light.recommendLevels` may add a „Höchste Stufe“ hold for `row-warmup-10`
+  (single level) – harmless, can be filtered by `e.section === 'cardio' && exercise.levels.length === 1`.
+
+### 15.4 Duration model & budgets — `duration.js`
+
+- Per set: `prep` (`settings.prepSeconds ?? 5`; 0 for block `cardio`) + work; hold work = `reps × hold + (reps − 1) ×
+  relax` with `relax = max(level.restBetween ?? 5, settings.holdRelaxSeconds ?? 5)` (was 3 s); timed work = Σ
+  `level.phases[].seconds` if given, else `seconds`; perSide → `work × 2 + 5`. Setup = `exercise.setupSec ?? 20`
+  (0 for cardio). `effectiveDose()` returns `restBetween` (effective relax), `prep`, `phases`.
+- Exports: `prepSeconds(settings)`, `holdRelaxSeconds(settings)`, `setupSeconds(exercise)`, constants
+  `DEFAULT_PREP_SEC = 5`, `DEFAULT_HOLD_RELAX_SEC = 5`, `DEFAULT_HOLD_REST_SEC = 5`, `MAX_SESSION_MIN = 30`
+  (custom workouts, unchanged), `STRENGTH_SESSION_MIN = 32`, `MAX_SESSION_WITH_ROW_MIN = 42`.
+- Budgets (`progression.planBudgetMinutes(workout, rowWarmup = false, finisherMin = 0)`): strength `maxMinutes: 32`
+  (level 0 = 30–32 min untrimmed), with rowing `maxMinutesWithRow: 42` (level 0 = 39–41), + finisher minutes
+  (total ≤ ~50); short `maxMinutes: 16` (level 0 = 13–15); custom 30; cardio none.
+- `fitPlanToMinutes` never trims `cardio` entries (rowing warm-up / finisher); only main-block sets.
+
+### 15.5 Cue plans (voice guidance) — `js/logic/cues.js` (pure)
+
+`exerciseCuePlan(entry, exercise, settings, {prep?, fromSet?}) → CuePhase[]` for every exercise type. Each step
+`{phase, seconds, say, setIndex, repIndex, side, sets?, reps?, label?, intensity?, targetSpm?, targetRpe?}`;
+`say` is spoken at the **start** of the step (`''` = silent), then `seconds` elapse (0 = marker). `setIndex`/
+`repIndex` are 0-based, `side` 1|2 for `perSide`. **No rep numbers in `say`** (the user does not want counting).
+Σ seconds = `estimateExerciseSeconds − setupSeconds` (tested for every exercise and level). `prep` defaults to true
+(false for rowing), `fromSet` resumes at a later set.
+
+| phase | when | default `say` |
+|---|---|---|
+| `prep` | before every set (`settings.prepSeconds`) | „Bereit machen: {name}“ / „Bereit machen. Satz 2 von 3“ |
+| `hold` | hold rep (isometric / stretch) | words.hold („Anspannen“ / „Dehnen“) |
+| `relax` | between hold reps (relax seconds) | words.release („Loslassen“ / „Lösen“) |
+| `switch` | perSide, before side 2 (5 s) | holds: „{release}. Seite wechseln“, else „Seite wechseln“ |
+| `rep-up` / `rep-hold` / `rep-down` | reps with tempo `"ecc-pause-con"`: played **con → pause → ecc** like the figure (start pose → end pose first) – `"3-1-2"` → up 2 s, hold 1 s, down 3 s | words.up / hold / down |
+| `work` | timed block, untimed reps (`reps × 3 s`, `reps` field, „Los: 10 Wiederholungen“), each part of a flow (`label`, `say`), rowing phases | words.work / part `say` |
+| `inhale` / `breath-hold` / `exhale` | `level.breath` (4-7-8): per round | „Einatmen“ / „Halten“ / „Ausatmen“ |
+| `rest` | between sets (`rest` > 0) | „Pause“ (rowing intervals: „Locker rudern“) |
+| `set-done` | 0 s, after each set | „Satz 1 geschafft“ (holds prefixed with release; '' after the last set) |
+| `exercise-done` | 0 s, last step | „Übung geschafft“ (holds: „Loslassen. Übung geschafft“; rowing „{name} geschafft“) |
+
+Cue words: `cueWordsFor(exercise)` = `BREATH_CUE_WORDS` + `DEFAULT_CUE_WORDS[cueKind(exercise)]` +
+`exercise.cueWords`. Kinds (`cueKind`): `stretch` (hold + category dehnung: Dehnen/Lösen/Seite wechseln),
+`isometric` (other holds: Anspannen/Loslassen), `band` (reps with a band: Ziehen/Halten/Zurück), `reps`
+(Hoch/Halten/Runter), `timed` (Los), `rowing`. Keys: `up` (first movement of a rep), `hold`, `down`, `release`,
+`switch`, `work`, `inhale`, `breathHold`, `exhale`. ~55 exercises carry explicit `cueWords` (e.g. pull-apart
+„Auseinanderziehen/Halten/Zurück“, sit-to-stand „Aufstehen/Stehen/Hinsetzen“, mini-squat „Beugen/Halten/Strecken“,
+SPT „Ausziehen und halten/Kontrolliert ablassen“, single-leg stance „Halten/Absetzen“).
+Rowing (`block: "cardio"`): one `work` step per `level.phases` drill (`say` from the drill, last long part gets
+„…, Schlagzahl 18 bis 22“), else per set `work` „{Locker|Gleichmäßig|Zügig} rudern, Schlagzahl a bis b – Runde i von
+n“ + `rest` („Locker rudern“ when `restActive`); steps carry `intensity`, `targetSpm`, `targetRpe`
+(`ROW_INTENSITY_SAY`). Also exported: `CUE_PHASES`, `tempoParts(tempo)`, `cuePlanSeconds(plan)`.
+`session-helpers.cuePlanFor` (voice agent) consumes it; its local fallback phases are no longer needed.
+
+### 15.6 Rowing finisher & more rowing (weight loss as additional goal)
+
+- Exercises `row-finisher-short` (p1: 5 × (30 s zügig / 30 s locker), 4.5 min, RPE 5–6) and
+  `row-finisher-intervals` (phaseMin p2: 4× / 5× (1 min zügig / 1 min locker), 7 / 9 min, RPE 6–7, SPM 22–26),
+  both `restActive`, `postOpAllowed: false`. Phase field `rowFinisher`.
+- `finisherPlan(workout, state, content, {taper}) → {exerciseId, level, plannedSets, seconds, minutes} | null` (strength
+  only, prehab phase with `rowFinisher`, phaseMin, `exerciseAvailable`, not in the taper week, never p4).
+- `finisherEligible(session, settings) → {ok, reasons[]}`: only at a **green knee light** of the running session –
+  kind strength, not post-op, not taper, pre-check pain ≤ `painThresholds.greenMax` (2), no swelling, no
+  locking/giving way, no `sharpPain`, every recorded `painDuring` ≤ greenMax (finisher entry itself ignored).
+- `appendFinisher(session, workout, state, content) → new session` inserts `{exerciseId, section: "cardio",
+  finisher: true, level, plannedSets, …}` **before the first cool-down entry**, sets `rowFinisher: true`,
+  `finisherRowing: null`, `budgetMin += minutes`; idempotent. `buildSessionPlan({rowFinisher})` (default
+  `settings.rowFinisherDefault ?? false`) does the same at plan time. UI flow: after the last main-block exercise, if
+  `finisherEligible(...).ok` and `finisherPlan(...)` → ask „Noch 5–10 Min. rudern?“ → `appendFinisher`; if a planned
+  finisher is not eligible, mark it `skipped`. Total strength + rowing warm-up + finisher ≤ ~50 min (tested).
+- Separate rowing: new `row-long` (21/23/25 min, RPE 4–5, SPM 18–22) and workouts `p1-row-long`, `p2-row-long`,
+  `p3-row-long` „Rudern – Grundlage lang“ (25–29 min, `maxMinutes: 30`) in each prehab `phase.cardio`. Copy is honest:
+  calories come mainly from the total weekly volume, nutrition is the biggest lever, the app only shows training
+  kcal as an estimate. `cardioGoalPerWeek` stays 3.
+
+### 15.7 Voice API — `js/util/voice.js` (voice agent) & `<pt-timer>`
+
+- `say(text, {priority: 'low'|'normal'|'high', interrupt, cue, maxAgeMs, fallbackOnDrop, calm, tick}) →
+  'spoken'|'queued'|'tone'|'muted'|'none'` – German Web Speech voice (offline preferred, `pickGermanVoice`); stale
+  queued cues expire after `maxAgeMs`; `interrupt` cancels the current utterance; `calm` = slower/quieter (breathing);
+  `tick: false` = no soft tick; without a German voice a distinct tone per `cue` is played.
+- `countdown(n, opts)` („Drei, Zwei, Eins“ one second apart, or ticks), `unlock()` (call in the Start tap – Android
+  Chrome needs a first speak from a gesture), `cancel()`, `voiceAvailable()`, `voiceActive()`, `testVoice()`,
+  `voiceSettings(settings)` (reads `voiceEnabled`, `voiceRate`, `voiceVolume`, `beepsWithVoice`; `sound: false` mutes).
+- `<pt-timer>` property **`plan`** = a cue plan (§15.5) replaces the attribute timeline; every phase start is
+  announced; `prep` counts down; holds ≥ 15 s get „Noch 5 Sekunden“; rests ≥ 10 s „Gleich geht's weiter“. Attribute
+  **`block="knee|archery|neutral"`** colours the phase banner. Accepted phase names: `prep`, `work`, `tense` (alias of
+  an isometric hold start), `hold`, `relax`, `switch`, `rep-up`, `rep-hold`, `rep-down`, `inhale`, `breath-hold`,
+  `exhale`, `rest`, `set-done`, `exercise-done`; optional step fields `label` (banner text) and `countdown: true`
+  (spoken countdown at the end of a rest). Zero-second steps are not spoken by the timer (the session announces them).
