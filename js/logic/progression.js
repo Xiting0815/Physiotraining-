@@ -152,10 +152,86 @@ export function canRowWarmup(workout, state, content) {
  * @param {boolean} [rowWarmup] the plan contains the rowing warm-up
  * @returns {number|null}
  */
-export function planBudgetMinutes(workout, rowWarmup = false) {
+export function planBudgetMinutes(workout, rowWarmup = false, finisherMin = 0) {
   if (workoutKind(workout) === 'cardio') return null;
-  if (rowWarmup) return workout.maxMinutesWithRow ?? MAX_SESSION_WITH_ROW_MIN;
-  return workout.maxMinutes ?? MAX_SESSION_MIN;
+  const base = rowWarmup ? workout.maxMinutesWithRow ?? MAX_SESSION_WITH_ROW_MIN : workout.maxMinutes ?? MAX_SESSION_MIN;
+  return base + Math.max(0, finisherMin || 0);
+}
+
+/**
+ * v4 (SPEC §15.6): the optional rowing finisher available for `workout` in the current phase, or null.
+ * Needs a strength workout, a prehab phase with `phase.rowFinisher`, phaseMin reached, the exercise available
+ * (`exerciseAvailable`) and no taper week (`opts.taper`). Never in p4.
+ * @param {import('../types.js').Workout} workout
+ * @param {import('../types.js').State} state
+ * @param {import('../types.js').Content} content
+ * @param {{taper?: boolean}} [opts]
+ * @returns {{exerciseId: string, level: number, plannedSets: number, seconds: number, minutes: number}|null}
+ */
+export function finisherPlan(workout, state, content, { taper = false } = {}) {
+  if (!workout || workoutKind(workout) !== 'strength' || taper) return null;
+  const phases = content?.phases || [];
+  const phase = phases.find((p) => p.id === (state?.phaseId ?? workout.phaseId)) ?? phases.find((p) => p.id === workout.phaseId);
+  if (!phase || phase.kind === 'postop' || typeof phase.rowFinisher !== 'string') return null;
+  const ex = (content?.exercises || []).find((e) => e.id === phase.rowFinisher);
+  if (!ex) return null;
+  const cur = phaseOrder(content, phase.id);
+  const min = phaseOrder(content, ex.phaseMin);
+  if (cur != null && min != null && cur < min) return null;
+  if (!exerciseAvailable(ex, phase, state)) return null;
+  const level = levelOf(state, ex.id, ex);
+  const lvl = ex.levels[level] || {};
+  const plannedSets = lvl.sets ?? 1;
+  const seconds = Array.isArray(lvl.phases) && lvl.phases.length
+    ? lvl.phases.reduce((a, p) => a + (p.seconds || 0), 0)
+    : plannedSets * (lvl.seconds ?? 60) + (plannedSets - 1) * (lvl.rest ?? 0);
+  return { exerciseId: ex.id, level, plannedSets, seconds, minutes: Math.ceil(seconds / 60) };
+}
+
+/**
+ * v4: insert the rowing finisher into a strength plan (returns a NEW session; input untouched). The entry
+ * `{section: "cardio", finisher: true}` goes right before the first cool-down entry (after the strength part),
+ * the session gets `rowFinisher: true`, `finisherRowing: null` and `budgetMin` + finisher minutes.
+ * Returns the session unchanged when no finisher is available or it is already in the plan.
+ * @param {import('../types.js').Session} session
+ * @param {import('../types.js').Workout} workout
+ * @param {import('../types.js').State} state
+ * @param {import('../types.js').Content} content
+ */
+export function appendFinisher(session, workout, state, content) {
+  if (!session || (session.exercises || []).some((e) => e.finisher)) return session;
+  const f = finisherPlan(workout, state, content, { taper: !!session.taper });
+  if (!f) return session;
+  const entry = { exerciseId: f.exerciseId, section: 'cardio', finisher: true, level: f.level, plannedSets: f.plannedSets,
+    painDuring: null, sharpPain: false, rpe: null, skipped: false, sets: [] };
+  const list = [...(session.exercises || [])];
+  const at = list.findIndex((e) => e.section === 'cooldown');
+  list.splice(at < 0 ? list.length : at, 0, entry);
+  return { ...session, exercises: list, rowFinisher: true, finisherRowing: null, budgetMin: (session.budgetMin ?? planBudgetMinutes(workout, !!session.rowWarmup)) + f.minutes };
+}
+
+/**
+ * v4: may the finisher start now? Only when the knee light of the running session is green:
+ * strength session, not post-op, not taper; pre-check pain ≤ greenMax (default 2), no swelling, no locking /
+ * giving way; no sharp pain and every recorded `painDuring` ≤ greenMax in the entries done so far.
+ * @param {import('../types.js').Session} session
+ * @param {import('../types.js').Settings} [settings]
+ * @returns {{ok: boolean, reasons: string[]}}
+ */
+export function finisherEligible(session, settings) {
+  const reasons = [];
+  const g = settings?.painThresholds?.greenMax ?? 2;
+  if (!session || (session.kind && session.kind !== 'strength')) reasons.push('Nur nach einem Krafttraining.');
+  if (session?.postOp) reasons.push('Nach der OP kein Rudern.');
+  if (session?.taper) reasons.push('OP-Woche: kein zusätzliches Volumen.');
+  const pre = session?.pre;
+  if (pre && typeof pre.pain === 'number' && pre.pain > g) reasons.push(`Knieschmerz vor dem Training über ${g}/10.`);
+  if (pre && (pre.swelling ?? 0) > 0) reasons.push('Schwellung vor dem Training.');
+  if (pre?.mechanical?.locking || pre?.mechanical?.givingWay) reasons.push('Blockieren oder Wegknicken.');
+  const entries = (session?.exercises || []).filter((e) => !e.finisher && !e.skipped);
+  if (entries.some((e) => e.sharpPain)) reasons.push('Stechender Schmerz in dieser Einheit.');
+  if (entries.some((e) => typeof e.painDuring === 'number' && e.painDuring > g)) reasons.push(`Knieschmerz in dieser Einheit über ${g}/10.`);
+  return { ok: reasons.length === 0, reasons };
 }
 
 /**
@@ -171,10 +247,13 @@ export function planBudgetMinutes(workout, rowWarmup = false) {
  * @param {import('../types.js').Workout} workout
  * @param {import('../types.js').State} state
  * @param {import('../types.js').Content} content
- * @param {{taper?: boolean, history?: import('../types.js').Session[], now?: Date, settings?: import('../types.js').Settings|null, fit?: boolean, rowWarmup?: boolean}} [opts]
+ * - v4 `rowFinisher` (default `settings.rowFinisherDefault`, else false): inserts the optional rowing finisher
+ *   (`appendFinisher`) when `finisherPlan` offers one; the UI still checks `finisherEligible` before it starts
+ *   and otherwise marks the entry skipped.
+ * @param {{taper?: boolean, history?: import('../types.js').Session[], now?: Date, settings?: import('../types.js').Settings|null, fit?: boolean, rowWarmup?: boolean, rowFinisher?: boolean}} [opts]
  * @returns {import('../types.js').Session}
  */
-export function buildSessionPlan(workout, state, content, { taper = false, history = [], now = new Date(), settings = null, fit = true, rowWarmup } = {}) {
+export function buildSessionPlan(workout, state, content, { taper = false, history = [], now = new Date(), settings = null, fit = true, rowWarmup, rowFinisher } = {}) {
   const kind = workoutKind(workout);
   const phase = (content?.phases || []).find((p) => p.id === (state?.phaseId ?? workout.phaseId)) ?? (content?.phases || []).find((p) => p.id === workout.phaseId);
   const wantRow = rowWarmup ?? settings?.rowWarmupDefault ?? false;
@@ -237,6 +316,7 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
   // keep strength/short/custom sessions inside their time budget (v4: 32 / 42 with rowing / short 16 / custom 30) by trimming sets.
   const maxMinutes = planBudgetMinutes(workout, withRow);
   if (fit && maxMinutes && kind !== 'cardio') fitPlanToMinutes(plan, content, settings, maxMinutes);
+  if (rowFinisher ?? settings?.rowFinisherDefault ?? false) return appendFinisher(plan, workout, state, content);
   return plan;
 }
 

@@ -8,7 +8,7 @@ import {
   MAX_SESSION_WITH_ROW_MIN, STRENGTH_SESSION_MIN, DEFAULT_PREP_SEC,
 } from '../js/logic/duration.js';
 import { buildSessionPlan, canRowWarmup, planBudgetMinutes, workoutKind, phaseWorkouts } from '../js/logic/progression.js';
-import { exerciseCuePlan, cuePlanSeconds, cueWordsFor, cueKind, tempoParts, CUE_PHASES, DEFAULT_CUE_WORDS } from '../js/logic/cues.js';
+import { exerciseCuePlan, cuePlanSeconds, cueWordsFor, cueKind, tempoParts, CUE_PHASES, DEFAULT_CUE_WORDS, BREATH_CUE_WORDS } from '../js/logic/cues.js';
 import { isCardioSession, cardioProgress, warmupRowingSec, personalRecords, totalHoldSeconds, weeklyProgress } from '../js/logic/stats.js';
 import { rowingTotals, rowingRecords } from '../js/logic/cardio.js';
 import * as store from '../js/store.js';
@@ -24,16 +24,18 @@ const strength = content.workouts.filter((w) => workoutKind(w) === 'strength');
 const postop = (w) => content.phases.find((p) => p.id === w.phaseId)?.kind === 'postop';
 
 // ---------------------------------------------------------------------------- content
-test('v4 content: every strength workout has a mobility warm-up (3–4 min) and a static stretching cool-down (4–5 min)', () => {
+test('v4 content: every strength workout has a mobility warm-up (3–4 min) and stretching + 4-7-8 breathing cool-down (~5 min)', () => {
   assert.equal(strength.length, 12);
   for (const w of strength) {
     const warm = w.warmup.map((i) => ex(i.exerciseId));
     const cool = w.cooldown.map((i) => ex(i.exerciseId));
     assert.ok(warm.length >= 4 && warm.every((e) => e.block === 'warmup' && e.category === 'mobilitaet' || e.id === 'ankle-pumps'), `${w.id} warm-up`);
-    assert.ok(cool.length >= 4 && cool.every((e) => e.block === 'cooldown' && e.category === 'dehnung' && e.type === 'hold'), `${w.id} cool-down = holds`);
+    assert.equal(cool.at(-1).id, 'breathing-reset', `${w.id} ends with 4-7-8 breathing`);
+    const holds = cool.slice(0, -1);
+    assert.ok(holds.length >= 4 && holds.every((e) => e.block === 'cooldown' && e.category === 'dehnung' && e.type === 'hold'), `${w.id} cool-down = holds`);
     const sec = (items) => items.reduce((a, i) => a + estimateExerciseSeconds({ level: 0, plannedSets: 1 }, ex(i.exerciseId), {}), 0);
     assert.ok(sec(w.warmup) >= 170 && sec(w.warmup) <= 240, `${w.id} warm-up ${sec(w.warmup)} s`);
-    assert.ok(sec(w.cooldown) >= 240 && sec(w.cooldown) <= 300, `${w.id} cool-down ${sec(w.cooldown)} s`);
+    assert.ok(sec(w.cooldown) >= 240 && sec(w.cooldown) <= 320, `${w.id} cool-down ${sec(w.cooldown)} s`);
     if (postop(w)) {
       for (const e of [...warm, ...cool]) assert.notEqual(e.postOpAllowed, false, `${w.id}: ${e.id} must be seated/supine`);
       assert.equal(w.rowWarmup, undefined, `${w.id}: no rowing after surgery`);
@@ -89,7 +91,7 @@ test('v4 content: row-warmup-10 = 2 min technique + 8 min easy (RPE 3–4, SPM 1
 });
 
 test('v4 content: cueWords use known keys and non-empty strings', () => {
-  const keys = Object.keys(DEFAULT_CUE_WORDS.reps);
+  const keys = [...Object.keys(DEFAULT_CUE_WORDS.reps), ...Object.keys(BREATH_CUE_WORDS)];
   for (const e of content.exercises) {
     if (!e.cueWords) continue;
     for (const [k, v] of Object.entries(e.cueWords)) {
@@ -193,9 +195,9 @@ test('v4 cue plan: durations match the estimate (minus setup) for every exercise
 test('v4 cue plan: hold (isometric) — prep, Anspannen, Loslassen, rest between sets', () => {
   const plan = exerciseCuePlan({ level: 0, plannedSets: 2 }, ex('quad-set'), {});
   assert.deepEqual(plan.slice(0, 4).map((p) => [p.phase, p.seconds]), [['prep', 5], ['hold', 5], ['relax', 5], ['hold', 5]]);
-  assert.equal(plan[0].say, 'Bereit machen: Quadrizeps anspannen (Quad Set)'.replace(/ \(Quad Set\)$/, '') === plan[0].say ? plan[0].say : plan[0].say);
   assert.match(plan[0].say, /^Bereit machen: /);
-  assert.match(plan[1].say, /^Anspannen/);
+  assert.equal(plan[1].say, 'Anspannen', 'no rep numbers in say');
+  assert.equal(plan[3].say, 'Anspannen');
   assert.equal(plan[2].say, 'Loslassen');
   const restI = plan.findIndex((p) => p.phase === 'rest');
   assert.equal(plan[restI].seconds, 30);

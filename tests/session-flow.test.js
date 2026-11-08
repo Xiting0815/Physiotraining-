@@ -44,7 +44,7 @@ test('doseFor applies level, plannedSets and overrides', () => {
   assert.equal(o.reps, 15);
   assert.equal(o.band, 'green');
   assert.equal(o.perSide, true);
-  assert.deepEqual(H.setValues(H.doseFor({ level: 0 }, ex('breathing-reset'))), { seconds: 120, band: null });
+  assert.deepEqual(H.setValues(H.doseFor({ level: 0 }, ex('breathing-reset'))), { seconds: 76, band: null }); // v4: 4 rounds 4-7-8 breathing
 });
 
 test('doseFor: settings.restDefault overrides level rest, null falls back', () => {

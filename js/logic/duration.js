@@ -186,7 +186,7 @@ export function cappedSets(levelSets, item, workout) {
 
 /**
  * Trim a session plan in place until its estimate ≤ maxMinutes: repeatedly removes one set from the
- * entry with the most planned sets (> 1; knee/archery/custom main blocks before warmup/cooldown;
+ * entry with the most planned sets (> 1; knee/archery/custom main blocks before warmup/cooldown; rowing (`cardio`) never;
  * ties → the longest entry). Trimmed entries get `trimmed: true`. Never removes exercises.
  * @param {import('../types.js').Session} plan
  * @param {import('../types.js').Content} content
@@ -203,7 +203,7 @@ export function fitPlanToMinutes(plan, content, settings, maxMinutes = MAX_SESSI
     let best = null;
     let bestKey = null;
     for (const e of plan.exercises || []) {
-      if (e.skipped || (e.plannedSets ?? 1) <= 1) continue;
+      if (e.skipped || (e.plannedSets ?? 1) <= 1 || e.section === 'cardio') continue; // v4: rowing blocks are never trimmed
       const main = e.section !== 'warmup' && e.section !== 'cooldown' ? 1 : 0;
       const key = [main, e.plannedSets, estimateExerciseSeconds(e, exById.get(e.exerciseId), settings)];
       if (!bestKey || key[0] > bestKey[0] || (key[0] === bestKey[0] && (key[1] > bestKey[1] || (key[1] === bestKey[1] && key[2] > bestKey[2])))) {

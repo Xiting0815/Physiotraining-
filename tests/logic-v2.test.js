@@ -85,18 +85,20 @@ test('workouts: Kurztraining (~15 min) per phase with knee + archery incl. SPT',
   }
 });
 
-test('workouts: rowing sessions 15–20 min, cardio list per phase, none after surgery', () => {
+test('workouts: rowing sessions 15–20 min (long: 25–30), cardio list per phase, none after surgery', () => {
   for (const p of content.phases) {
     for (const id of p.cardio || []) {
       const w = content.workouts.find((x) => x.id === id);
       assert.equal(w.kind, 'cardio');
       for (const lv of [{}, maxLevels]) {
         const m = estimateWorkoutMinutes(w, content, fresh(w, lv), settings);
-        assert.ok(m >= 15 && m <= 20, `${id}: ${m} min`);
+        // v4: the long base session (row-long) takes 25–30 min
+        if (/-row-long$/.test(id)) assert.ok(m >= 25 && m <= 30, `${id}: ${m} min`);
+        else assert.ok(m >= 15 && m <= 20, `${id}: ${m} min`);
       }
     }
   }
-  assert.deepEqual(content.phases.find((p) => p.id === 'p1-basis').cardio, ['p1-row']);
+  assert.deepEqual(content.phases.find((p) => p.id === 'p1-basis').cardio, ['p1-row', 'p1-row-long']);
   assert.ok(content.phases.find((p) => p.id === 'p2-aufbau').cardio.includes('p2-row-intervals'));
   assert.ok(content.phases.find((p) => p.id === 'p3-op-vorbereitung').cardio.includes('p3-row-endurance'));
   assert.deepEqual(content.phases.find((p) => p.id === 'p4-entlastung').cardio, []);

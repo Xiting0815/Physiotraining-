@@ -90,7 +90,7 @@ export function exerciseCuePlan(entry, exercise, settings, opts = {}) {
         const reps = Math.max(1, d.reps ?? 1);
         for (let r = 0; r < reps; r++) {
           if (r > 0) push('relax', d.restBetween, w.release, { ...sb, repIndex: r - 1 });
-          push('hold', d.hold ?? 10, reps > 1 ? `${w.hold} – ${r + 1}` : w.hold, { ...sb, repIndex: r, reps });
+          push('hold', d.hold ?? 10, w.hold, { ...sb, repIndex: r, reps });
         }
       } else if (exercise.type === 'timed') {
         const br = lvl.breath;
