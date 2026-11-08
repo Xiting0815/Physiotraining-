@@ -5,7 +5,8 @@
 // (Eigene-Workouts CTA when none exist yet, quote, last session, badge). The week ring replaces the reminder line.
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE, daysBetween, addDays, parseISODate } from '../util/date.js';
-import { nextWorkout, applyRecommendation, getWorkout, phaseWorkouts, plannedWorkoutMinutes } from '../logic/progression.js';
+import { nextWorkout, applyRecommendation, getWorkout, phaseWorkouts, plannedWorkoutMinutes, cardioWorkoutsFor } from '../logic/progression.js';
+import { ownsRowingMachine } from '../logic/equipment.js';
 import { weeklyProgress, streak, sessionLight, dayOf, cardioProgress, sameDayLoadHint, isCardioSession } from '../logic/stats.js';
 import { XP, levelFor, LEVELS, dailyQuote, opCountdown, reminderText } from '../logic/motivation.js';
 import { taperActive } from '../logic/traffic-light.js';
@@ -110,6 +111,9 @@ export function render(root, { store, content }) {
     const today = todayISO(now);
     const phase = content.phases.find((p) => p.id === state.phaseId) ?? content.phases[0];
     const pw = phaseWorkouts(phase, content.workouts);
+    // v5 (SPEC §16): rowing workouts only with the rowing machine ticked under „Meine Ausrüstung“
+    const hasRower = ownsRowingMachine(settings);
+    pw.cardio = cardioWorkoutsFor(phase, content.workouts, settings);
     const active = state.activeSession;
     const activeW = active ? getWorkout(active.workoutId, content, state) : null;
     const w = activeW || nextWorkout(state, content.phases, content.workouts);
@@ -375,7 +379,21 @@ export function render(root, { store, content }) {
           })}
         </ul>
         ${cardioHint ? html`<div class="pv-callout pv-callout--warn mt-2 mb-0"><span class="pv-callout__icon" aria-hidden="true">ℹ️</span><p class="text-sm">${cardioHint}</p></div>` : ''}
-      </section>` : '';
+      </section>`
+      : rowingAllowed && !hasRower && phaseWorkouts(phase, content.workouts).cardio.length && !firstRun && !active
+        ? html`<a class="card card--tight pv-quick pv-row-hint" href="#/ausruestung" data-row-hint>
+          <span class="pv-icon-badge pv-icon-badge--accent" aria-hidden="true">🚣</span>
+          <span class="grow"><span class="pv-quick__title">Rudern ausgeblendet</span>
+          <span class="pv-quick__sub">Rudergerät in Ausrüstung abhaken, dann gibt es Rudereinheiten, Aufwärmen und Finisher.</span></span>
+          ${raw(ICON.chev)}</a>` : '';
+
+    /* ---------------- v5: one-time notice „Ausrüstung steuert den Plan“ ---------------- */
+    const eqBanner = state.equipmentNotice === 'pending' && !firstRun ? html`<div class="banner banner--primary pv-eq-banner" role="note">
+        <span class="banner__icon" aria-hidden="true">🎒</span>
+        <a class="banner__body" href="#/ausruestung" data-eq-notice><span class="banner__title">Neu: Deine Ausrüstung steuert jetzt den Plan</span>
+        <span class="banner__text">Hake ab, was du hast – z. B. Schlingentrainer, Türanker, Rudergerät.</span></a>
+        <button class="btn btn--ghost btn--sm pv-eq-banner__x" data-eq-dismiss aria-label="Hinweis ausblenden">✕</button>
+      </div>` : '';
 
     /* ---------------- week rings ---------------- */
     const weekRings = firstRun ? '' : html`<div class="grid-2 mb-4">
@@ -509,6 +527,7 @@ export function render(root, { store, content }) {
         ${raw(ICON.chev)}
       </a>` : ''}
 
+      ${eqBanner}
       ${postCard}
       ${welcome}
       ${showHero ? hero : ''}
@@ -550,6 +569,10 @@ export function render(root, { store, content }) {
   };
 
   const onClick = async (e) => {
+    if (e.target.closest('[data-eq-dismiss]') || e.target.closest('[data-eq-notice]')) {
+      store.update((d) => { d.state.equipmentNotice = 'seen'; });
+      return; // the link itself navigates to #/ausruestung
+    }
     if (e.target.closest('[data-welcome-op-confirm]')) {
       const v = root.querySelector('[data-welcome-op]')?.value;
       if (!v) { toast('Bitte ein Datum wählen.', { kind: 'accent', icon: '📅' }); return; }

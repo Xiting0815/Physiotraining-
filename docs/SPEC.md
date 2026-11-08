@@ -1,5 +1,6 @@
 # Physiotraining – SPEC (single source of truth)
 
+Version 5.0 · 2026-11-08 (5.0: §16 „v5 – Ausrüstung steuert den Plan“ – owned equipment filters/upgrades exercises, sling trainer, rowing only with the rowing machine. Where §16 and earlier sections disagree, §16 wins.)
 Version 3.1 · 2026-11-08 (3.1: §14 „v3.1 – Fokus Training“ – imports (§13), health diary (§12.7) and weight goal / calorie target (parts of §12.6, §12.8, §12.11, §12.12) **removed**. Where §14 and earlier sections disagree, §14 wins.)
 Version 2.0 · 2026-11-07 (2.0: §12 „v2 – Rudern, Kurztraining, eigene Workouts, Gesundheit & Abnehmen“ incl. OP-Termin 2027-01-05, Krücken-Vorbereitung, Post-OP-Phase p4. Where §12 and §0–§11 disagree, §12 wins.)
 Version 1.1 · 2026-10-31 (1.1: integration/QA – documented deviations from WP0 in §3, §4.2, §6.4, §6.7, §7.4, §7.5, §8)
@@ -250,7 +251,7 @@ ISO 8601 strings (`new Date().toISOString()`).
 | `name` | string | German |
 | `category` | string | free tag: `"kraft"`, `"mobilitaet"`, `"stabilitaet"`, `"dehnung"`, `"kardio"`, `"haltung"` |
 | `block` | `"knee"\|"archery"\|"warmup"\|"cooldown"` | |
-| `equipment` | string[] | ids: `theraband`, `loop`, `mat`, `chair`, `step`, `wall`, `door`, `none` |
+| `equipment` | string[] | ids: `theraband`, `loop`, `mat`, `chair`, `step`, `wall`, `door`, `none` (v5: + optional ids, §16.1) |
 | `type` | `"reps"\|"hold"\|"timed"` | reps = count reps; hold = isometric seconds per rep; timed = continuous seconds |
 | `side` | `"both"\|"left"\|"right"\|"alternate"\|"perSide"` | `perSide` = sets done for each side (doubles work), `left` = operated knee only |
 | `instructions` | string[] | ordered steps |
@@ -403,7 +404,7 @@ Example:
 Required badges: `first-session`, `week-3`, `sessions-10`, `sessions-25`, `sessions-50`,
 `hold-5min`, `phase-done`, `green-week`, `personal-record`, `comeback`.
 
-### 6.6 `data/equipment.json` (optional, owned by another agent – do not edit)
+### 6.6 `data/equipment.json` (optional; v5: item ids/`equipment[]` follow §16.1)
 
 A recommended-equipment / shopping list. May be missing → `loadContent()` returns `equipment: null`.
 Current shape (render defensively, every field optional except `items[].id/name`):
@@ -1469,3 +1470,95 @@ n“ + `rest` („Locker rudern“ when `restActive`); steps carry `intensity`, 
   an isometric hold start), `hold`, `relax`, `switch`, `rep-up`, `rep-hold`, `rep-down`, `inhale`, `breath-hold`,
   `exhale`, `rest`, `set-done`, `exercise-done`; optional step fields `label` (banner text) and `countdown: true`
   (spoken countdown at the end of a rest). Zero-second steps are not spoken by the timer (the session announces them).
+
+
+## 16. v5 – Ausrüstung steuert den Plan
+
+Owned equipment („Meine Ausrüstung“) now changes the plan automatically. `APP_VERSION` 5.0.0, `SCHEMA_VERSION` stays 1
+(additive; the equipment migration runs once inside `store.migrate`). Pure logic: `js/logic/equipment.js`;
+tests: `tests/logic-v5.test.js`.
+
+### 16.1 Equipment model — `js/logic/equipment.js`
+
+- **Base** (always available): `theraband, loop, mat, chair, step, wall, door, none` (`BASE_EQUIPMENT`).
+- **Optional** (`OPTIONAL_EQUIPMENT`, `{id, label, icon, hint}`, in toggle order): `rowing-machine`, `sling-trainer`,
+  `door-anchor`, `band-handles`, `ankle-weights`, `balance-pad`, `dumbbells`, `pedal-trainer`, `release-trainer`,
+  `ice-pack`, `measuring-tape`. `EQUIPMENT_INFO[id] = {label, icon}` for all ids (`ui.EQUIPMENT_LABEL` derives from it).
+- `settings.ownedEquipment: string[]` = ticked optional ids (normalised by `normalizeOwned`: legacy ids mapped, base and
+  unknown ids dropped, order of `OPTIONAL_EQUIPMENT`). `availableEquipment(settings)` → `Set` (base + owned) or **`null`
+  when no settings / no `ownedEquipment` array = no filtering** (legacy callers and older tests keep v4 behaviour).
+- `hasEquipment(ex, s)`, `missingEquipment(ex, s)`, `ownsRowingMachine(s)`, `usesEquipment(ex, id)` (library filter:
+  `equipment[]` or a `setupByEquipment` key), `equipmentNeeds(ex, s)` („Benötigt“: `{id,label,icon,base,owned,optional}`).
+- **Legacy ids** (`LEGACY_EQUIPMENT_IDS`): `tueranker-griffe → door-anchor + band-handles`, `massband → measuring-tape`,
+  `pedaltrainer → pedal-trainer`, `fussgewichte → ankle-weights`, `balancepad → balance-pad`, `schusstrainer →
+  release-trainer`, `kuehlpack → ice-pack`, `kurzhanteln → dumbbells`. `data/equipment.json` items use the new ids and
+  carry `equipment: string[]` (the set „Türanker + Bandgriffe“ → `["door-anchor","band-handles"]`); new item
+  `sling-trainer` „Schlingentrainer (Suspension-Trainer) mit Türanker“.
+- **Migration** `migrateEquipment(data)` (called by `store.migrate` before the defaults merge; runs only while
+  `settings.equipmentModel < 2`): maps legacy ids; if the stored list is **empty** and a session used rowing
+  (`sessionUsedRowing`: cardio session, `rowing`/`warmupRowing`/`finisherRowing`, or a done `row-*`/cardio entry) →
+  `["rowing-machine"]` so the update never removes rowing the user does; nothing else is ever pre-ticked (the user ticks
+  sling trainer, anchor, handles himself). Sets `settings.equipmentModel = 2` and, for existing users (sessions, owned
+  items or `welcomeDone`), `state.equipmentNotice = "pending"`. `store.load` writes the migrated data back once.
+  Defaults: `ownedEquipment: []`, `equipmentModel: 2`, `state.equipmentNotice: null`.
+
+### 16.2 Exercise availability, upgrades and fallbacks
+
+- An exercise is usable when **all** `exercise.equipment` ids are available (plus phaseMin and `exerciseAvailable`).
+- **Upgrades** are declared on the base exercise: `upgrades: [{equipment: ["sling-trainer"], exerciseId, chip?}]`;
+  the reverse `replaces: ["base-id" | {exerciseId, equipment?}]` on the variant is accepted too (`upgradeRules`,
+  `fallbackRules`). `resolveExercise(id, {exercises, avail, usable, allowUpgrade})` → `{exerciseId, upgradedFrom?, chip?}`
+  | `{exerciseId, fallbackFrom}` | `null` (drop).
+- `buildSessionPlan` (settings given) resolves every non-cardio item: upgrade when the equipment is owned and the variant
+  is usable (phaseMin, post-op block, user toggle); else the exercise itself; else the fallback base; else **dropped**
+  (the duration fitter never refills). Entries carry `upgradedFrom`, `upgradeChip` („Sling-Variante“) and `newVariant:
+  true` while the variant has no stored level and was never done → UI chip „Neu: Sling-Variante“. The variant uses
+  **its own level** (`exerciseLevels[variant]`, default 0 = start at level 1). No upgrades for custom workouts (fallback
+  and drop still apply); duplicates created by upgrades are skipped; in the **taper week** a never-done variant falls back
+  to the known base exercise (no new exercises).
+- Mapping (all `equipment: ["sling-trainer"]`): seated-row → sling-row, face-pull → sling-face-pull (p2), wall-slide →
+  sling-y-raise, band-pull-apart → sling-t-raise, prone-ytw → sling-rear-delt-fly, single-arm-high-row →
+  sling-single-arm-row (p2), pallof-press → sling-pallof-press, mini-squat → sling-assisted-mini-squat (p2),
+  hamstring-bridge-chair → sling-heel-bridge (p2), band-triceps-extension → sling-triceps-press, chair-dip →
+  sling-dip-assisted, serratus-punch → sling-push-up-incline. `sling-plank-forearms` and `sling-standing-rollout` are
+  library/custom exercises. Workouts are unchanged (no duplicates); p1–p3 strength and short workouts pick the variants
+  up automatically; p4 never (every sling exercise has `postOpAllowed: false`).
+- **Rowing:** without `rowing-machine` → `canRowWarmup(w, state, content, settings)` false, `finisherPlan(…, {settings})`
+  null, `appendFinisher(…, settings)` no-op, cardio plans empty, `cardioWorkoutsFor(phase, workouts, settings)` → `[]`.
+  Heute/Plan hide rowing cards/workouts and show „Rudergerät in Ausrüstung abhaken“ (link `#/ausruestung`); Mehr hides
+  the rowing warm-up/finisher defaults; the session start screen shows no rowing toggle.
+- `phasePlanExerciseIds(state, content, settings)` (A/B/C + short as planned incl. rowing warm-up default, finisher,
+  rowing workouts) and `equipmentPlanChanges(state, content, before, after) → {added, removed}` (names) drive the toggle
+  toast „Neu in deinem Plan: … · Entfernt: …“ and the library filter „Im Plan“.
+
+### 16.3 Setup text variants
+
+Band exercises with a door step carry `setupByEquipment: {"door-anchor": "Band mit dem Türanker auf Brusthöhe
+befestigen …", "band-handles"?: "Griffe an die Bandenden einhängen …"}` and optional `setupStep` (index of the knot step,
+default 0). `instructionsFor(exercise, settings)` replaces that step when the door anchor is owned and inserts the
+handles step after it; exercise detail and session („So geht's“) use it. Without settings → plain instructions.
+
+### 16.4 Sling trainer content & figures
+
+14 exercises (German, `equipment: ["sling-trainer","door"]` (+ `mat` for the heel bridge), levels progress via body
+angle / foot position, `cueWords`, `postOpAllowed: false`, knee notes: both feet on the floor, no loaded knee flexion;
+leg exercises phaseMin p2 with ≤ 60° flexion / 20–30° for the heel bridge, pain ≤ 3/10; the plank is standing with
+forearms in the cradles – never kneeling or feet in the straps). New prop **`sling`** (`{type, x, y, to?, behind?,
+door?}`): anchor block at the top of the door (x/y), straps to `to` points (default both hands; heel cradles
+`footL/footR`) with handles/cradles, drawn every frame (`behind: true` → behind the body). Poses `sling-*` in
+`tools/gen-poses.mjs` (lean around the feet, grounded), `data/poses.json` regenerated. `tests/data.test.js` allows the
+figure prop `sling`.
+
+### 16.5 UI
+
+- **Mehr → Meine Ausrüstung** (`#/ausruestung`, `views/equipment.js`): hero (x von 11 Extras, open budget), last change
+  callout, **toggles first** (icon, label, hint), „Immer dabei“ (base items + band order), **Einkaufsideen** only for
+  items not fully owned (grouped by priority, „Mehr dazu“, „Hab ich“ ticks all ids of the item). Visiting the page marks
+  the Heute banner as seen. Mehr shows the owned list on the „Meine Ausrüstung“ item; the separate rowing switch is gone.
+- **Heute:** one-time banner „Neu: Deine Ausrüstung steuert jetzt den Plan – hake ab, was du hast“ (link, ✕ →
+  `equipmentNotice = "seen"`), rowing hint card when the phase has rowing but no machine is ticked.
+- **Plan:** current-phase workout lists show the resolved plan (chip „Neu: Sling-Variante“ / „Sling-Variante“ + „statt
+  …“; fallback note; „fehlt: …“ chip). **Session:** chip on upgraded entries, instructions via `instructionsFor`.
+- **Übungen:** equipment filter chips incl. Schlingentrainer, Türanker, Bandgriffe, Rudergerät; cards show „fehlt: …“.
+  **Exercise detail:** „Benötigt“ chips (owned ✓ / fehlt / optional) with link to Meine Ausrüstung, fallback and
+  variant hints. **Eigene Workouts:** warnings for missing equipment (fallback or skipped).

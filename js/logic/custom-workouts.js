@@ -1,6 +1,7 @@
 // User-built custom workouts (state.customWorkouts). PURE. See docs/SPEC.md §12.5.
 import { estimateWorkoutMinutes, MAX_SESSION_MIN } from './duration.js';
 import { exerciseAvailable, getWorkout } from './progression.js';
+import { missingEquipment, fallbackRules, EQUIPMENT_INFO } from './equipment.js';
 
 export { getWorkout };
 export const CUSTOM_BLOCKS = [
@@ -92,6 +93,12 @@ export function validateCustomWorkout(custom, content, state, settings) {
       warnings.push(`${ex.name} gehört eigentlich in den Block „${ex.block === 'knee' ? 'Knie' : 'Bogen & Rücken'}“ (Ampel/RPE-Logik folgt dem Block).`);
     }
     if (!exerciseAvailable(ex, phase, state)) warnings.push(`${ex.name} ist in der aktuellen Phase gesperrt oder deaktiviert und wird beim Training übersprungen.`);
+    const miss = missingEquipment(ex, settings);
+    if (miss.length) {
+      const fb = fallbackRules(content?.exercises).get(ex.id);
+      const label = miss.map((m) => EQUIPMENT_INFO[m]?.label ?? m).join(', ');
+      warnings.push(fb ? `${ex.name} braucht: ${label} – ohne wird ${exById.get(fb)?.name ?? fb} trainiert.` : `${ex.name} braucht: ${label} (nicht in Meine Ausrüstung abgehakt) und wird beim Training übersprungen.`);
+    }
   }
   let estimatedMin = 0;
   if (!errors.length) {

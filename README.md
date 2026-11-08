@@ -36,7 +36,8 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
 - **Mehr** – OP-Termin, Wochenziel, Auswertung, Trainingsziele (Rudern pro Woche, Körpergewicht für die
   Kalorienschätzung), Design (Auto/Hell/Dunkel), Schriftgröße, Satzpause, Ton, Vibration,
   Schmerzgrenzen, Reihenfolge der Bänder, Sicherung exportieren/importieren (JSON), alles löschen.
-- **Ausrüstung** – vorhandene Bänder und eine Einkaufsliste mit Budget zum Abhaken.
+- **Meine Ausrüstung** – abhaken, was du hast (Rudergerät, Schlingentrainer, Türanker, Bandgriffe …); der Plan passt
+  sich automatisch an. Darunter Einkaufsideen mit Budget für das, was noch fehlt.
 
 ### Neu in Version 2
 
@@ -63,6 +64,31 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
   werden Rötung/Überwärmung und Fieber abgefragt – bei Warnzeichen heißt es „Bitte Arzt kontaktieren“.
 - **Vorbereitung auf die Krücken** – Stütz-Dips, Trizeps, Abstützen im Sitz und Einbeinstand bereits vor der OP.
 - **Offline** – nach dem ersten Laden komplett offline nutzbar, installierbar als App.
+
+### Neu in Version 5 – Deine Ausrüstung steuert den Plan
+
+- **Meine Ausrüstung** (Mehr → Meine Ausrüstung) – oben die Schalter mit Symbol für alles, was über die
+  Grundausstattung (TheraBänder, Loops, Matte, Stuhl, Stufe, Wand, Tür) hinausgeht: Rudergerät, Schlingentrainer,
+  Türanker, Bandgriffe, Gewichtsmanschetten, Balance-Pad, Kurzhanteln, Pedaltrainer, Release-Trainer, Kühlpack,
+  Maßband. Darunter Einkaufsideen nur noch für das, was fehlt. Nach jedem Umschalten sagt die App, was sich ändert:
+  „Neu in deinem Plan: Rudern am Schlingentrainer, Stütz-Dips am Schlingentrainer …“ bzw. „Entfernt: …“.
+- **Schlingentrainer (an der Tür)** – 14 neue Übungen, dosiert über den Körperwinkel statt über ein Bein:
+  Rudern (Inverted Row), Face Pull, Y- und T-Heben, Reverse Flys, einarmiges Rudern im Schießstand (Zugarm rechts,
+  Bogenarm links lang), Unterarmstütz im Stand (ohne Knien, Füße am Boden), Pallof Press, Rollout im Stand,
+  Trizepsdrücken, Stütz-Dips mit Füßen am Boden, schräge Liegestütze und – ab Phase 2 – assistierte Mini-Kniebeuge
+  (höchstens 60°) und Fersenbrücke (Knie nur 20–30° gebeugt). Wer den Schlingentrainer abhakt, bekommt in Phase 1–3
+  automatisch die Sling-Variante statt der Band-Übung (z. B. „Rudern am Schlingentrainer“ statt „Rudern im Sitzen
+  mit Band“) – mit eigener Stufe ab Stufe 1 und dem Hinweis „Neu: Sling-Variante“. Die Zeitbudgets bleiben gleich.
+  Nach der OP (Phase 4) sind alle Sling-Übungen gesperrt.
+- **Rudern nur mit Rudergerät** – ohne abgehaktes Rudergerät verschwinden Ruder-Aufwärmen, Finisher und
+  Rudereinheiten aus Heute und Plan (Hinweis „Rudergerät in Ausrüstung abhaken“). Beim Update wird das Rudergerät
+  automatisch übernommen, wenn du schon gerudert hast.
+- **Türanker & Griffe** – Band-Übungen zeigen mit Türanker „Band mit dem Türanker auf Brust-/Kopf-/Knöchelhöhe
+  befestigen“ statt der Knoten-Methode, mit Bandgriffen zusätzlich „Griffe einhängen“ – in der Übung und im Training.
+- **Übungen** – neue Filter für Schlingentrainer und Türanker; die Übungsseite zeigt „Benötigt: …“ mit vorhanden /
+  fehlt und verweist auf die Variante bzw. die Ersatzübung.
+- Beim Update werden alte Einträge der Einkaufsliste übernommen (z. B. „Türanker + Bandgriffe“ → Türanker und
+  Bandgriffe). Einmalig erscheint auf Heute „Neu: Deine Ausrüstung steuert jetzt den Plan – hake ab, was du hast“.
 
 ### Neu in Version 4
 

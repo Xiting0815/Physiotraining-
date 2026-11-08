@@ -2,6 +2,7 @@
 import { addDays, daysBetween, startOfIsoWeek, todayISO } from '../util/date.js';
 import { dayOf, doneSessions, sessionLight, sessionsPerWeek, streak } from './stats.js';
 import { cappedSets, estimateWorkoutMinutes, fitPlanToMinutes, workoutItems, MAX_SESSION_MIN, MAX_SESSION_WITH_ROW_MIN } from './duration.js';
+import { availableEquipment, diffNames, fallbackRules, hasEquipment, ownsRowingMachine, resolveExercise, upgradeRules } from './equipment.js';
 
 /** Workout kinds (v2). Missing `kind` = "strength". */
 export const WORKOUT_KINDS = ['strength', 'short', 'cardio', 'custom'];
@@ -126,13 +127,16 @@ function phaseOrder(content, phaseId) {
  * True when the workout names a rowing exercise in `rowWarmup` (strength workouts p1–p3), the current phase is not
  * post-op, the exercise exists, its phaseMin is reached and it is available (`exerciseAvailable`: user toggle,
  * `postOpAllowed: false`). Short, cardio, custom and p4 workouts → false.
+ * v5: with `settings` the rowing machine must be ticked under „Meine Ausrüstung“ (no settings → not checked).
  * @param {import('../types.js').Workout} workout
  * @param {import('../types.js').State} state
  * @param {import('../types.js').Content} content
+ * @param {import('../types.js').Settings|null} [settings]
  * @returns {boolean}
  */
-export function canRowWarmup(workout, state, content) {
+export function canRowWarmup(workout, state, content, settings) {
   if (!workout || typeof workout.rowWarmup !== 'string' || workoutKind(workout) !== 'strength') return false;
+  if (!ownsRowingMachine(settings)) return false; // v5: no rowing machine ticked → no rowing warm-up
   const phases = content?.phases || [];
   const phase = phases.find((p) => p.id === (state?.phaseId ?? workout.phaseId)) ?? phases.find((p) => p.id === workout.phaseId);
   if (phase?.kind === 'postop') return false;
@@ -165,11 +169,12 @@ export function planBudgetMinutes(workout, rowWarmup = false, finisherMin = 0) {
  * @param {import('../types.js').Workout} workout
  * @param {import('../types.js').State} state
  * @param {import('../types.js').Content} content
- * @param {{taper?: boolean}} [opts]
+ * @param {{taper?: boolean, settings?: import('../types.js').Settings|null}} [opts] v5: `settings` → needs the rowing machine
  * @returns {{exerciseId: string, level: number, plannedSets: number, seconds: number, minutes: number}|null}
  */
-export function finisherPlan(workout, state, content, { taper = false } = {}) {
+export function finisherPlan(workout, state, content, { taper = false, settings = null } = {}) {
   if (!workout || workoutKind(workout) !== 'strength' || taper) return null;
+  if (!ownsRowingMachine(settings)) return null; // v5
   const phases = content?.phases || [];
   const phase = phases.find((p) => p.id === (state?.phaseId ?? workout.phaseId)) ?? phases.find((p) => p.id === workout.phaseId);
   if (!phase || phase.kind === 'postop' || typeof phase.rowFinisher !== 'string') return null;
@@ -198,9 +203,9 @@ export function finisherPlan(workout, state, content, { taper = false } = {}) {
  * @param {import('../types.js').State} state
  * @param {import('../types.js').Content} content
  */
-export function appendFinisher(session, workout, state, content) {
+export function appendFinisher(session, workout, state, content, settings = null) {
   if (!session || (session.exercises || []).some((e) => e.finisher)) return session;
-  const f = finisherPlan(workout, state, content, { taper: !!session.taper });
+  const f = finisherPlan(workout, state, content, { taper: !!session.taper, settings });
   if (!f) return session;
   const entry = { exerciseId: f.exerciseId, section: 'cardio', finisher: true, level: f.level, plannedSets: f.plannedSets,
     painDuring: null, sharpPain: false, rpe: null, skipped: false, sets: [] };
@@ -257,7 +262,10 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
   const kind = workoutKind(workout);
   const phase = (content?.phases || []).find((p) => p.id === (state?.phaseId ?? workout.phaseId)) ?? (content?.phases || []).find((p) => p.id === workout.phaseId);
   const wantRow = rowWarmup ?? settings?.rowWarmupDefault ?? false;
-  const withRow = !!wantRow && canRowWarmup(workout, state, content);
+  const withRow = !!wantRow && canRowWarmup(workout, state, content, settings);
+  const avail = availableEquipment(settings);
+  const rules = upgradeRules(content?.exercises);
+  const fallbacks = fallbackRules(content?.exercises);
   const items = workoutItems(workout, { rowWarmup: withRow });
   const curOrder = phaseOrder(content, state?.phaseId ?? workout.phaseId) ?? phaseOrder(content, workout.phaseId);
   const done = doneSessions(history);
@@ -268,18 +276,31 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
   const pad = (n) => String(n).padStart(2, '0');
   const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
   const exercises = [];
-  for (const it of items) {
-    const ex = (content?.exercises || []).find((e) => e.id === it.exerciseId);
-    if (!ex) continue;
+  const byId = (id) => (content?.exercises || []).find((e) => e.id === id);
+  // custom workouts: phaseMin is only a warning (validateCustomWorkout), not a filter
+  const phaseOk = (ex) => {
     const minOrder = phaseOrder(content, ex.phaseMin);
-    // custom workouts: phaseMin is only a warning (validateCustomWorkout), not a filter
-    if (kind !== 'custom' && curOrder != null && minOrder != null && curOrder < minOrder) continue;
-    if (!exerciseAvailable(ex, phase, state)) continue;
+    return kind === 'custom' || curOrder == null || minOrder == null || curOrder >= minOrder;
+  };
+  const usable = (ex) => phaseOk(ex) && exerciseAvailable(ex, phase, state);
+  for (const it of items) {
+    if (!byId(it.exerciseId)) continue;
+    // v5 (SPEC §16): owned equipment → upgrade to the better variant, fallback to the base exercise, or drop.
+    // Upgrades never apply to custom workouts (the user picked the exercise) or to the rowing block.
+    let r = it.section === 'cardio' ? (hasEquipment(byId(it.exerciseId), avail) ? { exerciseId: it.exerciseId } : null)
+      : resolveExercise(it.exerciseId, { exercises: content?.exercises, avail, usable, allowUpgrade: kind !== 'custom', rules, fallbacks });
+    if (!r) continue;
+    // taper week: no new exercises – keep the known base exercise instead of a never-done variant
+    if (r.upgradedFrom && taper && done.length && !performedBefore.has(r.exerciseId)) r = { exerciseId: r.upgradedFrom };
+    const ex = byId(r.exerciseId);
+    if (!usable(ex)) continue;
     if (taper && done.length && !performedBefore.has(ex.id)) continue;
-    const level = levelOf(state, it.exerciseId, ex);
+    if ((r.upgradedFrom || r.fallbackFrom) && exercises.some((e) => e.exerciseId === ex.id && e.section === it.section)) continue;
+    const level = levelOf(state, ex.id, ex);
     const sets = kind === 'cardio' || it.section === 'cardio' ? (ex.levels[level]?.sets ?? 1) : cappedSets(ex.levels[level]?.sets ?? 1, it, workout);
+    const isNew = !!r.upgradedFrom && !performedBefore.has(ex.id) && !Number.isInteger(state?.exerciseLevels?.[ex.id]);
     exercises.push({
-      exerciseId: it.exerciseId,
+      exerciseId: ex.id,
       section: it.section,
       level,
       plannedSets: taper ? taperSets(sets) : sets,
@@ -288,7 +309,10 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
       rpe: null,
       skipped: false,
       sets: [],
-      ...(it.note ? { note: it.note } : {}),
+      ...(it.note && !r.upgradedFrom && !r.fallbackFrom ? { note: it.note } : {}),
+      ...(r.upgradedFrom ? { upgradedFrom: r.upgradedFrom, upgradeChip: r.chip } : {}),
+      ...(isNew ? { newVariant: true } : {}),
+      ...(r.fallbackFrom ? { fallbackFrom: r.fallbackFrom } : {}),
     });
   }
   const plan = {
@@ -316,7 +340,7 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
   // keep strength/short/custom sessions inside their time budget (v4: 32 / 42 with rowing / short 16 / custom 30) by trimming sets.
   const maxMinutes = planBudgetMinutes(workout, withRow);
   if (fit && maxMinutes && kind !== 'cardio') fitPlanToMinutes(plan, content, settings, maxMinutes);
-  if (rowFinisher ?? settings?.rowFinisherDefault ?? false) return appendFinisher(plan, workout, state, content);
+  if (rowFinisher ?? settings?.rowFinisherDefault ?? false) return appendFinisher(plan, workout, state, content, settings);
   return plan;
 }
 
@@ -434,4 +458,48 @@ export function plannedWorkoutMinutes(workout, state, content, settings, { rowWa
   const plan = buildSessionPlan(workout, state, content, { settings, rowWarmup, rowFinisher: false, taper: taper && workoutKind(workout) !== 'cardio' });
   const minutes = plan.exercises.length ? estimateWorkoutMinutes(plan, content, state, settings) : estimateWorkoutMinutes(workout, content, state, settings);
   return { minutes, rowWarmup: !!plan.rowWarmup };
+}
+
+/**
+ * v5 (SPEC §16): rowing workouts of a phase that are usable with the user's equipment (none without the rowing
+ * machine; no settings → all).
+ * @param {import('../types.js').Phase} phase
+ * @param {import('../types.js').Workout[]} workouts
+ * @param {import('../types.js').Settings|null} [settings]
+ */
+export function cardioWorkoutsFor(phase, workouts, settings) {
+  if (!ownsRowingMachine(settings)) return [];
+  return phaseWorkouts(phase, workouts).cardio;
+}
+
+/**
+ * v5: exercise ids the user would train in the current phase with these settings – A/B/C and the short workout as
+ * `buildSessionPlan` builds them (rowing warm-up per `settings.rowWarmupDefault`), the finisher and the rowing
+ * workouts of the phase.
+ * @returns {Set<string>}
+ */
+export function phasePlanExerciseIds(state, content, settings) {
+  const phase = currentPhase(state, content?.phases);
+  const ids = new Set();
+  if (!phase) return ids;
+  const pw = phaseWorkouts(phase, content.workouts);
+  for (const w of [...pw.rotation, ...(pw.short ? [pw.short] : [])]) {
+    const plan = buildSessionPlan(w, state, content, { settings, rowFinisher: false, fit: false });
+    for (const e of plan.exercises) ids.add(e.exerciseId);
+    const f = finisherPlan(w, state, content, { settings });
+    if (f) ids.add(f.exerciseId);
+  }
+  for (const w of cardioWorkoutsFor(phase, content.workouts, settings)) {
+    for (const it of workoutItems(w)) ids.add(it.exerciseId);
+  }
+  return ids;
+}
+
+/**
+ * v5: what changes in the current phase's plans when the equipment settings change (toast after a toggle).
+ * @returns {{added: string[], removed: string[]}} exercise names
+ */
+export function equipmentPlanChanges(state, content, settingsBefore, settingsAfter) {
+  const nameOf = (id) => (content?.exercises || []).find((e) => e.id === id)?.name ?? id;
+  return diffNames(phasePlanExerciseIds(state, content, settingsBefore), phasePlanExerciseIds(state, content, settingsAfter), nameOf);
 }

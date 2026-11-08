@@ -1,7 +1,8 @@
 // Plan – see docs/SPEC.md §3.4, §5.3, §12.9, §12.10, §12.12.
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE } from '../util/date.js';
-import { phaseProgress, nextWorkout, levelOf, phaseWorkouts, exerciseAvailable, plannedWorkoutMinutes } from '../logic/progression.js';
+import { phaseProgress, nextWorkout, levelOf, phaseWorkouts, exerciseAvailable, plannedWorkoutMinutes, buildSessionPlan, cardioWorkoutsFor } from '../logic/progression.js';
+import { ownsRowingMachine, missingEquipment, EQUIPMENT_INFO } from '../logic/equipment.js';
 import { estimateWorkoutMinutes } from '../logic/duration.js';
 import { cardioMainLabel } from '../logic/cardio.js';
 import { duplicateAsCustom } from '../logic/custom-workouts.js';
@@ -84,12 +85,23 @@ export function render(root, { store, content, navigate }) {
     const schedOf = (id) => sched?.find((x) => x.phaseId === id) ?? null;
     const hint = scheduleHint(phases, settings, state, today);
     const pw = phaseWorkouts(phase, content.workouts);
+    // v5 (SPEC §16): rowing workouts only with the rowing machine; plan items follow the owned equipment
+    const hasRower = ownsRowingMachine(settings);
+    const rowingInPhase = pw.cardio.length > 0;
+    pw.cardio = cardioWorkoutsFor(phase, content.workouts, settings);
     // v4: as planned at the session start (rowing warm-up per default, fitted to the time budget)
     const minutes = (w) => (w.phaseId === state.phaseId ? plannedWorkoutMinutes(w, state, content, settings).minutes : estimateWorkoutMinutes(w, content, state, settings));
     const withRow = (w) => w.phaseId === state.phaseId && plannedWorkoutMinutes(w, state, content, settings).rowWarmup;
     const nextGate = nextPhase ? canEnterPhase(nextPhase, settings, state, today) : { ok: true, reasons: [] };
     const post = postOpStatus(settings, state, today);
 
+    const exName = (id) => content.exercises.find((e) => e.id === id)?.name ?? id;
+    /** v5: items as the session would plan them (upgrades / fallbacks for the owned equipment) – current phase only. */
+    const planItems = (w) => {
+      if ((w.kind ?? 'strength') === 'cardio' || w.phaseId !== state.phaseId) return workoutItems(w);
+      const plan = buildSessionPlan(w, state, content, { settings, rowWarmup: false, rowFinisher: false, fit: false });
+      return plan.exercises.map((e) => ({ exerciseId: e.exerciseId, section: e.section, note: e.note, upgradedFrom: e.upgradedFrom, upgradeChip: e.upgradeChip, newVariant: e.newVariant, fallbackFrom: e.fallbackFrom }));
+    };
     const exRow = (it) => {
       const ex = content.exercises.find((e) => e.id === it.exerciseId);
       if (!ex) return '';
@@ -97,10 +109,14 @@ export function render(root, { store, content, navigate }) {
       const lvl = ex.levels[li];
       const sec = it.section;
       const off = !exerciseAvailable(ex, phase, state);
+      const missing = missingEquipment(ex, settings);
       return html`<a class="pv-ex-row${off ? ' is-off' : ''}" href="#/uebung/${encodeURIComponent(ex.id)}?from=plan">
         <span class="pv-sec-dot ${sec === 'knee' ? 'is-knee' : sec === 'archery' ? 'is-archery' : ''}" aria-hidden="true"></span>
         <span class="pv-ex-row__body">
           <span class="pv-ex-row__name">${ex.name}</span>
+          ${it.upgradedFrom ? html`<span class="pv-ex-row__meta"><span class="chip chip--sm chip--accent">${it.newVariant ? 'Neu: ' : ''}${it.upgradeChip || 'Variante'}</span><span class="text-xs muted">statt ${exName(it.upgradedFrom)}</span></span>` : ''}
+          ${it.fallbackFrom ? html`<span class="pv-ex-row__meta"><span class="text-xs muted">statt ${exName(it.fallbackFrom)} (Gerät fehlt)</span></span>` : ''}
+          ${missing.length ? html`<span class="pv-ex-row__meta"><span class="chip chip--sm chip--outline">fehlt: ${missing.map((m) => EQUIPMENT_INFO[m]?.label ?? m).join(', ')}</span></span>` : ''}
           <span class="pv-ex-row__meta">${off ? html`<span class="chip chip--sm chip--outline">deaktiviert</span>` : ''}<span class="num">${doseText(ex, lvl)}</span>${ex.levels.length > 1 ? html`<span class="chip chip--sm ${sec === 'archery' ? 'chip--archery' : 'chip--knee'}">Stufe <span class="num">${li + 1}/${ex.levels.length}</span></span>` : ''}${lvl.band ? bandChip(settings, lvl.band) : ''}</span>
           ${it.note ? html`<span class="pv-ex-row__meta">${it.note}</span>` : ''}
           ${isPostOp && ex.postOpNote ? html`<span class="pv-ex-row__meta">🪑 ${ex.postOpNote}</span>` : ''}
@@ -114,7 +130,7 @@ export function render(root, { store, content, navigate }) {
       const kind = w.kind ?? 'strength';
       const isNext = nextW?.id === w.id;
       const split = workoutSplit(w);
-      const items = workoutItems(w);
+      const items = planItems(w);
       const secs = kind === 'cardio' ? ['warmup', 'cardio', 'cooldown'] : ['warmup', 'knee', 'archery', 'cooldown'];
       const groups = secs.map((sec) => ({ sec, items: items.filter((i) => i.section === sec) })).filter((g) => g.items.length);
       const blockTitle = (sec) => (sec === 'knee' || sec === 'archery' || sec === 'cardio') ? (w.blocks.find((b) => b.id === sec)?.title ?? BLOCK_LONG[sec]) : BLOCK_LONG[sec];
@@ -176,6 +192,7 @@ export function render(root, { store, content, navigate }) {
       const pk = (p.kind ?? 'prehab') === 'postop';
       const gate = canEnterPhase(p, settings, state, today);
       const ws = phaseWorkouts(p, content.workouts);
+      ws.cardio = cardioWorkoutsFor(p, content.workouts, settings);
       const isCur = i === pIdx;
       const status = isCur ? 'Aktuelle Phase' : i < pIdx ? 'Abgeschlossen' : pk && !gate.ok ? 'Gesperrt bis nach der OP' : 'Kommt noch';
       const all = [...ws.rotation.map((w) => [w, workoutLetter(w, phases)]), ...(ws.short ? [[ws.short, KIND_ICON.short]] : []), ...ws.cardio.map((w) => [w, KIND_ICON.cardio])];
@@ -265,7 +282,8 @@ export function render(root, { store, content, navigate }) {
       ${pw.cardio.length ? html`<h2 class="section-title">Rudern</h2>
         <p class="pv-count mt-0">Separate Ausdauer-Einheiten, 3× pro Woche. Die Schmerz-Ampel gilt auch beim Rudern. „Grundlage lang“ (25–29 Min) hilft beim Abnehmen – die Kalorien kommen vor allem aus dem Wochenumfang, der größte Hebel bleibt die Ernährung.</p>
         ${pw.cardio.map((w) => workoutCard(w, KIND_ICON.cardio))}`
-        : isPostOp ? html`<div class="pv-callout pv-callout--warn"><span class="pv-callout__icon" aria-hidden="true">🚣</span><p class="text-sm">Rudern ist in der Entlastungsphase nicht erlaubt – es kommt erst wieder, wenn dein Team es freigibt.</p></div>` : ''}
+        : isPostOp ? html`<div class="pv-callout pv-callout--warn"><span class="pv-callout__icon" aria-hidden="true">🚣</span><p class="text-sm">Rudern ist in der Entlastungsphase nicht erlaubt – es kommt erst wieder, wenn dein Team es freigibt.</p></div>`
+        : rowingInPhase && !hasRower ? html`<h2 class="section-title">Rudern</h2><a class="pv-callout pv-callout--knee pv-row-hint" href="#/ausruestung" data-row-hint><span class="pv-callout__icon" aria-hidden="true">🚣</span><p class="text-sm">Rudern ist ausgeblendet. <strong>Rudergerät in Ausrüstung abhaken</strong>, dann kommen Rudereinheiten, Rudern zum Aufwärmen und der Finisher zurück.</p></a>` : ''}
 
       ${isPostOp ? togglesCard() : ''}
 

@@ -7,6 +7,7 @@
 // (cursor {index, set, step}); reloading #/session resumes it. Summary: #/session?summary=<id>.
 import { html, raw, render as paint } from '../render.js';
 import { nextWorkout, buildSessionPlan, getWorkout, workoutKind, canRowWarmup, finisherPlan, finisherEligible, appendFinisher } from '../logic/progression.js';
+import { instructionsFor, ownsRowingMachine } from '../logic/equipment.js';
 import { estimateWorkoutMinutes } from '../logic/duration.js';
 import { rowingPhases, validateRowing, INTENSITY_LABELS } from '../logic/cardio.js';
 import { sameDayLoadHint } from '../logic/stats.js';
@@ -179,7 +180,7 @@ export function render(root, ctx) {
     const count = (sec) => vis.filter((e) => e.section === sec).length;
     const minutes = estimateWorkoutMinutes(session, content, store.getState(), settings());
     // v4: rowing warm-up toggle (p1–p3 strength only, before any set is done)
-    const rowOpt = !cardio && session.kind === 'strength' && !!w && canRowWarmup(w, store.getState(), content)
+    const rowOpt = !cardio && session.kind === 'strength' && !!w && canRowWarmup(w, store.getState(), content, settings())
       && !session.exercises.some((e) => H.doneCount(e) > 0);
     const loadHint = sameDayLoadHint(store.getSessions(), todayISO(), cardio ? 'cardio' : 'strength');
     const eyebrow = t.kind === 'strength' ? (phase?.name ?? '') : `${t.kindLabel}${phase ? ` · ${phase.name}` : ''}`;
@@ -424,6 +425,7 @@ export function render(root, ctx) {
           ${dose.rest ? html`<span class="chip chip--outline">Pause ${dose.rest} s</span>` : ''}
           ${session.taper ? html`<span class="chip chip--accent">OP-Woche · weniger Sätze</span>` : ''}
           ${entry.lighter ? html`<span class="chip chip--green">Leichtere Variante</span>` : ''}
+          ${entry.upgradedFrom ? html`<span class="chip chip--accent" title="Mit deiner Ausrüstung statt ${content.exercises.find((e) => e.id === entry.upgradedFrom)?.name ?? ''}">${entry.newVariant ? 'Neu: ' : ''}${entry.upgradeChip || 'Variante'}</span>` : ''}
           ${entry.trimmed ? html`<span class="chip chip--outline" title="Sätze gekürzt, damit die Einheit ins Zeitbudget passt">⏱ gekürzt für ${w?.maxMinutes ?? 30} Min</span>` : ''}
         </div>
         ${session.postOp && ex.postOpNote ? html`<p class="ses-postop">🩺 ${/^nach der op/i.test(ex.postOpNote) ? '' : html`<strong>Nach der OP:</strong> `}${ex.postOpNote}</p>` : ''}
@@ -449,7 +451,7 @@ export function render(root, ctx) {
       <details class="disclosure">
         <summary>Anleitung &amp; Tipps</summary>
         <div class="stack stack--sm">
-          <ol class="steps">${(ex.instructions || []).map((s) => html`<li>${s}</li>`)}</ol>
+          <ol class="steps">${instructionsFor(ex, settings()).map((s) => html`<li>${s}</li>`)}</ol>
           ${ex.cues?.length ? html`<p class="field__label mb-0 mt-2">Darauf achten</p><div class="chip-row">${ex.cues.map((c) => html`<span class="chip chip--${archery ? 'archery' : 'knee'}">${c}</span>`)}</div>` : ''}
           ${ex.mistakes?.length ? html`<p class="field__label mb-0 mt-2">Typische Fehler</p><ul class="ses-reasons">${ex.mistakes.map((m) => html`<li>${m}</li>`)}</ul>` : ''}
           ${ex.kneeNote ? html`<p class="ses-consult mb-0">🦵 ${ex.kneeNote}</p>` : ''}
@@ -554,7 +556,7 @@ export function render(root, ctx) {
     const cool = session.exercises.findIndex((e) => e.section === 'cooldown');
     const boundary = cool < 0 ? session.exercises.length : cool;
     if (!(from < boundary && (target < 0 || target >= boundary))) return false;
-    const f = finisherPlan(workoutOf(session), store.getState(), content, { taper: !!session.taper });
+    const f = finisherPlan(workoutOf(session), store.getState(), content, { taper: !!session.taper, settings: settings() });
     if (!f) return false;
     session.finisherAsked = true;
     const el = finisherEligible(session, settings());
@@ -571,7 +573,7 @@ export function render(root, ctx) {
     const from = session.cursor.index;
     const target = session.cursor.target ?? -1;
     const w = workoutOf(session);
-    const f = finisherPlan(w, store.getState(), content, { taper: !!session.taper });
+    const f = finisherPlan(w, store.getState(), content, { taper: !!session.taper, settings: settings() });
     const ex = f && exById(f.exerciseId);
     if (!f || !ex) { session.cursor = { index: from, set: 0, step: 'exercise' }; goTo(target, from); return; }
     const lvl = ex.levels[f.level] || {};
@@ -599,7 +601,7 @@ export function render(root, ctx) {
       'fin-yes': () => {
         unlock();
         voiceUnlock();
-        session = appendFinisher(session, w, store.getState(), content);
+        session = appendFinisher(session, w, store.getState(), content, settings());
         session.finisherAccepted = true;
         const i = session.exercises.findIndex((e) => e.finisher);
         session.cursor = { index: i, set: 0, step: 'exercise' };
@@ -1656,11 +1658,12 @@ export function render(root, ctx) {
     session.workoutName = workout.name;
     session.pausedMs = 0;
     if (!session.exercises.length) {
+      const rower = ownsRowingMachine(data.settings);
       const postop = (content.phases.find((p) => p.id === data.state.phaseId) ?? phaseOf(session))?.kind === 'postop';
       paint(root, html`<section class="card"><div class="empty"><div class="empty__art" aria-hidden="true" style="font-size:44px">${kind === 'cardio' ? '🚣' : '🩺'}</div>
-        <h2 class="empty__title">${kind === 'cardio' && postop ? 'Rudern ist gerade gesperrt' : 'Keine Übungen verfügbar'}</h2>
-        <p class="empty__text">${postop ? 'In der Entlastungsphase nach der OP sind diese Übungen nicht freigegeben. Bitte halte dich an das Protokoll deines Teams.' : 'Alle Übungen dieses Workouts sind deaktiviert oder für deine Phase noch nicht freigegeben.'}</p>
-        <a class="btn btn--primary" href="#/heute">Zu Heute</a></div></section>`);
+        <h2 class="empty__title">${kind === 'cardio' && postop ? 'Rudern ist gerade gesperrt' : kind === 'cardio' && !rower ? 'Rudergerät nicht abgehakt' : 'Keine Übungen verfügbar'}</h2>
+        <p class="empty__text">${postop ? 'In der Entlastungsphase nach der OP sind diese Übungen nicht freigegeben. Bitte halte dich an das Protokoll deines Teams.' : kind === 'cardio' && !rower ? 'Rudergerät in Ausrüstung abhaken, dann kannst du diese Einheit starten.' : 'Alle Übungen dieses Workouts sind deaktiviert, für deine Phase noch nicht freigegeben oder brauchen Ausrüstung, die du nicht abgehakt hast.'}</p>
+        ${kind === 'cardio' && !rower && !postop ? html`<a class="btn btn--accent" href="#/ausruestung">Zu Meine Ausrüstung</a> ` : ''}<a class="btn btn--primary" href="#/heute">Zu Heute</a></div></section>`);
       return cleanup;
     }
   }

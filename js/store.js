@@ -1,5 +1,6 @@
 // The ONLY module that touches localStorage. See docs/SPEC.md §6.7, §6.8, §7.3.
 // Works in Node (tests) via an in-memory storage fallback.
+import { migrateEquipment, EQUIPMENT_MODEL } from './logic/equipment.js';
 
 export const STORAGE_KEY = 'pt.v1';
 export const SCHEMA_VERSION = 1;
@@ -33,7 +34,8 @@ export function defaults() {
       operatedSide: 'left',
       restDefault: null,
       fontScale: 1,
-      ownedEquipment: [],
+      ownedEquipment: [],      // v5 (SPEC §16): optional equipment ids ticked under „Meine Ausrüstung“ – steers the plan
+      equipmentModel: EQUIPMENT_MODEL, // v5: id model of ownedEquipment (missing in stored data = legacy ids → migrateEquipment)
       lastBackupAt: null,
       // v2 (additive, SPEC §12.2); v4: stays 3 separate rowing sessions (weight loss is an additional goal)
       cardioGoalPerWeek: 3,
@@ -70,6 +72,7 @@ export function defaults() {
       exerciseToggles: {},                 // exerciseId → false (disabled) | true (enabled despite postOpAllowed=false)
       postOpClearance: null,               // { confirmedAt, note } – unlocks phase p4 after the surgery date
       postOpEndClearance: null,            // { confirmedAt, note } – doctor's release ends p4 early
+      equipmentNotice: null,               // v5: "pending" → Heute shows „Neu: Deine Ausrüstung steuert jetzt den Plan“ once; "seen" afterwards
     },
     sessions: [],
   };
@@ -125,7 +128,7 @@ export function migrate(data) {
     v += 1;
     d.schemaVersion = v;
   }
-  d = mergeDefaults(defaults(), prefillWeight(d));
+  d = mergeDefaults(defaults(), prefillWeight(migrateEquipment(d)));
   if (!Array.isArray(d.sessions)) d.sessions = [];
   d.schemaVersion = SCHEMA_VERSION;
   return d;
@@ -184,6 +187,7 @@ function notify() {
 function needsPersist(raw, data) {
   try {
     const before = JSON.parse(raw);
+    if (isObj(before?.settings) && !(before.settings.equipmentModel >= EQUIPMENT_MODEL)) return true; // v5 equipment migration
     return !(isObj(before?.settings?.profile) && 'weightKg' in before.settings.profile) && 'weightKg' in (data.settings?.profile || {});
   } catch { return false; }
 }

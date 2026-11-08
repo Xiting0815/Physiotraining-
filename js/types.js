@@ -80,6 +80,11 @@
  * @property {FigureSpec} figure
  * @property {boolean} [postOpAllowed]  v2: false → hidden in post-op phases unless enabled via state.exerciseToggles
  * @property {string} [postOpNote]      v2: how to do it after surgery
+ * @property {{equipment: string[], exerciseId: string, chip?: string}[]} [upgrades]  v5: better variant when the equipment is owned
+ * @property {(string|{exerciseId: string, equipment?: string[]})[]} [replaces]  v5: reverse declaration of `upgrades`
+ * @property {string} [fallback]           v5: exercise to use when this one's equipment is missing
+ * @property {{'door-anchor'?: string, 'band-handles'?: string}} [setupByEquipment]  v5: setup text variants (§16.3)
+ * @property {number} [setupStep]          v5: index of the instruction step replaced by the door-anchor text (default 0)
  * @property {string} [description]
  * @property {string[]} [tags]
  * @property {number} [setupSec]         v4: setup seconds for the duration estimate (default 20; flows/stretches 5)
@@ -179,7 +184,8 @@
  * @property {'left'|'right'} operatedSide
  * @property {number|null} restDefault  rest between sets in seconds; null → level.rest
  * @property {number} fontScale         1 | 1.125 | 1.25 (applied to <html> font-size)
- * @property {string[]} ownedEquipment  equipment ids the user owns (Ausrüstung)
+ * @property {string[]} ownedEquipment  v5: optional equipment ids ticked under „Meine Ausrüstung“ (logic/equipment.js) – steers the plan
+ * @property {number} [equipmentModel]  v5: id model of ownedEquipment (2; missing = legacy ids, migrated once)
  * @property {string|null} lastBackupAt ISO timestamp of the last JSON export
  * @property {number} cardioGoalPerWeek   v2 separate rowing sessions per week (default 3)
  * @property {number} prepSeconds         v4 „Bereit machen“ seconds before every set (default 5)
@@ -314,6 +320,7 @@
  * @property {boolean} welcomeDone      first-run welcome card on Heute hidden by the user
  * @property {boolean} bandsConfirmed   band order confirmed in the welcome card
  * @property {CustomWorkout[]} customWorkouts v2
+ * @property {"pending"|"seen"|null} [equipmentNotice] v5: one-time Heute banner „Ausrüstung steuert den Plan“
  * @property {any[]} [healthLog]             legacy v2/v3 diary – unused since v3.1, kept untouched (and in backups)
  * @property {Record<string, boolean>} exerciseToggles v2 false = disabled, true = enabled despite postOpAllowed=false
  * @property {{confirmedAt: string, note: string}|null} postOpClearance    v2

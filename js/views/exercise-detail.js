@@ -1,6 +1,7 @@
 // Übung (detail) – see docs/SPEC.md §3.5.
 import { html, raw, render as paint } from '../render.js';
 import { levelOf } from '../logic/progression.js';
+import { instructionsFor, equipmentNeeds, missingEquipment, upgradeRules, fallbackRules } from '../logic/equipment.js';
 import { dayOf } from '../logic/stats.js';
 import { lineChart } from '../components/charts.js';
 import { rowingPhases, INTENSITY_LABELS } from '../logic/cardio.js';
@@ -84,7 +85,9 @@ export function render(root, { store, content, params, query }) {
     return undefined;
   }
   document.title = `${ex.name} · Physio`;
-  const usedIn = content.workouts.filter((w) => workoutItems(w).some((it) => it.exerciseId === ex.id));
+  // v5: a sling variant counts as „enthalten“ where its base exercise is planned (it replaces it when owned)
+  const baseIds = new Set([ex.id, ...[...upgradeRules(content.exercises)].filter(([, rules]) => rules.some((r) => r.exerciseId === ex.id)).map(([from]) => from)]);
+  const usedIn = content.workouts.filter((w) => workoutItems(w).some((it) => baseIds.has(it.exerciseId)) && (ex.postOpAllowed !== false || content.phases.find((p) => p.id === w.phaseId)?.kind !== 'postop' || baseIds.size === 1));
   const exById = (id) => content.exercises.find((e) => e.id === id);
   const blockCls = ex.block === 'archery' || ex.block === 'cardio' ? 'archery' : ex.block === 'knee' ? 'knee' : '';
   const cardio = ex.block === 'cardio';
@@ -107,6 +110,12 @@ export function render(root, { store, content, params, query }) {
     const curPhase = content.phases.find((p) => p.id === state.phaseId);
     const postop = curPhase?.kind === 'postop';
     const rp = cardio ? rowingLevelPreview(ex, li, content) : null;
+    // v5 (SPEC §16): what the exercise needs vs. „Meine Ausrüstung“, fallback / upgrade variants
+    const needs = equipmentNeeds(ex, settings);
+    const missing = missingEquipment(ex, settings);
+    const fbId = ex.fallback || fallbackRules(content.exercises).get(ex.id);
+    const fallback = fbId ? exById(fbId) : null;
+    const variants = (upgradeRules(content.exercises).get(ex.id) || []).map((r) => ({ ex: exById(r.exerciseId), owned: missingEquipment(exById(r.exerciseId), settings).length === 0 })).filter((v) => v.ex);
 
     paint(root, html`
       ${pageHeader({ title: ex.name, eyebrow: `${blockLabel(ex.block)} · ${ex.category ?? ''}`, back })}
@@ -143,9 +152,15 @@ export function render(root, { store, content, params, query }) {
         <div class="chip-row">
           ${lvl.tempo ? html`<span class="chip chip--outline chip--sm">Tempo ${lvl.tempo}</span>` : ''}
           ${cardio && lvl.intensity ? html`<span class="chip chip--sm chip--archery">Intensität: ${INTENSITY_LABELS[lvl.intensity] ?? lvl.intensity}</span>` : ''}
-          ${(ex.equipment || []).map((e) => html`<span class="chip chip--sm">${equipLabel(e)}</span>`)}
         </div>
       </section>
+
+      ${needs.length ? html`<section class="card card--tight pv-needs" aria-label="Benötigte Ausrüstung">
+        <p class="eyebrow mb-2">Benötigt</p>
+        <div class="chip-row">${needs.map((n) => html`<span class="chip chip--sm ${n.owned ? (n.optional ? 'chip--green' : '') : n.optional ? 'chip--outline' : 'chip--outline pv-need--missing'}" title="${n.owned ? 'vorhanden' : n.optional ? 'optional' : 'fehlt'}">${n.icon} ${n.label}${n.owned ? (n.base ? '' : ' ✓') : n.optional ? ' (optional)' : ' – fehlt'}</span>`)}</div>
+        ${missing.length ? html`<p class="text-sm mt-2 mb-0">${fallback ? html`Ohne ${missing.map(equipLabel).join(', ')} trainierst du im Plan stattdessen <a href="#/uebung/${encodeURIComponent(fallback.id)}">${fallback.name}</a>. ` : 'Ohne diese Ausrüstung wird die Übung im Plan übersprungen. '}<a href="#/ausruestung">In Meine Ausrüstung abhaken</a></p>` : ''}
+        ${variants.length ? html`<p class="text-sm mt-2 mb-0">Mit ${variants.map((v) => html`<a href="#/uebung/${encodeURIComponent(v.ex.id)}">${v.ex.name}</a>`)} gibt es eine ${variants.some((v) => v.owned) ? 'Variante, die dein Plan bereits nutzt' : html`Variante – <a href="#/ausruestung">Ausrüstung abhaken</a>`}.</p>` : ''}
+      </section>` : ''}
 
       ${ex.kneeNote ? html`<div class="pv-callout pv-callout--knee"><span class="pv-callout__icon" aria-hidden="true">🦵</span>
         <div><p class="strong">Hinweis fürs Knie</p><p>${ex.kneeNote}</p></div></div>` : ''}
@@ -158,7 +173,7 @@ export function render(root, { store, content, params, query }) {
 
       <section class="card">
         <h2 class="card__title mb-4">So geht's</h2>
-        <ol class="steps">${(ex.instructions || []).map((s) => html`<li>${s}</li>`)}</ol>
+        <ol class="steps">${instructionsFor(ex, settings).map((s) => html`<li>${s}</li>`)}</ol>
       </section>
 
       ${(ex.cues || []).length || (ex.mistakes || []).length ? html`<div class="grid-2 mb-4">

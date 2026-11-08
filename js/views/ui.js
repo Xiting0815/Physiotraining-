@@ -2,6 +2,7 @@
 // DOM helpers (toast, confirmDialog, openSheet, ensureViewStyles) only touch `document` when called.
 import { html, raw } from '../render.js';
 import { parseISODate } from '../util/date.js';
+import { EQUIPMENT_INFO } from '../logic/equipment.js';
 
 /* ------------------------------------------------------------------ */
 /* Labels                                                              */
@@ -9,10 +10,8 @@ import { parseISODate } from '../util/date.js';
 
 export const BLOCK_LABEL = { warmup: 'Aufwärmen', knee: 'Knie', archery: 'Bogen', cooldown: 'Abschluss', cardio: 'Rudern' };
 export const BLOCK_LONG = { warmup: 'Aufwärmen', knee: 'Knie-Block', archery: 'Bogen-/Rücken-Block', cooldown: 'Cool-down', cardio: 'Rudern' };
-export const EQUIPMENT_LABEL = {
-  theraband: 'TheraBand', loop: 'Loop-Band', mat: 'Matte', chair: 'Stuhl', step: 'Stufe',
-  wall: 'Wand', door: 'Tür', none: 'Ohne Geräte', 'rowing-machine': 'Rudergerät',
-};
+/** Equipment labels (v5: base + optional ids from logic/equipment.js). */
+export const EQUIPMENT_LABEL = Object.fromEntries(Object.entries(EQUIPMENT_INFO).map(([id, v]) => [id, v.label]));
 /** v2 workout/session kinds (SPEC §12.2). Missing kind = strength. */
 export const KIND_LABEL = { strength: 'Krafttraining', short: 'Kurztraining', cardio: 'Rudern', custom: 'Eigenes Workout' };
 export const KIND_ICON = { strength: '🦵', short: '⚡', cardio: '🚣', custom: '🧩' };
@@ -590,6 +589,18 @@ a.card.pv-report, .pv-report { display: flex; align-items: center; gap: var(--s-
 .pv-toggle-row__meta { display: block; font-size: var(--fs-xs); color: var(--muted); }
 .pv-toggle-row.is-off .pv-toggle-row__name { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
 .pv-ex-row.is-off { opacity: 0.55; }
+/* ---- v5: Meine Ausrüstung ---- */
+.pv-eq-icon { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: var(--surface-2); }
+.pv-eq-toggles .pv-toggle-row.is-off .pv-toggle-row__name { color: var(--text); text-decoration: none; }
+.pv-eq-toggles .pv-toggle-row.is-off .pv-eq-icon { filter: grayscale(1); opacity: 0.7; }
+.pv-eq__why--short { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.pv-eq-change p { overflow-wrap: anywhere; }
+.pv-eq-banner { position: relative; }
+.pv-eq-banner a.banner__body { color: inherit; text-decoration: none; }
+.pv-eq-banner__x { flex: none; min-width: var(--tap); }
+a.pv-row-hint { color: inherit; text-decoration: none; }
+.pv-needs .chip { white-space: normal; }
+.pv-need--missing { color: var(--muted); border-style: dashed; }
 /* ---- v2: Profil ---- */
 .pv-input-unit { position: relative; display: block; }
 .pv-input-unit .input { padding-right: 44px; width: 100%; }

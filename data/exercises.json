@@ -719,6 +719,9 @@
         "up": "Strecken",
         "hold": "Halten",
         "down": "Lösen"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Kniehöhe befestigen (Scharnierseite), Tür zu dir hin schließen."
       }
     },
     {
@@ -1000,7 +1003,16 @@
         "up": "Beugen",
         "hold": "Halten",
         "down": "Strecken"
-      }
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-assisted-mini-squat",
+          "chip": "Sling-Variante"
+        }
+      ]
     },
     {
       "id": "step-up",
@@ -1741,6 +1753,9 @@
         "up": "Bein seitlich",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Knöchelhöhe befestigen, Fußschlaufe ums rechte Fußgelenk."
       }
     },
     {
@@ -1835,6 +1850,9 @@
         "up": "Bein nach hinten",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Knöchelhöhe befestigen, Fußschlaufe ums rechte Fußgelenk."
       }
     },
     {
@@ -1928,6 +1946,9 @@
         "up": "Ferse ziehen",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Knöchelhöhe befestigen, Stuhl mit Blick zur Tür davor."
       }
     },
     {
@@ -2018,7 +2039,16 @@
         "up": "Becken hoch",
         "hold": "Halten",
         "down": "Ablegen"
-      }
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-heel-bridge",
+          "chip": "Sling-Variante"
+        }
+      ]
     },
     {
       "id": "calf-raise",
@@ -2304,7 +2334,16 @@
         "up": "Auseinanderziehen",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-t-raise",
+          "chip": "Sling-Variante"
+        }
+      ]
     },
     {
       "id": "seated-row",
@@ -2398,6 +2437,19 @@
         "up": "Ziehen",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-row",
+          "chip": "Sling-Variante"
+        }
+      ],
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Brusthöhe (im Sitzen) befestigen, Tür zu dir hin schließen.",
+        "band-handles": "Griffe an die Bandenden einhängen und mit neutralem Handgelenk greifen."
       }
     },
     {
@@ -2486,7 +2538,16 @@
         "up": "Arme heben",
         "hold": "Halten",
         "down": "Ablegen"
-      }
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-rear-delt-fly",
+          "chip": "Sling-Variante"
+        }
+      ]
     },
     {
       "id": "wall-slide",
@@ -2578,7 +2639,16 @@
         "up": "Hochschieben",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-y-raise",
+          "chip": "Sling-Variante"
+        }
+      ]
     },
     {
       "id": "serratus-punch",
@@ -2673,6 +2743,19 @@
         "up": "Nach vorn schieben",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-push-up-incline",
+          "chip": "Sling-Variante"
+        }
+      ],
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Brusthöhe befestigen, Rücken zur Tür, Schrittstellung mit weichen Knien.",
+        "band-handles": "Griffe an die Bandenden einhängen."
       }
     },
     {
@@ -2765,6 +2848,10 @@
         "up": "Nach außen drehen",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Ellbogenhöhe befestigen, seitlich zur Tür stellen.",
+        "band-handles": "Einen Griff ans Bandende einhängen."
       }
     },
     {
@@ -2857,6 +2944,10 @@
         "up": "Nach oben drehen",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Schulterhöhe befestigen, Gesicht zur Tür.",
+        "band-handles": "Einen Griff ans Bandende einhängen."
       }
     },
     {
@@ -3035,6 +3126,19 @@
         "up": "Zum Gesicht ziehen",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-face-pull",
+          "chip": "Sling-Variante"
+        }
+      ],
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Kopfhöhe befestigen, Gesicht zur Tür, Füße hüftbreit.",
+        "band-handles": "Griffe einhängen – oder die Bandenden direkt greifen, wenn sich die Außenrotation so besser anfühlt."
       }
     },
     {
@@ -3129,6 +3233,10 @@
         "up": "Runterziehen",
         "hold": "Halten",
         "down": "Hoch"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker oben in der Tür befestigen (über Kopfhöhe), Tür zu dir hin schließen.",
+        "band-handles": "Griffe an die Bandenden einhängen."
       }
     },
     {
@@ -3221,6 +3329,10 @@
         "up": "Runterdrücken",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker oben in der Tür befestigen, Gesicht zur Tür, einen Schritt zurück.",
+        "band-handles": "Griffe an die Bandenden einhängen."
       }
     },
     {
@@ -3313,6 +3425,19 @@
         "up": "Ziehen",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-single-arm-row",
+          "chip": "Sling-Variante"
+        }
+      ],
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Schulterhöhe befestigen, im Schießstand seitlich zur Tür stellen (Bogenarm-Seite zur Tür).",
+        "band-handles": "Einen Griff ans Bandende einhängen."
       }
     },
     {
@@ -3689,6 +3814,19 @@
         "up": "Drücken",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-pallof-press",
+          "chip": "Sling-Variante"
+        }
+      ],
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Brusthöhe befestigen, seitlich zur Tür stellen, Füße hüftbreit.",
+        "band-handles": "Griffe einhängen und beide zusammen vor dem Brustbein greifen."
       }
     },
     {
@@ -3783,6 +3921,10 @@
         "up": "Strecken",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker knapp über dem Boden befestigen, Rückenlage mit dem Kopf zur Tür.",
+        "band-handles": "Griffe an die Bandenden einhängen."
       }
     },
     {
@@ -4139,6 +4281,10 @@
       "cueWords": {
         "hold": "Drücken und ziehen",
         "release": "Lösen"
+      },
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Schulterhöhe befestigen; im Schießstand so stellen, dass die Bogenhand eine Wand oder den Türrahmen erreicht.",
+        "band-handles": "Einen Griff ans Bandende einhängen."
       }
     },
     {
@@ -5180,7 +5326,16 @@
         "up": "Absenken",
         "hold": "Halten",
         "down": "Hochdrücken"
-      }
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-dip-assisted",
+          "chip": "Sling-Variante"
+        }
+      ]
     },
     {
       "id": "band-triceps-extension",
@@ -5272,6 +5427,19 @@
         "up": "Strecken",
         "hold": "Halten",
         "down": "Zurück"
+      },
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-triceps-press",
+          "chip": "Sling-Variante"
+        }
+      ],
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker oben in der Tür befestigen, Enden in beiden Händen, mit Blick zur Tür stehen oder sitzen.",
+        "band-handles": "Griffe an die Bandenden einhängen."
       }
     },
     {
@@ -7510,6 +7678,1278 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
+      }
+    },
+    {
+      "id": "sling-row",
+      "name": "Rudern am Schlingentrainer (Inverted Row)",
+      "description": "Schräg zurücklehnen und die Brust zu den Griffen ziehen – Rücken und Schulterblätter wie beim Auszug, mit dem eigenen Körpergewicht.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Griffe fassen, Gesicht zur Tür, Füße hüftbreit fest auf dem Boden.",
+        "Mit gestreckten Armen nach hinten lehnen – der Körper bleibt eine gerade Linie von Kopf bis Ferse.",
+        "Erst die Schulterblätter nach hinten-unten ziehen, dann die Ellbogen eng am Körper zurück, bis die Hände neben der Brust sind.",
+        "Kurz halten, langsam zurück in die Streckung."
+      ],
+      "cues": [
+        "Körper wie ein Brett",
+        "Schulterblätter starten",
+        "Brustbein zu den Griffen"
+      ],
+      "mistakes": [
+        "Hüfte hängt durch",
+        "Schultern zu den Ohren",
+        "Mit Schwung ziehen",
+        "Handgelenke abknicken"
+      ],
+      "kneeNote": "Beide Füße bleiben fest auf dem Boden, Knie gestreckt oder locker – keine Beugung unter Last. Schwerer wird es nur über den Körperwinkel (Füße näher zur Tür), nie über ein Bein.",
+      "levels": [
+        {
+          "label": "Steil (Füße weit weg) · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Steil · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Mittel (½ Schritt näher) · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Flach (Füße fast unter dem Anker) · 3 × 10, 2 s halten",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "seated-row",
+      "progressTo": "sling-single-arm-row",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rueckenspannung",
+        "zug",
+        "schulterblatt",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-row-start",
+          "sling-row-end"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Ziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "id": "sling-face-pull",
+      "name": "Face Pull am Schlingentrainer",
+      "description": "Griffe zur Stirn ziehen und die Hände nach außen drehen – hintere Schulter und Rotatoren, mit dem Körperwinkel dosiert.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Griffe mit den Daumen nach hinten fassen, Gesicht zur Tür, leicht zurücklehnen, Arme schräg nach oben gestreckt.",
+        "Hände Richtung Stirn ziehen, Ellbogen hoch und weit, am Ende die Hände nach hinten-oben drehen.",
+        "Kurz halten, kontrolliert zurück."
+      ],
+      "cues": [
+        "Ellbogen hoch und weit",
+        "Hände enden neben den Ohren",
+        "Rumpf fest"
+      ],
+      "mistakes": [
+        "Ellbogen sinken ab",
+        "Hohlkreuz",
+        "Schultern hochziehen"
+      ],
+      "kneeNote": "Beide Füße bleiben fest auf dem Boden, Knie gestreckt oder locker – keine Beugung unter Last. Schwerer wird es nur über den Körperwinkel (Füße näher zur Tür), nie über ein Bein.",
+      "levels": [
+        {
+          "label": "Fast aufrecht · 2 × 12",
+          "sets": 2,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Leicht geneigt · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Mittel geneigt · 3 × 12, 2 s halten",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Stärker geneigt · 3 × 15, 2 s halten",
+          "sets": 3,
+          "reps": 15,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "face-pull",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "hintere-schulter",
+        "rotatorenmanschette",
+        "zug",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-face-pull-start",
+          "sling-face-pull-end"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Zum Gesicht ziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "id": "sling-y-raise",
+      "name": "Y-Heben am Schlingentrainer",
+      "description": "Mit gestreckten Armen in ein Y über den Kopf ziehen – unterer Trapezius für einen stabilen Bogenarm und eine tiefe Schulter.",
+      "category": "haltung",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Gesicht zur Tür, Griffe vor der Brust, leicht zurücklehnen, Arme lang.",
+        "Arme gestreckt schräg nach oben-außen in ein Y führen, der Körper kommt dabei mit hoch.",
+        "Schultern bleiben tief, kurz halten, langsam zurück."
+      ],
+      "cues": [
+        "Daumen nach oben",
+        "Schultern weg von den Ohren",
+        "Rippen unten"
+      ],
+      "mistakes": [
+        "Hohlkreuz",
+        "Ellbogen beugen",
+        "Zu steil anfangen"
+      ],
+      "kneeNote": "Beide Füße bleiben fest auf dem Boden, Knie gestreckt oder locker – keine Beugung unter Last. Schwerer wird es nur über den Körperwinkel (Füße näher zur Tür), nie über ein Bein.",
+      "levels": [
+        {
+          "label": "Fast aufrecht · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Fast aufrecht · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Leicht geneigt · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Mittel geneigt · 3 × 10, 2 s halten",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "wall-slide",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "schulterblatt",
+        "trapezius-unten",
+        "haltung",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-y-raise-start",
+          "sling-y-raise-end"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Hoch ins Y",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "id": "sling-t-raise",
+      "name": "T-Heben am Schlingentrainer",
+      "description": "Arme gestreckt seitlich öffnen, bis der Körper ein T bildet – wie ein Pull-Apart, nur mit dem eigenen Körpergewicht.",
+      "category": "haltung",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Gesicht zur Tür, Griffe vor der Brust, Arme lang, leicht zurücklehnen.",
+        "Arme fast gestreckt seitlich öffnen, bis sie auf Schulterhöhe ein T bilden – Schulterblätter zusammen.",
+        "Kurz halten, langsam zurück."
+      ],
+      "cues": [
+        "Brustbein hoch",
+        "Schulterblätter zusammen",
+        "Arme auf Schulterhöhe"
+      ],
+      "mistakes": [
+        "Schultern hochziehen",
+        "Hüfte knickt ab",
+        "Ellbogen stark beugen"
+      ],
+      "kneeNote": "Beide Füße bleiben fest auf dem Boden, Knie gestreckt oder locker – keine Beugung unter Last. Schwerer wird es nur über den Körperwinkel (Füße näher zur Tür), nie über ein Bein.",
+      "levels": [
+        {
+          "label": "Fast aufrecht · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Leicht geneigt · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Mittel geneigt · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Stärker geneigt · 3 × 12, 2 s halten",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "band-pull-apart",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "schulterblatt",
+        "rueckenspannung",
+        "haltung",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-t-raise-start",
+          "sling-t-raise-end"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Öffnen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "id": "sling-rear-delt-fly",
+      "name": "Reverse Flys am Schlingentrainer",
+      "description": "Mit leicht gebeugten Ellbogen nach hinten-außen öffnen – hintere Schulter und mittlerer Rücken für den Zugarm.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Gesicht zur Tür, Griffe vor der Brust, Ellbogen weich, leicht zurücklehnen.",
+        "Arme in einem weiten Bogen nach außen-hinten führen, bis die Hände auf Schulterhöhe neben dem Körper sind.",
+        "Kurz halten, kontrolliert zurück."
+      ],
+      "cues": [
+        "Ellbogen bleiben weich",
+        "Bewegung aus der hinteren Schulter",
+        "Kinn neutral"
+      ],
+      "mistakes": [
+        "Mit den Armen rudern statt öffnen",
+        "Hohlkreuz",
+        "Schultern hochziehen"
+      ],
+      "kneeNote": "Beide Füße bleiben fest auf dem Boden, Knie gestreckt oder locker – keine Beugung unter Last. Schwerer wird es nur über den Körperwinkel (Füße näher zur Tür), nie über ein Bein.",
+      "levels": [
+        {
+          "label": "Fast aufrecht · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-1",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Fast aufrecht · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Leicht geneigt · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Mittel geneigt · 3 × 12, 2 s halten",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "prone-ytw",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "hintere-schulter",
+        "schulterblatt",
+        "zug",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-rear-delt-fly-start",
+          "sling-rear-delt-fly-end"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Öffnen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "id": "sling-single-arm-row",
+      "name": "Einarmiges Rudern im Schießstand (Sling)",
+      "description": "Wie der Auszug: Zughand zieht den Griff bis zur Ankerposition, die andere Hand bleibt lang nach vorn wie der Bogenarm.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Beide Gurte zu einem Griff zusammenfassen oder nur einen nutzen. Schießstand seitlich zur Tür, Füße schulterbreit, beide Füße fest am Boden.",
+        "Zuerst rechts (Zughand): Griff mit der rechten Hand, leicht zurücklehnen; der linke Arm zeigt lang nach vorn wie beim Bogenarm, linke Schulter tief.",
+        "Rechten Ellbogen auf Schulterhöhe nach hinten ziehen bis zur Ankerposition am Kinn, Schulterblatt schiebt nach hinten.",
+        "Kurz halten, langsam zurück. Danach Seite wechseln: links ziehen, rechter Arm vorn – gleich viele Wiederholungen für die Balance."
+      ],
+      "cues": [
+        "Zug kommt aus dem Rücken",
+        "Bogenarm lang und ruhig",
+        "Ellbogen auf Pfeilhöhe"
+      ],
+      "mistakes": [
+        "Oberkörper dreht auf",
+        "Bogenschulter rutscht hoch",
+        "Mit der Hand statt mit dem Ellbogen ziehen"
+      ],
+      "kneeNote": "Beide Füße fest auf dem Boden, Gewicht gleichmäßig verteilt, Knie gestreckt oder locker – keine Drehung im linken Knie. Schwerer nur über den Körperwinkel.",
+      "levels": [
+        {
+          "label": "Fast aufrecht · 2 × 8 je Seite",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Leicht geneigt · 2 × 10 je Seite",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Leicht geneigt · 3 × 10 je Seite",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Mittel geneigt · 3 × 10 je Seite, 2 s im Anker",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "sling-row",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "zug",
+        "auszug",
+        "rueckenspannung",
+        "bogen",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-single-arm-row-start",
+          "sling-single-arm-row-end"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "In den Anker ziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "id": "sling-plank-forearms",
+      "name": "Unterarmstütz am Schlingentrainer (stehend)",
+      "description": "Unterarme in den Schlaufen, Füße am Boden, Körper schräg nach vorn – Rumpfstabilität ganz ohne Knien.",
+      "category": "stabilitaet",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Gurte so einstellen, dass die Schlaufen etwa auf Hüfthöhe hängen. Rücken zur Tür stellen.",
+        "Unterarme in die Schlaufen legen, Ellbogen unter den Schultern, Füße hüftbreit am Boden.",
+        "Mit geradem Körper nach vorn lehnen, bis der Bauch fest arbeitet – Becken nicht durchhängen lassen.",
+        "Halten und ruhig weiteratmen, dann aufrichten."
+      ],
+      "cues": [
+        "Bauchnabel leicht einziehen",
+        "Gesäß fest",
+        "Ruhig atmen"
+      ],
+      "mistakes": [
+        "Hohlkreuz",
+        "Schultern sacken ein",
+        "Luft anhalten"
+      ],
+      "kneeNote": "Füße stehen auf dem Boden, Knie gestreckt – nicht kniend und nicht mit den Füßen in den Schlaufen (beides belastet das linke Knie). Schwerer über den Körperwinkel.",
+      "levels": [
+        {
+          "label": "Steil · 2 × 2 × 15 s",
+          "sets": 2,
+          "reps": 2,
+          "hold": 15,
+          "tempo": null,
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Steil · 2 × 3 × 20 s",
+          "sets": 2,
+          "reps": 3,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Flacher (Füße weiter zurück) · 3 × 3 × 20 s",
+          "sets": 3,
+          "reps": 3,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Flacher · 3 × 3 × 30 s",
+          "sets": 3,
+          "reps": 3,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "dead-bug",
+      "progressTo": "sling-standing-rollout",
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rumpf",
+        "stabilitaet",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-plank-forearms",
+          "sling-plank-forearms-reach"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "hold": "Halten",
+        "release": "Aufrichten"
+      }
+    },
+    {
+      "id": "sling-pallof-press",
+      "name": "Pallof Press am Schlingentrainer",
+      "description": "Seitlich zur Tür lehnen und die Griffe vor der Brust nach vorn drücken – der Rumpf darf sich nicht zur Tür drehen.",
+      "category": "stabilitaet",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Seitlich zur Tür stellen, Griffe mit beiden Händen vor dem Brustbein, ein kleines Stück von der Tür weg lehnen.",
+        "Arme langsam nach vorn strecken, 3 s halten – Becken und Brustkorb bleiben gerade.",
+        "Zurück zur Brust. Danach andere Seite."
+      ],
+      "cues": [
+        "Bauch fest, Becken still",
+        "Arme auf Brustbein-Linie",
+        "Ausatmen beim Strecken"
+      ],
+      "mistakes": [
+        "Zur Tür mitdrehen",
+        "Hohlkreuz",
+        "Zu weit lehnen"
+      ],
+      "kneeNote": "Beide Füße fest am Boden, Knie locker – keine Drehung im Knie. Schwerer nur über die Neigung.",
+      "levels": [
+        {
+          "label": "Fast aufrecht · 2 × 8 je Seite",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Leicht geneigt · 3 × 8 je Seite",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Leicht geneigt · 3 × 10 je Seite",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Stärker geneigt · 3 × 10 je Seite",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "pallof-press",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rumpf",
+        "anti-rotation",
+        "stabilitaet",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-pallof-in",
+          "sling-pallof-out"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Drücken",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "id": "sling-standing-rollout",
+      "name": "Rollout im Stand (Sling-Fallout)",
+      "description": "Rücken zur Tür, Arme gestreckt nach vorn-oben führen und den Körper nur ein kleines Stück nach vorn fallen lassen – Bauchmuskeln gegen das Hohlkreuz.",
+      "category": "stabilitaet",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Rücken zur Tür, Griffe mit gestreckten Armen vor der Brust, Füße hüftbreit am Boden, leicht nach vorn lehnen.",
+        "Arme gestreckt langsam nach vorn-oben führen, der Körper folgt ein kleines Stück nach vorn – nur so weit, wie der Rumpf gerade bleibt.",
+        "Mit festem Bauch zurück in die Ausgangsposition ziehen."
+      ],
+      "cues": [
+        "Kleiner Bewegungsweg",
+        "Rippen unten, kein Hohlkreuz",
+        "Ausatmen beim Zurückziehen"
+      ],
+      "mistakes": [
+        "Zu weit fallen lassen",
+        "Hohlkreuz",
+        "Arme beugen"
+      ],
+      "kneeNote": "Füße am Boden, Knie gestreckt oder locker, kein Ausfallschritt. Bei Unsicherheit steiler stehen.",
+      "levels": [
+        {
+          "label": "Steil, kleiner Weg · 2 × 6",
+          "sets": 2,
+          "reps": 6,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Steil · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Etwas flacher · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Flacher · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "sling-plank-forearms",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "rumpf",
+        "stabilitaet",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-rollout-start",
+          "sling-rollout-end"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Nach vorn",
+        "hold": "Halten",
+        "down": "Zurückziehen"
+      }
+    },
+    {
+      "id": "sling-assisted-mini-squat",
+      "name": "Mini-Kniebeuge mit Sling-Unterstützung",
+      "description": "An den Griffen festhalten und nach hinten setzen – die Gurte nehmen Gewicht ab, so bleibt die Beuge kontrolliert und knieschonend.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Gesicht zur Tür, Griffe mit leicht gestreckten Armen halten, Füße hüftbreit, Gewicht auf den ganzen Fuß.",
+        "Gesäß nach hinten setzen, Knie zeigen über die zweiten Zehen – höchstens bis 45–60° Kniebeugung.",
+        "Kurz halten, mit Druck über die Fersen wieder aufrichten. Die Arme helfen nur so viel wie nötig."
+      ],
+      "cues": [
+        "Nach hinten setzen",
+        "Knie über den Zehen",
+        "Gewicht gleich auf beiden Beinen"
+      ],
+      "mistakes": [
+        "Knie fallen nach innen",
+        "Zu tief gehen",
+        "Gewicht auf das rechte Bein schieben"
+      ],
+      "kneeNote": "Höchstens 60° Kniebeugung (anfangs 45°), Griffe zur Entlastung festhalten. Schmerz höchstens 3/10, kein Knacken mit Schmerz; bei Blockieren oder Wegknicken sofort stoppen.",
+      "levels": [
+        {
+          "label": "0–45° · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "0–45° · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "0–60° · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "0–60° · 3 × 12, 2 s halten",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "mini-squat",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "geschlossene-kette",
+        "beinachse",
+        "gesaess",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-squat-top",
+          "sling-squat-bottom"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Beugen",
+        "hold": "Halten",
+        "down": "Strecken"
+      }
+    },
+    {
+      "id": "sling-heel-bridge",
+      "name": "Fersenbrücke im Schlingentrainer",
+      "description": "Rückenlage, Fersen in den Fußschlaufen, Becken zu einer geraden Linie heben – Gesäß und Beinbeuger mit fast gestreckten Knien.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "sling-trainer",
+        "door",
+        "mat"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Gurte so kurz einstellen, dass die Schlaufen etwa 30–40 cm über dem Boden hängen. Rückenlage auf der Matte, Kopf von der Tür weg.",
+        "Beide Fersen in die Fußschlaufen legen, Knie nur leicht gebeugt (ca. 20–30°), Arme seitlich auf dem Boden.",
+        "Gesäß anspannen und das Becken heben, bis Schultern, Hüfte und Knie eine Linie bilden.",
+        "Kurz halten, langsam absenken."
+      ],
+      "cues": [
+        "Gesäß zuerst anspannen",
+        "Knie bleiben fast gestreckt",
+        "Arme stabilisieren am Boden"
+      ],
+      "mistakes": [
+        "Knie weiter beugen",
+        "Hohlkreuz oben",
+        "Schaukeln in den Schlaufen"
+      ],
+      "kneeNote": "Knie nur leicht gebeugt (ca. 20–30°) – keine Beinbeuger-Curls mit tiefer Beugung unter Last. Schmerz höchstens 3/10; bei Ziehen in der Kniekehle oder Krampf Becken weniger hoch heben.",
+      "levels": [
+        {
+          "label": "Beidbeinig · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Beidbeinig · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Beidbeinig · 3 × 10, 2 s halten",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Beidbeinig · 3 × 12, 3 s halten",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "hamstring-bridge-chair",
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "beinbeuger",
+        "gesaess",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-heel-bridge-down",
+          "sling-heel-bridge-up"
+        ],
+        "props": [
+          "mat",
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Becken hoch",
+        "hold": "Halten",
+        "down": "Absenken"
+      }
+    },
+    {
+      "id": "sling-triceps-press",
+      "name": "Trizepsdrücken am Schlingentrainer",
+      "description": "Rücken zur Tür, aus gebeugten Ellbogen die Arme nach vorn-oben strecken – Trizeps für die Krücken, dosiert über die Neigung.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Rücken zur Tür, Griffe über Kopfhöhe, Füße hüftbreit am Boden, Körper gerade nach vorn gelehnt.",
+        "Ellbogen zeigen nach vorn-oben, Hände neben der Stirn.",
+        "Nur die Unterarme bewegen: Arme strecken, der Körper richtet sich dabei etwas auf.",
+        "Langsam zurück, Ellbogen bleiben eng."
+      ],
+      "cues": [
+        "Ellbogen zeigen nach vorn",
+        "Körper bleibt ein Brett",
+        "Langsam zurück"
+      ],
+      "mistakes": [
+        "Ellbogen gehen auseinander",
+        "Hohlkreuz",
+        "Aus der Schulter drücken"
+      ],
+      "kneeNote": "Füße stehen hüftbreit nebeneinander, Knie gestreckt oder locker – kein Ausfallschritt mit dem linken Bein. Schwerer nur über die Neigung.",
+      "levels": [
+        {
+          "label": "Steil · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Steil · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Etwas flacher · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Flacher · 3 × 12, 2 s halten",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "band-triceps-extension",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kruecken",
+        "trizeps",
+        "stuetz",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-triceps-press-start",
+          "sling-triceps-press-end"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Strecken",
+        "hold": "Halten",
+        "down": "Beugen"
+      }
+    },
+    {
+      "id": "sling-dip-assisted",
+      "name": "Stütz-Dips am Schlingentrainer (Füße am Boden)",
+      "description": "Zwischen den Gurten stützen und den Körper nur ein Stück absenken – Trizeps und Schulterdepression wie auf Krücken.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Gurte kurz einstellen, die Griffe hängen neben den Hüften. Rücken zur Tür, zwischen die Gurte stellen.",
+        "Griffe fassen, Arme gestreckt, Schultern tief. Beine lang nach vorn, Fersen bleiben am Boden.",
+        "Ellbogen nach hinten beugen und den Körper nur ein kleines Stück absenken (höchstens bis ca. 60° im Ellbogen).",
+        "Mit den Händen nach unten drücken und wieder strecken."
+      ],
+      "cues": [
+        "Schultern weg von den Ohren",
+        "Ellbogen nach hinten",
+        "Kleiner Weg"
+      ],
+      "mistakes": [
+        "Zu tief gehen",
+        "Schultern rollen nach vorn",
+        "Mit den Beinen hochdrücken"
+      ],
+      "kneeNote": "Beine lang, Fersen am Boden – das linke Knie wird nicht gebeugt und trägt kaum Last. Nur so tief, wie die Schultern schmerzfrei bleiben.",
+      "levels": [
+        {
+          "label": "Füße tragen mit · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-0-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Füße tragen mit · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-0-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Weniger Fußhilfe · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-0-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Weniger Fußhilfe · 3 × 10, 1 s halten",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "chair-dip",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kruecken",
+        "trizeps",
+        "stuetz",
+        "schulterstabilitaet",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-dip-up",
+          "sling-dip-down"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Absenken",
+        "hold": "Halten",
+        "down": "Hochdrücken"
+      }
+    },
+    {
+      "id": "sling-push-up-incline",
+      "name": "Schräge Liegestütze am Schlingentrainer",
+      "description": "Rücken zur Tür, Hände in den Griffen, Brust zwischen die Hände absenken – Brust, Trizeps und Serratus für das Abstützen an Krücken.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "sling-trainer",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Schlingentrainer oben in der Tür befestigen (Scharnierseite, Tür zu dir hin schließen und am besten abschließen), Gurte auf Länge einstellen und den Halt mit einem kräftigen Zug testen.",
+        "Rücken zur Tür, Griffe auf Brusthöhe, Arme gestreckt, Füße hüftbreit am Boden, Körper gerade nach vorn gelehnt.",
+        "Ellbogen etwa 45° vom Körper beugen und die Brust zwischen die Hände senken.",
+        "Kräftig zurückdrücken, oben die Schulterblätter leicht auseinanderschieben."
+      ],
+      "cues": [
+        "Körper wie ein Brett",
+        "Ellbogen 45°",
+        "Oben weit machen"
+      ],
+      "mistakes": [
+        "Hüfte hängt durch",
+        "Ellbogen weit seitlich",
+        "Griffe wandern auseinander"
+      ],
+      "kneeNote": "Füße am Boden, Knie gestreckt – nicht kniend. Schwerer nur über die Neigung.",
+      "levels": [
+        {
+          "label": "Steil · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Steil · 3 × 8",
+          "sets": 3,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Etwas flacher · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        },
+        {
+          "label": "Flacher · 3 × 12",
+          "sets": 3,
+          "reps": 12,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 60
+        }
+      ],
+      "regressTo": "serratus-punch",
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kruecken",
+        "stuetz",
+        "brust",
+        "serratus",
+        "sling"
+      ],
+      "figure": {
+        "poses": [
+          "sling-push-up-up",
+          "sling-push-up-down"
+        ],
+        "props": [
+          "sling"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Absenken",
+        "hold": "Halten",
+        "down": "Drücken"
       }
     }
   ]

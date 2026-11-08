@@ -10,7 +10,7 @@ export const routes = [
   { pattern: '/folgetag', view: 'next-day', tab: 'heute', title: 'Folgetag-Check' },
   { pattern: '/verlauf', view: 'history', tab: 'verlauf', title: 'Verlauf' },
   { pattern: '/mehr', view: 'settings', tab: 'mehr', title: 'Mehr' },
-  { pattern: '/ausruestung', view: 'equipment', tab: 'mehr', title: 'Ausrüstung' },
+  { pattern: '/ausruestung', view: 'equipment', tab: 'mehr', title: 'Meine Ausrüstung' },
   // v2 (SPEC §12.12)
   { pattern: '/eigene', view: 'custom-workouts', tab: 'plan', title: 'Eigene Workouts' },
   { pattern: '/eigene/:id', view: 'custom-workout-edit', tab: 'plan', title: 'Eigenes Workout' },

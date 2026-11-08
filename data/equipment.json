@@ -1,76 +1,165 @@
 {
-  "updated": "2026-10",
+  "updated": "2026-11",
   "items": [
     {
-      "id": "tueranker-griffe",
+      "id": "door-anchor",
+      "equipment": [
+        "door-anchor",
+        "band-handles"
+      ],
       "name": "Türanker + Bandgriffe (Set)",
       "priority": "muss",
       "priceEur": "8–15",
       "why": "Macht aus den vorhandenen TheraBändern eine Kabelzug-Station. Ziehübungen auf Schulterhöhe (wie beim Auszug), Außenrotation und Ruderbewegungen gehen damit sauber, ohne Belastung fürs Knie. Mit Fußschlaufe am Türanker geht auch Hüft- und Oberschenkeltraining im Stand oder Liegen.",
-      "enables": ["Rudern stehend/sitzend", "Face Pulls", "Außenrotation Schulter (Ellbogen 90°)", "Auszugssimulation Zugarm", "Pallof Press (Rumpf-Antirotation)", "Hüftabduktion/-extension mit Fußschlaufe", "Terminal Knee Extension (TKE) mit Band hinter dem Knie"],
+      "enables": [
+        "Rudern stehend/sitzend",
+        "Face Pulls",
+        "Außenrotation Schulter (Ellbogen 90°)",
+        "Auszugssimulation Zugarm",
+        "Pallof Press (Rumpf-Antirotation)",
+        "Hüftabduktion/-extension mit Fußschlaufe",
+        "Terminal Knee Extension (TKE) mit Band hinter dem Knie"
+      ],
       "tips": "Auf einen gepolsterten Anker achten, der auf der Scharnierseite der Tür eingeklemmt wird; Tür zum Raum hin schließen. Griffe mit Karabiner nehmen, die zu flachen Bändern passen (Bandschlaufe/Knoten). Ein Set mit Fußschlaufe kostet kaum mehr."
     },
     {
-      "id": "massband",
+      "id": "sling-trainer",
+      "equipment": [
+        "sling-trainer"
+      ],
+      "name": "Schlingentrainer (Suspension-Trainer) mit Türanker",
+      "priority": "sinnvoll",
+      "priceEur": "25–60",
+      "why": "Zwei verstellbare Gurte mit Griffen, oben in der Tür eingeklemmt. Zug- und Rumpfübungen werden über den Körperwinkel dosiert – ideal für Rücken, Schulterblätter und den Zugarm, und das Knie bleibt dabei ruhig, weil beide Füße am Boden stehen. Auch die Krücken-Vorbereitung (Dips, Trizeps, schräge Liegestütze) gelingt damit besser als mit dem Stuhl.",
+      "enables": [
+        "Rudern am Schlingentrainer (Inverted Row)",
+        "Face Pull, Y- und T-Heben",
+        "Einarmiges Rudern im Schießstand",
+        "Unterarmstütz im Stand (ohne Knien)",
+        "Stütz-Dips und Trizepsdrücken für die Krücken",
+        "Assistierte Mini-Kniebeuge (ab Phase 2)"
+      ],
+      "tips": "Auf einen gepolsterten Türanker und eine Tür achten, die zu dir hin aufgeht (dann zieht die Last die Tür zu) – am besten abschließen. Gurte mit Längenverstellung per Schnalle und Fußschlaufen kaufen. Keine Übungen mit den Füßen in den Schlaufen im Kniestand, solange das linke Knie gereizt ist."
+    },
+    {
+      "id": "measuring-tape",
+      "equipment": [
+        "measuring-tape"
+      ],
       "name": "Maßband (Schneidermaßband) für Kniekontrolle",
       "priority": "muss",
       "priceEur": "2–5",
       "why": "Mit dem Kniekreisumfang lässt sich verfolgen, ob das Training das Knie reizt. Nimmt der Umfang nach einer Einheit um mehr als ca. 1 cm zu oder ist er am nächsten Morgen noch erhöht, war die Dosis zu hoch.",
-      "enables": ["Umfangsmessung Kniemitte (Gelenkspalt)", "Messung 10 cm oberhalb der Kniescheibe (Quadrizeps-Atrophie)", "Seitenvergleich links/rechts"],
+      "enables": [
+        "Umfangsmessung Kniemitte (Gelenkspalt)",
+        "Messung 10 cm oberhalb der Kniescheibe (Quadrizeps-Atrophie)",
+        "Seitenvergleich links/rechts"
+      ],
       "tips": "Immer zur gleichen Tageszeit, im Liegen mit gestrecktem Bein und an denselben, mit Stift markierten Punkten messen. Werte im Training notieren. Ein flexibles Schneidermaßband ist besser als ein Rollmaßband aus Metall."
     },
     {
-      "id": "pedaltrainer",
+      "id": "pedal-trainer",
+      "equipment": [
+        "pedal-trainer"
+      ],
       "name": "Mini-Pedaltrainer / Arm-Bein-Trainer (Mini-Bike)",
       "priority": "muss",
       "priceEur": "25–60 (einfach) / 100–135 (leise, magnetgebremst)",
       "why": "Gleichmäßiges Treten ohne Stoß ist eine der besten Belastungsformen für Knorpel und Meniskus: Es ernährt den Knorpel über die Gelenkflüssigkeit, verbessert die Beweglichkeit und hält die Ausdauer. Das Gerät steht vor dem vorhandenen Stuhl, und mit dem Abstand zum Stuhl lässt sich der Beugewinkel des Knies genau einstellen. Auf dem Tisch dient es außerdem als Armergometer.",
-      "enables": ["Radeln im Sitzen (10–20 Min.)", "Aufwärmen vor dem Krafttraining", "Rückwärtstreten", "Armkurbeln auf dem Tisch (Schulter-Ausdauer)"],
+      "enables": [
+        "Radeln im Sitzen (10–20 Min.)",
+        "Aufwärmen vor dem Krafttraining",
+        "Rückwärtstreten",
+        "Armkurbeln auf dem Tisch (Schulter-Ausdauer)"
+      ],
       "tips": "Den Stuhl so weit wegstellen, dass das Knie am oberen Umkehrpunkt nicht tiefer als ca. 90° gebeugt ist, also nicht in die tiefe Beugung kommt. Mit wenig Widerstand anfangen. Wichtig sind ein rutschfester, stabiler Rahmen (billige Modelle rutschen und wackeln) und eine stufenlose Widerstandsregelung. Magnetbremse ist leiser und gleichmäßiger als eine Filz- oder Gurtbremse. Gerät auf eine rutschfeste Unterlage stellen oder mit einem Gurt am Stuhlbein sichern."
     },
     {
-      "id": "fussgewichte",
+      "id": "ankle-weights",
+      "equipment": [
+        "ankle-weights"
+      ],
       "name": "Gewichtsmanschetten für Fuß/Handgelenk, verstellbar (0,5–2 kg je Seite)",
       "priority": "sinnvoll",
       "priceEur": "15–30 (Paar)",
       "why": "Das klassische Werkzeug für Quadrizeps- und Hüfttraining ohne Kniebeugung. Damit lässt sich der vor der OP wichtige Quadrizeps (besonders der Vastus medialis) gezielt und stufenweise kräftigen, und die Hüftmuskulatur stabilisiert die Beinachse. An den Handgelenken eignen sie sich auch für leichtes Schultertraining.",
-      "enables": ["Gestrecktes Beinheben (SLR) in Rückenlage", "Hüftabduktion in Seitlage", "Hüftextension in Bauchlage", "Kniestreckung im Sitzen im Endbereich (ca. 45–0°)", "Beinheben im Stand am Stuhl", "Y-T-W-Heben für die Schulterblattmuskeln"],
+      "enables": [
+        "Gestrecktes Beinheben (SLR) in Rückenlage",
+        "Hüftabduktion in Seitlage",
+        "Hüftextension in Bauchlage",
+        "Kniestreckung im Sitzen im Endbereich (ca. 45–0°)",
+        "Beinheben im Stand am Stuhl",
+        "Y-T-W-Heben für die Schulterblattmuskeln"
+      ],
       "tips": "Modelle mit herausnehmbaren Gewichtseinsätzen kaufen (z. B. 5 × 0,3–0,4 kg), damit fein gesteigert werden kann. Breiter Klettverschluss und weiches Material. Nicht für schnelle oder schwunghafte Bewegungen verwenden."
     },
     {
-      "id": "balancepad",
+      "id": "balance-pad",
+      "equipment": [
+        "balance-pad"
+      ],
       "name": "Balance-Pad (Schaumstoffkissen)",
       "priority": "sinnvoll",
       "priceEur": "15–30 (No-Name) / 60–80 (Airex Elite)",
       "why": "Nach einer Meniskusverletzung ist die Propriozeption (Gelenkwahrnehmung) oft gestört. Stabilitätstraining im Stand mit nur leicht gebeugtem Knie verbessert die Kniekontrolle, und zwar ohne Stoß und ohne tiefe Beugung. Es hilft auch für einen ruhigen, stabilen Bogenstand.",
-      "enables": ["Beidbeiniger Stand, später Einbeinstand", "Stand mit geschlossenen Augen", "Gewichtsverlagerung", "Bogenstand mit Bandzug auf dem Pad", "Mini-Kniebeuge bis ca. 30°"],
+      "enables": [
+        "Beidbeiniger Stand, später Einbeinstand",
+        "Stand mit geschlossenen Augen",
+        "Gewichtsverlagerung",
+        "Bogenstand mit Bandzug auf dem Pad",
+        "Mini-Kniebeuge bis ca. 30°"
+      ],
       "tips": "Ein Pad etwa 6 cm dick, ca. 40 × 50 cm, aus geschlossenzelligem TPE oder Schaum, mit rutschfester Unterseite. Zu weiche oder dicke Pads überfordern am Anfang. Neben einem Stuhl oder einer Wand üben. Eine Alternative für den Anfang ist ein gefaltetes Kissen oder die gefaltete Matte."
     },
     {
-      "id": "schusstrainer",
+      "id": "release-trainer",
+      "equipment": [
+        "release-trainer"
+      ],
       "name": "Bogen-Schusstrainer / Release-Trainer (elastischer Bogensimulator)",
       "priority": "sinnvoll",
       "priceEur": "15–25 (einfaches Trainingsband) / 35–70 (Astra Shot Trainer, Release-Trainer mit verstellbarer Auszugslänge)",
       "why": "Hält den Schussablauf in Übung, wenn der Weg zum Platz wegen des Knies wegfällt: Haltung, Auszug, Rückenspannung und die Auslösung mit dem eigenen Release lassen sich zu Hause trainieren, im Sitzen oder im stabilen Stand. Auch nach der OP kann man damit früh wieder anfangen.",
-      "enables": ["SPT (spezifisches Kraft-/Haltetraining, z. B. 10 s Halten im Anker)", "Auslösetraining mit eigenem Release (Hinge/Trigger)", "Schusssequenz vor dem Spiegel", "Training im Sitzen auf dem Stuhl"],
+      "enables": [
+        "SPT (spezifisches Kraft-/Haltetraining, z. B. 10 s Halten im Anker)",
+        "Auslösetraining mit eigenem Release (Hinge/Trigger)",
+        "Schusssequenz vor dem Spiegel",
+        "Training im Sitzen auf dem Stuhl"
+      ],
       "tips": "Für einen Compound-Schützen muss der Trainer eine D-Loop oder Seilschlaufe haben, in die das eigene Release eingehängt werden kann, und eine an die Auszugslänge anpassbare Länge. Rechtshänder: Ausführung RH bzw. beidseitig nutzbar. Der Zug sollte deutlich unter dem Zuggewicht des Bogens liegen. Günstige Alternative: eine Schlinge aus vorhandenem TheraBand (blau oder grün) mit Seilschlaufe, wobei das Release nur mit Sicherung (z. B. einem Knoten) ausgelöst werden darf. Niemals einen echten Bogen leer auslösen (Dry Fire)."
     },
     {
-      "id": "kuehlpack",
+      "id": "ice-pack",
+      "equipment": [
+        "ice-pack"
+      ],
       "name": "Kühlpack / Gel-Kompresse fürs Knie (wiederverwendbar, mit Klettbandage)",
       "priority": "sinnvoll",
       "priceEur": "8–20",
       "why": "Für das Knie nach dem Training, wenn es gereizt oder geschwollen ist, und unmittelbar nach der OP im Januar. Mit Klettbandage hält es von selbst, und die Kompression hilft zusätzlich gegen Schwellung.",
-      "enables": ["Kühlen 10–15 Min. nach der Einheit bei Reizung", "Hochlagern + Kühlen", "Post-OP-Schwellungsmanagement"],
+      "enables": [
+        "Kühlen 10–15 Min. nach der Einheit bei Reizung",
+        "Hochlagern + Kühlen",
+        "Post-OP-Schwellungsmanagement"
+      ],
       "tips": "Eine anatomische Knieform oder eine große Kompresse (ca. 25 × 35 cm) nehmen, die im Gefrierfach biegsam bleibt. Nie direkt auf die Haut legen, immer ein Tuch dazwischen. Die meisten Kliniken empfehlen nach der OP zusätzlich ein Gerät oder eine Bandage, dazu den Arzt fragen."
     },
     {
-      "id": "kurzhanteln",
+      "id": "dumbbells",
+      "equipment": [
+        "dumbbells"
+      ],
       "name": "Kleine Kurzhanteln (Neopren/Vinyl, 1–3 kg) oder eine verstellbare Kurzhantel bis 5 kg",
       "priority": "nice",
       "priceEur": "10–25 (Paar 1–2 kg) / 20–40 (verstellbar)",
       "why": "Ergänzt die Bänder für Übungen mit konstantem Widerstand, z. B. Außenrotation in Seitlage, Rudern einarmig am Stuhl und Bizeps/Unterarm für den Bogenarm. Die Bänder decken das meiste ab, daher sind die Hanteln nur ein Zusatz.",
-      "enables": ["Außenrotation in Seitlage", "Einarmiges Rudern mit Stütze am Stuhl", "Seitheben bis 90°", "Reverse Flys", "Unterarm-/Handgelenkstraining"],
+      "enables": [
+        "Außenrotation in Seitlage",
+        "Einarmiges Rudern mit Stütze am Stuhl",
+        "Seitheben bis 90°",
+        "Reverse Flys",
+        "Unterarm-/Handgelenkstraining"
+      ],
       "tips": "Für Schulterrotatoren reichen 1–2 kg. Neopren liegt angenehm in der Hand. Übungen im Sitzen oder mit Stütze machen, damit das Knie nicht belastet wird. Leichte Wasserflaschen (0,5–1,5 l) sind ein kostenloser Ersatz für den Anfang."
     }
   ],

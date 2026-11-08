@@ -23,6 +23,7 @@ function fresh() {
   const d = defaults();
   d.state.phaseId = 'p1-basis';
   d.state.nextWorkoutId = 'p1-b';
+  d.settings.ownedEquipment = ['rowing-machine']; // v5: rowing needs the rowing machine ticked
   return d;
 }
 

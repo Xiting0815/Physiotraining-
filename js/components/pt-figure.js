@@ -18,7 +18,11 @@
 // Props: chair ({x, y, facing, back, arms: armrest height above the seat}), wall, door, mat, step, towel,
 //   cushion, bow, rower ({x0, x1, rail, seat, r, foot: {x, y, a}, exit: {x, y}} — side view rowing machine:
 //   rail, flywheel housing at x1, foot stretcher under the ankle point `foot` (sole direction `a`°), the seat
-//   follows the hip and a strap runs from `exit` to the hands every frame).
+//   follows the hip and a strap runs from `exit` to the hands every frame),
+//   sling ({x, y, to: [points], door}) — v5 suspension trainer fixed at the top of the door: anchor at x/y
+//   (default: above and beyond the first target point), straps run to the named points (default both hands;
+//   e.g. footL/footR for heel cradles) with a handle/cradle every frame; `door: false` hides the door edge,
+//   `behind: true` draws the straps behind the body (anchor behind the figure).
 // Figure option `loop: true`: keyframes play as a cycle (k0 → … → kn-1 → k0) instead of ping-pong; the first
 //   half of the segments uses the concentric time, the rest the eccentric time (e.g. rowing drive/recovery).
 import { getExercise, getContent, loadContent } from '../content.js';
@@ -301,6 +305,17 @@ export function layoutProps(props, pose0, P, band) {
         break;
       }
       case 'bow': break; // follows the hands every frame
+      case 'sling': {
+        p.to = Array.isArray(p.to) && p.to.length ? p.to : ['handL', 'handR'];
+        if (p.x === undefined || p.y === undefined) {
+          const t = P[POINT_ALIASES[p.to[0]] || p.to[0]] || P.hands;
+          const dir = !side ? 1 : (t.x >= P.hip.x ? 1 : -1);
+          p.x ??= t.x + dir * 50;
+          p.y ??= Math.min(P.head.y, t.y) - 40;
+        }
+        p.anchor = { x: p.x, y: p.y };
+        break;
+      }
       case 'rower': {
         if (!side) continue;
         p.seat ??= P.hip.y + BODY.leg / 2 + 1;
@@ -326,6 +341,7 @@ function propBounds(p) {
     case 'chair': return [{ x: p.x - 18, y: p.y - (p.back === false ? (p.arms || 0) : 50) }, { x: p.x + 18, y: FLOOR }];
     case 'rower': return [{ x: p.x0 - 6, y: p.rail - 10 - p.r - 50 }, { x: p.x1 + p.r + 4, y: FLOOR }];
     case 'door': return [{ x: p.x - 6, y: p.y - 6 }, { x: p.x + 6, y: p.y + 6 }];
+    case 'sling': return [{ x: p.x - 7, y: p.y - 10 }, { x: p.x + 7, y: p.y + 4 }];
     case 'step': return [{ x: p.x - p.w / 2, y: p.top }, { x: p.x + p.w / 2, y: FLOOR }];
     case 'towel': return [{ x: p.x - p.r, y: p.y - p.r }, { x: p.x + p.r, y: p.y + p.r }];
     case 'cushion': return [{ x: p.x - p.w / 2, y: p.y - p.h / 2 }, { x: p.x + p.w / 2, y: p.y + p.h / 2 }];
@@ -385,6 +401,12 @@ function propSvg(p, frame, front) {
       return `<rect class="fig-cushion" x="${f(p.x - p.w / 2)}" y="${f(p.y - p.h / 2)}" width="${f(p.w)}" height="${f(p.h)}" rx="${f(p.h / 2)}"/>`;
     case 'rower':
       return rowerSvg(p);
+    case 'sling': {
+      const top = Math.min(frame.y + 2, p.y - 10);
+      return `<g class="fig-prop fig-sling-anchor">
+        ${p.door === false ? '' : `<rect class="fig-prop-soft" x="${f(p.x - 3.5)}" y="${f(top)}" width="7" height="${f(FLOOR - top)}" rx="1.5"/>`}
+        <rect class="fig-prop-solid" x="${f(p.x - 5)}" y="${f(p.y - 8)}" width="10" height="7" rx="2"/></g>`;
+    }
     default:
       return '';
   }
@@ -569,6 +591,21 @@ function bandSvg(from, to, rest, color) {
   return `<g class="fig-band" style="--band:${esc(color)}"><path class="fig-band-out" d="${dd}"/><path class="fig-band-line" d="${dd}"/><circle class="fig-band-end" cx="${f(to.x)}" cy="${f(to.y)}" r="2.2"/><circle class="fig-band-end" cx="${f(from.x)}" cy="${f(from.y)}" r="2.2"/></g>`;
 }
 
+/** v5: straps of the suspension trainer from the anchor to the target points, with handles / foot cradles. */
+function slingSvg(p, P) {
+  let s = '';
+  for (const ref of p.to) {
+    const t = P[POINT_ALIASES[ref] || ref];
+    if (!t) continue;
+    const foot = /^foot/.test(ref);
+    s += `<path class="fig-sling-strap" d="M${f(p.x)} ${f(p.y - 1)}L${f(t.x)} ${f(t.y)}"/>`;
+    s += foot
+      ? `<ellipse class="fig-sling-handle" cx="${f(t.x)}" cy="${f(t.y)}" rx="4.6" ry="3.2"/>`
+      : `<rect class="fig-sling-handle" x="${f(t.x - 3.6)}" y="${f(t.y - 2.2)}" width="7.2" height="4.4" rx="2.2"/>`;
+  }
+  return `<g class="fig-sling">${s}</g>`;
+}
+
 function bowSvg(P) {
   const { h, top, bot } = bowGeom(P);
   const limb = `M${f(top.x)} ${f(top.y)}Q${f(h.x + 18)} ${f(h.y - 22)} ${f(h.x + 2)} ${f(h.y)}Q${f(h.x + 18)} ${f(h.y + 22)} ${f(bot.x)} ${f(bot.y)}`;
@@ -597,6 +634,7 @@ export function buildScene(spec) {
   const props = layoutProps(mergeProps(spec.props, pose0).filter((p) => !(handBand && p.type === 'bow')), pose0, P0, band);
   const hasMat = props.some((p) => p.type === 'mat');
   const rower = props.find((p) => p.type === 'rower') || null;
+  const sling = props.find((p) => p.type === 'sling') || null;
 
   // body bounds over all keyframes
   let bb = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
@@ -652,8 +690,10 @@ export function buildScene(spec) {
       if (onFloor) s += `<ellipse class="fig-shadow" cx="${f(fx)}" cy="${FLOOR}" rx="${f(sw)}" ry="2.6"/>`;
     }
     if (rower) s += rowerSeatSvg(rower, P) + rowerStrapSvg(rower, P);
+    if (sling?.behind) s += slingSvg(sling, P); // anchor behind the figure: straps run behind the body
     s += poseSvg(pose, segments, opts);
     if (rower) s += rowerHandleSvg(P);
+    if (sling && !sling.behind) s += slingSvg(sling, P);
     if (props.some((p) => p.type === 'bow')) s += bowSvg(P);
     if (band) {
       const a = resolvePoint(P, band.from, props);
@@ -717,6 +757,8 @@ export const FIGURE_CSS = `
   pt-figure .fig-prop-soft{fill:currentColor;opacity:.16}
   pt-figure .fig-prop-ring{fill:none;stroke:currentColor;stroke-width:2.2;opacity:.6}
   pt-figure .fig-strap{fill:none;stroke:var(--fig-prop,var(--muted,#5B6573));stroke-width:1.6;stroke-linecap:round;opacity:.9}
+  pt-figure .fig-sling-strap{fill:none;stroke:var(--fig-sling,var(--accent,#E07A1F));stroke-width:2.4;stroke-linecap:round;opacity:.9}
+  pt-figure .fig-sling-handle{fill:var(--fig-sling,var(--accent,#E07A1F));stroke:var(--fig-bg);stroke-width:1.2}
   pt-figure .fig-handle{fill:var(--fig-prop,var(--muted,#5B6573));stroke:var(--fig-bg);stroke-width:1}
   pt-figure .fig-prop-wall{stroke:currentColor;stroke-width:3;stroke-linecap:round;opacity:.7}
   pt-figure .fig-prop-hatch{stroke:currentColor;stroke-width:1.4;opacity:.35;fill:none}

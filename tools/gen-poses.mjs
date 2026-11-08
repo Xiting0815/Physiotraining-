@@ -1129,6 +1129,171 @@ add('band-dislocate-high', ground(front('standing', { shoulderL: 158, shoulderR:
   add('sit-forearm-stretch', mk(true));
 }
 
+// ---------------------------------------------------------------- v5 sling trainer (straps fixed at the top of the door)
+// Body angle progressions lean the straight body around the feet (feet stay on the floor, knees straight or soft).
+{
+  const sling = (A, extra = {}) => ({ type: 'sling', x: r1(A.x), y: r1(A.y), ...extra });
+  /** straight body leaning by T° (− = back, + = forward) around the feet at footX */
+  const lean = (T, footX, o = {}) => {
+    const p = flat(side('standing', { trunk: T, hipL: -T, hipR: -T, kneeL: 0, kneeR: 0, shoulderL: 0, shoulderR: 0, elbowL: 0, elbowR: 0, ...o }));
+    ground(p, FLOOR);
+    p.root.x = r1(p.root.x + footX - pts(p).footR.x);
+    return p;
+  };
+  /** both (or given) arms straight toward point A */
+  const toward = (p, A, sides = ['L', 'R']) => {
+    const P = pts(p);
+    const a = Math.round(dirAng({ x: A.x - P.neck.x, y: A.y - P.neck.y }));
+    for (const s of sides) { p['shoulder' + s] = a; p['elbow' + s] = 0; }
+    return p;
+  };
+  const withProps = (p, props) => { p.props = props; return p; };
+
+  // inverted row: body leans back, pulls the chest to the handles
+  {
+    const FX = 120; const A = { x: FX + 24, y: 12 };
+    const s = toward(lean(-38, FX), A);
+    const e = lean(-24, FX);
+    const P = pts(e);
+    aim(e, 'armR', { x: P.neck.x + 13, y: P.neck.y + 13 }, (j2, el) => el.x < P.neck.x + 4);
+    sameArms(e);
+    add('sling-row-start', withProps(s, [sling(A)]));
+    add('sling-row-end', withProps(e, [sling(A)]));
+  }
+  // face pull: hands to the forehead, elbows high and wide (upper arms foreshortened)
+  {
+    const FX = 118; const A = { x: FX + 20, y: 0 };
+    const s = toward(lean(-30, FX), A);
+    const e = lean(-18, FX, { upperArmLenL: 0.55, upperArmLenR: 0.55 });
+    const P = pts(e);
+    aim(e, 'armR', { x: P.head.x + 7, y: P.head.y - 1 }, (j2, el) => el.y <= P.neck.y + 3);
+    sameArms(e);
+    add('sling-face-pull-start', withProps(s, [sling(A)]));
+    add('sling-face-pull-end', withProps(e, [sling(A)]));
+  }
+  // Y raise: straight arms from forward to overhead (Y), body comes up
+  {
+    const FX = 118; const A = { x: FX + 22, y: 4 };
+    const s = toward(lean(-26, FX), A);
+    const e = lean(-12, FX, { shoulderL: 162, shoulderR: 162, elbowL: 0, elbowR: 0 });
+    add('sling-y-raise-start', withProps(s, [sling(A)]));
+    add('sling-y-raise-end', withProps(e, [sling(A)]));
+  }
+  // T raise / reverse fly: arms open to the sides (toward the viewer → foreshortened)
+  {
+    const FX = 118; const A = { x: FX + 22, y: 8 };
+    const s = toward(lean(-26, FX), A);
+    const e = lean(-12, FX, { shoulderL: 90, shoulderR: 90, elbowL: 0, elbowR: 0, upperArmLenL: 0.22, upperArmLenR: 0.22, forearmLenL: 0.22, forearmLenR: 0.22 });
+    add('sling-t-raise-start', withProps(s, [sling(A)]));
+    add('sling-t-raise-end', withProps(e, [sling(A)]));
+    const fs = toward(lean(-22, FX), A); fs.elbowL = fs.elbowR = 14;
+    const fe = lean(-10, FX, { shoulderL: 86, shoulderR: 86, elbowL: 18, elbowR: 18, upperArmLenL: 0.28, upperArmLenR: 0.28, forearmLenL: 0.3, forearmLenR: 0.3 });
+    add('sling-rear-delt-fly-start', withProps(fs, [sling(A)]));
+    add('sling-rear-delt-fly-end', withProps(fe, [sling(A)]));
+  }
+  // single-arm row in shooting stance: right (draw) hand on the strap, left (bow) arm stays long forward
+  {
+    const FX = 118; const A = { x: FX + 26, y: 14 };
+    const s = toward(lean(-22, FX, { hipL: 30, hipR: 14 }), A, ['R']);
+    s.shoulderL = 86; s.elbowL = 0; flat(s); ground(s, FLOOR);
+    const e = lean(-12, FX, { hipL: 20, hipR: 4 });
+    e.shoulderL = 88; e.elbowL = 0; flat(e); ground(e, FLOOR);
+    const P = pts(e);
+    aim(e, 'armR', { x: P.neck.x + 7, y: P.neck.y + 3 }, (j2, el) => el.x < P.neck.x);
+    add('sling-single-arm-row-start', withProps(s, [sling(A, { to: ['handR'] })]));
+    add('sling-single-arm-row-end', withProps(e, [sling(A, { to: ['handR'] })]));
+  }
+  // forearm plank (back to the door): feet on the floor, forearms rest in the cradles (no kneeling, no feet in the straps)
+  {
+    const FX = 70;
+    const mk = (T, sh) => { const p = lean(T, FX, { shoulderL: sh, shoulderR: sh, elbowL: 90 - sh + 6, elbowR: 90 - sh + 6 }); return p; };
+    const a = mk(58, 32);
+    const A = { x: FX - 26, y: 6 }; // back to the door: the straps run back over the shoulders
+    add('sling-plank-forearms', withProps(a, [sling(A, { behind: true })]));
+    add('sling-plank-forearms-reach', withProps(mk(62, 44), [sling(A, { behind: true })]));
+  }
+  // pallof press (front view): anchor at the viewer's right, body leans slightly away
+  {
+    const a = clone(poses['pallof-press-start']); a.trunk = -3;
+    const b = clone(poses['pallof-press-end']); b.trunk = -3;
+    const A = { x: r1(pts(a).hands.x + 62), y: 40 };
+    add('sling-pallof-in', withProps(a, [sling(A)]));
+    add('sling-pallof-out', withProps(b, [sling(A)]));
+  }
+  // standing rollout (fallout), anchor behind: small range, arms go forward-up as the body leans in
+  {
+    const FX = 108; const A = { x: FX - 52, y: -6 };
+    const s = lean(14, FX, { shoulderL: 92, shoulderR: 92, elbowL: 0, elbowR: 0 });
+    const e = lean(26, FX, { shoulderL: 128, shoulderR: 128, elbowL: 0, elbowR: 0 });
+    add('sling-rollout-start', withProps(s, [sling(A, { behind: true })]));
+    add('sling-rollout-end', withProps(e, [sling(A, { behind: true })]));
+  }
+  // assisted mini squat: hold the straps, sit back to max ~50°
+  {
+    const FX = 104; const A = { x: FX + 70, y: 34 };
+    const top = toward(lean(0, FX, { elbowL: 0, elbowR: 0 }), A);
+    const bot = squat(50); bot.trunk = r1(bot.trunk * 0.75);
+    flat(bot); ground(bot, FLOOR);
+    bot.root.x = r1(bot.root.x + FX - pts(bot).footR.x);
+    toward(bot, A);
+    add('sling-squat-top', withProps(top, [sling(A)]));
+    add('sling-squat-bottom', withProps(bot, [sling(A)]));
+  }
+  // heel bridge: heels in the foot cradles, knees ~25°, hips lift to a straight line
+  {
+    const down = lie(supine({ hipL: 112, hipR: 112, kneeL: 25, kneeR: 25, ankleL: 10, ankleR: 10 }));
+    ground(down, MAT, ['trunk', 'head']);
+    const P0 = pts(down);
+    let best = null;
+    for (let T = -128; T <= -95; T += 0.5) {
+      for (let h = 80; h <= 150; h += 0.5) {
+        const p = clone(down); p.trunk = T; p.hipL = p.hipR = h;
+        const P = pts(p);
+        p.root.x += P0.neck.x - P.neck.x; p.root.y += P0.neck.y - P.neck.y;
+        const Q = pts(p);
+        const err = Math.hypot(Q.footR.x - P0.footR.x, Q.footR.y - P0.footR.y) + Math.abs(T + 112) * 0.02;
+        if (!best || err < best.err) best = { err, p };
+      }
+    }
+    const up = best.p; up.root.x = r1(up.root.x); up.root.y = r1(up.root.y);
+    const A = { x: r1(P0.footR.x + 14), y: r1(P0.footR.y - 84) };
+    add('sling-heel-bridge-down', withProps(down, ['mat', sling(A, { to: ['footL', 'footR'] })]));
+    add('sling-heel-bridge-up', withProps(up, ['mat', sling(A, { to: ['footL', 'footR'] })]));
+  }
+  // triceps press (facing away from the door): from hands at the forehead to straight arms, body leans in
+  {
+    const FX = 108; const A = { x: FX - 46, y: -4 };
+    const s = lean(34, FX, { shoulderL: 150, shoulderR: 150, elbowL: 112, elbowR: 112 });
+    const e = lean(26, FX, { shoulderL: 148, shoulderR: 148, elbowL: 4, elbowR: 4 });
+    add('sling-triceps-press-start', withProps(s, [sling(A, { behind: true })]));
+    add('sling-triceps-press-end', withProps(e, [sling(A, { behind: true })]));
+  }
+  // incline push-up (facing away from the door): hands stay, chest lowers between the handles
+  {
+    const FX = 96; const A = { x: FX - 40, y: 0 };
+    const up = lean(42, FX, { shoulderL: 50, shoulderR: 50, elbowL: 0, elbowR: 0 });
+    const H = pts(up).handR;
+    const dn = lean(52, FX);
+    aim(dn, 'armR', H, (j2) => j2 > 0);
+    sameArms(dn);
+    add('sling-push-up-up', withProps(up, [sling(A, { behind: true })]));
+    add('sling-push-up-down', withProps(dn, [sling(A, { behind: true })]));
+  }
+  // assisted dip: feet stay on the floor (legs long), hands in the handles beside the hips, small range
+  {
+    const FX = 128;
+    const mk = (T, hip) => { const p = flat(side('standing', { trunk: T, hipL: hip, hipR: hip, kneeL: 0, kneeR: 0, shoulderL: -10, shoulderR: -10, elbowL: 0, elbowR: 0 })); ground(p, FLOOR); p.root.x = r1(p.root.x + FX - pts(p).footR.x); return p; };
+    const upP = mk(-4, 22);
+    const H = pts(upP).handR;
+    const dn = mk(-8, 34);
+    aim(dn, 'armR', { x: H.x, y: H.y }, (j2, el) => el.x < H.x);
+    sameArms(dn);
+    const A = { x: r1(H.x + 30), y: -10 };
+    add('sling-dip-up', withProps(upP, [sling(A, { behind: true, door: false })]));
+    add('sling-dip-down', withProps(dn, [sling(A, { behind: true, door: false })]));
+  }
+}
+
 // lying with the neck lower than the hips (bridges): tilt the head back to the mat
 for (const p of Object.values(poses)) {
   if (p.view === 'side' && p.ground === 'lying' && p.trunk < -92) p.headTilt = r1(-90 - p.trunk);

@@ -14,7 +14,7 @@ const BLOCKS = ['knee', 'archery', 'warmup', 'cooldown', 'cardio'];
 const TYPES = ['reps', 'hold', 'timed'];
 const SIDES = ['both', 'left', 'right', 'alternate', 'perSide'];
 const BANDS = [null, 'yellow', 'red', 'green', 'blue', 'loop-orange', 'loop-blue'];
-const PROPS = ['chair', 'wall', 'door', 'mat', 'step'];
+const PROPS = ['chair', 'wall', 'door', 'mat', 'step', 'sling'];
 const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 // Strict by default: every pose referenced by an exercise must exist in poses.json.

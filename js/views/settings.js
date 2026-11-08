@@ -1,5 +1,6 @@
 // Mehr / Einstellungen – see docs/SPEC.md §3.7, §11.
 import { html, raw, render as paint } from '../render.js';
+import { normalizeOwned, EQUIPMENT_INFO } from '../logic/equipment.js';
 import { todayISO, formatDE, daysBetween } from '../util/date.js';
 import { defaults } from '../store.js';
 import { suggestedSurgeryDate } from '../logic/schedule.js';
@@ -10,7 +11,7 @@ import {
 } from './ui.js';
 
 export const title = 'Mehr';
-export const APP_VERSION = '4.0.0';
+export const APP_VERSION = '5.0.0';
 
 const REST_OPTIONS = [null, 30, 45, 60, 90, 120];
 const FONT_SCALES = [{ v: 1, l: 'Normal' }, { v: 1.125, l: 'Groß' }, { v: 1.25, l: 'Sehr groß' }];
@@ -104,11 +105,10 @@ export function render(root, { store, content, query }) {
     const age = backupAge(s, today);
     const hasData = data.sessions.length > 0;
     const backupDue = hasData && (age == null || age >= 14);
-    const owned = (s.ownedEquipment || []).length;
-    const eqTotal = equipmentItems(content.equipment).length;
     const scale = Number(s.fontScale) || 1;
     const suggested = suggestedSurgeryDate(s);
-    const ownsRower = (s.ownedEquipment || []).includes('rowing-machine');
+    const ownedList = normalizeOwned(s.ownedEquipment);
+    const ownsRower = ownedList.includes('rowing-machine');
     const customCount = (data.state.customWorkouts || []).length;
     const kg = s.profile?.weightKg;
     const vs = voiceSettings(s);
@@ -175,8 +175,9 @@ export function render(root, { store, content, query }) {
           </select>
         </div>
         <p class="field__label mb-2 mt-4">Rudern im Krafttraining</p>
-        <label class="switch-row"><span>Mit 10 Min. Rudern aufwärmen<span class="pv-setting-row__hint">Standard beim Start (Phase 1–3) – vor jedem Training umschaltbar</span></span><input type="checkbox" class="switch" name="rowWarmupDefault" ${s.rowWarmupDefault !== false ? 'checked' : ''}></label>
-        <label class="switch-row"><span>Ruder-Finisher vorschlagen<span class="pv-setting-row__hint">„Ja“ als Vorauswahl, wenn nach dem Kraftteil gefragt wird – nur bei grüner Knie-Ampel</span></span><input type="checkbox" class="switch" name="rowFinisherDefault" ${s.rowFinisherDefault ? 'checked' : ''}></label>
+        ${ownsRower ? html`<label class="switch-row"><span>Mit 10 Min. Rudern aufwärmen<span class="pv-setting-row__hint">Standard beim Start (Phase 1–3) – vor jedem Training umschaltbar</span></span><input type="checkbox" class="switch" name="rowWarmupDefault" ${s.rowWarmupDefault !== false ? 'checked' : ''}></label>
+        <label class="switch-row"><span>Ruder-Finisher vorschlagen<span class="pv-setting-row__hint">„Ja“ als Vorauswahl, wenn nach dem Kraftteil gefragt wird – nur bei grüner Knie-Ampel</span></span><input type="checkbox" class="switch" name="rowFinisherDefault" ${s.rowFinisherDefault ? 'checked' : ''}></label>`
+          : html`<p class="text-sm muted mb-0">Ausgeblendet – <a href="#/ausruestung">Rudergerät in Ausrüstung abhaken</a>, dann kannst du mit Rudern aufwärmen und einen Finisher anhängen.</p>`}
       </section>
 
       <h2 class="section-title">Sprachansagen</h2>
@@ -250,13 +251,9 @@ export function render(root, { store, content, query }) {
       </section>
 
       <ul class="list list--card">
-        <li><label class="list-item switch-row" style="cursor:pointer">
-          <span class="list-item__icon list-item__icon--accent" aria-hidden="true">🚣</span>
-          <span class="list-item__body"><span class="list-item__title">Rudergerät vorhanden</span><span class="list-item__sub">${ownsRower ? 'Rudern ist in deinem Plan (3× pro Woche)' : 'Für die Ruder-Einheiten im Plan'}</span></span>
-          <input type="checkbox" class="switch" name="ownsRower" ${ownsRower ? 'checked' : ''}></label></li>
-        <li><a class="list-item" href="#/ausruestung">
+        <li><a class="list-item" href="#/ausruestung" data-my-equipment>
           <span class="list-item__icon list-item__icon--accent">🎒</span>
-          <span class="list-item__body"><span class="list-item__title">Ausrüstung</span><span class="list-item__sub">${eqTotal ? `${owned}/${eqTotal} vorhanden · Einkaufsliste mit Budget` : 'Deine Bänder & Hilfsmittel'}</span></span>
+          <span class="list-item__body"><span class="list-item__title">Meine Ausrüstung</span><span class="list-item__sub">${ownedList.length ? `${ownedList.map((id) => `${EQUIPMENT_INFO[id].icon} ${EQUIPMENT_INFO[id].label}`).join(' · ')}` : 'Noch nichts abgehakt'} · steuert deinen Plan${ownsRower ? '' : ' (ohne Rudergerät kein Rudern)'}</span></span>
           ${raw(ICON.chev)}</a></li>
         <li><button class="list-item" data-safety>
           <span class="list-item__icon list-item__icon--neutral">${raw(ICON.shield)}</span>

@@ -17,7 +17,7 @@
 // removing or changing app files (the version is a content hash, so any change triggers an update).
 
 // <precache-version>
-const CACHE_VERSION = '1b325c5829';
+const CACHE_VERSION = 'b97b193bab';
 // </precache-version>
 const CACHE_PREFIX = 'physio-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
@@ -54,6 +54,7 @@ const PRECACHE = [
   'js/logic/custom-workouts.js',
   'js/logic/duration.js',
   'js/logic/energy.js',
+  'js/logic/equipment.js',
   'js/logic/insights.js',
   'js/logic/motivation.js',
   'js/logic/progression.js',

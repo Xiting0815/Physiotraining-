@@ -1,6 +1,7 @@
 // Übungen (library) – see docs/SPEC.md §3.5.
 import { html, raw, render as paint } from '../render.js';
-import { levelOf } from '../logic/progression.js';
+import { levelOf, phasePlanExerciseIds } from '../logic/progression.js';
+import { usesEquipment, missingEquipment, EQUIPMENT_INFO } from '../logic/equipment.js';
 import {
   ICON, figureThumb, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip, workoutItems,
 } from './ui.js';
@@ -10,7 +11,7 @@ export const title = 'Übungen';
 
 const BLOCKS = ['knee', 'archery', 'warmup', 'cooldown', 'cardio'];
 const BLOCK_ORDER = { warmup: 0, knee: 1, archery: 2, cooldown: 3, cardio: 4 };
-const EQUIP_ORDER = ['theraband', 'loop', 'mat', 'chair', 'step', 'wall', 'door', 'rowing-machine', 'none'];
+const EQUIP_ORDER = ['theraband', 'loop', 'mat', 'chair', 'step', 'wall', 'door', 'sling-trainer', 'door-anchor', 'band-handles', 'rowing-machine', 'none'];
 
 /** Dose line for library cards: rowing shows the level label (e.g. „12 min gleichmäßig“). */
 export function cardDose(ex, lvl) {
@@ -33,7 +34,7 @@ export function filterExercises(exercises, { q = '', block = null, equipment = [
   const terms = fold(q).split(/\s+/).filter(Boolean);
   return (exercises || []).filter((ex) => {
     if (block && ex.block !== block) return false;
-    if (equipment.length && !equipment.some((e) => (ex.equipment || []).includes(e))) return false;
+    if (equipment.length && !equipment.some((e) => usesEquipment(ex, e))) return false;
     if (planIds && !planIds.has(ex.id)) return false;
     if (!terms.length) return true;
     const hay = fold([ex.name, ex.description, ex.category, ...(ex.tags || []), ...(ex.cues || [])].join(' '));
@@ -52,18 +53,10 @@ export function render(root, { store, content, query }) {
     equipment: query.equipment ? query.equipment.split(',').filter((e) => EQUIP_ORDER.includes(e)) : [],
     plan: query.plan === '1',
   };
-  const usedEquip = EQUIP_ORDER.filter((id) => content.exercises.some((e) => (e.equipment || []).includes(id)));
+  const usedEquip = EQUIP_ORDER.filter((id) => content.exercises.some((e) => usesEquipment(e, id)));
 
-  const planIds = () => {
-    const st = store.getState();
-    const phase = content.phases.find((p) => p.id === st.phaseId) ?? content.phases[0];
-    const ids = new Set();
-    for (const k of ['A', 'B', 'C']) {
-      const w = content.workouts.find((x) => x.id === phase?.workouts?.[k]);
-      for (const it of workoutItems(w)) ids.add(it.exerciseId);
-    }
-    return ids;
-  };
+  // v5: exercises as the plans of the current phase use them (upgrades / missing equipment applied)
+  const planIds = () => phasePlanExerciseIds(store.getState(), content, store.getSettings());
 
   paint(root, html`
     ${pageHeader({ title: 'Übungen', eyebrow: `${content.exercises.length} Übungen · Knie, Bogen & Rudern` })}
@@ -100,6 +93,7 @@ export function render(root, { store, content, query }) {
         lastBlock = ex.block;
         const chipCls = ex.block === 'archery' || ex.block === 'cardio' ? 'chip--archery' : ex.block === 'knee' ? 'chip--knee' : '';
         const av = availability(ex, state, content.phases);
+        const miss = missingEquipment(ex, settings);
         return html`${header}<a class="exercise-card exercise-card--${ex.block === 'cardio' ? 'archery' : ex.block}${av.kind === 'blocked' || av.kind === 'off' ? ' is-muted' : ''}" href="#/uebung/${encodeURIComponent(ex.id)}">
           <div class="exercise-card__thumb">${figureThumb(ex)}</div>
           <div class="exercise-card__body">
@@ -110,6 +104,7 @@ export function render(root, { store, content, query }) {
               ${lvl?.band ? bandChip(settings, lvl.band) : ''}
               ${ex.side === 'left' ? html`<span class="chip chip--sm chip--outline">OP-Knie</span>` : ''}
               ${availabilityChip(av)}
+              ${miss.length ? html`<span class="chip chip--sm chip--outline" title="Nicht in Meine Ausrüstung abgehakt">fehlt: ${miss.map((m) => EQUIPMENT_INFO[m]?.label ?? m).join(', ')}</span>` : ''}
             </span>
           </div>
           ${raw(ICON.chev)}
