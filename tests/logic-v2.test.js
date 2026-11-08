@@ -7,15 +7,16 @@ import { tempoSeconds, estimateExerciseSeconds, estimateWorkoutMinutes, fitPlanT
 import { buildSessionPlan, getWorkout, nextWorkout, rotationAfter, exerciseAvailable, phaseWorkouts, workoutKind } from '../js/logic/progression.js';
 import { createCustomWorkout, updateCustomWorkout, deleteCustomWorkout, validateCustomWorkout, toWorkout, duplicateAsCustom, mergeCustomWorkouts } from '../js/logic/custom-workouts.js';
 import { rowingPhases, validateRowing, pacePer500, rowingTotals, rowingPlannedSeconds } from '../js/logic/cardio.js';
-import { bmr, tdee, bmi, sessionKcal, goalProgress, calorieTarget, currentWeight, weightTrend } from '../js/logic/energy.js';
-import { validateEntry, upsertEntry, latest, series, weeklyAverages, logStreak, longestLogStreak, mergeLogs, removeEntry } from '../js/logic/health.js';
+import { sessionKcal, bodyWeightKg } from '../js/logic/energy.js';
 import { phaseSchedule, scheduleHint, postOpStatus, canEnterPhase, suggestedSurgeryDate, taperStart } from '../js/logic/schedule.js';
 import { evaluateSession, recommendLevels } from '../js/logic/traffic-light.js';
 import { weeklyProgress, cardioProgress, sameDayLoadHint, streak, isCardioSession, trends } from '../js/logic/stats.js';
 import { evaluateBadges, badgeRuleMet } from '../js/logic/motivation.js';
-import { pearson, correlationText, loadVsPain, sleepVsPain, stepsVsPain, weeklyReport, opReadiness, weightInsight, sessionLoad, dailyPain, MIN_POINTS } from '../js/logic/insights.js';
+import * as insights from '../js/logic/insights.js';
+import * as energy from '../js/logic/energy.js';
+import { pearson, correlationText, loadVsPain, weeklyReport, opReadiness, sessionLoad, MIN_POINTS } from '../js/logic/insights.js';
 import * as store from '../js/store.js';
-import { mergeBackups } from '../js/util/export-import.js';
+import { mergeBackups, mergeLegacyLog } from '../js/util/export-import.js';
 import { addDays } from '../js/util/date.js';
 
 const load = (n) => JSON.parse(readFileSync(new URL(`../data/${n}.json`, import.meta.url), 'utf8'));
@@ -224,127 +225,55 @@ test('rowing: guided phases, validation, pace, totals', () => {
 });
 
 // ---------------------------------------------------------------------------- energy
-test('energy: BMR / TDEE / BMI and session kcal (display > watt > MET)', () => {
-  const profile = { heightCm: 180, birthYear: 1986, sex: 'm', activityLevel: 'light' };
-  assert.equal(bmr(profile, 80, '2026-11-07'), 1730); // 800 + 1125 − 200 + 5
-  assert.equal(bmr({ ...profile, sex: 'w' }, 80, '2026-11-07'), 1564);
-  assert.equal(tdee(profile, 80, '2026-11-07'), Math.round(1730 * 1.375));
-  assert.equal(bmr({}, 80, '2026-11-07'), null);
-  assert.equal(bmi(81, 180), 25);
+test('energy: body weight from settings.profile.weightKg and session kcal (display > watt > MET)', () => {
+  assert.equal(bodyWeightKg({ profile: { weightKg: 92.5 } }), 92.5);
+  assert.equal(bodyWeightKg({ profile: { weightKg: null } }), null);
+  assert.equal(bodyWeightKg({}), null);
+  assert.equal(bodyWeightKg(undefined), null);
+  // v3.1: weight goal / calorie target / BMR helpers are gone
+  for (const k of ['bmr', 'tdee', 'bmi', 'bmrInfo', 'goalProgress', 'calorieTarget', 'currentWeight', 'weightTrend', 'kcalByDay']) assert.equal(k in energy, false, k);
+  for (const k of ['sleepVsPain', 'stepsVsPain', 'weightInsight', 'bodyCompositionInsight', 'dailyPain']) assert.equal(k in insights, false, k);
   const row = { status: 'done', kind: 'cardio', startedAt: at('2026-11-07'), endedAt: at('2026-11-07', 18), rowing: { durationSec: 1200, kcalDisplay: 210, avgWatt: 100 } };
-  assert.deepEqual(sessionKcal(row, profile, 80), { kcal: 210, method: 'display', met: null, label: 'Schätzung' });
-  assert.equal(sessionKcal({ ...row, rowing: { durationSec: 1200, avgWatt: 100 } }, profile, 80).kcal, Math.round(700 / 3)); // (400+300)/3
-  const met = sessionKcal({ ...row, rowing: { durationSec: 1800 }, post: { rpe: 5 } }, profile, 80);
+  assert.deepEqual(sessionKcal(row, 80), { kcal: 210, method: 'display', met: null, label: 'Schätzung' });
+  assert.equal(sessionKcal({ ...row, rowing: { durationSec: 1200, avgWatt: 100 } }, 80).kcal, Math.round(700 / 3)); // (400+300)/3
+  const met = sessionKcal({ ...row, rowing: { durationSec: 1800 }, post: { rpe: 5 } }, 80);
   assert.equal(met.method, 'met');
   assert.equal(met.kcal, Math.round(4.8 * 80 * 0.5));
-  assert.equal(sessionKcal({ ...row, rowing: { durationSec: 1800 }, post: { rpe: 8 } }, profile, 80).met, 7);
+  assert.equal(sessionKcal({ ...row, rowing: { durationSec: 1800 }, post: { rpe: 8 } }, 80).met, 7);
   const strength = { status: 'done', startedAt: '2026-11-07T16:00:00.000Z', endedAt: '2026-11-07T16:30:00.000Z', pausedMs: 0, post: { rpe: 5 },
     exercises: [{ section: 'knee', sets: [{ done: true }] }, { section: 'archery', sets: [{ done: true }] }] };
-  const k = sessionKcal(strength, profile, 80);
+  const k = sessionKcal(strength, 80);
   assert.equal(k.met, 3.15);
   assert.equal(k.kcal, Math.round(3.15 * 80 * 0.5));
-  assert.equal(sessionKcal({ ...strength, post: { rpe: 9 } }, profile, null).met, Math.round(3.15 * 1.25 * 100) / 100);
+  assert.equal(sessionKcal({ ...strength, post: { rpe: 9 } }, null).met, Math.round(3.15 * 1.25 * 100) / 100);
 });
 
 test('energy: strength kcal falls back to the duration estimate when the clock is implausibly short', () => {
-  const profile = { heightCm: 180, birthYear: 1986, sex: 'm', activityLevel: 'light' };
   const exs = [{ exerciseId: 'quad-set', section: 'knee', level: 0, sets: [{ done: true }, { done: true }] },
     { exerciseId: 'seated-row', section: 'archery', level: 0, sets: [{ done: true }, { done: true }] }];
   const est = estimateExerciseSeconds({ level: 0, plannedSets: 2 }, ex('quad-set')) + estimateExerciseSeconds({ level: 0, plannedSets: 2 }, ex('seated-row'));
   assert.ok(est > 120, String(est));
   const quick = { status: 'done', startedAt: '2026-11-07T16:00:00.000Z', endedAt: '2026-11-07T16:01:00.000Z', post: { rpe: 5 }, exercises: exs };
-  const k = sessionKcal(quick, profile, 80, content);
+  const k = sessionKcal(quick, 80, content);
   assert.equal(k.durationSource, 'estimate');
   assert.equal(k.label, 'Schätzung');
   assert.equal(k.kcal, Math.round(k.met * 80 * est / 3600));
   // plausible clock time (>= 50 % of the estimate) is used as is
   const end = new Date(Date.parse(quick.startedAt) + est * 1000).toISOString();
-  const k2 = sessionKcal({ ...quick, endedAt: end }, profile, 80, content);
+  const k2 = sessionKcal({ ...quick, endedAt: end }, 80, content);
   assert.equal(k2.durationSource, 'clock');
   assert.equal(k2.kcal, Math.round(k2.met * 80 * est / 3600));
   // without content: wall-clock only
-  assert.equal(sessionKcal(quick, profile, 80).durationSource, 'clock');
+  assert.equal(sessionKcal(quick, 80).durationSource, 'clock');
   // rowing without any duration: planned rowing time
   const row = { status: 'done', kind: 'cardio', startedAt: quick.startedAt, endedAt: quick.startedAt, rowing: { avgWatt: 100 },
     exercises: [{ exerciseId: 'row-steady', section: 'cardio', level: 0, sets: [{ done: false }] }] };
-  const kr = sessionKcal(row, profile, 80, content);
+  const kr = sessionKcal(row, 80, content);
   assert.equal(kr.method, 'watt');
   assert.equal(kr.durationSource, 'estimate');
   assert.equal(kr.kcal, Math.round(700 * estimateExerciseSeconds({ level: 0 }, ex('row-steady')) / 3600));
 });
 
-const wlog = (start, kgs) => kgs.map((kg, i) => ({ date: addDays(start, i), weightKg: kg, source: 'samsung-health-manual' }));
-
-test('energy: weight goal progress, trend projection, warnings, calorie target', () => {
-  const log = wlog('2026-10-18', Array.from({ length: 21 }, (_, i) => 90 - i * 0.1)); // −0.7 kg/week
-  const today = '2026-11-07';
-  assert.equal(currentWeight(log, today), 88.3);
-  const t = weightTrend(log, today);
-  assert.equal(t.kgPerWeek, -0.7);
-  const goal = { targetKg: 85, targetDate: '2027-01-30', startKg: 90, startDate: '2026-10-18' };
-  const gp = goalProgress(log, goal, today, { heightCm: 180 });
-  assert.equal(gp.lostKg, 1.7);
-  assert.equal(gp.remainingKg, 3.3);
-  assert.ok(Math.abs(gp.ratio - 0.34) < 1e-9);
-  assert.ok(gp.requiredKgPerWeek > 0.25 && gp.requiredKgPerWeek < 0.3);
-  assert.equal(gp.onTrack, true);
-  assert.ok(gp.projectedDate > today && gp.projectedDate < goal.targetDate);
-  assert.deepEqual(gp.warnings, []);
-  const fast = goalProgress(log, { ...goal, targetDate: '2026-11-21' }, today, { heightCm: 180 });
-  assert.ok(fast.warnings.some((w) => /0,75/.test(w)));
-  assert.equal(fast.onTrack, false);
-  const thin = goalProgress(log, { ...goal, targetKg: 55 }, today, { heightCm: 180 });
-  assert.ok(thin.warnings.some((w) => /BMI/.test(w)));
-  assert.equal(goalProgress(log, null, today), null);
-  const reached = goalProgress(log, { ...goal, targetKg: 89 }, today);
-  assert.equal(reached.reached, true);
-  const profile = { heightCm: 180, birthYear: 1986, sex: 'm', activityLevel: 'light' };
-  const ct = calorieTarget(profile, log, goal, today);
-  assert.equal(ct.deficit, 500); // required ~0.28 kg/wk → clamped up to 500
-  assert.equal(ct.label, 'Schätzung');
-  const ctFast = calorieTarget(profile, log, { ...goal, targetDate: '2026-11-21' }, today);
-  assert.equal(ctFast.deficit, 750);
-  const ctW = calorieTarget({ heightCm: 155, birthYear: 1950, sex: 'w', activityLevel: 'sedentary' }, wlog('2026-11-01', [50, 50, 50, 50, 50, 50, 50]), { targetKg: 45, targetDate: '2026-12-01' }, today);
-  assert.equal(ctW.kcal, 1200);
-  assert.equal(ctW.floorApplied, true);
-  assert.equal(calorieTarget({}, log, goal, today), null);
-});
-
-// ---------------------------------------------------------------------------- health log
-test('health log: validate, upsert per date, latest/series/weekly, streaks, merge', () => {
-  assert.equal(validateEntry({ date: '2026-13' }).ok, false);
-  assert.match(validateEntry({ date: '2026-11-07', weightKg: '500' }).errors.weightKg, /zwischen/);
-  assert.match(validateEntry({ date: '2026-11-07' }).errors._, /mindestens/);
-  let log = upsertEntry([], { date: '2026-11-07', weightKg: '88,4', steps: '8000.4' });
-  assert.deepEqual(log, [{ date: '2026-11-07', source: 'samsung-health-manual', weightKg: 88.4, steps: 8000 }]);
-  log = upsertEntry(log, { date: '2026-11-07', sleepH: 7.5 });
-  assert.equal(log.length, 1);
-  assert.equal(log[0].weightKg, 88.4);
-  assert.equal(log[0].sleepH, 7.5);
-  log = upsertEntry(log, { date: '2026-11-07', steps: null });
-  assert.equal('steps' in log[0], false);
-  assert.throws(() => upsertEntry(log, { date: '2026-11-06', restingHr: 5 }), /Ruhepuls/);
-  log = upsertEntry(log, { date: '2026-11-05', weightKg: 89, note: ' gut ' });
-  assert.deepEqual(log.map((e) => e.date), ['2026-11-05', '2026-11-07']);
-  assert.equal(log[0].note, 'gut');
-  assert.deepEqual(latest(log, 'weightKg'), { date: '2026-11-07', value: 88.4 });
-  assert.deepEqual(latest(log, 'weightKg', '2026-11-06'), { date: '2026-11-05', value: 89 });
-  assert.equal(latest(log, 'waistCm'), null);
-  assert.deepEqual(series(log, 'weightKg', 2, '2026-11-07'), [{ x: '2026-11-07', y: 88.4 }]);
-  const wa = weeklyAverages(log, { weeks: 2, today: '2026-11-07' });
-  assert.equal(wa.length, 2);
-  assert.equal(wa[1].avg.weightKg, 88.7);
-  const daily = Array.from({ length: 7 }, (_, i) => ({ date: addDays('2026-11-01', i), steps: 5000 }));
-  assert.equal(logStreak(daily, '2026-11-07'), 7);
-  assert.equal(logStreak(daily, '2026-11-08'), 7);
-  assert.equal(logStreak(daily, '2026-11-09'), 0);
-  assert.equal(longestLogStreak([...daily, { date: '2026-11-20', steps: 1 }]), 7);
-  assert.equal(removeEntry(log, '2026-11-05').length, 1);
-  const m = mergeLogs([{ date: '2026-11-07', weightKg: 88 }], [{ date: '2026-11-07', weightKg: 99, steps: 100 }, { date: '2026-11-01', sleepH: 6 }]);
-  assert.deepEqual(m, [{ date: '2026-11-01', sleepH: 6 }, { date: '2026-11-07', weightKg: 88, steps: 100 }]);
-});
-
-// ---------------------------------------------------------------------------- schedule & post-op gate
 test('schedule: phases planned backwards from the surgery date (2027-01-05)', () => {
   const sched = phaseSchedule(content.phases, '2027-01-05', { prehabStart: '2026-11-07' });
   const by = Object.fromEntries(sched.map((x) => [x.phaseId, x]));
@@ -443,9 +372,10 @@ test('stats: strength goal excludes rowing, cardio goal, same-day hint, cardio s
 });
 
 // ---------------------------------------------------------------------------- badges
-test('badges v2: rowing, custom workout, weight, diary streak', () => {
+test('badges v2: rowing, custom workout (v3.1: weight/diary badges removed)', () => {
   const ids = content.badges.map((b) => b.id);
-  for (const id of ['first-row', 'row-10km', 'row-50km', 'first-custom', 'minus-2kg', 'minus-5kg', 'goal-reached', 'log-7']) assert.ok(ids.includes(id), id);
+  for (const id of ['first-row', 'row-10km', 'row-50km', 'first-custom']) assert.ok(ids.includes(id), id);
+  for (const id of ['minus-2kg', 'minus-5kg', 'goal-reached', 'log-7']) assert.ok(!ids.includes(id), id);
   const base = { settings: { weeklyGoal: 3 }, state: { badges: {}, phaseHistory: [{ phaseId: 'p1-basis' }], customWorkouts: [], healthLog: [] }, sessions: [] };
   assert.deepEqual(evaluateBadges(base, content.badges, { today: '2026-11-07' }), []);
   const rows = [S('2026-11-02', { kind: 'cardio', rowing: { distanceM: 6000 } }), S('2026-11-04', { kind: 'cardio', rowing: { distanceM: 4500 } })];
@@ -455,10 +385,10 @@ test('badges v2: rowing, custom workout, weight, diary streak', () => {
   assert.ok(got.includes('first-session'));
   assert.ok(!got.includes('week-3'));
   assert.equal(badgeRuleMet({ type: 'customWorkout' }, { ...base, state: { ...base.state, customWorkouts: [{ id: 'cw-1' }] } }), true);
-  const log = [...wlog('2026-10-01', [92, 92, 92]), ...wlog('2026-11-01', [89.9, 89.9, 89.9, 89.9, 89.9, 89.9, 89.9])];
-  const d2 = { ...base, settings: { ...base.settings, weightGoal: { targetKg: 90, startKg: 92 } }, state: { ...base.state, healthLog: log } };
-  const g2 = evaluateBadges(d2, content.badges, { today: '2026-11-07' });
-  assert.ok(g2.includes('minus-2kg') && g2.includes('goal-reached') && g2.includes('log-7') && !g2.includes('minus-5kg'));
+  // legacy weight goal / diary data no longer earns anything
+  const log = Array.from({ length: 10 }, (_, i) => ({ date: addDays('2026-10-25', i), weightKg: 92 - i }));
+  const d2 = { ...base, settings: { ...base.settings, weightGoal: { targetKg: 90, startKg: 92 } }, state: { ...base.state, healthLog: log, badges: { 'minus-2kg': 'x' } } };
+  assert.deepEqual(evaluateBadges(d2, content.badges, { today: '2026-11-07' }), []);
 });
 
 // ---------------------------------------------------------------------------- store / backup merge
@@ -468,10 +398,10 @@ test('store v2 defaults: additive keys, no schema bump, surgery date never set s
   assert.equal(d.settings.cardioGoalPerWeek, 3);
   assert.equal(d.settings.surgeryDate, null);
   assert.equal(d.settings.surgeryDateSuggested, '2027-01-05');
-  assert.deepEqual(d.settings.profile, { heightCm: null, birthYear: null, sex: null, activityLevel: 'light' });
-  assert.equal(d.settings.weightGoal, null);
+  assert.deepEqual(d.settings.profile, { weightKg: null });
+  assert.equal('weightGoal' in d.settings, false, 'v3.1: no weight goal for new users');
   assert.deepEqual(d.state.customWorkouts, []);
-  assert.deepEqual(d.state.healthLog, []);
+  assert.equal('healthLog' in d.state, false, 'v3.1: no diary for new users');
   assert.deepEqual(d.state.exerciseToggles, {});
   assert.equal(d.state.postOpClearance, null);
   // v1 data from before v2 gains the new keys; an existing surgery date is kept
@@ -479,13 +409,24 @@ test('store v2 defaults: additive keys, no schema bump, surgery date never set s
   const m = store.migrate(old);
   assert.equal(m.settings.surgeryDate, '2027-01-15');
   assert.equal(m.settings.cardioGoalPerWeek, 3);
-  assert.deepEqual(m.state.healthLog, []);
-  const withGoal = store.migrate({ ...old, settings: { ...old.settings, weightGoal: { targetKg: 80 }, profile: { heightCm: 182 } } });
+  assert.deepEqual(m.settings.profile, { weightKg: null });
+  // v2/v3 data: weightGoal / healthLog / legacy profile keys stay untouched, weightKg prefilled from the latest log weight
+  const log = [{ date: '2026-11-01', weightKg: 91.2 }, { date: '2026-11-05', steps: 5000 }, { date: '2026-11-03', weightKg: 90.44 }, { date: '2026-10-01', weightKg: 95 }];
+  const withGoal = store.migrate({ ...old, settings: { ...old.settings, weightGoal: { targetKg: 80 }, profile: { heightCm: 182, activityLevel: 'light' } }, state: { ...old.state, healthLog: log } });
   assert.deepEqual(withGoal.settings.weightGoal, { targetKg: 80 });
-  assert.deepEqual(withGoal.settings.profile, { heightCm: 182, birthYear: null, sex: null, activityLevel: 'light' });
+  assert.deepEqual(withGoal.settings.profile, { heightCm: 182, activityLevel: 'light', weightKg: 90.4 });
+  assert.deepEqual(withGoal.state.healthLog, log);
+  // runs once: an existing weightKg key (even null) is never overwritten
+  assert.equal(store.migrate({ ...old, settings: { ...old.settings, profile: { weightKg: null } }, state: { healthLog: log } }).settings.profile.weightKg, null);
+  assert.equal(store.migrate({ ...old, settings: { ...old.settings, profile: { weightKg: 77 } }, state: { healthLog: log } }).settings.profile.weightKg, 77);
+  // no profile at all + log; implausible weights ignored
+  assert.equal(store.migrate({ ...old, state: { healthLog: log } }).settings.profile.weightKg, 90.4);
+  assert.equal(store.migrate({ ...old, state: { healthLog: [{ date: '2026-11-01', weightKg: 5 }, 'x', null] } }).settings.profile.weightKg, null);
+  // idempotent
+  assert.deepEqual(store.migrate(store.migrate({ ...old, state: { healthLog: log } })).settings.profile, { weightKg: 90.4 });
 });
 
-test('mergeBackups v2: health log by date, custom workouts by id, profile gaps filled', () => {
+test('mergeBackups v2: legacy health log by date, custom workouts by id, profile gaps filled', () => {
   const cur = store.defaults();
   cur.state.healthLog = [{ date: '2026-11-07', weightKg: 88 }];
   cur.state.customWorkouts = [{ id: 'cw-a', name: 'A', updatedAt: '2026-11-07T00:00:00Z', createdAt: '2026-11-01T00:00:00Z' }];
@@ -505,6 +446,11 @@ test('mergeBackups v2: health log by date, custom workouts by id, profile gaps f
   assert.equal(m.settings.profile.activityLevel, 'light');
   assert.deepEqual(m.settings.weightGoal, { targetKg: 82 });
   assert.deepEqual(m.state.postOpClearance, { confirmedAt: 'x', note: '' });
+  // without legacy data nothing is added
+  const plain = mergeBackups(store.defaults(), store.defaults());
+  assert.equal('healthLog' in plain.state, false);
+  assert.equal('weightGoal' in plain.settings, false);
+  assert.deepEqual(mergeLegacyLog([{ date: '2026-11-02', a: 1 }, 'x'], [{ date: '2026-11-01' }, { date: '2026-11-02', a: 2, b: 3 }]), [{ date: '2026-11-01' }, { date: '2026-11-02', a: 1, b: 3 }]);
 });
 
 // ---------------------------------------------------------------------------- insights
@@ -529,7 +475,7 @@ const ndSession = (day, { rpe = 5, minutes = 30, nd = 1, pre = 1, kind } = {}) =
   traffic: { provisional: 'green', final: 'green' }, exercises: [],
 });
 
-test('insights: load vs. next-day pain, sleep/steps vs. pain', () => {
+test('insights: load vs. next-day pain', () => {
   const sessions = Array.from({ length: 10 }, (_, i) => ndSession(addDays('2026-10-01', i * 2), { rpe: 3 + (i % 5), minutes: 30, nd: (i % 5) }));
   assert.equal(sessionLoad(sessions[0]), 90);
   const lv = loadVsPain(sessions, { today: '2026-10-25' });
@@ -537,27 +483,15 @@ test('insights: load vs. next-day pain, sleep/steps vs. pain', () => {
   assert.ok(lv.r > 0.99);
   assert.match(lv.text, /höher am Folgetag/);
   assert.ok(lv.weekly.length >= 3);
-  const pain = dailyPain(sessions);
-  assert.equal(pain.get('2026-10-02'), 0);
-  // sleep on day d vs pain on d: more sleep ↔ less pain
-  const log = sessions.map((s, i) => ({ date: addDays('2026-10-02', i * 2), sleepH: 9 - (i % 5), steps: 4000 + 1000 * (i % 5) }));
-  const sp = sleepVsPain(log, sessions, { today: '2026-10-25' });
-  assert.equal(sp.n, 10);
-  assert.ok(sp.r < -0.99);
-  assert.match(sp.text, /Schlaf/);
-  const st = stepsVsPain(log.map((e) => ({ ...e, date: addDays(e.date, -1) })), sessions, { today: '2026-10-25' });
-  assert.equal(st.n, 10);
-  assert.ok(st.r > 0.99);
-  assert.match(stepsVsPain([], sessions, { today: '2026-10-25' }).text, /zu wenige Daten/);
 });
 
-test('insights: weekly report, OP readiness, weight insight', () => {
+test('insights: weekly report (training only), OP readiness', () => {
   const data = store.defaults();
-  data.settings.profile = { heightCm: 180, birthYear: 1986, sex: 'm', activityLevel: 'light' };
+  data.settings.profile = { weightKg: 90 };
   data.sessions = [ndSession('2026-11-02'), ndSession('2026-11-04'), ndSession('2026-11-06'),
     { ...ndSession('2026-11-03', { kind: 'cardio' }), rowing: { durationSec: 960, distanceM: 3500, kcalDisplay: 190 } },
     { ...ndSession('2026-11-04', { kind: 'cardio' }), rowing: { durationSec: 900, distanceM: 3200 } }];
-  data.state.healthLog = [...wlog('2026-10-27', [90, 90, 90, 90, 90, 90, 90]), ...wlog('2026-11-03', [89.5, 89.5, 89.5, 89.5, 89.5])].map((e) => ({ ...e, sleepH: 7 }));
+  data.state.healthLog = [{ date: '2026-11-03', weightKg: 60, sleepH: 7 }]; // legacy, ignored
   const rep = weeklyReport(data, content, '2026-11-07');
   assert.equal(rep.weekStart, '2026-11-02');
   assert.deepEqual(rep.strength, { done: 3, goal: 3 });
@@ -568,9 +502,11 @@ test('insights: weekly report, OP readiness, weight insight', () => {
   assert.ok(rep.highlights.some((h) => /Krafttraining-Ziel/.test(h)));
   assert.ok(rep.notes.some((x) => /selben Tag/.test(x)));
   assert.ok(rep.kcal > 190);
-  assert.equal(rep.health.sleepH, 7);
-  assert.equal(rep.weight.startKg, 90);
-  assert.ok(rep.weight.deltaKg < 0);
+  for (const k of ['weight', 'health', 'logDays']) assert.equal(k in rep, false, k);
+  assert.ok(!rep.highlights.some((h) => /Gewicht/.test(h)));
+  // kcal use settings.profile.weightKg (MET part scales with weight; display kcal stay)
+  const heavy = weeklyReport({ ...data, settings: { ...data.settings, profile: { weightKg: 120 } } }, content, '2026-11-07');
+  assert.ok(heavy.kcal > rep.kcal);
   const ready = opReadiness(data, content, '2026-11-07');
   assert.ok(ready.score >= 0 && ready.score <= 100);
   assert.equal(ready.parts.swellingFree.score, 100);
@@ -578,6 +514,22 @@ test('insights: weekly report, OP readiness, weight insight', () => {
   assert.equal(typeof ready.label, 'string');
   const empty = opReadiness(store.defaults(), content, '2026-11-07');
   assert.ok(empty.score < 20 && empty.tips.length > 0);
-  assert.match(weightInsight([], '2026-11-07').text, /Noch kein Gewicht/);
-  assert.match(weightInsight(wlog('2026-10-18', Array.from({ length: 21 }, (_, i) => 90 - i * 0.1)), '2026-11-07').text, /0,7 kg pro Woche leichter/);
+  assert.deepEqual(Object.values(ready.parts).reduce((a, p) => a + p.weight, 0), 100);
+});
+
+test('store.load persists the v3.1 weight prefill once and keeps legacy data', () => {
+  const m = new Map();
+  const mem = { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) };
+  const legacy = { schemaVersion: 1, settings: { weeklyGoal: 3, profile: { heightCm: 182 }, weightGoal: { targetKg: 95 } },
+    state: { healthLog: [{ date: '2026-11-01', weightKg: 101.75 }], badges: { 'minus-2kg': 'x' } }, sessions: [] };
+  m.set(store.STORAGE_KEY, JSON.stringify(legacy));
+  store._setStorage(mem);
+  const d = store.load();
+  assert.equal(d.settings.profile.weightKg, 101.8);
+  const saved = JSON.parse(m.get(store.STORAGE_KEY));
+  assert.equal(saved.settings.profile.weightKg, 101.8);
+  assert.deepEqual(saved.state.healthLog, legacy.state.healthLog);
+  assert.deepEqual(saved.settings.weightGoal, { targetKg: 95 });
+  assert.equal(saved.state.badges['minus-2kg'], 'x');
+  store._setStorage(null);
 });

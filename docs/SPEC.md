@@ -1,5 +1,6 @@
 # Physiotraining – SPEC (single source of truth)
 
+Version 3.1 · 2026-11-08 (3.1: §14 „v3.1 – Fokus Training“ – imports (§13), health diary (§12.7) and weight goal / calorie target (parts of §12.6, §12.8, §12.11, §12.12) **removed**. Where §14 and earlier sections disagree, §14 wins.)
 Version 2.0 · 2026-11-07 (2.0: §12 „v2 – Rudern, Kurztraining, eigene Workouts, Gesundheit & Abnehmen“ incl. OP-Termin 2027-01-05, Krücken-Vorbereitung, Post-OP-Phase p4. Where §12 and §0–§11 disagree, §12 wins.)
 Version 1.1 · 2026-10-31 (1.1: integration/QA – documented deviations from WP0 in §3, §4.2, §6.4, §6.7, §7.4, §7.5, §8)
 
@@ -55,10 +56,9 @@ js/logic/motivation.js      xpFor, levelFor, evaluateBadges, dailyQuote, opCount
 js/logic/duration.js        v2 duration estimates, 30-min fit (§12.3)
 js/logic/cardio.js          v2 rowing phases, display values, totals (§12.4)
 js/logic/custom-workouts.js v2 user workouts (§12.5)
-js/logic/energy.js          v2 BMR/TDEE, session kcal, weight goal (§12.6)
-js/logic/health.js          v2 daily health log (§12.7)
+js/logic/energy.js          session kcal estimate (§12.6, §14)
 js/logic/schedule.js        v2 phase timing, post-op gate (§12.9, §12.10)
-js/logic/insights.js        v2 weekly report, correlations, OP readiness (§12.11)
+js/logic/insights.js        weekly report, load vs. pain, OP readiness (§12.11, §14)
 js/components/pt-timer.js   <pt-timer>
 js/components/pt-figure.js  <pt-figure>
 js/components/pt-pain-scale.js <pt-pain-scale>
@@ -918,6 +918,10 @@ summary with kcal.
 
 ### 12.6 Energy & weight — `js/logic/energy.js` (always labelled „Schätzung“)
 
+> **v3.1 (§14):** only `sessionKcal` (now `sessionKcal(session, weightKg, content?)`), `sessionDurationSec`,
+> `rpeFactor`, `MET`, `bodyWeightKg(settings)` remain. BMR/TDEE/BMI, `currentWeight`, `weightTrend`,
+> `goalProgress`, `calorieTarget`, `kcalByDay` were removed.
+
 - `bmr(profile, kg, today)` Mifflin–St Jeor (`10·kg + 6.25·cm − 5·age + s`, s = +5 m / −161 w / −78 d), `tdee`
   (× `ACTIVITY_FACTORS` sedentary 1.2, light 1.375, moderate 1.55, active 1.725), `bmi`, `ageFrom`.
 - `sessionKcal(session, profile, latestWeightKg, content?) → {kcal, method: 'display'|'watt'|'met', met, label}`:
@@ -934,7 +938,7 @@ summary with kcal.
   required rate × 7700 / 7 clamped to **500–750 kcal** (0 if no goal/reached), floor **1500 m / 1200 w / 1350 d**.
   Requires a complete profile (else `null` → UI asks for Profil).
 
-### 12.7 Health log — `js/logic/health.js`
+### 12.7 Health log — `js/logic/health.js` — **removed in v3.1 (§14)**
 
 `HealthEntry = {date, weightKg?, bodyFatPct?, waistCm?, steps?, activeMin?, restingHr?, avgTrainingHr?, sleepH?,
 note?, source: "samsung-health-manual"}`; ranges/labels/units in `HEALTH_FIELDS`.
@@ -945,6 +949,9 @@ today)` (→ `lineChart` points), `meanOf`, `weeklyAverages(log, {weeks, today})
 XP: `motivation.healthLogXp(prevLog, date)` = 5 for the first entry of a date (call before upserting).
 
 ### 12.8 Motivation
+
+> **v3.1 (§14):** `XP.healthLog`, `healthLogXp` and the badges `minus-2kg`, `minus-5kg`, `goal-reached`, `log-7`
+> (rule types `weightLost`, `weightGoalReached`, `healthLogStreak`) were removed.
 
 - `XP` gains `cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20, healthLog: 5`; `xpFor(session)` returns
   `cardioXp` for rowing (20 + 2 × min(minutes, 20) → 15–20 min ≈ 50–60 XP, comparable to a 30-min strength
@@ -1019,6 +1026,9 @@ Sports Health review 2021 (https://pmc.ncbi.nlm.nih.gov/articles/PMC8167347). Pr
 
 ### 12.11 Insights — `js/logic/insights.js` (no physio export)
 
+> **v3.1 (§14):** `weeklyReport` no longer returns `weight`, `health`, `logDays`; `sleepVsPain`, `stepsVsPain`,
+> `dailyPain`, `weightInsight` (and §13.7 `bodyCompositionInsight`) were removed. UI moved to `#/auswertung`.
+
 - `weeklyReport(data, content, today, {weekOf?}) → {weekStart, weekEnd, strength {done, goal}, cardio {done, goal,
   minutes, distanceM}, lights {green,yellow,red,stop}, avgPrePain, avgNextDayPain, prevAvgNextDayPain, load,
   prevLoad, kcal, weight {startKg, endKg, deltaKg}, health {sleepH?, steps?, restingHr?, activeMin?}, logDays,
@@ -1035,6 +1045,8 @@ Sports Health review 2021 (https://pmc.ncbi.nlm.nih.gov/articles/PMC8167347). Pr
 - `weightInsight(log, today) → {currentKg, kgPerWeek, n, text}`.
 
 ### 12.12 UI expectations (for the UI packages)
+
+> **v3.1 (§14):** Gewicht-Ziel card, Tagebuch card and `#/gesundheit` are gone; see §14.3.
 
 - **Heute** cards (in this order after hero): next strength workout (A/B/C, `estimateWorkoutMinutes`),
   **Kurztraining** card („Nur 15 Minuten?“ → `phase.short`), **Rudern** card (cardio ring `cardioProgress` x/3,
@@ -1055,7 +1067,11 @@ Sports Health review 2021 (https://pmc.ncbi.nlm.nih.gov/articles/PMC8167347). Pr
 - Verlauf: cardio sessions in the list/heatmap (icon), rowing totals, per-week bars with strength + rowing.
 - `sw.js` precache must be regenerated (`node tools/gen-precache.mjs`) for the new logic modules.
 
-## 13. v3 – Import & Körperzusammensetzung
+## 13. v3 – Import & Körperzusammensetzung — **REMOVED in v3.1 (see §14)**
+
+> Kept for history only. None of the modules, routes, manifest entries or service-worker handlers described in this
+> section exist any more (`js/import/*`, `js/views/import.js`, `js/views/health.js`, `vendor/tesseract/`,
+> `#/import`, `share_target`). Stored health-log entries of v3 users stay untouched in `localStorage` (§14.4).
 
 New context: user ≈ 102 kg, BMI ≈ 32, **RENPHO body-composition scale** (BIA), **Samsung Galaxy S25 Ultra with
 Samsung Health**. Goal: lose fat while **preserving muscle** before the knee surgery on 2027-01-05. Typing ~20 scale
@@ -1220,3 +1236,54 @@ weight loss > 1 kg/week → warning.
 - Auswertung: card „Körperzusammensetzung“ (status chip, deltas, tips, BIA caution) with **Grundumsatz**
   (used / scale / formula, method, date).
 - Regenerate the precache after adding the import modules: `node tools/gen-precache.mjs`.
+
+## 14. v3.1 – Fokus Training: Importe, Tagebuch und Abnehm-Ziel entfernt
+
+Decision (2026-11-08): the app focuses on **training only**. Weight and health data are tracked in **Samsung
+Health**; PhysioBogen no longer duplicates them. `APP_VERSION` 3.1.0, `SCHEMA_VERSION` stays 1.
+
+### 14.1 Removed
+
+- **Imports (§13):** `js/import/*` (ocr, renpho, samsung, zip, common), `js/views/import.js`, `vendor/tesseract/`,
+  route `#/import`, manifest `share_target`, the sw.js share-target POST handler and the OCR runtime cache, the
+  import tests and fixtures. `tools/gen-precache.mjs` no longer needs a vendor exclusion.
+- **Gesundheits-Tagebuch (§12.7):** `js/views/health.js`, `js/logic/health.js`, route `#/gesundheit`, Heute diary
+  tile, Mehr links, health-log XP, badges `log-7`, `minus-2kg`, `minus-5kg`, `goal-reached`.
+- **Abnehm-Ziel & Kalorienziel (§12.6):** weight-goal UI, Heute weight-goal card, `goalProgress`, `calorieTarget`,
+  `bmrInfo`/BMR/TDEE/BMI, `weightInsight`, `bodyCompositionInsight`, `sleepVsPain`, `stepsVsPain`.
+
+### 14.2 Kept / changed
+
+- Training (knee, archery, rowing), Kurztraining, eigene Workouts, schedule to the OP on 2027-01-05, p4 Entlastung,
+  traffic light, Verlauf, XP/levels and all other badges.
+- **kcal per session** (`sessionKcal(session, weightKg, content?)`): body weight comes from
+  `settings.profile.weightKg` (`bodyWeightKg(settings)`, default 80 kg), edited in `#/profil` („Trainingsziele“,
+  field „Körpergewicht (für Kalorienschätzung)“, 30–300 kg or empty). `#/profil` also keeps the cardio goal per
+  week; height, birth year, sex and activity level are no longer asked for.
+- **Insights** (training only): `opReadiness` (unchanged parts criteria 30 / strength 25 / swellingFree 25 /
+  regularity 20 – it never used health-log data), `weeklyReport` (without weight/health parts; kcal use
+  `settings.profile.weightKg`), `loadVsPain`.
+- `evaluateBadges` only evaluates ids present in `data/badges.json`; stored ids of removed badges stay in
+  `state.badges`, are never shown (Verlauf iterates the definitions, Heute filters unknown ids) and never crash.
+
+### 14.3 UI
+
+- New view `js/views/insights.js`, route **`#/auswertung`** (title „Auswertung“, tab Verlauf; back → Verlauf):
+  OP-Bereitschaft (prehab phases only), Wochenbericht with week navigation, „Trainingslast ↔ Knie am Folgetag“
+  (correlation + weekly load bars). `?focus=bereitschaft|bericht|last` scrolls to the card.
+- Reachable from **Heute** (OP-Bereitschaft card → `#/auswertung?focus=bereitschaft`, Monday Wochenbericht teaser →
+  `?focus=bericht`), **Verlauf** (link card below the stats) and **Mehr** (list item).
+- Old links `#/gesundheit…` and `#/import…` match no route and fall back to Heute.
+
+### 14.4 Data & migration
+
+- Stored `state.healthLog` and `settings.weightGoal` are **not deleted** – left untouched and unused; backup
+  export/import still round-trips them (`mergeBackups`: legacy log merged by date via `mergeLegacyLog`, current
+  values win; weightGoal current wins; nothing is added when neither side has them).
+- `store.defaults()` no longer creates `healthLog` / `weightGoal`; `profile` default is `{weightKg: null}`.
+- `store.migrate` → `prefillWeight(data)`: if the stored profile has **no `weightKg` key**, it is prefilled from the
+  latest plausible (30–300 kg) `healthLog[].weightKg` (rounded to 0.1 kg); runs once, never overwrites, does not
+  mutate its input.
+- Service worker `activate` deletes the legacy caches `pt-share` and every `pt-ocr-*` (≈ 7 MB) besides old
+  `physio-*` versions.
+

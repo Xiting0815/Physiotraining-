@@ -591,8 +591,6 @@ a.card.pv-report, .pv-report { display: flex; align-items: center; gap: var(--s-
 .pv-toggle-row.is-off .pv-toggle-row__name { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
 .pv-ex-row.is-off { opacity: 0.55; }
 /* ---- v2: Profil ---- */
-.pv-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
-.pv-form-grid .field { margin: 0; min-width: 0; }
 .pv-input-unit { position: relative; display: block; }
 .pv-input-unit .input { padding-right: 44px; width: 100%; }
 .pv-input-unit > span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: var(--fs-sm); pointer-events: none; }

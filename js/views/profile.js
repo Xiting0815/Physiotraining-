@@ -78,8 +78,8 @@ export function render(root, { store }) {
           <span class="field__hint">${typeof kg === 'number' ? '' : `Ohne Angabe rechnet die App mit ${DEFAULT_WEIGHT_KG} kg. `}Grob gerundet reicht – Gewicht und Gesundheitswerte trackst du in Samsung Health.</span>
         </div>
         <dl class="pv-preview">
-          <div><dt>30 Min Kraft <small>Schätzung</small></dt><dd>≈ ${ex.strength30} <small>kcal</small></dd></div>
-          <div><dt>20 Min Rudern <small>Schätzung</small></dt><dd>≈ ${ex.rowing20} <small>kcal</small></dd></div>
+          <div><dt>30 Min Kraft</dt><dd>≈ ${ex.strength30} <small>kcal</small></dd></div>
+          <div><dt>20 Min Rudern</dt><dd>≈ ${ex.rowing20} <small>kcal</small></dd></div>
         </dl>
         <p class="field__hint mt-2 mb-0">Die kcal je Einheit sind Schätzungen (MET × Gewicht × Dauer, beim Rudern bevorzugt die Anzeige des Geräts) – keine Ernährungsberatung.</p>
       </section>

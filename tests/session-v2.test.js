@@ -64,8 +64,7 @@ test('finishSession: only A/B/C strength workouts advance the rotation', () => {
 
 test('finishSession: energy estimate stored, rowing records + first-row badge', () => {
   const d0 = fresh();
-  d0.settings.profile = { heightCm: 180, birthYear: 1985, sex: 'm', activityLevel: 'light' };
-  d0.state.healthLog = [{ date: '2026-11-06', weightKg: 92, source: 'samsung-health-manual' }];
+  d0.settings.profile = { weightKg: 92 };
   const { data, session } = play(d0, 'p1-row', { rowing: { durationSec: 960, distanceM: 3400, avgWatt: 90 } });
   assert.equal(session.kind, 'cardio');
   assert.equal(session.energy.method, 'watt');
@@ -83,11 +82,15 @@ test('finishSession: energy estimate stored, rowing records + first-row badge', 
   assert.equal(H.energyOf({ ...second.session, energy: null }, second.data, content).kcal, 150);
 });
 
-test('strength sessions get a kcal estimate labelled Schätzung', () => {
+test('strength sessions get a kcal estimate labelled Schätzung (scales with settings.profile.weightKg)', () => {
   const { session, data } = play(fresh(), 'p1-short');
   assert.equal(session.energy.method, 'met');
   assert.ok(session.energy.kcal > 0);
   assert.equal(H.energyOf(session, data, content).label, 'Schätzung');
+  const heavy = fresh();
+  heavy.settings.profile = { weightKg: 120 };
+  const h = play(heavy, 'p1-short');
+  assert.ok(h.session.energy.kcal > session.energy.kcal, `${h.session.energy.kcal} > ${session.energy.kcal}`);
 });
 
 test('rowing timer: tick crosses phases, skip, pause, cooldown jump, times', () => {

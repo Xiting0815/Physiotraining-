@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  XP, LEVELS, xpFor, healthLogXp, levelFor, evaluateBadges, badgeRuleMet, setScore, sessionScore, dailyQuote, QUOTES, opCountdown, reminderText,
+  XP, LEVELS, xpFor, levelFor, evaluateBadges, badgeRuleMet, setScore, sessionScore, dailyQuote, QUOTES, opCountdown, reminderText,
 } from '../js/logic/motivation.js';
 import { scoreForSet } from '../js/components/celebrate.js';
 import { buildSessionPlan } from '../js/logic/progression.js';
@@ -19,7 +19,8 @@ const S = (day, { light = 'green', final = null, exercises = [], status = 'done'
 const data = (sessions, state = {}) => ({ schemaVersion: 1, settings, state: { badges: {}, phaseHistory: [{ phaseId: 'p1-basis' }], ...state }, sessions });
 
 test('XP constants and xpFor', () => {
-  assert.deepEqual(XP, { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15, cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20, healthLog: 5 });
+  assert.deepEqual(XP, { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15, cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20 });
+  assert.equal('healthLog' in XP, false, 'v3.1: no diary XP');
   const s = { status: 'done', exercises: [
     { painDuring: 1, sets: [{ done: true }, { done: true }, { done: false }] }, // 2 × 3
     { painDuring: 4, sets: [{ done: true }] }, // 2
@@ -45,7 +46,7 @@ test('levelFor: archery titles, boundaries, max level, bad input', () => {
   assert.equal(levelFor(NaN).progress, 0);
 });
 
-test('XP balance (v2): 3× strength (≤ 30 min) + 3× rowing + daily log per week → Robin Hood after ~6 months', () => {
+test('XP balance (v2): 3× strength (≤ 30 min) + 3× rowing per week (v3.1: no diary XP) → Robin Hood after ~6 months', () => {
   const content = {
     exercises: JSON.parse(readFileSync(new URL('../data/exercises.json', import.meta.url), 'utf8')).exercises,
     workouts: JSON.parse(readFileSync(new URL('../data/workouts.json', import.meta.url), 'utf8')).workouts,
@@ -64,7 +65,6 @@ test('XP balance (v2): 3× strength (≤ 30 min) + 3× rowing + daily log per we
       xp += xpFor(plan, settings) + XP.nextDayCheckIn;
     }
     for (let i = 0; i < 3; i++) xp += xpFor({ status: 'done', kind: 'cardio', rowing: { durationSec: 16 * 60 } }, settings);
-    xp += 7 * XP.healthLog;
     if (weeks % 3 === 0) xp += XP.badge; // badges spread over time
     weeks++;
     const li = levelFor(xp).index; if (levelAt[li] == null) levelAt[li] = weeks;
@@ -75,19 +75,18 @@ test('XP balance (v2): 3× strength (≤ 30 min) + 3× rowing + daily log per we
   assert.ok(levelAt[8] - levelAt[7] > levelAt[2] - levelAt[1], 'later levels take longer');
 });
 
-test('cardioXp / healthLogXp', () => {
+test('cardioXp', () => {
   assert.equal(xpFor({ status: 'done', kind: 'cardio', rowing: { durationSec: 15 * 60 } }, settings), 20 + 30);
   assert.equal(xpFor({ status: 'done', kind: 'cardio', rowing: { durationSec: 40 * 60 } }, settings), 20 + 40);
   assert.equal(xpFor({ status: 'done', kind: 'cardio', exercises: [{ sets: [{ done: true, seconds: 600 }] }] }, settings), 40);
   assert.equal(xpFor({ status: 'aborted', kind: 'cardio', rowing: { durationSec: 300 } }, settings), 10);
-  assert.equal(healthLogXp([], '2026-11-07'), 5);
-  assert.equal(healthLogXp([{ date: '2026-11-07' }], '2026-11-07'), 0);
 });
 
 test('badges.json covers all required badges with known rule types', () => {
   const ids = badgeDefs.map((b) => b.id);
   for (const id of ['first-session', 'week-3', 'sessions-10', 'sessions-25', 'sessions-50', 'hold-5min', 'phase-done', 'green-week', 'personal-record', 'comeback']) assert.ok(ids.includes(id), id);
-  for (const b of badgeDefs) assert.ok(['sessionsCount', 'weekSessions', 'totalHoldSeconds', 'phaseCompleted', 'greenWeek', 'personalRecord', 'comeback', 'cardioCount', 'rowingDistance', 'customWorkout', 'weightLost', 'weightGoalReached', 'healthLogStreak'].includes(b.rule.type));
+  for (const b of badgeDefs) assert.ok(['sessionsCount', 'weekSessions', 'totalHoldSeconds', 'phaseCompleted', 'greenWeek', 'personalRecord', 'comeback', 'cardioCount', 'rowingDistance', 'customWorkout'].includes(b.rule.type));
+  for (const id of ['minus-2kg', 'minus-5kg', 'goal-reached', 'log-7']) assert.ok(!ids.includes(id), `${id} removed in v3.1`);
 });
 
 test('evaluateBadges: empty history → none', () => {
@@ -99,6 +98,16 @@ test('evaluateBadges: first session; already earned excluded; aborted ignored', 
   assert.deepEqual(evaluateBadges(data([S('2026-11-02', { light: 'yellow' })]), badgeDefs), ['first-session']);
   assert.deepEqual(evaluateBadges(data([S('2026-11-02', { light: 'yellow' })], { badges: { 'first-session': 'x' } }), badgeDefs), []);
   assert.deepEqual(evaluateBadges(data([S('2026-11-02', { status: 'aborted' })]), badgeDefs), []);
+});
+
+test('evaluateBadges: stored ids of removed badges (v3.1) are ignored, never crash', () => {
+  const legacy = { 'minus-2kg': '2026-10-01T10:00:00.000Z', 'log-7': '2026-10-02T10:00:00.000Z', 'goal-reached': '2026-10-03T10:00:00.000Z' };
+  const d = data([S('2026-11-02', { light: 'yellow' })], { badges: legacy, healthLog: [{ date: '2026-11-01', weightKg: 90 }] });
+  assert.deepEqual(evaluateBadges(d, badgeDefs), ['first-session']);
+  assert.equal(d.state.badges['minus-2kg'], legacy['minus-2kg'], 'legacy ids stay untouched');
+  // old definitions with removed rule types never match
+  assert.deepEqual(evaluateBadges(d, [{ id: 'minus-5kg', rule: { type: 'weightLost', n: 5 } }, { id: 'log-7', rule: { type: 'healthLogStreak', n: 7 } }]), []);
+  assert.deepEqual(evaluateBadges({ state: { badges: null }, sessions: [] }, badgeDefs), []);
 });
 
 test('sessionsCount thresholds 10/25/50', () => {

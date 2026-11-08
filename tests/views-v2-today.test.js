@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { recentCustomWorkouts, postOpCardMode, isMonday } from '../js/views/today.js';
 import { setToggle, exerciseIdsOf } from '../js/views/plan.js';
-import { validateGoal, validateProfile, parseNum } from '../js/views/profile.js';
+import { validateWeight, kcalExamples, parseNum } from '../js/views/profile.js';
 import { fmtNum, fmtInt, fmtDistance, EQUIPMENT_LABEL, BLOCK_LABEL, KIND_LABEL, INTENSITY_LABEL, kindOf, workoutSplit, awardBadges } from '../js/views/ui.js';
 import { matchRoute, routes } from '../js/router.js';
 import { postOpStatus, clearance } from '../js/logic/schedule.js';
@@ -24,9 +24,13 @@ test('router: v2 routes resolve to their view modules', () => {
   assert.equal(e.route.view, 'custom-workout-edit');
   assert.equal(e.params.id, 'neu');
   assert.equal(matchRoute('#/eigene/cw-abc').params.id, 'cw-abc');
-  assert.equal(matchRoute('#/gesundheit?focus=bericht').route.view, 'health');
-  assert.equal(matchRoute('#/gesundheit?focus=bericht').query.focus, 'bericht');
+  assert.equal(matchRoute('#/auswertung?focus=bericht').route.view, 'insights');
+  assert.equal(matchRoute('#/auswertung?focus=bericht').query.focus, 'bericht');
+  assert.equal(matchRoute('#/auswertung').route.title, 'Auswertung');
   assert.equal(matchRoute('#/profil').route.view, 'profile');
+  // v3.1: removed routes fall back to Heute
+  for (const h of ['#/gesundheit', '#/gesundheit?focus=bericht', '#/import', '#/import?shared=1']) assert.equal(matchRoute(h).route.view, 'today', h);
+  for (const v of ['health', 'import']) assert.ok(!routes.some((r) => r.view === v), v);
   for (const r of routes) assert.ok(fs.existsSync(new URL(`../js/views/${r.view}.js`, import.meta.url)), `view module for ${r.pattern}`);
 });
 
@@ -112,29 +116,16 @@ test('exerciseIdsOf: unique ids across p4 workouts, none blocked by default', ()
   assert.ok(ids.length > 5);
 });
 
-test('profile validation', () => {
+test('profile: body weight validation and kcal examples', () => {
   assert.equal(parseNum('82,5'), 82.5);
   assert.equal(parseNum(''), null);
   assert.ok(Number.isNaN(parseNum('abc')));
-  const ok = validateProfile({ heightCm: '182', birthYear: '1984', sex: 'm', activityLevel: 'moderate' }, '2026-11-07');
-  assert.equal(ok.ok, true);
-  assert.deepEqual(ok.profile, { heightCm: 182, birthYear: 1984, sex: 'm', activityLevel: 'moderate' });
-  const bad = validateProfile({ heightCm: '82', birthYear: '2020', sex: 'x', activityLevel: '?' }, '2026-11-07');
-  assert.equal(bad.ok, false);
-  assert.ok(bad.errors.heightCm && bad.errors.birthYear);
-  assert.equal(bad.profile.sex, null);
-  assert.equal(bad.profile.activityLevel, 'light');
-});
-
-test('weight goal validation', () => {
-  const today = '2026-11-07';
-  const ok = validateGoal({ startKg: '95,4', targetKg: '88', targetDate: '2027-03-01' }, today);
-  assert.equal(ok.ok, true);
-  assert.deepEqual(ok.goal, { startKg: 95.4, targetKg: 88, targetDate: '2027-03-01', startDate: today });
-  assert.ok(validateGoal({ startKg: '90', targetKg: '92', targetDate: '2027-03-01' }, today).errors.targetKg);
-  assert.ok(validateGoal({ startKg: '90', targetKg: '85', targetDate: '2026-11-01' }, today).errors.targetDate);
-  assert.ok(validateGoal({ startKg: '', targetKg: '85', targetDate: '2027-01-01' }, today).errors.startKg);
-  assert.equal(validateGoal({ startKg: '90', targetKg: '85', targetDate: '2027-01-01' }, today, { startDate: '2026-10-01' }).goal.startDate, '2026-10-01');
+  assert.deepEqual(validateWeight('92,46'), { ok: true, weightKg: 92.5, error: null });
+  assert.deepEqual(validateWeight(''), { ok: true, weightKg: null, error: null });
+  assert.equal(validateWeight('12').ok, false);
+  assert.match(validateWeight('abc').error, /30–300/);
+  assert.deepEqual(kcalExamples(80), { strength30: 140, rowing20: 128 });
+  assert.deepEqual(kcalExamples(null), kcalExamples(80));
 });
 
 test('awardBadges: first custom workout earns its badge once', () => {
@@ -144,4 +135,14 @@ test('awardBadges: first custom workout earns its badge once', () => {
   assert.ok(ids.includes('first-custom'));
   assert.equal(d.state.xp, ids.length * 15);
   assert.deepEqual(awardBadges(d, badges, evaluateBadges, { today: '2026-11-07' }), []);
+});
+
+test('v3.1: import features removed (no share target, no OCR vendor files, legacy caches cleaned)', () => {
+  const root = new URL('../', import.meta.url);
+  const manifest = JSON.parse(fs.readFileSync(new URL('manifest.webmanifest', root), 'utf8'));
+  assert.equal('share_target' in manifest, false);
+  for (const p of ['vendor', 'js/import', 'js/views/import.js', 'js/views/health.js', 'js/logic/health.js']) assert.ok(!fs.existsSync(new URL(p, root)), p);
+  const sw = fs.readFileSync(new URL('sw.js', root), 'utf8');
+  assert.doesNotMatch(sw, /share-target|tesseract|receiveShare|ocrAsset/);
+  assert.match(sw, /k === 'pt-share' \|\| k\.startsWith\('pt-ocr-'\)/);
 });

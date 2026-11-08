@@ -148,6 +148,14 @@ export function render(root, { store, content, query }) {
         <div class="stat stat--gold"><span class="stat__value">${state.xp || 0}<span class="stat__unit">XP</span></span><span class="stat__label">${lvl.title}</span></div>
       </div>
 
+      <a class="card pv-report" href="#/auswertung" aria-label="Auswertung öffnen: OP-Bereitschaft, Wochenbericht, Trainingslast">
+        <span class="pv-icon-badge pv-icon-badge--gold" aria-hidden="true">📊</span>
+        <span class="grow"><span class="eyebrow">Auswertung</span>
+          <span class="list-item__title">OP-Bereitschaft · Wochenbericht</span>
+          <span class="list-item__sub">Trainingslast ↔ Knie am Folgetag</span></span>
+        ${raw(ICON.chev)}
+      </a>
+
       ${rows.sessions ? html`<section class="card card--accent">
         <div class="hero__row"><div class="grow"><p class="hero__eyebrow">Rudern gesamt</p>
           <h2 class="hero__title">${fmtDistance(rows.distanceM)}</h2></div>

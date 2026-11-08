@@ -102,7 +102,7 @@ test('poses have all angle keys', () => {
 });
 
 test('badges: required ids and known rule types', () => {
-  const types = ['sessionsCount', 'weekSessions', 'totalHoldSeconds', 'phaseCompleted', 'greenWeek', 'personalRecord', 'comeback', 'cardioCount', 'rowingDistance', 'customWorkout', 'weightLost', 'weightGoalReached', 'healthLogStreak'];
+  const types = ['sessionsCount', 'weekSessions', 'totalHoldSeconds', 'phaseCompleted', 'greenWeek', 'personalRecord', 'comeback', 'cardioCount', 'rowingDistance', 'customWorkout'];
   for (const b of badges) assert.ok(types.includes(b.rule.type), b.id);
   for (const id of ['first-session', 'week-3', 'sessions-10', 'sessions-25', 'sessions-50', 'hold-5min', 'phase-done', 'green-week', 'personal-record', 'comeback']) {
     assert.ok(badges.some((b) => b.id === id), id);

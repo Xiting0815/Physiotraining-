@@ -3,7 +3,8 @@
 Mobile-first Offline-PWA als Trainingsbegleiter für die Knie-Prehab (Meniskus/Knorpel, Mikrofraktur-OP links
 voraussichtlich am **05.01.2027**) kombiniert mit Rücken-/Schultertraining für Compound-Bogenschießen.
 3 Krafteinheiten pro Woche (max. 30 min, Workouts A/B/C) plus 3× Rudern (15–20 min), Kurztraining, eigene Workouts,
-Gesundheits-Tagebuch, Abnehm-Ziel, Ampel-Logik für die Belastungssteuerung und viel Motivation.
+Ampel-Logik für die Belastungssteuerung, Auswertung und viel Motivation. Die App konzentriert sich aufs Training –
+Gewicht und Gesundheitswerte bleiben in Samsung Health.
 
 > **Hinweis:** Diese App ersetzt keine ärztliche oder physiotherapeutische Beratung. Bei starken Schmerzen,
 > Blockieren, zunehmender Schwellung oder Nachtschmerz: Training stoppen und Rücksprache halten.
@@ -18,16 +19,22 @@ Gesundheits-Tagebuch, Abnehm-Ziel, Ampel-Logik für die Belastungssteuerung und 
   → Cool-down → Nach-Check. Animierte Strichfigur je Übung, Timer für Halten/Zeit/Tempo und Satzpausen
   (mit Ton, Vibration und Wake Lock), Schmerz- bzw. RPE-Skala, „Stechender Schmerz“-Knopf, Überspringen,
   Satz anpassen (lange drücken). Unterbrechen und später fortsetzen ist jederzeit möglich.
-- **Auswertung** – Ampel (Grün/Gelb/Rot/Stopp, immer mit Symbol + Text), Trefferbild als Zielscheibe,
-  XP, neue Abzeichen und Bestwerte, Empfehlungen (Steigern / Halten / Zurückgehen) zum Bestätigen.
+- **Abschluss einer Einheit** – Ampel (Grün/Gelb/Rot/Stopp, immer mit Symbol + Text), Trefferbild als Zielscheibe,
+  XP, neue Abzeichen und Bestwerte, geschätzte kcal, Empfehlungen (Steigern / Halten / Zurückgehen) zum Bestätigen.
 - **Folgetag-Check** – 30 Sekunden am Tag danach: Schmerz, Schwellung, Steifigkeit → finale Ampel.
 - **Plan** – aktuelle Phase, Ausstiegskriterien zum Abhaken, Workouts A/B/C mit aktueller Stufe je Übung,
   alle Phasen.
 - **Übungen** – Bibliothek mit Suche und Filtern (Block, Ausrüstung, im Plan); Detail mit Animation,
   Anleitung, Hinweisen fürs Knie, allen Stufen und manuellem Stufenwechsel.
 - **Verlauf** – Kalender mit Ampelfarben, Schmerzverlauf, Einheiten pro Woche, persönliche Rekorde,
-  Abzeichen und alle Einheiten mit Detailansicht.
-- **Mehr** – OP-Termin, Wochenziel, Profil & Ziele, Gesundheit, Daten importieren (RENPHO / Samsung Health), Design (Auto/Hell/Dunkel), Schriftgröße, Satzpause, Ton, Vibration,
+  Abzeichen und alle Einheiten mit Detailansicht; Link zur Auswertung.
+- **Auswertung** (`#/auswertung`, erreichbar über Heute, Verlauf und Mehr) – **OP-Bereitschaft** (Heuristik aus
+  Ausstiegskriterien, Kraftstufen, Schwellungsfreiheit und Regelmäßigkeit – keine medizinische Beurteilung),
+  **Wochenbericht** zum Durchblättern (Kraft- und Rudereinheiten, Strecke, kcal-Schätzung, Trainingslast, Knie am
+  Folgetag, Ampeln, Tipp) und **Trainingslast ↔ Knie am Folgetag** (vorsichtige Tendenz ab 8 Einheiten mit
+  Folgetag-Check, „kein Beweis für Ursache und Wirkung“, Trainingslast pro Woche als Diagramm).
+- **Mehr** – OP-Termin, Wochenziel, Auswertung, Trainingsziele (Rudern pro Woche, Körpergewicht für die
+  Kalorienschätzung), Design (Auto/Hell/Dunkel), Schriftgröße, Satzpause, Ton, Vibration,
   Schmerzgrenzen, Reihenfolge der Bänder, Sicherung exportieren/importieren (JSON), alles löschen.
 - **Ausrüstung** – vorhandene Bänder und eine Einkaufsliste mit Budget zum Abhaken.
 
@@ -43,18 +50,8 @@ Gesundheits-Tagebuch, Abnehm-Ziel, Ampel-Logik für die Belastungssteuerung und 
 - **Eigene Workouts** – aus der Übungsbibliothek zusammenstellen (Aufwärmen, Knie & Beine, Bogen/Rücken & Stütz,
   Cool-down), sortieren, Live-Dauer „ca. N Min“, Hinweise bei Übungen außerhalb der aktuellen Phase; als Kopie eines
   Plan-Workouts starten, duplizieren, löschen.
-- **Gesundheits-Tagebuch** – Gewicht, Körperfett, Bauchumfang, Schritte, aktive Minuten, Ruhe-/Trainingspuls,
-  Schlaf und Notiz pro Tag. Die Werte werden von Hand eingetragen oder – seit Version 3 – per **Import** aus
-  RENPHO-Screenshots bzw. dem Samsung-Health-Export übernommen (keine Live-Verbindung zu Samsung Health);
-  Serie und +5 XP pro Tag.
-- **Abnehm-Ziel & Kalorien** – Profil (Größe, Geburtsjahr, Geschlecht, Aktivität), Zielgewicht und Datum,
-  Fortschritt auf Basis des 7-Tage-Mittels, nötiges Tempo (Warnung über 0,75 kg/Woche), Prognose aus dem Trend,
-  Tagesbedarf und Kalorienziel (Defizit 500–750 kcal, Mindestmenge). Kalorien pro Einheit (Rudergerät-Display,
-  Watt-Formel oder MET) – **alles ausdrücklich Schätzungen**, keine Ernährungsberatung.
-- **Auswertung** (Gesundheit) – Wochenbericht, OP-Bereitschaft (Heuristik, keine medizinische Beurteilung),
-  vorsichtige Zusammenhänge (Trainingslast ↔ Knie am Folgetag, Schlaf ↔ Knieschmerz, Schritte ↔ Knie, erst ab
-  8 Datenpunkten, „kein Beweis für Ursache und Wirkung“), Diagramme für Gewicht (mit Ziel-Linie), Schritte, Schlaf
-  und Ruhepuls mit angepasster y-Achse.
+- **Kalorien pro Einheit** – Rudergerät-Display, Watt-Formel oder MET × Körpergewicht × Dauer. Das Körpergewicht
+  stellst du unter **Mehr → Trainingsziele** ein (ohne Angabe 80 kg) – **ausdrücklich eine Schätzung**.
 - **Phasen-Zeitplan bis zur OP am 05.01.2027** – Plan und Heute zeigen, in welcher Phase du laut Zeitplan sein
   solltest (Phase 1 bis 27.11., Phase 2 bis 18.12., Phase 3 mit OP-Woche ab 29.12.). Der OP-Termin wird in der
   Willkommenskarte vorgeschlagen und muss bestätigt werden; Phasenwechsel bleiben kriterienbasiert und von dir bestätigt.
@@ -67,50 +64,14 @@ Gesundheits-Tagebuch, Abnehm-Ziel, Ampel-Logik für die Belastungssteuerung und 
 - **Vorbereitung auf die Krücken** – Stütz-Dips, Trizeps, Abstützen im Sitz und Einbeinstand bereits vor der OP.
 - **Offline** – nach dem ersten Laden komplett offline nutzbar, installierbar als App.
 
-### Neu in Version 3 – Import
+### Version 3.1 – Fokus Training
 
-Unter **Mehr → Daten importieren (RENPHO / Samsung Health)** oder im Tagebuch über **„Importieren“**.
-Vor dem Übernehmen zeigt die App immer eine Vorschau: Werte lassen sich korrigieren, auffällige Werte sind
-markiert, und du wählst „Zusammenführen“ (vorhandene Werte bleiben) oder „Überschreiben“.
-
-- **RENPHO-Screenshot-Import** – Screenshot der Messung in der RENPHO-App auswählen; die Texterkennung (OCR)
-  läuft **offline direkt auf dem Handy**, es wird nichts hochgeladen. Beim ersten Mal werden einmalig ca.
-  **7,5 MB** (Texterkennung + Sprachdaten) geladen und danach für die Offline-Nutzung gespeichert.
-- **Teilen an PhysioBogen** – in der Galerie oder in Samsung Health/„Eigene Dateien“ einen Screenshot oder die
-  Samsung-Export-Datei (ZIP/CSV) über **„Teilen“ → PhysioBogen** direkt an die installierte App schicken.
-  Hinweis: Nach dem Update kann es **1–2 Tage dauern**, bis Android die Teilen-Option anzeigt (Chrome
-  aktualisiert die installierte App im Hintergrund). Erscheint sie nicht, die App deinstallieren und über Chrome
-  neu installieren. Die Daten liegen im Browser-Speicher von Chrome (nicht in der App selbst) und bleiben dabei
-  normalerweise erhalten – fragt Chrome beim Deinstallieren, ob auch die Website-Daten gelöscht werden sollen,
-  das bitte **nicht** bestätigen. Sicherheitshalber vorher unter **Mehr → Sicherung exportieren** ein Backup
-  speichern.
-- **Samsung Health Export** – Schritt für Schritt:
-  1. Samsung Health öffnen → Menü (☰ bzw. ⋮) → **Einstellungen**.
-  2. **„Persönliche Daten herunterladen“** wählen und bestätigen (ggf. mit dem Samsung-Konto anmelden).
-  3. Warten, bis „Download abgeschlossen“ erscheint. Der Ordner `samsunghealth_<name>_<Datum>` liegt unter
-     **Eigene Dateien → Interner Speicher → Download → Samsung Health**.
-  4. Den Ordner in „Eigene Dateien“ lange drücken → **Komprimieren** (ZIP) – oder einzelne CSV-Dateien nehmen.
-  5. In PhysioBogen **Daten importieren → Samsung Health** die ZIP/CSV auswählen (oder per „Teilen“ schicken),
-     Vorschau prüfen, **„Übernehmen“**.
-  Die Menüführung kann je nach Samsung-Health-Version leicht abweichen. Übernommen werden Gewicht und Körperzusammensetzung, Schritte, aktive Minuten, Schlaf und Ruhepuls
-  (pro Tag zusammengefasst).
-- **Alle Waagen-Werte** – das Tagebuch speichert jetzt die komplette Körperzusammensetzung: Gewicht, BMI,
-  Körperfett (% und kg), Unterhautfett, Viszeralfett, Muskelmasse, Skelettmuskel (% und kg), Knochenmasse,
-  fettfreie Masse, Körperwasser, Protein, metabolisches Alter und Grundumsatz – mit Quelle („RENPHO“,
-  „Samsung“) je Wert.
-- **Grundumsatz** – liegt ein Waagen-Wert der letzten 14 Tage vor, wird der Grundumsatz als **Mittel aus Waage
-  und Formel** (Mifflin–St Jeor) berechnet, sonst aus dem vorhandenen Wert. Er fließt in Tagesbedarf und
-  Kalorienziel ein – weiterhin eine Schätzung.
-- **Auswertung Fett/Muskel** – Karte „Körperzusammensetzung“: Veränderung von Fett- und Muskelmasse über 2 bzw.
-  4 Wochen (z. B. „Fett verloren, Muskeln gehalten“), mit Tipps (Krafttraining beibehalten, genug Eiweiß,
-  moderates Defizit); zusätzliche Diagramme für Körperfett, Skelettmuskelmasse und Viszeralfett.
-- **Einschränkungen**
-  - Das Samsung-Format wurde anhand **öffentlicher Beispiel-Exporte** umgesetzt und **nicht mit deinem echten
-    Export geprüft**. Fehlen Werte oder sehen sie falsch aus, bitte in der Vorschau korrigieren bzw. melden.
-  - Körperfett und Muskelmasse von Haushaltswaagen (BIA) schwanken je nach Wasserhaushalt, Essen und Training
-    um 1–2 kg. Nur Trends über Wochen vergleichen und immer gleich messen (morgens, nüchtern, nach dem
-    Toilettengang, barfuß).
-  - Die Texterkennung kann sich verlesen – Werte in der Vorschau kurz prüfen.
+Die Importe (RENPHO-Screenshot, Samsung-Health-Export, Teilen an die App), das Gesundheits-Tagebuch und das
+Abnehm-Ziel samt Kalorienziel wurden entfernt – Gewicht und Gesundheit trackst du in Samsung Health. Bereits
+gespeicherte Tagebuch-Einträge und ein altes Gewichtsziel bleiben unangetastet im Browser-Speicher (und in der
+Sicherung), werden aber nicht mehr angezeigt. Das zuletzt eingetragene Gewicht wird beim Update einmalig als
+Körpergewicht für die Kalorienschätzung übernommen. Ein Update gibt außerdem den Speicher der früheren
+Texterkennung (ca. 7,5 MB) wieder frei.
 
 Technik: Vanilla JS (ES-Module), kein Build-Schritt, keine Abhängigkeiten. Alle Daten bleiben lokal im Browser
 (`localStorage`, Schlüssel `pt.v1`). Daten aus Version 1 werden beim ersten Start automatisch übernommen und um die

@@ -1,10 +1,9 @@
-// Shared helpers for the v2 screens (Eigene Workouts, Gesundheit, Rudern in Verlauf/Übungen).
+// Shared helpers for the v2 screens (Eigene Workouts, Auswertung, Rudern in Verlauf/Übungen).
 // Not a route. Pure helpers are Node-testable; DOM helpers only touch `document` when called.
 // Labels and badge awarding delegate to ui.js; only v2-specific helpers live here.
 import { html, raw } from '../render.js';
 import { BLOCK_LABEL, EQUIPMENT_LABEL, toast, awardBadges as uiAwardBadges } from './ui.js';
 import { confetti } from '../components/celebrate.js';
-import { lineChart } from '../components/charts.js';
 import { exerciseAvailable } from '../logic/progression.js';
 import { evaluateBadges, XP } from '../logic/motivation.js';
 import { isCardioSession } from '../logic/stats.js';
@@ -121,33 +120,11 @@ export function celebrateBadges(ids, badgeDefs) {
 const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
 export const ICON2 = {
   row: svg('<circle cx="15" cy="5" r="2"/><path d="M14 8l-3 5h5l3 4M11 13l-5 1M3 20h18M7 20l2-3"/><path d="M4 11l9-2"/>'),
-  heart: svg('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'),
-  scale: svg('<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 9a5 5 0 0 1 8 0l-3 3"/>'),
   edit: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'),
   copy: svg('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/>'),
-  moon: svg('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'),
-  steps: svg('<path d="M8 3c2 0 3 2 3 5s-1 5-3 5-3-2-3-5 1-5 3-5zM6 15h4v2a2 2 0 0 1-4 0zM16 7c2 0 3 2 3 5s-1 5-3 5-3-2-3-5 1-5 3-5zM14 19h4v.5a2 2 0 0 1-4 0z"/>'),
   fire: svg('<path d="M12 21c-4 0-6.5-2.7-6.5-6.2 0-3.3 2.4-5 3.4-8 1.6 1.5 2.2 3 2.2 4.4 1.1-1 1.8-2.6 1.9-4.7 3 2.2 5.5 5.2 5.5 8.6 0 3.4-2.5 5.9-6.5 5.9z"/>'),
-  pulse: svg('<path d="M3 12h4l2-5 4 10 2-5h6"/>'),
   sparkles: svg('<path d="M12 4l1.6 4.4L18 10l-4.4 1.6L12 16l-1.6-4.4L6 10l4.4-1.6zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>'),
 };
-
-/* ------------------------------------------------------------------ */
-/* Charts: fitted line chart (weight, resting HR, sleep …)             */
-/* ------------------------------------------------------------------ */
-
-/**
- * `lineChart` with a fitted y axis (`yMin: 'auto'`, no pain zones) and German number labels.
- * `series[].dashed` renders a dashed goal line; `series[].mean` adds its 7-day mean.
- */
-export function fittedLineChart(container, series, { pad = 1, step = 1, minSpan = 4, digits = 1, unit = '', label, from, to } = {}) {
-  return lineChart(container, { series }, {
-    label, from, to, bands: false, mean: false,
-    yMin: 'auto', yRange: { pad, step, minSpan },
-    tickFormat: (v) => fmtNum(v, Number.isInteger(v) ? 0 : 1),
-    valueFormat: (v) => `${fmtNum(v, digits)}${unit ? ' ' + unit : ''}`,
-  });
-}
 
 /* ------------------------------------------------------------------ */
 /* Styles (tokens only), injected once                                 */
@@ -209,15 +186,6 @@ const CSS_TEXT = `
 .v2-pick__add svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
 .v2-pick.is-added .v2-pick__add { background: var(--primary); color: var(--on-primary); }
 .v2-sheet-sticky { position: sticky; top: calc(-1 * var(--s-4)); z-index: 2; background: var(--surface); padding: var(--s-2) 0; }
-.v2-tabs { margin: 0 0 var(--s-4); }
-.v2-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--s-3); }
-.v2-form-grid .field { margin-bottom: var(--s-3); min-width: 0; }
-.v2-unit { position: relative; }
-.v2-unit .input { padding-right: 46px; width: 100%; }
-.v2-unit > span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: var(--fs-sm); pointer-events: none; }
-.v2-field-err { color: var(--red-ink); font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
-.v2-group-title { font-size: var(--fs-xs); font-weight: var(--fw-bold); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: var(--s-3) 0 var(--s-2); display: flex; align-items: center; gap: 6px; }
-.v2-group-title svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .v2-ready { display: flex; align-items: center; gap: var(--s-4); }
 .v2-parts { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-4); }
 .v2-part__head { display: flex; justify-content: space-between; gap: var(--s-2); font-size: var(--fs-sm); }
@@ -242,18 +210,8 @@ const CSS_TEXT = `
 .v2-corr__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
 .v2-corr__head strong { font-size: var(--fs-md); }
 .v2-corr p { margin: var(--s-1) 0 0; font-size: var(--fs-sm); color: var(--muted); }
-.v2-entry { display: flex; align-items: flex-start; gap: var(--s-3); padding: var(--s-3) var(--s-4); }
-.v2-entry__date { flex: none; width: 52px; text-align: center; border-radius: var(--radius-sm); background: var(--primary-soft); color: var(--primary-ink); padding: 4px 0; line-height: 1.1; }
-.v2-entry__date b { display: block; font-size: var(--fs-lg); font-weight: var(--fw-black); }
-.v2-entry__date span { font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
-.v2-entry__vals { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
-.v2-entry__vals .muted { font-size: var(--fs-xs); flex-basis: 100%; }
-.v2-entry__btns { display: flex; gap: 2px; flex: none; }
-.v2-entry__btns .btn { width: 40px; min-height: 40px; padding: 0; }
 .v2-row-icon { color: var(--accent-ink); }
 .v2-row-icon svg { width: 22px; height: 22px; }
-.v2-hint-steps { margin: 0; padding-left: 1.2em; font-size: var(--fs-sm); display: flex; flex-direction: column; gap: 6px; }
-.v2-streak { display: inline-flex; align-items: center; gap: 6px; }
 .v2-rowlevels { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
 .v2-rowlevel { border-radius: var(--radius-sm); background: var(--surface-2); padding: var(--s-3); border: 1px solid transparent; }
 .v2-rowlevel.is-current { border-color: var(--accent); background: var(--accent-soft); }

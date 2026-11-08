@@ -17,7 +17,7 @@
 // removing or changing app files (the version is a content hash, so any change triggers an update).
 
 // <precache-version>
-const CACHE_VERSION = 'ea126143f8';
+const CACHE_VERSION = 'd21f909c63';
 // </precache-version>
 const CACHE_PREFIX = 'physio-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
@@ -49,16 +49,10 @@ const PRECACHE = [
   'js/components/pt-pain-scale.js',
   'js/components/pt-timer.js',
   'js/content.js',
-  'js/import/common.js',
-  'js/import/ocr.js',
-  'js/import/renpho.js',
-  'js/import/samsung.js',
-  'js/import/zip.js',
   'js/logic/cardio.js',
   'js/logic/custom-workouts.js',
   'js/logic/duration.js',
   'js/logic/energy.js',
-  'js/logic/health.js',
   'js/logic/insights.js',
   'js/logic/motivation.js',
   'js/logic/progression.js',
@@ -77,9 +71,8 @@ const PRECACHE = [
   'js/views/equipment.js',
   'js/views/exercise-detail.js',
   'js/views/exercises.js',
-  'js/views/health.js',
   'js/views/history.js',
-  'js/views/import.js',
+  'js/views/insights.js',
   'js/views/next-day.js',
   'js/views/plan.js',
   'js/views/profile.js',
@@ -93,7 +86,7 @@ const PRECACHE = [
 ];
 // </precache>
 
-/** Caches of removed v3 features (OCR runtime cache, share-target inbox) – deleted on activate. */
+/** Caches of removed v3 features (OCR runtime cache, shared-files inbox) – deleted on activate. */
 const isLegacyCache = (k) => k === 'pt-share' || k.startsWith('pt-ocr-');
 
 const scopeUrl = (path) => new URL(path, self.registration.scope).href;

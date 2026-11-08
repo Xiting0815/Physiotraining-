@@ -99,9 +99,9 @@ export function prefillWeight(data) {
   const last = log.filter((e) => isObj(e) && typeof e.date === 'string' && isKg(e.weightKg))
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)).at(-1);
   if (!last) return data;
-  if (!isObj(data.settings)) data.settings = {};
-  data.settings.profile = { ...(prof || {}), weightKg: Math.round(last.weightKg * 10) / 10 };
-  return data;
+  // copy instead of mutating the (possibly shared) input objects
+  const settings = { ...(isObj(data.settings) ? data.settings : {}), profile: { ...(prof || {}), weightKg: Math.round(last.weightKg * 10) / 10 } };
+  return { ...data, settings };
 }
 
 /** @param {any} data @returns {import('./types.js').Data} */
@@ -171,6 +171,14 @@ function notify() {
 
 // ---- public API ------------------------------------------------------------
 
+/** True when migration added the profile weight key (v3.1) – then the migrated data is written back once. */
+function needsPersist(raw, data) {
+  try {
+    const before = JSON.parse(raw);
+    return !(isObj(before?.settings?.profile) && 'weightKg' in before.settings.profile) && 'weightKg' in (data.settings?.profile || {});
+  } catch { return false; }
+}
+
 /** @returns {import('./types.js').Data} */
 export function load() {
   let raw = null;
@@ -185,7 +193,8 @@ export function load() {
     }
   }
   cache = data;
-  if (!raw) save(); // persist defaults once so e.g. prehabStart stays stable
+  // persist defaults once so e.g. prehabStart stays stable; persist migrations (e.g. v3.1 weightKg prefill) once
+  if (!raw || needsPersist(raw, data)) save();
   return cache;
 }
 

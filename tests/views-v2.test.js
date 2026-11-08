@@ -1,11 +1,11 @@
-// Pure helpers of the v2 views (Eigene Workouts, Gesundheit, Rudern in Verlauf/Übungen).
+// Pure helpers of the v2 views (Eigene Workouts, Auswertung, Rudern in Verlauf/Übungen).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { defaults } from '../js/store.js';
 import { customSummary } from '../js/views/custom-workouts.js';
 import { emptyDraft, addItem, moveItem, removeItem, sectionItems, totalItems, defaultSection, draftFrom } from '../js/views/custom-workout-edit.js';
-import { inputValue, fieldText, entrySummary, reportTip, corrView } from '../js/views/health.js';
+import { reportTip, corrView, PART_LABEL } from '../js/views/insights.js';
 import { filterSessions, sessionTitle, rowingLine, badgeHint, KIND_FILTERS } from '../js/views/history.js';
 import { filterExercises, cardDose } from '../js/views/exercises.js';
 import { rowingLevelPreview, rowingLevelText } from '../js/views/exercise-detail.js';
@@ -48,14 +48,8 @@ test('customSummary estimates minutes for a stored custom workout', () => {
   assert.equal(draft.blocks.length, 2);
 });
 
-test('health view helpers', () => {
-  assert.equal(inputValue('weightKg', 92.4), '92,4');
-  assert.equal(inputValue('steps', null), '');
-  assert.equal(fieldText('steps', 8214), '8.214');
-  assert.equal(fieldText('sleepH', 7.25), '7,25 h');
-  assert.equal(fieldText('weightKg', 92), '92 kg');
-  const s = entrySummary({ date: '2026-11-01', weightKg: 93.1, sleepH: 7 });
-  assert.deepEqual(s.map((x) => x.key), ['weightKg', 'sleepH']);
+test('insights view helpers', () => {
+  assert.deepEqual(Object.keys(PART_LABEL), ['criteria', 'strength', 'swellingFree', 'regularity']);
   assert.equal(corrView({ r: null, n: 3 }).text, 'Noch zu wenige Daten (3/8)');
   assert.equal(corrView({ r: 0.4, n: 10, text: 'x' }).enough, true);
   const rep = { strength: { done: 1, goal: 3 }, cardio: { done: 3, goal: 3 }, notes: [] };
@@ -78,9 +72,9 @@ test('history: kind filters, titles, rowing line, new badge hints', () => {
   assert.equal(sessionTitle(sessions[2], content, { customWorkouts: [] }), 'Eigenes Workout');
   assert.equal(sessionTitle(sessions[2], content, { customWorkouts: [{ id: 'cw-x', name: 'Meins', blocks: [] }] }), 'Meins');
   assert.equal(rowingLine(sessions[1]), '3,60 km · 2:05 /500 m');
-  const data = { sessions, state: { healthLog: [{ date: '2026-11-01' }, { date: '2026-11-02' }] } };
+  const data = { sessions, state: {} };
   assert.equal(badgeHint({ rule: { type: 'rowingDistance', n: 10000 } }, data), '3,6 / 10 km');
-  assert.equal(badgeHint({ rule: { type: 'healthLogStreak', n: 7 } }, data), '2 / 7 Tage');
+  assert.equal(badgeHint({ rule: { type: 'healthLogStreak', n: 7 }, description: 'alt' }, data), 'alt'); // removed rule → description
   assert.equal(sessionKind(sessions[3]), 'short');
 });
 
