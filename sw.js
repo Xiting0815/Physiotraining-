@@ -17,7 +17,7 @@
 // removing or changing app files (the version is a content hash, so any change triggers an update).
 
 // <precache-version>
-const CACHE_VERSION = '972b14b095';
+const CACHE_VERSION = '7b7062f504';
 // </precache-version>
 const CACHE_PREFIX = 'physio-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;

@@ -141,7 +141,7 @@ export function createVoice(env = {}) {
       const u = new U(item.text);
       u.lang = voice?.lang || 'de-DE';
       if (voice) u.voice = voice;
-      u.rate = st.voiceRate;
+      u.rate = item.calm ? Math.max(0.7, st.voiceRate * 0.85) : st.voiceRate;
       u.volume = st.voiceVolume;
       u.pitch = 1;
       const done = () => { if (current === item) finishCurrent(); };
@@ -179,7 +179,8 @@ export function createVoice(env = {}) {
    * Speak `text`. Returns what happened: "spoken" (started now), "queued", "tone" (fallback tone
    * played), "muted" (sound off) or "none".
    * @param {string} text
-   * @param {{priority?: 'low'|'normal'|'high', interrupt?: boolean, cue?: string, maxAgeMs?: number, fallbackOnDrop?: boolean}} [opts]
+   * @param {{priority?: 'low'|'normal'|'high', interrupt?: boolean, cue?: string, maxAgeMs?: number, fallbackOnDrop?: boolean, calm?: boolean, tick?: boolean}} [opts]
+   *   calm = slower, quieter delivery for breathing cues; tick:false = no soft tick under the voice.
    */
   function say(text, opts = {}) {
     const st = settingsOf();
@@ -196,6 +197,7 @@ export function createVoice(env = {}) {
       expiresAt: now() + (opts.maxAgeMs ?? DEFAULT_MAX_AGE),
       cue,
       fallbackOnDrop: !!opts.fallbackOnDrop,
+      calm: !!opts.calm,
     };
     if (opts.interrupt) {
       queue = [];
@@ -289,7 +291,7 @@ export const voiceActive = () => voice.active();
 /** Vibration pattern per cue (secondary channel; respects settings.vibration in audio.vibrate). */
 export const CUE_VIBRATION = {
   prep: 40, tense: [70], hold: [70], work: [70], relax: [40, 60, 40], switch: [40, 60, 40, 60, 40], rest: [200], 'rep-up': 25, 'rep-down': 25,
-  'set-done': [120, 80, 120], 'exercise-done': [150, 80, 150, 80, 150],
+  inhale: 30, exhale: 30, 'set-done': [120, 80, 120], 'exercise-done': [150, 80, 150, 80, 150],
 };
 export function cueVibrate(cue) {
   const p = CUE_VIBRATION[cue];

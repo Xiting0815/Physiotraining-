@@ -4461,8 +4461,8 @@
     },
     {
       "id": "breathing-reset",
-      "name": "Atem-Reset in Rückenlage",
-      "description": "Ruhig in den Bauch atmen, länger aus als ein – das Nervensystem fährt herunter.",
+      "name": "Atemübung 4-7-8 in Rückenlage",
+      "description": "4 Sekunden einatmen (Nase), 7 Sekunden Luft anhalten, 8 Sekunden ausatmen (Mund) – 4 Runden zum Abschluss. Das lange Ausatmen beruhigt den Puls und das Nervensystem. Bei Schwindel einfach normal weiteratmen.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -4471,37 +4471,52 @@
       "type": "timed",
       "side": "both",
       "instructions": [
-        "Rückenlage, Beine lang oder aufgestellt (Kissen unter die Knie ist erlaubt).",
-        "Hände auf den Bauch.",
-        "4 Sekunden ein, 6 Sekunden aus – 2 Minuten lang.",
+        "Rückenlage, Beine lang oder aufgestellt (Kissen unter die Knie ist erlaubt), Hände auf den Bauch.",
+        "Durch die Nase 4 Sekunden einatmen – der Bauch hebt sich.",
+        "7 Sekunden die Luft locker anhalten (nicht pressen).",
+        "8 Sekunden langsam durch den Mund ausatmen.",
+        "4 Runden. Wird dir schwindelig: abbrechen und normal weiteratmen.",
         "Kurz nachspüren: Wie fühlt sich das Knie an?"
       ],
       "cues": [
-        "Ausatmen länger als einatmen",
-        "Schultern schwer",
-        "Bauch hebt sich"
+        "Einatmen durch die Nase",
+        "Halten ohne Pressen",
+        "Lang aus durch den Mund"
       ],
       "mistakes": [
-        "Brustatmung",
-        "Pressen"
+        "Pressen beim Anhalten",
+        "Hastig einatmen",
+        "Weitermachen trotz Schwindel"
       ],
       "kneeNote": "Kissen unter dem linken Knie ist ok, aber nicht dauerhaft gebeugt liegen – zum Schluss Bein lang ausstrecken.",
       "levels": [
         {
-          "label": "2 Minuten",
+          "label": "4 Runden 4-7-8",
           "sets": 1,
-          "seconds": 120,
           "tempo": null,
           "band": null,
-          "rest": 0
+          "rest": 0,
+          "seconds": 76,
+          "breath": {
+            "inhale": 4,
+            "hold": 7,
+            "exhale": 8,
+            "rounds": 4
+          }
         },
         {
-          "label": "3 Minuten",
+          "label": "6 Runden 4-7-8",
           "sets": 1,
-          "seconds": 180,
           "tempo": null,
           "band": null,
-          "rest": 0
+          "rest": 0,
+          "seconds": 114,
+          "breath": {
+            "inhale": 4,
+            "hold": 7,
+            "exhale": 8,
+            "rounds": 6
+          }
         }
       ],
       "regressTo": null,
@@ -4509,7 +4524,8 @@
       "phaseMin": "p1-basis",
       "tags": [
         "atmung",
-        "entspannung"
+        "entspannung",
+        "post-op"
       ],
       "figure": {
         "poses": [
@@ -4523,7 +4539,10 @@
       },
       "setupSec": 5,
       "cueWords": {
-        "work": "Ruhig atmen"
+        "work": "Ruhig atmen",
+        "inhale": "Einatmen",
+        "breathHold": "Halten",
+        "exhale": "Ausatmen"
       }
     },
     {
@@ -5798,6 +5817,14 @@
       "kneeNote": "Kleiner Bewegungsumfang, das schwingende Knie bleibt fast gestreckt – keine tiefe Beugung. Beim Stand auf links: Knie weich, Hand an der Wand gibt Sicherheit. Bei Schmerz nur das rechte Bein pendeln.",
       "levels": [
         {
+          "label": "15 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 15
+        },
+        {
           "label": "20 s je Seite",
           "sets": 1,
           "tempo": null,
@@ -5867,6 +5894,14 @@
       ],
       "kneeNote": "Schwingendes Bein fast gestreckt, kleiner Bogen – keine Drehung im Knie. Auf links nur stehen, wenn es sich stabil anfühlt (Hände abstützen).",
       "levels": [
+        {
+          "label": "15 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 15
+        },
         {
           "label": "20 s je Seite",
           "sets": 1,
@@ -5999,6 +6034,14 @@
       ],
       "kneeNote": "Knie fast gestreckt, keine Last – kniefreundlich, auch nach der OP (im Sitzen oder Liegen).",
       "levels": [
+        {
+          "label": "15 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 15
+        },
         {
           "label": "20 s je Seite",
           "sets": 1,
@@ -7180,6 +7223,276 @@
       "tags": [
         "rudern",
         "aufwaermen"
+      ],
+      "figure": {
+        "poses": [
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Rudern"
+      }
+    },
+    {
+      "id": "row-finisher-short",
+      "name": "Ruder-Finisher locker/zügig (ca. 5 Min)",
+      "description": "Optional nach dem Krafttraining, nur bei grüner Knie-Ampel: 5 × (30 s zügig / 30 s locker). Macht zusätzlich Kalorien bei geringer Kniebelastung. Ehrlich: Für das Abnehmen zählt vor allem das Gesamtvolumen pro Woche – und der größte Hebel ist die Ernährung. Die App zeigt nur die Trainings-Kalorien als Schätzung.",
+      "category": "kardio",
+      "block": "cardio",
+      "equipment": [
+        "rowing-machine"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Nur wenn das Knie in dieser Einheit grün war (Schmerz ≤ 2/10, kein stechender Schmerz).",
+        "30 Sekunden zügig (RPE 6), 30 Sekunden locker – 5 Runden.",
+        "Saubere Technik vor Tempo."
+      ],
+      "cues": [
+        "Beine – Körper – Arme",
+        "Zurück: Arme – Körper – Beine",
+        "Kontrolliert zur Fußstütze rollen"
+      ],
+      "mistakes": [
+        "Mit Schwung nach vorn „crashen“",
+        "Arme zu früh beugen",
+        "Rundrücken"
+      ],
+      "kneeNote": "Ärztlich für volles Rudern freigegeben – die Ampel gilt trotzdem: Knie nur so weit beugen wie schmerzfrei (nicht ganz nach vorn rollen, falls nötig). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP kein Rudern.",
+      "levels": [
+        {
+          "label": "5 × (30 s zügig / 30 s locker)",
+          "sets": 5,
+          "tempo": null,
+          "band": null,
+          "rest": 30,
+          "seconds": 30,
+          "restActive": true,
+          "intensity": "moderate",
+          "targetSpm": [
+            20,
+            24
+          ],
+          "targetRpe": [
+            5,
+            6
+          ]
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rudern",
+        "finisher",
+        "abnehmen"
+      ],
+      "figure": {
+        "poses": [
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Rudern"
+      }
+    },
+    {
+      "id": "row-finisher-intervals",
+      "name": "Ruder-Finisher Intervalle 1:1 (8–10 Min)",
+      "description": "Optional nach dem Krafttraining, nur bei grüner Knie-Ampel: Intervalle 1 min zügig / 1 min locker. Ehrlich: Für das Abnehmen zählt vor allem das Gesamtvolumen pro Woche – und der größte Hebel ist die Ernährung. Die App zeigt nur die Trainings-Kalorien als Schätzung.",
+      "category": "kardio",
+      "block": "cardio",
+      "equipment": [
+        "rowing-machine"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Nur wenn das Knie in dieser Einheit grün war (Schmerz ≤ 2/10, kein stechender Schmerz).",
+        "1 Minute zügig (RPE 6–7), 1 Minute locker rudern – im Wechsel.",
+        "Saubere Technik vor Tempo; bei Knieschmerz > 5/10 sofort aufhören."
+      ],
+      "cues": [
+        "Beine – Körper – Arme",
+        "Zurück: Arme – Körper – Beine",
+        "Kontrolliert zur Fußstütze rollen"
+      ],
+      "mistakes": [
+        "Mit Schwung nach vorn „crashen“",
+        "Arme zu früh beugen",
+        "Rundrücken"
+      ],
+      "kneeNote": "Ärztlich für volles Rudern freigegeben – die Ampel gilt trotzdem: Knie nur so weit beugen wie schmerzfrei (nicht ganz nach vorn rollen, falls nötig). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP kein Rudern.",
+      "levels": [
+        {
+          "label": "4 × (1 min zügig / 1 min locker)",
+          "sets": 4,
+          "tempo": null,
+          "band": null,
+          "rest": 60,
+          "seconds": 60,
+          "restActive": true,
+          "intensity": "vigorous",
+          "targetSpm": [
+            22,
+            26
+          ],
+          "targetRpe": [
+            6,
+            7
+          ]
+        },
+        {
+          "label": "5 × (1 min zügig / 1 min locker)",
+          "sets": 5,
+          "tempo": null,
+          "band": null,
+          "rest": 60,
+          "seconds": 60,
+          "restActive": true,
+          "intensity": "vigorous",
+          "targetSpm": [
+            22,
+            26
+          ],
+          "targetRpe": [
+            6,
+            7
+          ]
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "rudern",
+        "finisher",
+        "abnehmen"
+      ],
+      "figure": {
+        "poses": [
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Rudern"
+      }
+    },
+    {
+      "id": "row-long",
+      "name": "Rudern lang – Grundlage / Fettstoffwechsel",
+      "description": "Lange, lockere bis mittlere Einheit (RPE 4–5, 18–22 Schläge/Min): viele Kalorien bei geringer Kniebelastung, gut für die Grundlagenausdauer. Ehrlich: Für das Abnehmen zählt vor allem das Gesamtvolumen pro Woche – und der größte Hebel ist die Ernährung. Die App zeigt nur die Trainings-Kalorien als Schätzung.",
+      "category": "kardio",
+      "block": "cardio",
+      "equipment": [
+        "rowing-machine"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Nach dem Technik-Aufwärmen gleichmäßig rudern – du kannst dich noch unterhalten (RPE 4–5).",
+        "Schlagzahl 18–22, lieber lang und ruhig als kurz und hart.",
+        "Trinkflasche bereitstellen."
+      ],
+      "cues": [
+        "Beine – Körper – Arme",
+        "Zurück: Arme – Körper – Beine",
+        "Kontrolliert zur Fußstütze rollen"
+      ],
+      "mistakes": [
+        "Mit Schwung nach vorn „crashen“",
+        "Arme zu früh beugen",
+        "Rundrücken"
+      ],
+      "kneeNote": "Ärztlich für volles Rudern freigegeben – die Ampel gilt trotzdem: Knie nur so weit beugen wie schmerzfrei (nicht ganz nach vorn rollen, falls nötig). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP kein Rudern.",
+      "levels": [
+        {
+          "label": "21 min gleichmäßig · RPE 4–5",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 1260,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        },
+        {
+          "label": "23 min gleichmäßig · RPE 4–5",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 1380,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        },
+        {
+          "label": "25 min gleichmäßig · RPE 4–5",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 1500,
+          "intensity": "moderate",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            4,
+            5
+          ]
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rudern",
+        "grundlage",
+        "abnehmen"
       ],
       "figure": {
         "poses": [

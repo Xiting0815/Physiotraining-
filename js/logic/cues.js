@@ -6,7 +6,7 @@
 import { effectiveDose, tempoSeconds, prepSeconds, DEFAULT_REP_SEC, SIDE_SWITCH_SEC } from './duration.js';
 
 /** Phase kinds of a cue plan. */
-export const CUE_PHASES = ['prep', 'work', 'hold', 'relax', 'switch', 'rep-up', 'rep-hold', 'rep-down', 'rest', 'set-done', 'exercise-done'];
+export const CUE_PHASES = ['prep', 'work', 'hold', 'relax', 'switch', 'rep-up', 'rep-hold', 'rep-down', 'inhale', 'breath-hold', 'exhale', 'rest', 'set-done', 'exercise-done'];
 
 /** Spoken words for rowing intensities (cardio cue plans). */
 export const ROW_INTENSITY_SAY = { easy: 'Locker rudern', moderate: 'Gleichmäßig rudern', vigorous: 'Zügig rudern' };
@@ -15,8 +15,10 @@ export const ROW_INTENSITY_SAY = { easy: 'Locker rudern', moderate: 'Gleichmäß
  * Default cue words by exercise kind (overridden per exercise by `exercise.cueWords`).
  * Keys: `up` = first movement of a rep (figure start pose → end pose, tempo's last number), `hold` = pause at the
  * end position or the isometric/stretch hold, `down` = return movement (tempo's first number), `release` = end of a
- * hold, `switch` = change sides, `work` = start of a timed / untimed block.
+ * hold, `switch` = change sides, `work` = start of a timed / untimed block; breathing (level.breath):
+ * `inhale`, `breathHold`, `exhale`.
  */
+export const BREATH_CUE_WORDS = { inhale: 'Einatmen', breathHold: 'Halten', exhale: 'Ausatmen' };
 export const DEFAULT_CUE_WORDS = {
   reps: { up: 'Hoch', hold: 'Halten', down: 'Runter', work: 'Los', switch: 'Seite wechseln', release: '' },
   band: { up: 'Ziehen', hold: 'Halten', down: 'Zurück', work: 'Los', switch: 'Seite wechseln', release: '' },
@@ -42,7 +44,7 @@ export function cueKind(exercise) {
  * @returns {{up: string, hold: string, down: string, work: string, switch: string, release: string}}
  */
 export function cueWordsFor(exercise) {
-  return { ...DEFAULT_CUE_WORDS[cueKind(exercise)], ...(exercise?.cueWords || {}) };
+  return { ...BREATH_CUE_WORDS, ...DEFAULT_CUE_WORDS[cueKind(exercise)], ...(exercise?.cueWords || {}) };
 }
 
 /** "3-1-2" (ecc-pause-con) → {up: 2, hold: 1, down: 3}; the figure plays con → pause → ecc. */
@@ -91,7 +93,16 @@ export function exerciseCuePlan(entry, exercise, settings, opts = {}) {
           push('hold', d.hold ?? 10, reps > 1 ? `${w.hold} – ${r + 1}` : w.hold, { ...sb, repIndex: r, reps });
         }
       } else if (exercise.type === 'timed') {
-        if (d.phases && entry?.override?.seconds == null) {
+        const br = lvl.breath;
+        if (br && entry?.override?.seconds == null) {
+          // breathing pattern (e.g. 4-7-8): rounds × inhale / hold / exhale
+          for (let r = 0; r < Math.max(1, br.rounds ?? 1); r++) {
+            const rb = { ...sb, repIndex: r, reps: br.rounds };
+            if (br.inhale > 0) push('inhale', br.inhale, w.inhale, rb);
+            if (br.hold > 0) push('breath-hold', br.hold, w.breathHold, rb);
+            if (br.exhale > 0) push('exhale', br.exhale, w.exhale, rb);
+          }
+        } else if (d.phases && entry?.override?.seconds == null) {
           d.phases.forEach((p, i) => push('work', p.seconds || 0, p.say || p.label, { ...sb, repIndex: i, label: p.label }));
         } else push('work', d.seconds ?? 30, w.work, sb);
       } else {

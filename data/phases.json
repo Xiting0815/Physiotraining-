@@ -22,8 +22,10 @@
       "plannedWeeks": 3,
       "short": "p1-short",
       "cardio": [
-        "p1-row"
-      ]
+        "p1-row",
+        "p1-row-long"
+      ],
+      "rowFinisher": "row-finisher-short"
     },
     {
       "id": "p2-aufbau",
@@ -48,8 +50,10 @@
       "short": "p2-short",
       "cardio": [
         "p2-row",
-        "p2-row-intervals"
-      ]
+        "p2-row-intervals",
+        "p2-row-long"
+      ],
+      "rowFinisher": "row-finisher-intervals"
     },
     {
       "id": "p3-op-vorbereitung",
@@ -73,8 +77,10 @@
       "cardio": [
         "p3-row",
         "p3-row-intervals",
-        "p3-row-endurance"
-      ]
+        "p3-row-endurance",
+        "p3-row-long"
+      ],
+      "rowFinisher": "row-finisher-intervals"
     },
     {
       "id": "p4-entlastung",

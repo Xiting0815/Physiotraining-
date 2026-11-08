@@ -82,6 +82,10 @@ export const SOUNDS = {
   // tempo coach: short up / down blips (one per rep part)
   up: [[660, 0, 0.07, 0.16, 'triangle'], [880, 0.05, 0.07, 0.16, 'triangle']],
   down: [[660, 0, 0.07, 0.14, 'sine'], [494, 0.05, 0.08, 0.14, 'sine']],
+  // breathing (4-7-8): very soft slow swells – in = rising, out = falling, hold = one quiet note
+  breathIn: [[392, 0, 0.6, 0.1, 'sine'], [523.25, 0.3, 0.7, 0.1, 'sine']],
+  breathOut: [[523.25, 0, 0.6, 0.1, 'sine'], [349.23, 0.3, 0.9, 0.1, 'sine']],
+  breathHold: [[440, 0, 0.4, 0.07, 'sine']],
   // Satz geschafft: two bright notes
   setdone: [[783.99, 0, 0.2, 0.2, 'sine'], [1046.5, 0.14, 0.35, 0.2, 'sine']],
 };
@@ -89,7 +93,7 @@ export const SOUNDS = {
 /** Phase cue (cue-plan phase name) → sound recipe key (SPEC §15, voice guidance). */
 export const CUE_SOUNDS = {
   prep: 'prep', tense: 'tense', hold: 'tense', work: 'tense', relax: 'relax', switch: 'relax', rest: 'rest',
-  'rep-up': 'up', 'rep-hold': 'rep', 'rep-down': 'down', 'set-done': 'setdone', 'exercise-done': 'done', count: 'tick', done: 'done',
+  'rep-up': 'up', 'rep-hold': 'rep', 'rep-down': 'down', inhale: 'breathIn', 'breath-hold': 'breathHold', exhale: 'breathOut', 'set-done': 'setdone', 'exercise-done': 'done', count: 'tick', done: 'done',
 };
 
 /** Play the distinct tone for a phase cue (no-op for unknown cues). */

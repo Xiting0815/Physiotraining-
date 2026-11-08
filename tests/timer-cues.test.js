@@ -225,3 +225,46 @@ test('attribute mode (no plan) is unchanged', () => {
   assert.deepEqual(t.said(), []);
   assert.deepEqual(t.of('rep').map((e) => e.rep), [1, 2]);
 });
+
+test('breathing 4-7-8: local fallback plan, calm voice, no ticks inside breath phases, blue cue', () => {
+  const BREATH = { id: 'breathing-reset', name: 'Atem-Reset', type: 'timed', block: 'cooldown', side: 'both', levels: [{ sets: 1, seconds: 120, rest: 0 }] };
+  const plan = cuePlanFor({ level: 0 }, BREATH, SETTINGS);
+  const timed = plan.filter((s) => s.seconds > 0);
+  assert.deepEqual(timed.slice(0, 4).map((s) => `${s.phase}:${s.seconds}`), ['prep:5', 'inhale:4', 'breath-hold:7', 'exhale:8']);
+  assert.equal(timed.filter((s) => s.phase === 'exhale').length, 4, '4 rounds');
+  const t = new CueTimer({ mode: 'set', seconds: 120 });
+  t.plan = timerCuePlan(plan, 0);
+  t.start();
+  t.advance(5000 + 4 * 19 * 1000 + 100);
+  assert.equal(t.done, true);
+  const words = t.said();
+  assert.deepEqual(words.slice(4, 7), ['Einatmen durch die Nase', 'Luft anhalten', 'Langsam ausatmen']);
+  assert.deepEqual(words.slice(7, 10), ['Einatmen', 'Halten', 'Ausatmen']);
+  assert.ok(t.spoken.slice(4).every((x) => x.calm && x.tick === false), 'calm voice, no tick under it');
+  assert.equal(t.spoken[5].t - t.spoken[4].t, 4);
+  assert.equal(t.spoken[6].t - t.spoken[5].t, 7);
+  assert.equal(t.spoken[7].t - t.spoken[6].t, 8);
+  assert.equal(t.tones.filter((x) => x.kind === 'tick' || x.kind === 'soft').length, 0, 'no beeps inside the breath');
+  assert.deepEqual(t.of('rep').map((e) => e.rep), [1, 2, 3, 4]);
+  const ph = phasesFromPlan(timerCuePlan(plan, 0));
+  assert.deepEqual(ph.slice(1, 4).map((p) => p.label), ['Einatmen', 'Luft anhalten', 'Langsam ausatmen']);
+  assert.deepEqual(ph.slice(4, 7).map((p) => p.label), ['Einatmen', 'Halten', 'Ausatmen']);
+  // shared plans with breath phases are used as they are
+  const shared = [{ phase: 'inhale', seconds: 4, say: 'Einatmen', setIndex: 0, repIndex: 0 }, { phase: 'exhale', seconds: 8, say: 'Ausatmen', setIndex: 0, repIndex: 0 }];
+  assert.deepEqual(phasesFromPlan(shared).map((p) => [p.kind, p.cue]), [['inhale', 'inhale'], ['exhale', 'exhale']]);
+});
+
+test('rowing work phases inside a timer plan: "Zügig rudern" label, "Noch eine Minute"', () => {
+  const t = new CueTimer({});
+  t.plan = [
+    { phase: 'work', seconds: 180, say: 'Zügig rudern', setIndex: 0, repIndex: 0, intensity: 'vigorous' },
+    { phase: 'rest', seconds: 60, say: 'Locker rudern', setIndex: 0, repIndex: null, intensity: 'easy' },
+  ];
+  t.start();
+  assert.equal(t.said()[0], 'Zügig rudern');
+  t.advance(240_100, 200);
+  assert.ok(t.said().includes('Noch eine Minute'));
+  assert.equal(t.at('Noch eine Minute'), 120);
+  assert.equal(t.at('Locker rudern'), 180);
+  assert.deepEqual(phasesFromPlan(t.plan).map((p) => p.label), ['Zügig rudern', 'Locker rudern']);
+});

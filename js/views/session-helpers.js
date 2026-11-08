@@ -398,7 +398,48 @@ export const withoutCount = (say) => String(say ?? '').replace(/\s*[–-]\s*\d+\
  * removed from the spoken text.
  */
 export function cuePlanFor(entry, exercise, settings) {
-  return exerciseCuePlan(entry, exercise, settings).map((st) => ({ ...st, say: withoutCount(st.say) }));
+  const shared = exerciseCuePlan(entry, exercise, settings);
+  // TEMPORARY: breathing phases come from the shared helper once it emits them; until then a local 4-7-8 plan
+  if (!shared.some((st) => st.phase === 'inhale') && breathPattern(entry, exercise)) return localBreathPlan(entry, exercise, settings);
+  return shared.map((st) => ({ ...st, say: withoutCount(st.say) }));
+}
+
+/** 4-7-8 breathing: 4 s in, 7 s hold, 8 s out, 4 rounds. */
+export const BREATH_478 = { inhale: 4, hold: 7, exhale: 8, rounds: 4 };
+
+/** Breathing pattern of an entry (`level.breath` / `exercise.breath`, or a breathing exercise by id/name), else null. */
+export function breathPattern(entry, exercise) {
+  const lvl = exercise?.levels?.[entry?.level ?? 0] ?? exercise?.levels?.[0];
+  const b = lvl?.breath ?? exercise?.breath;
+  if (b && typeof b === 'object') return { ...BREATH_478, ...b };
+  return /breath|atem/i.test(`${exercise?.id ?? ''} ${exercise?.name ?? ''}`) ? { ...BREATH_478 } : null;
+}
+
+/**
+ * Local cue plan for breathing (same shape as the shared helper): prep, then per round
+ * inhale („Einatmen“) → breath-hold („Halten“) → exhale („Ausatmen“); no rep counting aloud.
+ */
+export function localBreathPlan(entry, exercise, settings) {
+  const b = breathPattern(entry, exercise) || BREATH_478;
+  const w = exercise?.cueWords || {};
+  const lvl = exercise?.levels?.[entry?.level ?? 0] ?? exercise?.levels?.[0] ?? {};
+  const sets = Math.max(1, entry?.plannedSets ?? lvl.sets ?? 1);
+  const prep = isNum(settings?.prepSeconds) && settings.prepSeconds >= 0 ? settings.prepSeconds : 5;
+  const out = [];
+  const push = (phase, seconds, say, setIndex, repIndex = null) => out.push({ phase, seconds, say, setIndex, repIndex, side: null });
+  for (let s = 0; s < sets; s++) {
+    if (prep > 0) push('prep', prep, s === 0 ? `Bereit machen: ${exercise?.name ?? 'Atmung'}. Ganz ruhig.` : `Bereit machen. Satz ${s + 1} von ${sets}`, s);
+    for (let r = 0; r < b.rounds; r++) {
+      const first = r === 0;
+      if (b.inhale > 0) push('inhale', b.inhale, first ? 'Einatmen durch die Nase' : w.inhale || 'Einatmen', s, r);
+      if (b.hold > 0) push('breath-hold', b.hold, first ? 'Luft anhalten' : w.breathHold || 'Halten', s, r);
+      if (b.exhale > 0) push('exhale', b.exhale, first ? 'Langsam ausatmen' : w.exhale || 'Ausatmen', s, r);
+    }
+    push('set-done', 0, '', s);
+    if (s < sets - 1 && (lvl.rest ?? 0) > 0) push('rest', lvl.rest, 'Pause', s);
+  }
+  push('exercise-done', 0, 'Übung geschafft', null);
+  return out;
 }
 
 /**

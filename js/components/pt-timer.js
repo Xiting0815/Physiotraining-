@@ -11,7 +11,8 @@
 //           emitting `rep` after every rep.
 //
 // Cue plan (SPEC §15, logic/cues.js): property `plan` = [{phase:"prep"|"work"|"hold"|"relax"|"switch"|"rest"|
-//   "rep-up"|"rep-hold"|"rep-down"|"set-done"|"exercise-done" (+ "tense"), seconds, say, setIndex, repIndex,
+//   "rep-up"|"rep-hold"|"rep-down"|"inhale"|"breath-hold"|"exhale"|"set-done"|"exercise-done" (+ "tense"),
+//   seconds, say, setIndex, repIndex,
 //   label?, countdown?}] replaces the attribute
 //   timeline. Every phase start is announced in German (util/voice.js: `say`, interrupting stale cues) with a
 //   distinct fallback tone; prep phases count down "Drei, Zwei, Eins"; holds ≥ 15 s get "Noch 5 Sekunden";
@@ -55,7 +56,10 @@ const LABELS = {
   iso: 'Halten',
   con: 'Anspannen',
 };
-const WORK_KINDS = new Set(['hold', 'work', 'ecc', 'iso', 'con']);
+const WORK_KINDS = new Set(['hold', 'work', 'ecc', 'iso', 'con', 'inhale', 'bhold', 'exhale']);
+/** Breathing phases (4-7-8 …): calm voice, no ticks inside the phase, blue banner. */
+const BREATH_KINDS = new Set(['inhale', 'bhold', 'exhale']);
+export const isBreathPhase = (kind) => BREATH_KINDS.has(kind);
 export const isWorkPhase = (kind) => WORK_KINDS.has(kind);
 
 const posInt = (v, d) => {
@@ -158,11 +162,13 @@ export function phaseStart(phases, index) {
 export const CUE_KIND = {
   prep: 'prep', tense: 'hold', hold: 'hold', work: 'work', relax: 'pause', switch: 'pause', rest: 'rest',
   'rep-up': 'con', 'rep-hold': 'iso', 'rep-down': 'ecc',
+  inhale: 'inhale', 'breath-hold': 'bhold', exhale: 'exhale',
 };
 /** Big banner label per cue-plan phase. */
 export const CUE_LABELS = {
   prep: 'Bereit machen', tense: 'Anspannen', hold: 'Halten', work: 'Los!', relax: 'Locker lassen', switch: 'Seite wechseln',
   rest: 'Pause', 'rep-up': 'Hoch', 'rep-hold': 'Halten', 'rep-down': 'Runter',
+  inhale: 'Einatmen', 'breath-hold': 'Halten', exhale: 'Ausatmen',
 };
 /** A short spoken word doubles as banner label („Anspannen – 2“ → „Anspannen“; sentences are not used). */
 const sayLabel = (say) => {
@@ -170,7 +176,7 @@ const sayLabel = (say) => {
   return t && t.length <= 16 && !/[.:,!?]/.test(t) ? t : null;
 };
 /** Internal kind → cue name (attribute mode, so the banner works without a plan too). */
-const KIND_CUE = { prep: 'prep', hold: 'hold', work: 'work', pause: 'relax', setrest: 'rest', rest: 'rest', ecc: 'rep-down', iso: 'rep-hold', con: 'rep-up' };
+const KIND_CUE = { prep: 'prep', hold: 'hold', work: 'work', pause: 'relax', setrest: 'rest', rest: 'rest', ecc: 'rep-down', iso: 'rep-hold', con: 'rep-up', inhale: 'inhale', bhold: 'breath-hold', exhale: 'exhale' };
 export const cueOfKind = (kind) => KIND_CUE[kind] || 'rest';
 
 /**
@@ -207,7 +213,7 @@ export function phasesFromPlan(plan) {
     out.push({
       kind,
       cue: st.phase,
-      label: st.label || (['prep', 'relax', 'switch', 'rest'].includes(st.phase) ? null : sayLabel(st.say)) || CUE_LABELS[st.phase],
+      label: st.label || (['prep', 'relax', 'switch'].includes(st.phase) ? null : sayLabel(st.say)) || CUE_LABELS[st.phase],
       say: st.say || '',
       countdown: st.countdown ?? st.phase === 'prep',
       ms: Math.round(sec * 1000),
@@ -264,6 +270,11 @@ pt-timer[block="archery"]{--pt-cue-work:var(--block-archery,var(--accent,#E07A1F
 pt-timer[block="neutral"]{--pt-cue-work:var(--primary,#0E7C86);--pt-cue-on:var(--on-primary,#fff)}
 pt-timer[data-cue="prep"] .pt-timer__cue{background:var(--gold,#D4A72C);color:#14181F}
 pt-timer:is([data-cue="tense"],[data-cue="hold"],[data-cue="work"],[data-cue="rep-up"],[data-cue="rep-hold"],[data-cue="rep-down"]) .pt-timer__cue{background:var(--pt-cue-work);color:var(--pt-cue-on)}
+pt-timer{--pt-cue-breath:#2F6FD6;--pt-cue-on-breath:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) pt-timer{--pt-cue-breath:#8FB4F5;--pt-cue-on-breath:#0F1216}}
+:root[data-theme="dark"] pt-timer{--pt-cue-breath:#8FB4F5;--pt-cue-on-breath:#0F1216}
+pt-timer:is([data-cue="inhale"],[data-cue="breath-hold"],[data-cue="exhale"]) .pt-timer__cue{background:var(--pt-cue-breath);color:var(--pt-cue-on-breath)}
+pt-timer:is([data-kind="inhale"],[data-kind="bhold"],[data-kind="exhale"]) .pt-timer__progress{stroke:var(--pt-cue-breath)}
 pt-timer:is([data-cue="relax"],[data-cue="switch"],[data-cue="done"]) .pt-timer__cue{background:var(--green,#1F8A4C);color:var(--on-primary,#fff)}
 pt-timer[data-cue="rest"] .pt-timer__cue{background:var(--surface-2,#EEF1F4);color:var(--text,#14181F)}
 pt-timer:is([data-state="idle"],[data-state="paused"]) .pt-timer__cue{background:transparent;color:var(--muted,#5B6573);box-shadow:inset 0 0 0 2px var(--border,#E1E5EA);font-size:clamp(28px,9vw,44px)}
@@ -534,6 +545,11 @@ export class PtTimer extends Base {
   _phaseCue(phase) {
     const cue = phase.cue || cueOfKind(phase.kind);
     cueVibrate(cue);
+    if (isBreathPhase(phase.kind)) {
+      // calm: slower voice, no tick under it, only a soft tone without voice
+      this._say(phase.say || phase.label, { priority: 'high', interrupt: true, cue, calm: true, tick: false });
+      return;
+    }
     if (phase.say) this._say(phase.say, { priority: 'high', interrupt: true, cue });
     else this._say('', { cue }); // tone only (e.g. tempo reps after the first)
   }
@@ -543,7 +559,7 @@ export class PtTimer extends Base {
     const total = Math.round(phase.ms / 1000);
     const voice = this._voiceOn();
     const countWord = () => this._say(countdownWord(sec), { priority: 'high', cue: 'count', maxAgeMs: 700, fallbackOnDrop: true, tick: false });
-    if (sec <= 0) return;
+    if (sec <= 0 || isBreathPhase(phase.kind)) return; // no beeps in the middle of a breath
     if (phase.kind === 'prep') {
       if (phase.countdown !== false && sec <= 3 && total >= 3) countWord();
       return;
@@ -557,7 +573,8 @@ export class PtTimer extends Base {
       return;
     }
     if (isWorkPhase(phase.kind) && phase.kind !== 'ecc' && phase.kind !== 'con' && phase.kind !== 'iso') {
-      if (total >= 60 && sec === Math.ceil(total / 2) && sec > 10) this._say('Halbzeit', { priority: 'normal', maxAgeMs: 1500 });
+      if (total >= 150 && sec === 60) this._say('Noch eine Minute', { priority: 'normal', maxAgeMs: 2000 });
+      else if (total >= 60 && total < 150 && sec === Math.ceil(total / 2) && sec > 10) this._say('Halbzeit', { priority: 'normal', maxAgeMs: 1500 });
       if (total >= 15 && sec === 5) this._say('Noch 5 Sekunden', { priority: 'normal', maxAgeMs: 1500 });
       if (!voice && total >= 5 && sec <= 3) this._tone('tick');
       return;
