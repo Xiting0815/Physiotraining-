@@ -14,6 +14,7 @@ import { taperActive, LIGHT_LABELS } from '../logic/traffic-light.js';
 import { sessionScore, LEVELS } from '../logic/motivation.js';
 import { todayISO, formatDuration } from '../util/date.js';
 import { unlock, beep, vibrate } from '../util/audio.js';
+import { say, cancel as voiceCancel, unlock as voiceUnlock, countdownWord, voiceActive, cueVibrate } from '../util/voice.js';
 import { targetFace, confetti } from '../components/celebrate.js';
 import { xpBar } from '../components/charts.js';
 import * as H from './session-helpers.js';
@@ -234,6 +235,7 @@ export function render(root, ctx) {
       'pre-go': () => {
         if (draft.pain == null) { nudge(root.querySelector('pt-pain-scale'), 'Bitte zuerst „Schmerz jetzt“ wählen.'); return; }
         unlock();
+        voiceUnlock();
         session.pre = clone(draft);
         persist();
         const a = assess(store.getSessions());
@@ -329,23 +331,24 @@ export function render(root, ctx) {
     return out;
   }
 
-  function timerMarkup(dose) {
+  function timerMarkup(dose, entry) {
+    const blk = H.timerBlock(entry?.section);
     if (dose.type === 'hold') {
       const reps = (dose.reps ?? 1) * (dose.perSide ? 2 : 1);
-      return html`<pt-timer mode="hold" seconds="${dose.hold ?? 10}" reps="${reps}" rest-between="${dose.perSide && (dose.reps ?? 1) === 1 ? 5 : dose.restBetween}" data-role="work"></pt-timer>
+      return html`<pt-timer mode="hold" block="${blk}" seconds="${dose.hold ?? 10}" reps="${reps}" rest-between="${dose.perSide && (dose.reps ?? 1) === 1 ? 5 : dose.restBetween}" data-role="work"></pt-timer>
         <p class="ses-hint">${dose.perSide ? 'Seitenwechsel in der kurzen Pause. ' : ''}Der Satz wird nach dem Timer automatisch abgehakt.</p>`;
     }
     if (dose.type === 'timed') {
       if (dose.perSide) {
-        return html`<pt-timer mode="hold" seconds="${dose.seconds ?? 30}" reps="2" rest-between="5" data-role="work"></pt-timer>
+        return html`<pt-timer mode="hold" block="${blk}" seconds="${dose.seconds ?? 30}" reps="2" rest-between="5" data-role="work"></pt-timer>
           <p class="ses-hint">Wdh. 1 = erste Seite, Wdh. 2 = zweite Seite. Satz wird danach automatisch abgehakt.</p>`;
       }
-      return html`<pt-timer mode="set" seconds="${dose.seconds ?? 30}" data-role="work"></pt-timer>
+      return html`<pt-timer mode="set" block="${blk}" seconds="${dose.seconds ?? 30}" data-role="work"></pt-timer>
         <p class="ses-hint">Der Satz wird nach dem Timer automatisch abgehakt.</p>`;
     }
     if (dose.tempo) {
       return html`<div data-slot="tempo"><button type="button" class="btn btn--soft btn--block btn--session" data-act="tempo">Tempo-Coach · ${dose.tempo}</button>
-        <p class="ses-hint">Optional: zählt die Wiederholungen im Takt (Nachgeben–Halten–Anspannen).</p></div>`;
+        <p class="ses-hint">Optional: gibt den Takt vor (Nachgeben–Halten–Anspannen) – mit 5 s „Bereit machen“ und Ansage.</p></div>`;
     }
     return '';
   }
@@ -369,9 +372,9 @@ export function render(root, ctx) {
     const prev = H.prevIndex(session, idx);
     const next = H.nextIndex(session, idx);
     const allDone = H.doneCount(entry) >= dose.sets;
-    screen = { rpeNudged: false, pressTimer: 0, longPressed: false };
+    screen = { rpeNudged: false, pressTimer: 0, longPressed: false, plan: H.cuePlanFor(entry, ex, settings()) };
     const sideLabel = { left: 'Links (OP-Seite)', right: 'Rechts', perSide: 'Je Seite', alternate: 'Abwechselnd' }[dose.side];
-    const timer = timerMarkup(dose);
+    const timer = timerMarkup(dose, entry);
     paint(root, html`
       ${topBar(titleOf(session).title, `Übung ${pos.pos} von ${pos.total}`)}
       ${progressBar(idx, 'exercise')}
@@ -461,7 +464,8 @@ export function render(root, ctx) {
       },
       tempo: (b) => {
         const slot = b.closest('[data-slot="tempo"]');
-        paint(slot, html`<pt-timer mode="set" reps="${dose.reps ?? 10}" tempo="${dose.tempo}" data-role="work"></pt-timer>
+        voiceUnlock();
+        paint(slot, html`<pt-timer mode="set" block="${H.timerBlock(entry.section)}" reps="${dose.reps ?? 10}" tempo="${dose.tempo}" data-role="work"></pt-timer>
           <p class="ses-hint">Folge dem Takt – der Satz wird danach abgehakt.</p>`);
         wireWorkTimer(entry, dose);
         root.querySelector('pt-timer[data-role="work"]')?.start();
@@ -520,6 +524,8 @@ export function render(root, ctx) {
     const no = root.querySelector('[data-setno]');
     if (no) no.textContent = allDone ? '' : `Satz ${H.doneCount(entry) + 1} von ${dose.sets}`;
     root.querySelector('[data-act="next"]')?.classList.toggle('ses-pulse', allDone);
+    const work = root.querySelector('pt-timer[data-role="work"]');
+    if (work && !work.running && !allDone) applyWorkPlan(work, entry); // „Satz n von m“ of the next open set
     bumpXp();
   }
 
@@ -544,7 +550,24 @@ export function render(root, ctx) {
     try { navigator.vibrate?.(30); } catch { /* ignore */ }
     const open = H.nextOpenSet(entry, dose.sets);
     if (open >= 0) startRest(entry, dose, open);
-    else exerciseComplete(entry);
+    else {
+      announceExerciseDone(entry);
+      exerciseComplete(entry);
+    }
+  }
+
+  /** "Übung fertig. Nächste Übung: <Name>" (or the last-exercise variant). */
+  function announceExerciseDone(entry) {
+    const idx = session.exercises.indexOf(entry);
+    const n = H.nextIndex(session, idx < 0 ? session.cursor.index : idx);
+    const nextEx = n >= 0 ? exById(session.exercises[n].exerciseId) : null;
+    cueVibrate('exercise-done');
+    say(H.exerciseDoneAnnouncement(nextEx?.name), { priority: 'high', interrupt: true, cue: 'exercise-done' });
+  }
+
+  /** Does this exercise run its sets through the work timer (prep + cues)? */
+  function timerLed(dose) {
+    return !!root.querySelector('pt-timer[data-role="work"]') && (dose.type === 'hold' || dose.type === 'timed' || !!dose.tempo);
   }
 
   function exerciseComplete(entry) {
@@ -563,7 +586,11 @@ export function render(root, ctx) {
 
   function startRest(entry, dose, nextSet) {
     stopRest();
-    if (!(dose.rest > 0)) { afterRest(); return; }
+    if (!(dose.rest > 0)) {
+      say(`${dose.type === 'hold' ? 'Loslassen. ' : ''}Satz geschafft`, { priority: 'high', interrupt: true, cue: 'set-done' });
+      afterRest();
+      return;
+    }
     const slot = root.querySelector('[data-slot="rest"]');
     if (!slot) return;
     screen.resting = true;
@@ -571,9 +598,14 @@ export function render(root, ctx) {
     if (timerCard) timerCard.hidden = true;
     paint(slot, html`<section class="card ses-rest">
       <p class="eyebrow">Satzpause · gleich Satz ${nextSet + 1} von ${dose.sets}</p>
-      <pt-timer mode="rest" seconds="${dose.rest}" autostart data-role="rest"></pt-timer>
+      <pt-timer mode="rest" seconds="${dose.rest}" data-role="rest"></pt-timer>
     </section>`);
     const t = slot.querySelector('pt-timer');
+    if (t) {
+      // spoken: "Satz geschafft. Pause, 45 Sekunden" … "Gleich geht's weiter" (+ 3-2-1 when no prep follows)
+      t.plan = [{ phase: 'rest', seconds: dose.rest, say: H.restAnnouncement(dose), setIndex: nextSet - 1, repIndex: null, countdown: !timerLed(dose) }];
+      t.start();
+    }
     t?.addEventListener('done', (e) => { if (e.target === t) afterRest(); });
     setTimeout(() => smooth(slot.firstElementChild), 120);
   }
@@ -593,19 +625,32 @@ export function render(root, ctx) {
     const allDone = H.doneCount(entry) >= dose.sets;
     if (timerCard) timerCard.hidden = allDone;
     const work = root.querySelector('pt-timer[data-role="work"]');
-    if (work && !allDone && (dose.type === 'hold' || dose.type === 'timed')) {
+    if (work && !allDone && timerLed(dose)) {
+      applyWorkPlan(work, entry);
       work.reset();
-      work.start();
+      work.start(); // starts with „Satz n von m. Bereit machen“ + 3-2-1
       smooth(timerCard);
     } else {
+      if (!allDone) say(H.nextSetAnnouncement(H.doneCount(entry) + 1, dose.sets), { priority: 'high', interrupt: true, cue: 'tense' });
       smooth(root.querySelector('.set-check.is-current') || root.querySelector('.ses-ex'));
     }
+  }
+
+  /** Give the work timer the cue-plan steps of the next open set (prep → work → relax). */
+  function applyWorkPlan(t, entry) {
+    const ex = exById(entry.exerciseId);
+    const dose = H.doseFor(entry, ex, settings());
+    if (!screen.plan) screen.plan = H.cuePlanFor(entry, ex, settings());
+    const open = H.nextOpenSet(entry, dose.sets);
+    const steps = H.timerCuePlan(screen.plan, open < 0 ? 0 : open);
+    if (steps) t.plan = steps;
   }
 
   function wireWorkTimer(entry, dose) {
     const t = root.querySelector('pt-timer[data-role="work"]');
     if (!t || t._sesWired) return;
     t._sesWired = true;
+    applyWorkPlan(t, entry);
     t.addEventListener('done', (e) => {
       if (e.target !== t) return;
       const open = H.nextOpenSet(entry, dose.sets);
@@ -733,13 +778,20 @@ export function render(root, ctx) {
       $('next').hidden = false;
     }
 
+    function announceRowPhase(ph) {
+      say(H.rowPhaseSay(ph, content, session), { priority: 'high', interrupt: true, cue: H.rowPhaseCue(ph) });
+    }
+
     function tick() {
       const now = Date.now();
       const crossed = H.rowingTick(t, phases, now);
       if (crossed.length) {
         if (t.done) { finishTimer(); return; }
         const ph = phases[t.idx];
-        beep(ph.kind === 'work' && ph.intensity !== 'easy' ? 'start' : 'rep');
+        if (crossed.length > 1 && now - (screen.lastTick || now) > 1500) {
+          // came back from the background: re-sync instead of replaying every missed phase
+          say(`Weiter: ${H.rowPhaseSay(ph, content, session)}`, { priority: 'high', interrupt: true, cue: H.rowPhaseCue(ph) });
+        } else announceRowPhase(ph);
         vibrate([80, 60, 80]);
         const lab = H.rowPhaseLabel(ph, content, session);
         $('announce').textContent = `${lab.big}, ${H.formatClock(ph.seconds)}`;
@@ -747,6 +799,7 @@ export function render(root, ctx) {
         paintPhase(true);
         persist();
       }
+      screen.lastTick = now;
       paintClock(now);
     }
 
@@ -758,13 +811,22 @@ export function render(root, ctx) {
       $('rowed').textContent = H.formatClock(Math.floor(tm.rowed));
       const ph = phases[t.idx];
       $('bar').style.width = ph ? `${Math.min(100, (1 - tm.phaseRemaining / ph.seconds) * 100)}%` : '100%';
-      if (screen.rowRunning && sec !== screen.lastSec && sec > 0 && sec <= 3) beep('tick');
+      if (screen.rowRunning && sec !== screen.lastSec && screen.lastSec != null && ph) {
+        if (sec > 0 && sec <= 3) {
+          if (voiceActive()) say(countdownWord(sec), { priority: 'high', cue: 'count', maxAgeMs: 700, fallbackOnDrop: true, tick: false });
+          else beep('tick');
+        } else if (sec === 60 && ph.seconds >= 150) say('Noch eine Minute', { priority: 'normal', maxAgeMs: 2000 });
+      }
       screen.lastSec = sec;
     }
 
     function setRunning(on) {
       const now = Date.now();
-      if (on) { H.rowingStart(t, now); unlock(); } else H.rowingPause(t, now);
+      const fresh = on && !t.done && t.idx === 0 && !(t.accMs > 0) && t.runAt == null;
+      if (on) { unlock(); voiceUnlock(); H.rowingStart(t, now); } else { H.rowingPause(t, now); voiceCancel(); }
+      if (fresh && phases[0]) announceRowPhase(phases[0]);
+      else if (on && !t.done && phases[t.idx]) say(`Weiter. ${H.rowPhaseSay(phases[t.idx], content, session)}`, { priority: 'high', interrupt: true, cue: H.rowPhaseCue(phases[t.idx]) });
+      screen.lastTick = now;
       screen.rowRunning = on && !t.done;
       clearInterval(screen.loop);
       if (screen.rowRunning) { screen.loop = setInterval(tick, 250); acquireWake(); } else releaseWake();
@@ -778,8 +840,8 @@ export function render(root, ctx) {
       clearInterval(screen.loop);
       screen.rowRunning = false;
       releaseWake();
-      beep('done');
       vibrate([200, 100, 200]);
+      say('Rudern geschafft. Stark! Jetzt noch die Werte vom Display eintragen.', { priority: 'high', interrupt: true, cue: 'exercise-done' });
       persist();
       paintPhase(true);
       paintClock();
@@ -848,7 +910,7 @@ export function render(root, ctx) {
         if (t.done) return;
         H.rowingSkip(t, phases, Date.now());
         if (t.done) { finishTimer(); return; }
-        beep('rep');
+        announceRowPhase(phases[t.idx]);
         screen.lastSec = null;
         paintPhase(true);
         paintClock();
@@ -865,7 +927,7 @@ export function render(root, ctx) {
         H.rowingJumpToCooldown(t, phases, session, Date.now());
         if (t.done) { finishTimer(); paintRedWarn(); return; }
         if (!screen.rowRunning) setRunning(true);
-        beep('rep');
+        announceRowPhase(phases[t.idx]);
         paintPhase(true);
         paintClock();
         paintRedWarn();
@@ -1148,6 +1210,7 @@ export function render(root, ctx) {
     history.replaceState(null, '', `#/session?summary=${encodeURIComponent(s.id)}`);
     renderSummary(s.id, true);
     scrollTop();
+    say('Training geschafft – super!', { priority: 'high', interrupt: true, cue: 'exercise-done' });
   }
 
   // ------------------------------------------------------------------ 6. summary
@@ -1280,6 +1343,29 @@ export function render(root, ctx) {
     }
   }
 
+  // ------------------------------------------------------------------ screen awake during exercises
+  // Voice cues only work while Chrome keeps the page in the foreground → keep the screen on during the
+  // exercise screens (not only while a timer runs) when announcements are enabled.
+  let exWake = null;
+  async function holdScreenAwake() {
+    try {
+      const st = settings();
+      const wl = navigator.wakeLock;
+      if (!wl || exWake || st.sound === false || st.voiceEnabled === false || document.visibilityState !== 'visible') return;
+      const lock = await wl.request('screen');
+      if (disposed || session?.cursor?.step !== 'exercise') { lock.release().catch(() => {}); return; }
+      exWake = lock;
+      lock.addEventListener?.('release', () => { if (exWake === lock) exWake = null; });
+    } catch { /* unsupported / not allowed */ }
+  }
+  function letScreenSleep() {
+    const lock = exWake;
+    exWake = null;
+    if (lock) lock.release().catch(() => {});
+  }
+  const onWakeVis = () => { if (document.visibilityState === 'visible' && session?.cursor?.step === 'exercise') holdScreenAwake(); };
+  document.addEventListener('visibilitychange', onWakeVis);
+
   // ------------------------------------------------------------------ dispatcher
   function leaveScreen() {
     screen.cleanupRow?.();
@@ -1295,11 +1381,15 @@ export function render(root, ctx) {
     else if (step === 'exercise') renderExercise();
     else if (step === 'post') renderPost();
     else renderPre();
+    if (step === 'exercise') holdScreenAwake(); else letScreenSleep();
   }
 
   function cleanup() {
     disposed = true;
     leaveScreen();
+    letScreenSleep();
+    document.removeEventListener('visibilitychange', onWakeVis);
+    voiceCancel();
     root.removeEventListener('click', onClick);
     root.removeEventListener('change', onChangeEvt);
     root.removeEventListener('input', onChangeEvt);

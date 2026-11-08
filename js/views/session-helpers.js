@@ -8,6 +8,7 @@ import { xpFor, levelFor, evaluateBadges, sessionScore, XP } from '../logic/moti
 import { doneSessions, sessionLight, personalRecords, newRecords, dayOf, isCardioSession } from '../logic/stats.js';
 import { rowingRecords, pacePer500, INTENSITY_LABELS } from '../logic/cardio.js';
 import { sessionKcal, bodyWeightKg } from '../logic/energy.js';
+import { exerciseCuePlan } from '../logic/cues.js';
 import { todayISO, toISODate } from '../util/date.js';
 import { html, raw } from '../render.js';
 
@@ -386,6 +387,69 @@ export function parseClock(str) {
   const n = Number(t.replace(',', '.'));
   return Number.isFinite(n) ? Math.round(n * 60) : NaN;
 }
+
+/* ------------------------------------------------------------------ v4: voice cue plan (pure, SPEC §15) */
+
+/** Drop a trailing rep number („Anspannen – 2“ → „Anspannen“): the user chose no counting aloud. */
+export const withoutCount = (say) => String(say ?? '').replace(/\s*[–-]\s*\d+\s*$/, '');
+
+/**
+ * Cue plan of an entry for the voice timer: the shared `exerciseCuePlan` (logic/cues.js) with rep numbers
+ * removed from the spoken text.
+ */
+export function cuePlanFor(entry, exercise, settings) {
+  return exerciseCuePlan(entry, exercise, settings).map((st) => ({ ...st, say: withoutCount(st.say) }));
+}
+
+/**
+ * Steps the work <pt-timer> plays for set `setNo` (0-based ordinal): prep + work + relax (no rest – the
+ * rest timer and the session handle that). `null` when the set has no timed work (plain reps).
+ */
+export function timerCuePlan(plan, setNo) {
+  const sets = [];
+  for (const st of plan || []) if (st && !sets.includes(st.setIndex ?? 0)) sets.push(st.setIndex ?? 0);
+  const key = sets[Math.min(Math.max(0, setNo), sets.length - 1)];
+  const steps = (plan || []).filter((st) => (st.setIndex ?? 0) === key && st.phase !== 'rest' && st.phase !== 'exercise-done');
+  return steps.some((st) => st.phase !== 'prep' && (Number(st.seconds) || 0) > 0) ? steps : null;
+}
+
+/** "45 Sekunden", "eine Minute", "eineinhalb Minuten", "2 Minuten 15 Sekunden" (for speech). */
+export function secondsPhrase(sec) {
+  const n = Math.max(0, Math.round(Number(sec) || 0));
+  if (n < 60) return `${n} Sekunden`;
+  if (n === 60) return 'eine Minute';
+  if (n === 90) return 'eineinhalb Minuten';
+  const m = Math.floor(n / 60);
+  const r = n % 60;
+  const mins = m === 1 ? 'eine Minute' : `${m} Minuten`;
+  return r ? `${mins} ${r} Sekunden` : mins;
+}
+
+/** Spoken right after a set is finished and a rest follows. */
+export function restAnnouncement(dose, rest = dose?.rest) {
+  return `${dose?.type === 'hold' ? 'Loslassen. ' : ''}Satz geschafft. Pause, ${secondsPhrase(rest)}`;
+}
+
+/** Spoken when the last set of an exercise is done. */
+export function exerciseDoneAnnouncement(nextName) {
+  return nextName ? `Übung fertig. Nächste Übung: ${nextName}` : 'Übung fertig. Das war die letzte Übung.';
+}
+
+/** Spoken when a rest ends and no timer-led set follows (plain reps). */
+export const nextSetAnnouncement = (setNo, sets) => (sets > 1 ? `Satz ${setNo} von ${sets}. Los geht’s` : 'Los geht’s');
+
+/** Banner/tense color group of a section for <pt-timer block>. */
+export const timerBlock = (section) => (section === 'knee' ? 'knee' : section === 'archery' ? 'archery' : 'neutral');
+
+/** Spoken text for a rowing phase (SPEC §15, voice guidance): "Zügig rudern", "Locker rudern", "Ausrudern", drills by label. */
+export function rowPhaseSay(phase, content, session) {
+  const lab = rowPhaseLabel(phase, content, session);
+  if (lab.big === 'Locker ausrudern') return 'Ausrudern';
+  return lab.big;
+}
+
+/** Cue (tone/vibration group) for a rowing phase. */
+export const rowPhaseCue = (phase) => (phase?.kind === 'rest' || phase?.intensity === 'easy' ? 'relax' : 'tense');
 
 /* ------------------------------------------------------------------ v2: rowing timer (pure) */
 

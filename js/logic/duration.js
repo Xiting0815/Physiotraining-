@@ -1,12 +1,14 @@
-// Duration estimates for exercises, workouts and session plans. PURE. See docs/SPEC.md §12.3.
+// Duration estimates for exercises, workouts and session plans. PURE. See docs/SPEC.md §12.3, §15.4.
 //
 // Model (per exercise entry):
 //   work per set  = reps × tempoSeconds            (type "reps"; tempo "3-1-2" → 6 s, no tempo → 3 s/rep)
-//                 = reps × hold + (reps−1) × restBetween   (type "hold"; restBetween default 3 s)
-//                 = seconds                         (type "timed")
+//                 = reps × hold + (reps−1) × relax  (type "hold"; relax = max(level.restBetween ?? 5,
+//                                                    settings.holdRelaxSeconds ?? 5))
+//                 = seconds (Σ level.phases when given)   (type "timed")
 //   perSide       → work × 2 (+ SIDE_SWITCH_SEC per set)
+//   prep          = settings.prepSeconds ?? 5 per set („Bereit machen“, v4); 0 for block "cardio"
 //   rests         = (sets − 1) × rest  (rest = settings.restDefault if set and level.rest > 0, else level.rest)
-//   setup         = SETUP_SEC (20 s) per exercise; 0 for block "cardio" (rowing phases run continuously)
+//   setup         = exercise.setupSec ?? SETUP_SEC (20 s) per exercise; 0 for block "cardio"
 // Workout minutes = ceil(Σ seconds / 60).
 
 import { levelOf } from './progression.js';
@@ -14,9 +16,18 @@ import { levelOf } from './progression.js';
 export const SETUP_SEC = 20;
 export const SIDE_SWITCH_SEC = 5;
 export const DEFAULT_REP_SEC = 3;
-export const DEFAULT_HOLD_REST_SEC = 3;
-/** Strength / custom sessions should stay ≤ this (user goal: max 30 min). */
+/** v4: minimum pause between two hold reps (and default `restBetween`). */
+export const DEFAULT_HOLD_REST_SEC = 5;
+/** v4: „Bereit machen“ phase before every set (settings.prepSeconds). */
+export const DEFAULT_PREP_SEC = 5;
+/** v4: „Loslassen“ phase between hold reps, minimum (settings.holdRelaxSeconds). */
+export const DEFAULT_HOLD_RELAX_SEC = 5;
+/** Custom workouts (and content workouts without `maxMinutes`) should stay ≤ this (user goal: max 30 min). */
 export const MAX_SESSION_MIN = 30;
+/** v4: content strength workouts incl. mobility warm-up + stretching (`workout.maxMinutes` in workouts.json). */
+export const STRENGTH_SESSION_MIN = 32;
+/** v4: strength sessions that start with the 10-min rowing warm-up. */
+export const MAX_SESSION_WITH_ROW_MIN = 42;
 
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 
@@ -49,8 +60,28 @@ export function effectiveDose(entry, exercise, settings) {
     seconds: o.seconds ?? lvl.seconds ?? null,
     tempo: lvl.tempo ?? null,
     rest: isNum(def) && def >= 0 && baseRest !== 0 ? def : baseRest,
-    restBetween: isNum(lvl.restBetween) ? lvl.restBetween : DEFAULT_HOLD_REST_SEC,
+    restBetween: Math.max(isNum(lvl.restBetween) ? lvl.restBetween : DEFAULT_HOLD_REST_SEC, holdRelaxSeconds(settings)),
+    prep: exercise?.block === 'cardio' ? 0 : prepSeconds(settings),
+    phases: Array.isArray(lvl.phases) && lvl.phases.length ? lvl.phases : null,
   };
+}
+
+/** settings.prepSeconds (0–30, default 5). @param {import('../types.js').Settings} [settings] */
+export function prepSeconds(settings) {
+  const v = settings?.prepSeconds;
+  return isNum(v) && v >= 0 ? Math.min(30, v) : DEFAULT_PREP_SEC;
+}
+
+/** settings.holdRelaxSeconds (0–30, default 5). @param {import('../types.js').Settings} [settings] */
+export function holdRelaxSeconds(settings) {
+  const v = settings?.holdRelaxSeconds;
+  return isNum(v) && v >= 0 ? Math.min(30, v) : DEFAULT_HOLD_RELAX_SEC;
+}
+
+/** Setup seconds of an exercise: `exercise.setupSec` (flows/stretches: 5) else 20; rowing 0. */
+export function setupSeconds(exercise) {
+  if (exercise?.block === 'cardio') return 0;
+  return isNum(exercise?.setupSec) && exercise.setupSec >= 0 ? exercise.setupSec : SETUP_SEC;
 }
 
 /**
@@ -65,7 +96,7 @@ export function estimateExerciseSeconds(entry, exercise, settings) {
   if (!exercise || !exercise.levels?.length) return 0;
   const d = effectiveDose(entry, exercise, settings);
   let work;
-  if (exercise.type === 'timed') work = d.seconds ?? 30;
+  if (exercise.type === 'timed') work = d.phases && noSecondsOverride(entry) ? d.phases.reduce((a, p) => a + (p.seconds || 0), 0) : d.seconds ?? 30;
   else if (exercise.type === 'hold') {
     const reps = Math.max(1, d.reps ?? 1);
     work = reps * (d.hold ?? 10) + (reps - 1) * d.restBetween;
@@ -74,15 +105,26 @@ export function estimateExerciseSeconds(entry, exercise, settings) {
     work = reps * (tempoSeconds(d.tempo) ?? DEFAULT_REP_SEC);
   }
   const perSide = exercise.side === 'perSide';
-  const perSet = perSide ? work * 2 + SIDE_SWITCH_SEC : work;
-  const setup = exercise.block === 'cardio' ? 0 : SETUP_SEC;
-  return Math.round(d.sets * perSet + (d.sets - 1) * d.rest + setup);
+  const perSet = (perSide ? work * 2 + SIDE_SWITCH_SEC : work) + d.prep;
+  return Math.round(d.sets * perSet + (d.sets - 1) * d.rest + setupSeconds(exercise));
 }
 
-/** All workout items in session order with their section. @param {import('../types.js').Workout} w */
-export function workoutItems(w) {
+/** true unless the entry overrides `seconds` (an override wins over the level's phase list). */
+const noSecondsOverride = (entry) => entry?.override?.seconds == null;
+
+/**
+ * All workout items in session order with their section.
+ * v4 `rowWarmup: true` (only when the workout has `rowWarmup` = rowing exercise id): the rowing block comes first
+ * (section "cardio"), followed only by the warm-up items marked `keepWithRow: true`.
+ * Phase/availability checks are the caller's job (buildSessionPlan uses `canRowWarmup`).
+ * @param {import('../types.js').Workout} w
+ * @param {{rowWarmup?: boolean}} [opts]
+ */
+export function workoutItems(w, { rowWarmup = false } = {}) {
+  const row = rowWarmup && typeof w?.rowWarmup === 'string';
   return [
-    ...(w?.warmup || []).map((it) => ({ ...it, section: 'warmup' })),
+    ...(row ? [{ exerciseId: w.rowWarmup, section: 'cardio' }] : []),
+    ...(w?.warmup || []).filter((it) => !row || it.keepWithRow).map((it) => ({ ...it, section: 'warmup' })),
     ...(w?.blocks || []).flatMap((b) => (b.items || []).map((it) => ({ ...it, section: b.id }))),
     ...(w?.cooldown || []).map((it) => ({ ...it, section: 'cooldown' })),
   ];
@@ -98,9 +140,10 @@ export function workoutItems(w) {
  * @param {import('../types.js').Content} content
  * @param {import('../types.js').State} [state]
  * @param {import('../types.js').Settings} [settings]
+ * @param {{rowWarmup?: boolean}} [opts] v4: estimate the variant with the rowing warm-up (workouts with `rowWarmup`)
  * @returns {number}
  */
-export function estimateWorkoutSeconds(workoutOrPlan, content, state, settings) {
+export function estimateWorkoutSeconds(workoutOrPlan, content, state, settings, opts = {}) {
   const exById = new Map((content?.exercises || []).map((e) => [e.id, e]));
   if (Array.isArray(workoutOrPlan?.exercises)) {
     let sum = 0;
@@ -111,7 +154,7 @@ export function estimateWorkoutSeconds(workoutOrPlan, content, state, settings) 
   const order = (id) => (content?.phases || []).find((p) => p.id === id)?.order ?? null;
   const cur = order(state?.phaseId ?? w?.phaseId) ?? order(w?.phaseId);
   let sum = 0;
-  for (const it of workoutItems(w)) {
+  for (const it of workoutItems(w, opts)) {
     const ex = exById.get(it.exerciseId);
     if (!ex) continue;
     const min = order(ex.phaseMin);
@@ -126,8 +169,8 @@ export function estimateWorkoutSeconds(workoutOrPlan, content, state, settings) 
  * Estimated minutes (rounded up) of a workout or a session plan. See estimateWorkoutSeconds.
  * @returns {number}
  */
-export function estimateWorkoutMinutes(workoutOrPlan, content, state, settings) {
-  return Math.ceil(estimateWorkoutSeconds(workoutOrPlan, content, state, settings) / 60);
+export function estimateWorkoutMinutes(workoutOrPlan, content, state, settings, opts) {
+  return Math.ceil(estimateWorkoutSeconds(workoutOrPlan, content, state, settings, opts) / 60);
 }
 
 /**

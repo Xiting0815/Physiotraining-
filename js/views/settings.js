@@ -4,6 +4,7 @@ import { todayISO, formatDE, daysBetween } from '../util/date.js';
 import { defaults } from '../store.js';
 import { suggestedSurgeryDate } from '../logic/schedule.js';
 import { downloadBackup, readBackupFile } from '../util/export-import.js';
+import { voice, voiceSettings, testVoice, DEFAULT_RATE } from '../util/voice.js';
 import {
   ICON, ensureViewStyles, applyFontScale, pageHeader, confirmDialog, toast, openSheet, equipmentItems,
 } from './ui.js';
@@ -13,6 +14,16 @@ export const APP_VERSION = '3.1.0';
 
 const REST_OPTIONS = [null, 30, 45, 60, 90, 120];
 const FONT_SCALES = [{ v: 1, l: 'Normal' }, { v: 1.125, l: 'Groß' }, { v: 1.25, l: 'Sehr groß' }];
+const VOICE_RATES = [{ v: 0.9, l: 'Ruhig' }, { v: DEFAULT_RATE, l: 'Normal' }, { v: 1.2, l: 'Zügig' }];
+const VOICE_VOLUMES = [{ v: 0.5, l: 'Leise' }, { v: 0.8, l: 'Mittel' }, { v: 1, l: 'Laut' }];
+
+/** Status line for the voice section (which German voice, offline or not, or the fallback). */
+export function voiceStatus(v, supported) {
+  if (!supported) return { ok: false, text: 'Dieser Browser kann nicht sprechen – du hörst stattdessen unterschiedliche Signaltöne.' };
+  if (!v) return { ok: false, text: 'Keine deutsche Stimme gefunden – du hörst stattdessen unterschiedliche Signaltöne (steigend = anspannen, fallend = locker lassen, tief = Pause). Tipp: Android-Einstellungen → Sprachausgabe → deutsche Sprachdaten laden.' };
+  return { ok: true, text: `Stimme: ${v.name}${v.localService ? ' · offline' : ' · braucht evtl. Internet'}` };
+}
+
 const BAND_GROUPS = [{ kind: 'theraband', title: 'TheraBand' }, { kind: 'loop', title: 'Loop-Bänder (Blackroll)' }];
 
 /**
@@ -100,6 +111,8 @@ export function render(root, { store, content, query }) {
     const ownsRower = (s.ownedEquipment || []).includes('rowing-machine');
     const customCount = (data.state.customWorkouts || []).length;
     const kg = s.profile?.weightKg;
+    const vs = voiceSettings(s);
+    const vStat = voiceStatus(voice.voice, !!globalThis.speechSynthesis);
 
     paint(root, html`
       ${pageHeader({ title: 'Mehr', eyebrow: 'Einstellungen & Daten' })}
@@ -153,7 +166,7 @@ export function render(root, { store, content, query }) {
         <div class="segmented" role="radiogroup" aria-label="Schriftgröße">
           ${FONT_SCALES.map((f) => html`<label><input type="radio" name="fontScale" value="${f.v}" ${scale === f.v ? 'checked' : ''}><span>${f.l}</span></label>`)}
         </div>
-        <label class="switch-row mt-4"><span>Ton<span class="pv-setting-row__hint">Signal bei Timer-Ende und letzten 3 Sekunden</span></span><input type="checkbox" class="switch" name="sound" ${s.sound ? 'checked' : ''}></label>
+        <label class="switch-row mt-4"><span>Ton<span class="pv-setting-row__hint">Sprachansagen und Signale – aus = lautlos</span></span><input type="checkbox" class="switch" name="sound" ${s.sound ? 'checked' : ''}></label>
         <label class="switch-row"><span>Vibration<span class="pv-setting-row__hint">Wenn das Gerät es unterstützt</span></span><input type="checkbox" class="switch" name="vibration" ${s.vibration ? 'checked' : ''}></label>
         <div class="field mt-2">
           <label class="field__label" for="restDefault">Pause zwischen Sätzen</label>
@@ -161,6 +174,24 @@ export function render(root, { store, content, query }) {
             ${REST_OPTIONS.map((v) => html`<option value="${v ?? ''}" ${(s.restDefault ?? null) === v ? 'selected' : ''}>${v == null ? 'Wie in der Übung vorgesehen' : `${v} Sekunden`}</option>`)}
           </select>
         </div>
+      </section>
+
+      <h2 class="section-title">Sprachansagen</h2>
+      <section class="card" data-voice-card>
+        <label class="switch-row"><span>Ansagen auf Deutsch<span class="pv-setting-row__hint">„Bereit machen … Drei, Zwei, Eins – Anspannen“, „Locker lassen“, „Pause, 45 Sekunden“ – ohne aufs Handy zu schauen</span></span><input type="checkbox" class="switch" name="voiceEnabled" ${vs.voiceEnabled ? 'checked' : ''} ${s.sound ? '' : 'disabled'}></label>
+        <p class="text-sm ${vStat.ok ? 'muted' : ''} mt-2 mb-0" data-voice-status>${vStat.text}</p>
+        ${s.sound ? '' : html`<p class="text-sm muted mt-2 mb-0">Der Ton ist aus – Ansagen und Signale sind stumm.</p>`}
+        <p class="field__label mb-2 mt-4">Sprechtempo</p>
+        <div class="segmented" role="radiogroup" aria-label="Sprechtempo">
+          ${VOICE_RATES.map((r) => html`<label><input type="radio" name="voiceRate" value="${r.v}" ${Math.abs(vs.voiceRate - r.v) < 0.01 ? 'checked' : ''}><span>${r.l}</span></label>`)}
+        </div>
+        <p class="field__label mb-2 mt-4">Lautstärke der Stimme</p>
+        <div class="segmented" role="radiogroup" aria-label="Lautstärke der Stimme">
+          ${VOICE_VOLUMES.map((r) => html`<label><input type="radio" name="voiceVolume" value="${r.v}" ${Math.abs(vs.voiceVolume - r.v) < 0.01 ? 'checked' : ''}><span>${r.l}</span></label>`)}
+        </div>
+        <label class="switch-row mt-4"><span>Leiser Ton zur Ansage<span class="pv-setting-row__hint">Kurzes Ticken bei jedem Phasenwechsel unter der Stimme</span></span><input type="checkbox" class="switch" name="beepsWithVoice" ${vs.beepsWithVoice ? 'checked' : ''}></label>
+        <button class="btn btn--outline btn--block mt-4" data-voice-test ${s.sound ? '' : 'disabled'}>🔊 Stimme testen</button>
+        <p class="field__hint mt-2 mb-0">Bildschirm bleibt während des Trainings an – bei gesperrtem Bildschirm kann Chrome die Ansagen anhalten.</p>
       </section>
 
       <h2 class="section-title">Bänder <button class="btn btn--ghost btn--sm" data-band-reset>Standard</button></h2>
@@ -249,7 +280,8 @@ export function render(root, { store, content, query }) {
       toast(t.value ? `OP-Termin: ${formatDE(t.value, { weekday: false })}` : 'OP-Termin entfernt', { icon: '📅' });
     } else if (t.name === 'theme') set((s) => { s.theme = t.value; });
     else if (t.name === 'fontScale') set((s) => { s.fontScale = Number(t.value); });
-    else if (t.name === 'sound' || t.name === 'vibration') set((s) => { s[t.name] = t.checked; });
+    else if (t.name === 'sound' || t.name === 'vibration' || t.name === 'voiceEnabled' || t.name === 'beepsWithVoice') set((s) => { s[t.name] = t.checked; });
+    else if (t.name === 'voiceRate' || t.name === 'voiceVolume') set((s) => { s[t.name] = Number(t.value); });
     else if (t.name === 'ownsRower') {
       set((s) => {
         const owned = new Set(s.ownedEquipment || []);
@@ -302,6 +334,11 @@ export function render(root, { store, content, query }) {
       toast(`OP-Termin: ${formatDE(sug.dataset.useSuggested, { weekday: false })}`, { icon: '📅' });
       return;
     }
+    if (e.target.closest('[data-voice-test]')) {
+      const spoke = testVoice();
+      if (!spoke) toast('Keine deutsche Stimme – du hörst die Signaltöne.', { icon: '🔔', kind: 'accent', ms: 3500 });
+      return;
+    }
     if (e.target.closest('[data-clear-date]')) { set((s) => { s.surgeryDate = null; }); return; }
     if (e.target.closest('[data-export]')) {
       try {
@@ -326,11 +363,18 @@ export function render(root, { store, content, query }) {
   root.addEventListener('change', onChange);
   root.addEventListener('click', onClick);
   const unsub = store.subscribe(draw);
+  const synth = globalThis.speechSynthesis;
+  const onVoices = () => {
+    const el = root.querySelector('[data-voice-status]');
+    if (el) el.textContent = voiceStatus(voice.voice, !!synth).text;
+  };
+  synth?.addEventListener?.('voiceschanged', onVoices);
   if (query.focus === 'surgeryDate') {
     setTimeout(() => { const el = root.querySelector('#surgeryDate'); el?.scrollIntoView({ block: 'center' }); el?.focus({ preventScroll: true }); }, 60);
   }
   return () => {
     unsub();
+    synth?.removeEventListener?.('voiceschanged', onVoices);
     root.removeEventListener('change', onChange);
     root.removeEventListener('click', onClick);
     document.querySelectorAll('dialog.sheet[open], dialog.modal[open]').forEach((d) => d.close());

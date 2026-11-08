@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "exercises": [
     {
       "id": "knee-pendulum",
@@ -74,7 +74,11 @@
         "band": null,
         "mirror": false
       },
-      "postOpNote": "Nach der OP nur im freigegebenen Bewegungsumfang – Protokoll von Arzt/Physio hat Vorrang."
+      "postOpNote": "Nach der OP nur im freigegebenen Bewegungsumfang – Protokoll von Arzt/Physio hat Vorrang.",
+      "setupSec": 5,
+      "cueWords": {
+        "work": "Locker pendeln"
+      }
     },
     {
       "id": "ankle-pumps",
@@ -138,6 +142,10 @@
         ],
         "band": null,
         "mirror": false
+      },
+      "setupSec": 5,
+      "cueWords": {
+        "work": "Fuß auf und ab"
       }
     },
     {
@@ -169,20 +177,28 @@
       "kneeNote": "Im Sitzen auf dem Stuhl möglich, falls das Knie heute gereizt ist. Nicht auf dem linken Knie knien.",
       "levels": [
         {
-          "label": "60 s",
+          "label": "30 s",
           "sets": 1,
-          "seconds": 60,
           "tempo": null,
           "band": null,
-          "rest": 10
+          "rest": 10,
+          "seconds": 30
+        },
+        {
+          "label": "60 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 10,
+          "seconds": 60
         },
         {
           "label": "90 s",
           "sets": 1,
-          "seconds": 90,
           "tempo": null,
           "band": null,
-          "rest": 10
+          "rest": 10,
+          "seconds": 90
         }
       ],
       "regressTo": null,
@@ -201,6 +217,11 @@
         "props": [],
         "band": null,
         "mirror": false
+      },
+      "postOpNote": "Im Sitzen ausführen, linkes Bein lang und entlastet.",
+      "setupSec": 5,
+      "cueWords": {
+        "work": "Schultern kreisen"
       }
     },
     {
@@ -266,6 +287,12 @@
         ],
         "band": null,
         "mirror": false
+      },
+      "postOpNote": "Im Sitzen, linkes Bein lang nach vorn (Knie nur im erlaubten Bereich beugen).",
+      "setupSec": 5,
+      "cueWords": {
+        "up": "Rund machen",
+        "down": "Aufrichten"
       }
     },
     {
@@ -338,6 +365,13 @@
         ],
         "band": null,
         "mirror": false
+      },
+      "postOpNote": "Im Sitzen, linkes Bein lang nach vorn (Knie nur im erlaubten Bereich beugen).",
+      "setupSec": 5,
+      "cueWords": {
+        "up": "Drehen",
+        "hold": "Halten",
+        "down": "Zurück zur Mitte"
       }
     },
     {
@@ -491,7 +525,11 @@
         "band": null,
         "mirror": false
       },
-      "postOpNote": "Nach der OP nur im freigegebenen Beugewinkel (oft 0–90° steigernd, abhängig von der Lage des Defekts)."
+      "postOpNote": "Nach der OP nur im freigegebenen Beugewinkel (oft 0–90° steigernd, abhängig von der Lage des Defekts).",
+      "cueWords": {
+        "up": "Ferse heranziehen",
+        "down": "Bein lang"
+      }
     },
     {
       "id": "straight-leg-raise",
@@ -583,7 +621,12 @@
         "band": null,
         "mirror": false
       },
-      "postOpNote": "Nach der OP nur ohne Streckdefizit bzw. mit gesperrter Schiene, wie von Arzt/Physio vorgegeben."
+      "postOpNote": "Nach der OP nur ohne Streckdefizit bzw. mit gesperrter Schiene, wie von Arzt/Physio vorgegeben.",
+      "cueWords": {
+        "up": "Bein heben",
+        "hold": "Halten",
+        "down": "Ablegen"
+      }
     },
     {
       "id": "tke",
@@ -671,7 +714,12 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Strecken",
+        "hold": "Halten",
+        "down": "Lösen"
+      }
     },
     {
       "id": "wall-sit",
@@ -758,7 +806,11 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "hold": "Halten",
+        "release": "Aufrichten"
+      }
     },
     {
       "id": "sit-to-stand",
@@ -851,7 +903,12 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Aufstehen",
+        "hold": "Stehen",
+        "down": "Hinsetzen"
+      }
     },
     {
       "id": "mini-squat",
@@ -938,7 +995,12 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Beugen",
+        "hold": "Halten",
+        "down": "Strecken"
+      }
     },
     {
       "id": "step-up",
@@ -1031,7 +1093,12 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Hochsteigen",
+        "hold": "Halten",
+        "down": "Runter"
+      }
     },
     {
       "id": "seated-knee-extension",
@@ -1118,7 +1185,12 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Strecken",
+        "hold": "Halten",
+        "down": "Absenken"
+      }
     },
     {
       "id": "lateral-step-down",
@@ -1202,7 +1274,12 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Absenken",
+        "hold": "Halten",
+        "down": "Hoch"
+      }
     },
     {
       "id": "glute-bridge",
@@ -1297,7 +1374,12 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Becken hoch",
+        "hold": "Halten",
+        "down": "Ablegen"
+      }
     },
     {
       "id": "clamshell",
@@ -1383,7 +1465,12 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Knie öffnen",
+        "hold": "Halten",
+        "down": "Schließen"
+      }
     },
     {
       "id": "side-lying-hip-abduction",
@@ -1466,7 +1553,12 @@
         "band": null,
         "mirror": false
       },
-      "postOpNote": "Nach der OP linkes Bein gestreckt, ggf. mit Schiene."
+      "postOpNote": "Nach der OP linkes Bein gestreckt, ggf. mit Schiene.",
+      "cueWords": {
+        "up": "Bein heben",
+        "hold": "Halten",
+        "down": "Senken"
+      }
     },
     {
       "id": "lateral-band-walk",
@@ -1551,7 +1643,10 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Seitlich gehen"
+      }
     },
     {
       "id": "standing-hip-abduction",
@@ -1641,7 +1736,12 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Bein seitlich",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "standing-hip-extension",
@@ -1730,7 +1830,12 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Bein nach hinten",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "seated-hamstring-curl",
@@ -1818,7 +1923,12 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Ferse ziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "hamstring-bridge-chair",
@@ -1903,7 +2013,12 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Becken hoch",
+        "hold": "Halten",
+        "down": "Ablegen"
+      }
     },
     {
       "id": "calf-raise",
@@ -1993,7 +2108,12 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Auf die Zehen",
+        "hold": "Halten",
+        "down": "Absenken"
+      }
     },
     {
       "id": "single-leg-stance",
@@ -2091,7 +2211,11 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "hold": "Halten",
+        "release": "Absetzen"
+      }
     },
     {
       "id": "band-pull-apart",
@@ -2175,7 +2299,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Auseinanderziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "seated-row",
@@ -2264,7 +2393,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Ziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "prone-ytw",
@@ -2347,6 +2481,11 @@
         ],
         "band": null,
         "mirror": false
+      },
+      "cueWords": {
+        "up": "Arme heben",
+        "hold": "Halten",
+        "down": "Ablegen"
       }
     },
     {
@@ -2434,7 +2573,12 @@
         },
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Hochschieben",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "serratus-punch",
@@ -2524,7 +2668,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Nach vorn schieben",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "er-towel",
@@ -2611,7 +2760,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Nach außen drehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "er-90-90",
@@ -2698,7 +2852,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Nach oben drehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "sidelying-er",
@@ -2779,6 +2938,11 @@
         ],
         "band": null,
         "mirror": false
+      },
+      "cueWords": {
+        "up": "Nach oben drehen",
+        "hold": "Halten",
+        "down": "Zurück"
       }
     },
     {
@@ -2866,7 +3030,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Zum Gesicht ziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "lat-pulldown",
@@ -2955,7 +3124,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Runterziehen",
+        "hold": "Halten",
+        "down": "Hoch"
+      }
     },
     {
       "id": "straight-arm-pulldown",
@@ -3042,7 +3216,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Runterdrücken",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "single-arm-high-row",
@@ -3129,7 +3308,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Ziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "band-draw-hold",
@@ -3227,7 +3411,11 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "hold": "Ausziehen und halten",
+        "release": "Kontrolliert ablassen"
+      }
     },
     {
       "id": "bow-arm-push",
@@ -3313,7 +3501,11 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "hold": "Drücken",
+        "release": "Lösen"
+      }
     },
     {
       "id": "mirror-draw",
@@ -3401,7 +3593,11 @@
         },
         "mirror": true
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "hold": "Ausziehen und halten",
+        "release": "Kontrolliert ablassen"
+      }
     },
     {
       "id": "pallof-press",
@@ -3488,7 +3684,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Drücken",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "dead-bug",
@@ -3577,7 +3778,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP: linkes Bein lang auf der Matte lassen, nur Arme und rechtes Bein bewegen."
+      "postOpNote": "Nach der OP: linkes Bein lang auf der Matte lassen, nur Arme und rechtes Bein bewegen.",
+      "cueWords": {
+        "up": "Strecken",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "side-plank-elevated",
@@ -3665,7 +3871,11 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "hold": "Becken hoch und halten",
+        "release": "Ablegen"
+      }
     },
     {
       "id": "thoracic-extension-chair",
@@ -3738,6 +3948,11 @@
         ],
         "band": null,
         "mirror": false
+      },
+      "cueWords": {
+        "up": "Nach hinten strecken",
+        "hold": "Halten",
+        "down": "Zurück"
       }
     },
     {
@@ -3823,7 +4038,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Expandieren",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "push-pull-iso",
@@ -3915,7 +4135,11 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "hold": "Drücken und ziehen",
+        "release": "Lösen"
+      }
     },
     {
       "id": "endurance-series",
@@ -4018,18 +4242,22 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "hold": "Ausziehen und halten",
+        "release": "Kontrolliert ablassen"
+      }
     },
     {
       "id": "doorway-pec-stretch",
       "name": "Brustdehnung im Türrahmen",
-      "description": "Unterarm an den Türrahmen, sanft nach vorn lehnen – Gegenpol zur Zugarbeit. Optional: sanfte Sleeper-Dehnung.",
+      "description": "Unterarm an den Türrahmen, sanft nach vorn lehnen – Gegenpol zur Zugarbeit. Optional: sanfte Sleeper-Dehnung. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
         "door"
       ],
-      "type": "timed",
+      "type": "hold",
       "side": "perSide",
       "instructions": [
         "In den Türrahmen stellen, Unterarm auf Schulterhöhe an den Rahmen, Ellbogen 90°.",
@@ -4050,28 +4278,31 @@
       "kneeNote": "Kleiner Schritt, Gewicht gleich verteilt, keine Drehung im Knie. Sleeper-Dehnung mit Kissen zwischen den Knien.",
       "levels": [
         {
-          "label": "2 × 20 s je Seite",
-          "sets": 2,
-          "seconds": 20,
+          "label": "20 s je Seite",
+          "sets": 1,
           "tempo": null,
           "band": null,
-          "rest": 10
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
         },
         {
           "label": "2 × 30 s je Seite",
-          "sets": 2,
-          "seconds": 30,
+          "sets": 1,
           "tempo": null,
           "band": null,
-          "rest": 10
-        },
-        {
-          "label": "3 × 30 s je Seite",
-          "sets": 3,
-          "seconds": 30,
-          "tempo": null,
-          "band": null,
-          "rest": 10
+          "rest": 0,
+          "reps": 2,
+          "hold": 30
         }
       ],
       "regressTo": null,
@@ -4092,18 +4323,19 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "setupSec": 5
     },
     {
       "id": "hamstring-stretch-seated",
       "name": "Beinrückseite dehnen im Sitzen",
-      "description": "Auf der Stuhlkante ein Bein lang, mit geradem Rücken vorneigen – sanft für die Beinrückseite.",
+      "description": "Auf der Stuhlkante ein Bein lang, mit geradem Rücken vorneigen – sanft für die Beinrückseite. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
         "chair"
       ],
-      "type": "timed",
+      "type": "hold",
       "side": "perSide",
       "instructions": [
         "Auf die vordere Stuhlkante setzen, ein Bein lang nach vorn, Ferse am Boden, Zehen zu dir.",
@@ -4124,20 +4356,22 @@
       "kneeNote": "Ziehen im Oberschenkel ja, Druck oder Ziehen direkt in der Kniekehle nein – dann Knie etwas beugen.",
       "levels": [
         {
-          "label": "2 × 20 s je Seite",
-          "sets": 2,
-          "seconds": 20,
+          "label": "20 s je Seite",
+          "sets": 1,
           "tempo": null,
           "band": null,
-          "rest": 10
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
         },
         {
-          "label": "2 × 30 s je Seite",
-          "sets": 2,
-          "seconds": 30,
+          "label": "30 s je Seite",
+          "sets": 1,
           "tempo": null,
           "band": null,
-          "rest": 10
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
         }
       ],
       "regressTo": null,
@@ -4156,18 +4390,19 @@
         ],
         "band": null,
         "mirror": false
-      }
+      },
+      "setupSec": 5
     },
     {
       "id": "calf-stretch-wall",
       "name": "Wadendehnung an der Wand",
-      "description": "Hände an die Wand, hinteres Bein lang – lockert die Wade nach dem Training.",
+      "description": "Hände an die Wand, hinteres Bein lang – lockert die Wade nach dem Training. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
         "wall"
       ],
-      "type": "timed",
+      "type": "hold",
       "side": "perSide",
       "instructions": [
         "Mit Gesicht zur Wand, Hände auf Schulterhöhe an die Wand.",
@@ -4186,20 +4421,22 @@
       "kneeNote": "Vorderes Knie nur leicht beugen (ca. 20°). Wenn das linke Knie vorn drückt, links nur als hinteres Bein dehnen.",
       "levels": [
         {
-          "label": "2 × 20 s je Seite",
-          "sets": 2,
-          "seconds": 20,
+          "label": "20 s je Seite",
+          "sets": 1,
           "tempo": null,
           "band": null,
-          "rest": 10
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
         },
         {
-          "label": "2 × 30 s je Seite",
-          "sets": 2,
-          "seconds": 30,
+          "label": "30 s je Seite",
+          "sets": 1,
           "tempo": null,
           "band": null,
-          "rest": 10
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
         }
       ],
       "regressTo": null,
@@ -4219,7 +4456,8 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "setupSec": 5
     },
     {
       "id": "breathing-reset",
@@ -4282,9 +4520,16 @@
         ],
         "band": null,
         "mirror": false
+      },
+      "setupSec": 5,
+      "cueWords": {
+        "work": "Ruhig atmen"
       }
     },
     {
+      "id": "row-technique-warmup",
+      "name": "Rudern – Technik-Aufwärmen",
+      "description": "Locker einrudern und dabei die Reihenfolge Beine – Körper – Arme aufbauen.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -4312,32 +4557,6 @@
         "Zu hohe Schlagzahl mit wenig Druck"
       ],
       "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
-      "regressTo": null,
-      "progressTo": null,
-      "phaseMin": "p1-basis",
-      "postOpAllowed": false,
-      "figure": {
-        "poses": [
-          "row-catch",
-          "row-drive",
-          "row-finish",
-          "row-recovery"
-        ],
-        "props": [],
-        "band": null,
-        "mirror": false,
-        "loop": true,
-        "tempo": "2-0-1"
-      },
-      "id": "row-technique-warmup",
-      "name": "Rudern – Technik-Aufwärmen",
-      "description": "Locker einrudern und dabei die Reihenfolge Beine – Körper – Arme aufbauen.",
-      "tags": [
-        "kreislauf",
-        "aufwaermen",
-        "rudern",
-        "technik"
-      ],
       "levels": [
         {
           "label": "2 min locker (Technik-Aufbau)",
@@ -4378,9 +4597,38 @@
             }
           ]
         }
-      ]
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kreislauf",
+        "aufwaermen",
+        "rudern",
+        "technik"
+      ],
+      "figure": {
+        "poses": [
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Rudern"
+      }
     },
     {
+      "id": "row-steady",
+      "name": "Rudern – Grundlage",
+      "description": "Gleichmäßig rudern im Gesprächstempo – Ausdauer und Kalorienverbrauch ohne Stoßbelastung.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -4408,32 +4656,6 @@
         "Zu hohe Schlagzahl mit wenig Druck"
       ],
       "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
-      "regressTo": null,
-      "progressTo": null,
-      "phaseMin": "p1-basis",
-      "postOpAllowed": false,
-      "figure": {
-        "poses": [
-          "row-catch",
-          "row-drive",
-          "row-finish",
-          "row-recovery"
-        ],
-        "props": [],
-        "band": null,
-        "mirror": false,
-        "loop": true,
-        "tempo": "2-0-1"
-      },
-      "id": "row-steady",
-      "name": "Rudern – Grundlage",
-      "description": "Gleichmäßig rudern im Gesprächstempo – Ausdauer und Kalorienverbrauch ohne Stoßbelastung.",
-      "tags": [
-        "kreislauf",
-        "ausdauer",
-        "rudern",
-        "abnehmen"
-      ],
       "levels": [
         {
           "label": "12 min gleichmäßig · RPE 4–5",
@@ -4503,9 +4725,38 @@
             5
           ]
         }
-      ]
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kreislauf",
+        "ausdauer",
+        "rudern",
+        "abnehmen"
+      ],
+      "figure": {
+        "poses": [
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Rudern"
+      }
     },
     {
+      "id": "row-intervals",
+      "name": "Rudern – Intervalle",
+      "description": "Wechsel aus zügigen und lockeren Minuten – trainiert das Herz-Kreislauf-System effizient.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -4534,33 +4785,6 @@
         "Zu hohe Schlagzahl mit wenig Druck"
       ],
       "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
-      "regressTo": null,
-      "progressTo": null,
-      "phaseMin": "p2-aufbau",
-      "postOpAllowed": false,
-      "figure": {
-        "poses": [
-          "row-catch",
-          "row-drive",
-          "row-finish",
-          "row-recovery"
-        ],
-        "props": [],
-        "band": null,
-        "mirror": false,
-        "loop": true,
-        "tempo": "2-0-1"
-      },
-      "id": "row-intervals",
-      "name": "Rudern – Intervalle",
-      "description": "Wechsel aus zügigen und lockeren Minuten – trainiert das Herz-Kreislauf-System effizient.",
-      "tags": [
-        "kreislauf",
-        "ausdauer",
-        "rudern",
-        "intervalle",
-        "abnehmen"
-      ],
       "levels": [
         {
           "label": "6 × (1 min zügig / 1 min locker)",
@@ -4634,9 +4858,39 @@
             7
           ]
         }
-      ]
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "tags": [
+        "kreislauf",
+        "ausdauer",
+        "rudern",
+        "intervalle",
+        "abnehmen"
+      ],
+      "figure": {
+        "poses": [
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Rudern"
+      }
     },
     {
+      "id": "row-endurance",
+      "name": "Rudern – Ausdauer",
+      "description": "Längere ruhige Einheit – Grundlagenausdauer für die Zeit nach der OP sichern.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -4664,32 +4918,6 @@
         "Zu hohe Schlagzahl mit wenig Druck"
       ],
       "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
-      "regressTo": null,
-      "progressTo": null,
-      "phaseMin": "p3-op-vorbereitung",
-      "postOpAllowed": false,
-      "figure": {
-        "poses": [
-          "row-catch",
-          "row-drive",
-          "row-finish",
-          "row-recovery"
-        ],
-        "props": [],
-        "band": null,
-        "mirror": false,
-        "loop": true,
-        "tempo": "2-0-1"
-      },
-      "id": "row-endurance",
-      "name": "Rudern – Ausdauer",
-      "description": "Längere ruhige Einheit – Grundlagenausdauer für die Zeit nach der OP sichern.",
-      "tags": [
-        "kreislauf",
-        "ausdauer",
-        "rudern",
-        "abnehmen"
-      ],
       "levels": [
         {
           "label": "13 min ruhig · RPE 4–5",
@@ -4742,9 +4970,38 @@
             5
           ]
         }
-      ]
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p3-op-vorbereitung",
+      "tags": [
+        "kreislauf",
+        "ausdauer",
+        "rudern",
+        "abnehmen"
+      ],
+      "figure": {
+        "poses": [
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Rudern"
+      }
     },
     {
+      "id": "row-cooldown",
+      "name": "Rudern – Ausrudern",
+      "description": "Ganz locker ausrudern, Puls und Atmung beruhigen.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -4772,31 +5029,6 @@
         "Zu hohe Schlagzahl mit wenig Druck"
       ],
       "kneeNote": "Ärztlich für volles Rudern freigegeben – trotzdem gilt die Ampel: Knie nur so weit beugen, wie es schmerzfrei geht (Sitz ggf. nicht ganz nach vorn rollen). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP in der Entlastungsphase (Krücken) kein Rudern.",
-      "regressTo": null,
-      "progressTo": null,
-      "phaseMin": "p1-basis",
-      "postOpAllowed": false,
-      "figure": {
-        "poses": [
-          "row-catch",
-          "row-drive",
-          "row-finish",
-          "row-recovery"
-        ],
-        "props": [],
-        "band": null,
-        "mirror": false,
-        "loop": true,
-        "tempo": "2-0-1"
-      },
-      "id": "row-cooldown",
-      "name": "Rudern – Ausrudern",
-      "description": "Ganz locker ausrudern, Puls und Atmung beruhigen.",
-      "tags": [
-        "kreislauf",
-        "rudern",
-        "entspannung"
-      ],
       "levels": [
         {
           "label": "2 min ganz locker",
@@ -4815,7 +5047,32 @@
             3
           ]
         }
-      ]
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "kreislauf",
+        "rudern",
+        "entspannung"
+      ],
+      "figure": {
+        "poses": [
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Rudern"
+      }
     },
     {
       "id": "chair-dip",
@@ -4899,7 +5156,12 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Absenken",
+        "hold": "Halten",
+        "down": "Hochdrücken"
+      }
     },
     {
       "id": "band-triceps-extension",
@@ -4986,7 +5248,12 @@
         },
         "mirror": false
       },
-      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet."
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "cueWords": {
+        "up": "Strecken",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
     },
     {
       "id": "seated-press-up",
@@ -5074,7 +5341,11 @@
         "band": null,
         "mirror": false
       },
-      "postOpNote": "Nach der OP: linker Fuß ohne Bodenkontakt."
+      "postOpNote": "Nach der OP: linker Fuß ohne Bodenkontakt.",
+      "cueWords": {
+        "hold": "Hochdrücken",
+        "release": "Absetzen"
+      }
     },
     {
       "id": "right-leg-sit-to-stand",
@@ -5159,7 +5430,12 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "up": "Aufstehen",
+        "hold": "Stehen",
+        "down": "Hinsetzen"
+      }
     },
     {
       "id": "single-leg-stance-reach",
@@ -5246,7 +5522,11 @@
         "band": null,
         "mirror": false
       },
-      "postOpAllowed": false
+      "postOpAllowed": false,
+      "cueWords": {
+        "hold": "Halten",
+        "release": "Absetzen"
+      }
     },
     {
       "id": "patella-mobilization",
@@ -5297,7 +5577,6 @@
       "regressTo": null,
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
       "tags": [
         "post-op",
         "mobilitaet",
@@ -5313,6 +5592,10 @@
         ],
         "band": null,
         "mirror": true
+      },
+      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+      "cueWords": {
+        "work": "Kniescheibe sanft bewegen"
       }
     },
     {
@@ -5375,7 +5658,6 @@
       "regressTo": null,
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
       "tags": [
         "post-op",
         "gesaess",
@@ -5391,7 +5673,8 @@
         ],
         "band": null,
         "mirror": false
-      }
+      },
+      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang."
     },
     {
       "id": "right-leg-band-press",
@@ -5459,7 +5742,6 @@
       "regressTo": null,
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
       "tags": [
         "post-op",
         "rechtes-bein",
@@ -5478,6 +5760,1443 @@
           "to": "handR"
         },
         "mirror": false
+      },
+      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+      "cueWords": {
+        "up": "Wegdrücken",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "id": "leg-swing-front",
+      "name": "Beinpendel vor & zurück (an der Wand)",
+      "description": "Bein locker vor- und zurückschwingen, eine Hand an der Wand. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "wall"
+      ],
+      "type": "timed",
+      "side": "perSide",
+      "instructions": [
+        "Seitlich neben die Wand stellen, die nahe Hand auf Schulterhöhe an die Wand.",
+        "Standbein leicht gebeugt (nicht durchdrücken), Oberkörper aufrecht.",
+        "Das freie Bein locker vor und zurück pendeln – kleiner Bogen, etwa bis Kniehöhe vorne.",
+        "Nach der Zeit umdrehen und das andere Bein pendeln."
+      ],
+      "cues": [
+        "Kleiner, lockerer Bogen",
+        "Becken bleibt ruhig",
+        "Ruhig weiteratmen"
+      ],
+      "mistakes": [
+        "Mit Schwung hochkicken",
+        "Ins Hohlkreuz fallen",
+        "Standknie durchdrücken"
+      ],
+      "kneeNote": "Kleiner Bewegungsumfang, das schwingende Knie bleibt fast gestreckt – keine tiefe Beugung. Beim Stand auf links: Knie weich, Hand an der Wand gibt Sicherheit. Bei Schmerz nur das rechte Bein pendeln.",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "aufwaermen",
+        "huefte",
+        "kniefreundlich"
+      ],
+      "figure": {
+        "poses": [
+          "leg-swing-front-a",
+          "leg-swing-front-b"
+        ],
+        "props": [
+          "wall"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "setupSec": 5,
+      "cueWords": {
+        "work": "Locker pendeln"
+      }
+    },
+    {
+      "id": "leg-swing-side",
+      "name": "Beinpendel seitlich (Hände am Stuhl)",
+      "description": "Bein vor dem Körper seitlich hin und her pendeln – macht die Hüfte (Abduktoren/Adduktoren) warm. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "chair"
+      ],
+      "type": "timed",
+      "side": "perSide",
+      "instructions": [
+        "Frontal vor eine Stuhllehne oder Wand stellen, beide Hände abstützen.",
+        "Standbein leicht gebeugt.",
+        "Das freie Bein gestreckt vor dem Körper seitlich nach außen und wieder etwas nach innen pendeln.",
+        "Seite wechseln."
+      ],
+      "cues": [
+        "Fuß knapp über dem Boden",
+        "Becken bleibt gerade",
+        "Locker, nicht kicken"
+      ],
+      "mistakes": [
+        "Oberkörper kippt mit",
+        "Zu großer Bogen"
+      ],
+      "kneeNote": "Schwingendes Bein fast gestreckt, kleiner Bogen – keine Drehung im Knie. Auf links nur stehen, wenn es sich stabil anfühlt (Hände abstützen).",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "aufwaermen",
+        "huefte"
+      ],
+      "figure": {
+        "poses": [
+          "leg-swing-side-out",
+          "leg-swing-side-in"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "setupSec": 5,
+      "cueWords": {
+        "work": "Seitlich pendeln"
+      }
+    },
+    {
+      "id": "hip-circles-standing",
+      "name": "Becken kreisen im Stand",
+      "description": "Hände an die Hüften, Becken in ruhigen Kreisen bewegen – beide Füße bleiben am Boden. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "none"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Hüftbreit stehen, Knie weich, Hände an die Hüften.",
+        "Becken langsam im Kreis bewegen: vor, zur Seite, zurück, zur anderen Seite.",
+        "Nach der Hälfte der Zeit die Richtung wechseln."
+      ],
+      "cues": [
+        "Oberkörper bleibt ruhig über den Füßen",
+        "Große, langsame Kreise"
+      ],
+      "mistakes": [
+        "Knie dreht mit",
+        "Nur den Oberkörper schwingen"
+      ],
+      "kneeNote": "Beide Füße bleiben am Boden, Knie weich und nach vorn ausgerichtet – keine Drehbewegung im Knie.",
+      "levels": [
+        {
+          "label": "30 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 30
+        },
+        {
+          "label": "45 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 45
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "aufwaermen",
+        "huefte",
+        "kniefreundlich"
+      ],
+      "figure": {
+        "poses": [
+          "hip-circle-left",
+          "hip-circle-right"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "setupSec": 5,
+      "cueWords": {
+        "work": "Becken kreisen"
+      }
+    },
+    {
+      "id": "ankle-circles-seated",
+      "name": "Fußkreisen im Sitzen",
+      "description": "Sprunggelenk im Sitzen kreisen und auf/ab bewegen – Bein lang nach vorn, Ferse am Boden. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "chair"
+      ],
+      "type": "timed",
+      "side": "perSide",
+      "instructions": [
+        "Aufrecht auf den Stuhl setzen, ein Bein nach vorn ausstrecken, Ferse am Boden.",
+        "Fuß langsam in großen Kreisen bewegen, dann Zehen abwechselnd zu dir ziehen und wegstrecken.",
+        "Seite wechseln."
+      ],
+      "cues": [
+        "Große Kreise",
+        "Bewegung nur im Sprunggelenk"
+      ],
+      "mistakes": [
+        "Ganzes Bein schwingt mit"
+      ],
+      "kneeNote": "Knie fast gestreckt, keine Last – kniefreundlich, auch nach der OP (im Sitzen oder Liegen).",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "aufwaermen",
+        "sprunggelenk",
+        "kniefreundlich"
+      ],
+      "figure": {
+        "poses": [
+          "sit-ankle-up",
+          "sit-ankle-down"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpNote": "Im Sitzen mit lang ausgestrecktem linken Bein oder in Rückenlage.",
+      "setupSec": 5,
+      "cueWords": {
+        "work": "Fuß kreisen"
+      }
+    },
+    {
+      "id": "band-dislocate",
+      "name": "Schulterkreisen mit Band (leicht)",
+      "description": "Band weit greifen und mit gestreckten Armen über den Kopf nach hinten und zurück führen – öffnet Brust und Schultern für den Auszug. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "theraband"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Leichtes Band (gelb) sehr weit greifen, Arme gestreckt vor dem Körper.",
+        "Arme langsam über den Kopf und – soweit schmerzfrei – hinter den Körper führen.",
+        "Auf demselben Weg zurück nach vorn.",
+        "Griff weiter machen, wenn es in der Schulter zwickt."
+      ],
+      "cues": [
+        "Arme lang",
+        "Rippen unten lassen",
+        "Schultern weg von den Ohren"
+      ],
+      "mistakes": [
+        "Zu enger Griff",
+        "Hohlkreuz",
+        "Mit Schwung"
+      ],
+      "kneeNote": "Im Stand mit weichen Knien oder im Sitzen – keine Kniebelastung.",
+      "levels": [
+        {
+          "label": "Gelb · 8 Wdh.",
+          "sets": 1,
+          "tempo": "2-0-2",
+          "band": "yellow",
+          "rest": 0,
+          "reps": 8
+        },
+        {
+          "label": "Gelb · 12 Wdh.",
+          "sets": 1,
+          "tempo": "2-0-2",
+          "band": "yellow",
+          "rest": 0,
+          "reps": 12
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "aufwaermen",
+        "schulter",
+        "bogen"
+      ],
+      "figure": {
+        "poses": [
+          "band-dislocate-low",
+          "band-dislocate-high"
+        ],
+        "props": [],
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": false
+      },
+      "postOpNote": "Im Sitzen ausführen, linkes Bein lang und entlastet.",
+      "setupSec": 5,
+      "cueWords": {
+        "up": "Über den Kopf nach hinten",
+        "down": "Zurück nach vorn"
+      }
+    },
+    {
+      "id": "mobility-flow-short",
+      "name": "Mobilisation kompakt (2 Min)",
+      "description": "Kompakte Runde für das Kurztraining – jeder Abschnitt wird angesagt. Beinpendel, Becken kreisen, Schulterkreisen und Rumpfdrehung.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "wall"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Beinpendel vor & zurück an der Wand: 15 s rechts, 15 s links, kleiner Bogen.",
+        "Becken kreisen, beide Füße am Boden (30 s).",
+        "Schulterkreisen rückwärts, dann Arme heben (30 s).",
+        "Rumpfdrehung im Stand, Arme vor der Brust gekreuzt (30 s)."
+      ],
+      "cues": [
+        "Locker und klein",
+        "Ruhig atmen"
+      ],
+      "mistakes": [
+        "Wippen in die Endposition"
+      ],
+      "kneeNote": "Keine tiefe Kniebeugung, kein Knien – Knie weich, keine Drehung im Knie.",
+      "levels": [
+        {
+          "label": "2 Minuten",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 120,
+          "phases": [
+            {
+              "label": "Beinpendel rechts",
+              "seconds": 15,
+              "say": "Rechtes Bein locker pendeln"
+            },
+            {
+              "label": "Beinpendel links",
+              "seconds": 15,
+              "say": "Linkes Bein locker pendeln"
+            },
+            {
+              "label": "Becken kreisen",
+              "seconds": 30,
+              "say": "Becken kreisen"
+            },
+            {
+              "label": "Schulterkreisen",
+              "seconds": 30,
+              "say": "Schultern kreisen"
+            },
+            {
+              "label": "Rumpfdrehung",
+              "seconds": 30,
+              "say": "Oberkörper drehen"
+            }
+          ]
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "aufwaermen",
+        "kurz"
+      ],
+      "figure": {
+        "poses": [
+          "leg-swing-front-a",
+          "leg-swing-front-b"
+        ],
+        "props": [
+          "wall"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "setupSec": 5
+    },
+    {
+      "id": "mobility-flow-seated",
+      "name": "Mobilisation im Sitzen kompakt (2 Min)",
+      "description": "Kompakte Runde für das Kurztraining – jeder Abschnitt wird angesagt. Alles im Sitzen bzw. Liegen – passend zur Entlastungsphase.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "chair"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Fußpumpe: Zehen zu dir und weg (30 s, linkes Bein lang).",
+        "Schulterkreisen rückwärts (30 s).",
+        "Wirbelsäulen-Welle: Rücken rund und aufrichten (30 s).",
+        "Rumpfdrehung im Sitzen, Arme vor der Brust gekreuzt (30 s)."
+      ],
+      "cues": [
+        "Linkes Bein bleibt lang und entlastet"
+      ],
+      "mistakes": [
+        "Linkes Knie stark beugen"
+      ],
+      "kneeNote": "Im Sitzen mit lang ausgestrecktem linken Bein – keine Last auf dem linken Bein.",
+      "levels": [
+        {
+          "label": "2 Minuten",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 120,
+          "phases": [
+            {
+              "label": "Fußpumpe",
+              "seconds": 30,
+              "say": "Fußpumpe: Zehen zu dir und weg"
+            },
+            {
+              "label": "Schulterkreisen",
+              "seconds": 30,
+              "say": "Schultern kreisen"
+            },
+            {
+              "label": "Wirbelsäulen-Welle",
+              "seconds": 30,
+              "say": "Rücken rund machen und aufrichten"
+            },
+            {
+              "label": "Rumpfdrehung",
+              "seconds": 30,
+              "say": "Oberkörper drehen"
+            }
+          ]
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "aufwaermen",
+        "kurz",
+        "post-op"
+      ],
+      "figure": {
+        "poses": [
+          "sit-chair",
+          "sit-round-back",
+          "sit-chest-open"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+      "setupSec": 5
+    },
+    {
+      "id": "stretch-flow-short",
+      "name": "Dehnen kompakt (2 Min)",
+      "description": "Kompakte Runde für das Kurztraining – jeder Abschnitt wird angesagt. Hüftbeuger, Waden, Brust, Unterarme, hintere Schulter. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "wall",
+        "door"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Hüftbeuger im Stand (kurze Schrittstellung, Becken aufrichten): 20 s rechts, 20 s links.",
+        "Wade an der Wand: 15 s je Seite.",
+        "Brust im Türrahmen: 20 s.",
+        "Unterarm-Beuger (Finger sanft zurückziehen): 15 s.",
+        "Hintere Schulter (Arm vor der Brust): 15 s."
+      ],
+      "cues": [
+        "Nur sanftes Ziehen",
+        "Lang ausatmen"
+      ],
+      "mistakes": [
+        "Wippen",
+        "Ziehen bis in den Schmerz"
+      ],
+      "kneeNote": "Keine Quadrizeps-Dehnung mit Ferse zum Po (tiefe Beugung) – der Hüftbeuger wird mit fast gestrecktem hinteren Knie gedehnt.",
+      "levels": [
+        {
+          "label": "2 Minuten",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 120,
+          "phases": [
+            {
+              "label": "Hüftbeuger rechts",
+              "seconds": 20,
+              "say": "Hüftbeuger rechts dehnen"
+            },
+            {
+              "label": "Hüftbeuger links",
+              "seconds": 20,
+              "say": "Seite wechseln: Hüftbeuger links"
+            },
+            {
+              "label": "Wade rechts",
+              "seconds": 15,
+              "say": "Wade rechts"
+            },
+            {
+              "label": "Wade links",
+              "seconds": 15,
+              "say": "Wade links"
+            },
+            {
+              "label": "Brust",
+              "seconds": 20,
+              "say": "Brust im Türrahmen dehnen"
+            },
+            {
+              "label": "Unterarme",
+              "seconds": 15,
+              "say": "Unterarme dehnen"
+            },
+            {
+              "label": "Hintere Schulter",
+              "seconds": 15,
+              "say": "Arm vor der Brust: hintere Schulter"
+            }
+          ]
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "dehnung",
+        "kurz"
+      ],
+      "figure": {
+        "poses": [
+          "stand-hip-flexor-stagger",
+          "stand-hip-flexor-stretch"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "setupSec": 5
+    },
+    {
+      "id": "stretch-flow-seated",
+      "name": "Dehnen im Sitzen kompakt (2 Min)",
+      "description": "Kompakte Runde für das Kurztraining – jeder Abschnitt wird angesagt. Alles im Sitzen – passend zur Entlastungsphase. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "chair"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Brust: Hände hinter dem Kopf, Ellbogen nach hinten (20 s).",
+        "Seitdehnung: Arm über den Kopf, zur Seite neigen – 15 s je Seite.",
+        "Hintere Schulter: Arm vor der Brust – 15 s je Seite.",
+        "Unterarm-Beuger: 15 s.",
+        "Nacken sanft: Ohr Richtung Schulter, nach der Hälfte Seite wechseln (25 s)."
+      ],
+      "cues": [
+        "Linkes Bein lang und entlastet",
+        "Nur sanftes Ziehen"
+      ],
+      "mistakes": [
+        "Ziehen bis in den Schmerz"
+      ],
+      "kneeNote": "Im Sitzen mit lang ausgestrecktem linken Bein – keine Last, keine tiefe Beugung.",
+      "levels": [
+        {
+          "label": "2 Minuten",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 120,
+          "phases": [
+            {
+              "label": "Brust",
+              "seconds": 20,
+              "say": "Hände hinter den Kopf, Ellbogen nach hinten"
+            },
+            {
+              "label": "Seitdehnung rechts",
+              "seconds": 15,
+              "say": "Rechter Arm über den Kopf, zur Seite neigen"
+            },
+            {
+              "label": "Seitdehnung links",
+              "seconds": 15,
+              "say": "Seite wechseln"
+            },
+            {
+              "label": "Hintere Schulter rechts",
+              "seconds": 15,
+              "say": "Rechter Arm vor die Brust"
+            },
+            {
+              "label": "Hintere Schulter links",
+              "seconds": 15,
+              "say": "Seite wechseln"
+            },
+            {
+              "label": "Unterarme",
+              "seconds": 15,
+              "say": "Unterarme dehnen"
+            },
+            {
+              "label": "Nacken",
+              "seconds": 25,
+              "say": "Nacken sanft: Ohr Richtung Schulter, nach der Hälfte wechseln"
+            }
+          ]
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "dehnung",
+        "kurz",
+        "post-op"
+      ],
+      "figure": {
+        "poses": [
+          "sit-chair",
+          "sit-chest-open"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+      "setupSec": 5
+    },
+    {
+      "id": "hip-flexor-stretch-standing",
+      "name": "Hüftbeuger-Dehnung im Stand (kurze Schrittstellung)",
+      "description": "Kurze Schrittstellung, Becken aufrichten – dehnt den Hüftbeuger des hinteren Beins, ohne das Knie tief zu beugen. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "chair"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Kurze Schrittstellung (etwa eine Fußlänge), eine Hand an Stuhllehne oder Wand.",
+        "Vorderes Knie nur leicht beugen (höchstens ca. 30°), hinteres Knie fast gestreckt, Ferse darf abheben.",
+        "Po anspannen und das Becken unten nach vorn „einrollen“ (Steißbein nach unten), bis vorne an der Hüfte des hinteren Beins ein Ziehen entsteht.",
+        "Oberkörper aufrecht, halten, ruhig atmen – dann Seite wechseln."
+      ],
+      "cues": [
+        "Po fest, Becken aufrichten",
+        "Oberkörper aufrecht",
+        "Nur leichtes Ziehen vorne an der Hüfte"
+      ],
+      "mistakes": [
+        "Ins Hohlkreuz ausweichen",
+        "Großer Ausfallschritt mit tiefer Kniebeugung"
+      ],
+      "kneeNote": "Bewusst KEINE klassische Quadrizeps-Dehnung (Ferse zum Po): die tiefe Beugung belastet Meniskus und Knorpel. Hier bleibt das hintere Knie fast gestreckt und das vordere Knie nur leicht gebeugt.",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "huefte",
+        "dehnung",
+        "kniefreundlich"
+      ],
+      "figure": {
+        "poses": [
+          "stand-hip-flexor-stagger",
+          "stand-hip-flexor-stretch"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "setupSec": 5
+    },
+    {
+      "id": "hip-flexor-stretch-supine",
+      "name": "Hüftbeuger-Dehnung in Rückenlage (linkes Bein lang)",
+      "description": "Rückenlage, rechtes Knie zur Brust ziehen, linkes Bein bleibt lang liegen – dehnt den linken Hüftbeuger ohne Kniebeugung links. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "mat"
+      ],
+      "type": "hold",
+      "side": "left",
+      "instructions": [
+        "Auf den Rücken legen (Bett oder Matte), beide Beine lang.",
+        "Das RECHTE Knie mit beiden Händen zur Brust ziehen.",
+        "Das linke Bein bleibt gestreckt liegen und sinkt locker Richtung Unterlage – vorne an der linken Hüfte zieht es leicht.",
+        "Halten, ruhig atmen, langsam lösen."
+      ],
+      "cues": [
+        "Linkes Bein lang und locker",
+        "Unterer Rücken flach"
+      ],
+      "mistakes": [
+        "Linkes Knie anwinkeln",
+        "Mit Kraft ziehen"
+      ],
+      "kneeNote": "Linkes Knie bleibt gestreckt – keine Beugung, keine Last. Das rechte (gesunde) Knie wird gebeugt.",
+      "levels": [
+        {
+          "label": "20 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        },
+        {
+          "label": "2 × 30 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 2,
+          "hold": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "huefte",
+        "dehnung",
+        "post-op"
+      ],
+      "figure": {
+        "poses": [
+          "supine-knee-hug-right"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang. Linkes Bein bleibt lang liegen (ggf. mit Schiene).",
+      "setupSec": 5
+    },
+    {
+      "id": "hamstring-stretch-band",
+      "name": "Beinrückseite dehnen mit Band (Rückenlage)",
+      "description": "Rückenlage, Band um den Fuß, gestrecktes Bein sanft anheben – dehnt die Oberschenkelrückseite mit gestrecktem Knie. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "theraband",
+        "mat"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Auf den Rücken legen, Band um die Fußsohle legen, Enden in beiden Händen.",
+        "Das Bein gestreckt anheben, bis hinten am Oberschenkel ein leichtes Ziehen kommt.",
+        "Das andere Bein bleibt lang auf der Unterlage.",
+        "Halten, ruhig atmen, Bein langsam ablegen, Seite wechseln."
+      ],
+      "cues": [
+        "Knie gestreckt, aber nicht durchdrücken",
+        "Becken bleibt liegen"
+      ],
+      "mistakes": [
+        "Am Band reißen",
+        "Kopf und Schultern heben"
+      ],
+      "kneeNote": "Knie gestreckt, keine Beugung unter Last – kniefreundlich. Ziehen hinten im Knie (statt im Oberschenkel) → Bein tiefer.",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "beinrueckseite",
+        "dehnung",
+        "kniefreundlich"
+      ],
+      "figure": {
+        "poses": [
+          "supine-hamstring-band-low",
+          "supine-hamstring-band"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": {
+          "from": "footR",
+          "to": "handR"
+        },
+        "mirror": false
+      },
+      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang. Links nur, wenn gestrecktes Beinheben erlaubt ist; ganz sanft, Knie gestreckt (ggf. mit Schiene).",
+      "setupSec": 5
+    },
+    {
+      "id": "figure-4-stretch-supine",
+      "name": "Gesäß-Dehnung in Rückenlage (Figur 4)",
+      "description": "Rückenlage, Knöchel auf das andere Knie legen – dehnt Gesäß und Hüftrotatoren (Bogenstand!). Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "mat"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Rückenlage, beide Füße aufstellen.",
+        "Den rechten Knöchel auf das linke Knie legen, rechtes Knie sinkt nach außen.",
+        "Meist reicht das schon – sonst den linken Fuß etwas näher heranholen (nicht am Bein ziehen).",
+        "Seite wechseln: linker Knöchel auf das rechte Knie."
+      ],
+      "cues": [
+        "Knie sinkt locker nach außen",
+        "Rücken bleibt flach"
+      ],
+      "mistakes": [
+        "Am Bein zerren",
+        "Druck im Knie ignorieren"
+      ],
+      "kneeNote": "Vorsicht Beugung: Für die linke Seite nur so weit beugen, wie es angenehm ist; spürst du Druck innen im linken Knie, den Fuß weiter weg stellen oder nur das Knie nach außen sinken lassen. Nicht nach der OP.",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "gesaess",
+        "huefte",
+        "dehnung"
+      ],
+      "figure": {
+        "poses": [
+          "supine-figure-4"
+        ],
+        "props": [
+          "mat"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpAllowed": false,
+      "setupSec": 5
+    },
+    {
+      "id": "seated-pec-stretch",
+      "name": "Brustdehnung im Sitzen (Hände hinter dem Kopf)",
+      "description": "Hände hinter den Kopf, Ellbogen nach hinten öffnen – Gegenpol zur Zugarbeit, ohne Stehen. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "chair"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Aufrecht auf die vordere Stuhlhälfte setzen.",
+        "Hände locker hinter den Kopf, Ellbogen weit nach außen und hinten öffnen.",
+        "Brustbein leicht anheben, halten, ruhig atmen.",
+        "Kurz lösen, zweite Runde."
+      ],
+      "cues": [
+        "Kinn bleibt neutral",
+        "Schulterblätter sanft zusammen"
+      ],
+      "mistakes": [
+        "Kopf nach vorn drücken",
+        "Hohlkreuz"
+      ],
+      "kneeNote": "Im Sitzen – keine Kniebelastung. Nach der OP: linkes Bein lang nach vorn.",
+      "levels": [
+        {
+          "label": "2 × 20 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 2,
+          "hold": 20
+        },
+        {
+          "label": "2 × 30 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 2,
+          "hold": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "brust",
+        "dehnung",
+        "post-op"
+      ],
+      "figure": {
+        "poses": [
+          "sit-chair",
+          "sit-chest-open"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpNote": "Im Sitzen, linkes Bein lang und entlastet.",
+      "setupSec": 5
+    },
+    {
+      "id": "lat-side-stretch",
+      "name": "Seitdehnung / Latissimus im Sitzen",
+      "description": "Arm über den Kopf, Oberkörper zur Seite neigen – dehnt Latissimus und Flanke (Zugmuskulatur). Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "chair"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Aufrecht sitzen, beide Sitzbeinhöcker bleiben auf dem Stuhl.",
+        "Rechten Arm lang über den Kopf strecken.",
+        "Oberkörper sanft nach links neigen, bis die rechte Flanke zieht.",
+        "Halten, ruhig in die Flanke atmen, Seite wechseln."
+      ],
+      "cues": [
+        "Lang machen, dann neigen",
+        "Nicht nach vorn kippen"
+      ],
+      "mistakes": [
+        "Gesäß hebt ab",
+        "Schulter zieht zum Ohr"
+      ],
+      "kneeNote": "Im Sitzen – keine Kniebelastung.",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "latissimus",
+        "dehnung",
+        "bogen",
+        "post-op"
+      ],
+      "figure": {
+        "poses": [
+          "front-sit-tall",
+          "front-sit-side-bend"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpNote": "Im Sitzen, linkes Bein lang und entlastet.",
+      "setupSec": 5
+    },
+    {
+      "id": "cross-body-shoulder-stretch",
+      "name": "Hintere Schulter dehnen (Arm vor der Brust)",
+      "description": "Arm waagerecht vor der Brust mit der anderen Hand sanft heranziehen – dehnt die hintere Schulter (Zughand!). Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "chair"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Aufrecht sitzen oder stehen.",
+        "Rechten Arm waagerecht vor die Brust führen.",
+        "Mit der linken Hand oberhalb des Ellbogens sanft heranziehen.",
+        "Schulter bleibt tief – halten, dann Seite wechseln."
+      ],
+      "cues": [
+        "Schulter weg vom Ohr",
+        "Oberkörper dreht nicht mit"
+      ],
+      "mistakes": [
+        "Am Ellbogengelenk ziehen",
+        "Schulter hochziehen"
+      ],
+      "kneeNote": "Im Sitzen oder Stehen – keine Kniebelastung.",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "schulter",
+        "dehnung",
+        "bogen",
+        "post-op"
+      ],
+      "figure": {
+        "poses": [
+          "front-sit-tall",
+          "front-sit-cross-body"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpNote": "Im Sitzen, linkes Bein lang und entlastet.",
+      "setupSec": 5
+    },
+    {
+      "id": "forearm-flexor-stretch",
+      "name": "Unterarm-Beuger dehnen (Zug- & Bogenhand)",
+      "description": "Arm nach vorn, Handfläche nach vorn, Finger sanft zurückziehen – entlastet Zughand (Release/Finger) und Bogenhand (Griff). Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "chair"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Aufrecht sitzen, einen Arm gestreckt nach vorn, Handfläche zeigt nach vorn (Finger nach unten oder oben).",
+        "Mit der anderen Hand die Finger sanft zu dir ziehen.",
+        "Ziehen an der Innenseite des Unterarms – halten.",
+        "Seite wechseln; beide Hände sind wichtig: Zughand und Bogenhand."
+      ],
+      "cues": [
+        "Ellbogen gestreckt, nicht durchgedrückt",
+        "Schulter tief"
+      ],
+      "mistakes": [
+        "Zu fest ziehen",
+        "Schulter hochziehen"
+      ],
+      "kneeNote": "Im Sitzen – keine Kniebelastung.",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "unterarm",
+        "dehnung",
+        "bogen",
+        "post-op"
+      ],
+      "figure": {
+        "poses": [
+          "sit-forearm-stretch-start",
+          "sit-forearm-stretch"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpNote": "Im Sitzen, linkes Bein lang und entlastet.",
+      "setupSec": 5
+    },
+    {
+      "id": "neck-side-stretch",
+      "name": "Nacken sanft dehnen (oberer Trapez)",
+      "description": "Ohr Richtung Schulter neigen, gegenüberliegende Schulter tief – löst den oberen Trapez, der beim Auszug gern mitarbeitet. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "chair"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Aufrecht sitzen, linke Hand greift unter die Sitzfläche oder hängt locker.",
+        "Kopf sanft nach rechts neigen (Ohr Richtung Schulter), Blick nach vorn.",
+        "Optional die rechte Hand ganz leicht auf den Kopf legen – nicht ziehen.",
+        "Halten, langsam zurück, Seite wechseln."
+      ],
+      "cues": [
+        "Ganz sanft",
+        "Schulter der Gegenseite tief"
+      ],
+      "mistakes": [
+        "Am Kopf ziehen",
+        "Kopf drehen statt neigen"
+      ],
+      "kneeNote": "Im Sitzen – keine Kniebelastung.",
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "nacken",
+        "dehnung",
+        "post-op"
+      ],
+      "figure": {
+        "poses": [
+          "front-sit-tall",
+          "front-sit-neck-stretch"
+        ],
+        "props": [
+          "chair"
+        ],
+        "band": null,
+        "mirror": false
+      },
+      "postOpNote": "Im Sitzen, linkes Bein lang und entlastet.",
+      "setupSec": 5,
+      "cueWords": {
+        "hold": "Sanft dehnen"
+      }
+    },
+    {
+      "id": "row-warmup-10",
+      "name": "Rudern zum Aufwärmen (10 Min)",
+      "description": "10 Minuten lockeres Rudern vor dem Krafttraining: 2 Minuten Technik-Aufbau, dann 8 Minuten ruhig (RPE 3–4, 18–22 Schläge/Min). Ersetzt den allgemeinen Teil der Mobilisation.",
+      "category": "kardio",
+      "block": "cardio",
+      "equipment": [
+        "rowing-machine"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Füße fest in die Fußstützen, Gurte über den Ballen.",
+        "Technik-Aufbau: nur Arme → Arme + Oberkörper → halber Beinweg → ganzer Schlag.",
+        "Dann 8 Minuten ruhig: Beine – Oberkörper – Arme, zurück in umgekehrter Reihenfolge.",
+        "Du solltest dich dabei noch unterhalten können (RPE 3–4)."
+      ],
+      "cues": [
+        "Beine – Körper – Arme",
+        "Zurück: Arme – Körper – Beine",
+        "Ruhig zur Fußstütze rollen"
+      ],
+      "mistakes": [
+        "Mit Schwung nach vorn „crashen“",
+        "Arme zu früh beugen",
+        "Rundrücken"
+      ],
+      "kneeNote": "Ärztlich für volles Rudern freigegeben – die Ampel gilt trotzdem: Knie nur so weit beugen wie schmerzfrei (nicht ganz nach vorn rollen, falls nötig). Stopp bei Schmerz > 5/10, stechendem Schmerz, Blockieren oder Wegknicken. Nach der OP kein Rudern.",
+      "levels": [
+        {
+          "label": "10 min: 2 min Technik + 8 min locker",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 600,
+          "intensity": "easy",
+          "targetSpm": [
+            18,
+            22
+          ],
+          "targetRpe": [
+            3,
+            4
+          ],
+          "phases": [
+            {
+              "label": "Nur Arme",
+              "seconds": 30,
+              "intensity": "easy",
+              "say": "Nur Arme, Beine bleiben lang"
+            },
+            {
+              "label": "Arme + Oberkörper",
+              "seconds": 30,
+              "intensity": "easy",
+              "say": "Arme und Oberkörper"
+            },
+            {
+              "label": "Halber Beinweg",
+              "seconds": 30,
+              "intensity": "easy",
+              "say": "Halber Beinweg"
+            },
+            {
+              "label": "Ganzer Schlag, locker",
+              "seconds": 30,
+              "intensity": "easy",
+              "say": "Ganzer Schlag, locker"
+            },
+            {
+              "label": "Locker rudern · RPE 3–4",
+              "seconds": 480,
+              "intensity": "easy",
+              "say": "Acht Minuten locker rudern, Schlagzahl 18 bis 22"
+            }
+          ]
+        }
+      ],
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "tags": [
+        "rudern",
+        "aufwaermen"
+      ],
+      "figure": {
+        "poses": [
+          "row-catch",
+          "row-drive",
+          "row-finish",
+          "row-recovery"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "loop": true,
+        "tempo": "2-0-1"
+      },
+      "postOpAllowed": false,
+      "cueWords": {
+        "work": "Rudern"
       }
     }
   ]

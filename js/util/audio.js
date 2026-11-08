@@ -3,6 +3,8 @@
 //   The module also installs a one-time gesture listener itself, so unlock happens even if
 //   the caller forgets.
 // - beep(kind): small synthesized sounds (no audio files), respects settings.sound.
+// - cueTone(cue): distinct tone per training phase (prep/tense/relax/rest/rep-up/rep-down/
+//   set-done/exercise-done) – the fallback for devices without a German TTS voice (util/voice.js).
 // - vibrate(pattern): respects settings.vibration, no-op where unsupported.
 // Everything fails silently and is safe to import in Node (no DOM access at import time).
 import { getSettings } from '../store.js';
@@ -66,9 +68,37 @@ export const SOUNDS = {
   ],
   // single mellow note marking a completed hold rep / phase change
   rep: [[783.99, 0, 0.16, 0.2, 'triangle']],
+  // --- distinct phase cues (fallback when no German voice is available, SPEC §15, voice guidance) ---
+  // very quiet short tick played under the voice on phase changes
+  soft: [[1318.5, 0, 0.05, 0.06, 'sine']],
+  // "Bereit machen": one warm mid note
+  prep: [[523.25, 0, 0.22, 0.2, 'sine'], [1046.5, 0, 0.12, 0.04, 'sine']],
+  // anspannen / los: rising two-tone (low → high)
+  tense: [[523.25, 0, 0.14, 0.24, 'triangle'], [880, 0.13, 0.24, 0.26, 'triangle']],
+  // locker lassen / entspannen: falling two-tone (high → low), softer
+  relax: [[880, 0, 0.16, 0.2, 'sine'], [587.33, 0.15, 0.3, 0.18, 'sine']],
+  // Satzpause: low long tone
+  rest: [[293.66, 0, 0.75, 0.22, 'sine'], [587.33, 0, 0.4, 0.04, 'sine']],
+  // tempo coach: short up / down blips (one per rep part)
+  up: [[660, 0, 0.07, 0.16, 'triangle'], [880, 0.05, 0.07, 0.16, 'triangle']],
+  down: [[660, 0, 0.07, 0.14, 'sine'], [494, 0.05, 0.08, 0.14, 'sine']],
+  // Satz geschafft: two bright notes
+  setdone: [[783.99, 0, 0.2, 0.2, 'sine'], [1046.5, 0.14, 0.35, 0.2, 'sine']],
 };
 
-/** @param {'tick'|'done'|'start'|'rep'} [kind] */
+/** Phase cue (cue-plan phase name) → sound recipe key (SPEC §15, voice guidance). */
+export const CUE_SOUNDS = {
+  prep: 'prep', tense: 'tense', hold: 'tense', work: 'tense', relax: 'relax', switch: 'relax', rest: 'rest',
+  'rep-up': 'up', 'rep-hold': 'rep', 'rep-down': 'down', 'set-done': 'setdone', 'exercise-done': 'done', count: 'tick', done: 'done',
+};
+
+/** Play the distinct tone for a phase cue (no-op for unknown cues). */
+export function cueTone(cue) {
+  const kind = CUE_SOUNDS[cue];
+  if (kind) beep(kind);
+}
+
+/** @param {'tick'|'done'|'start'|'rep'|'soft'|'prep'|'tense'|'relax'|'rest'|'up'|'down'|'setdone'} [kind] */
 export function beep(kind = 'tick') {
   try {
     if (settings().sound === false) return;

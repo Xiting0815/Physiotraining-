@@ -33,13 +33,13 @@ test('duration: tempoSeconds and per-exercise estimate', () => {
   assert.equal(tempoSeconds('3-1-2'), 6);
   assert.equal(tempoSeconds(null), null);
   assert.equal(tempoSeconds('x-1'), null);
-  // quad-set level 0: 2 × (10 × 5 s + 9 × 3 s) + 1 × 30 s rest + 20 s setup
-  assert.equal(estimateExerciseSeconds({ level: 0 }, ex('quad-set'), {}), 2 * 77 + 30 + SETUP_SEC);
-  // tke perSide level 0: 2 × (12 × 5 s × 2 + 5) + 45 + 20
-  assert.equal(estimateExerciseSeconds({ level: 0 }, ex('tke'), {}), 2 * 125 + 45 + 20);
+  // v4: quad-set level 0: 2 × (5 s prep + 10 × 5 s + 9 × 5 s relax) + 1 × 30 s rest + 20 s setup
+  assert.equal(estimateExerciseSeconds({ level: 0 }, ex('quad-set'), {}), 2 * 100 + 30 + SETUP_SEC);
+  // tke perSide level 0: 2 × (12 × 5 s × 2 + 5 switch + 5 prep) + 45 + 20
+  assert.equal(estimateExerciseSeconds({ level: 0 }, ex('tke'), {}), 2 * 130 + 45 + 20);
   // plannedSets + restDefault override
-  assert.equal(estimateExerciseSeconds({ level: 0, plannedSets: 1 }, ex('tke'), { restDefault: 90 }), 125 + 20);
-  assert.equal(estimateExerciseSeconds({ level: 0, plannedSets: 3 }, ex('tke'), { restDefault: 90 }), 3 * 125 + 180 + 20);
+  assert.equal(estimateExerciseSeconds({ level: 0, plannedSets: 1 }, ex('tke'), { restDefault: 90 }), 130 + 20);
+  assert.equal(estimateExerciseSeconds({ level: 0, plannedSets: 3 }, ex('tke'), { restDefault: 90 }), 3 * 130 + 180 + 20);
   // timed rowing: no setup
   assert.equal(estimateExerciseSeconds({ level: 0 }, ex('row-steady'), {}), 720);
   assert.equal(estimateExerciseSeconds({ level: 0 }, ex('row-intervals'), {}), 6 * 60 + 5 * 60);
@@ -51,18 +51,20 @@ test('duration: tempoSeconds and per-exercise estimate', () => {
 
 const fresh = (w, levels = {}) => ({ phaseId: w.phaseId, exerciseLevels: levels });
 
-test('workouts: every strength workout ≤ 30 min at level 0 (no trimming) and ≤ 30 min at max levels (plan, trimmed)', () => {
+test('workouts (v4): every strength workout ≤ 32 min at level 0 (no trimming) and ≤ 32 min at max levels (plan, trimmed)', () => {
   const strength = content.workouts.filter((w) => workoutKind(w) === 'strength');
   assert.equal(strength.length, 12); // 3 per phase incl. p4
   for (const w of strength) {
+    assert.equal(w.maxMinutes, 32, w.id);
     const m0 = estimateWorkoutMinutes(w, content, fresh(w), settings);
-    assert.ok(m0 <= 30, `${w.id} level 0: ${m0} min`);
+    assert.ok(m0 <= 32, `${w.id} level 0: ${m0} min`);
     assert.equal(w.durationMin, m0, `${w.id}.durationMin = estimate at level 0`);
     const plan = buildSessionPlan(w, fresh(w, maxLevels), content, { settings });
     const mMax = estimateWorkoutMinutes(plan, content, null, settings);
-    assert.ok(mMax <= 30, `${w.id} max levels: ${mMax} min`);
+    assert.ok(mMax <= 32, `${w.id} max levels: ${mMax} min`);
+    assert.equal(plan.budgetMin, 32);
     assert.ok(plan.exercises.every((e) => e.plannedSets >= 1));
-    assert.ok(plan.exercises.length >= 9, `${w.id} keeps its exercises`);
+    assert.ok(plan.exercises.length >= 14, `${w.id} keeps its exercises (warm-up + 8 main + 5 stretches)`);
   }
 });
 
@@ -71,9 +73,10 @@ test('workouts: Kurztraining (~15 min) per phase with knee + archery incl. SPT',
     const w = content.workouts.find((x) => x.id === p.short);
     assert.ok(w && w.kind === 'short' && w.phaseId === p.id, `${p.id}.short`);
     const m0 = estimateWorkoutMinutes(w, content, fresh(w), settings);
-    assert.ok(m0 >= 12 && m0 <= 15, `${w.id}: ${m0} min`);
+    assert.ok(m0 >= 12 && m0 <= 16, `${w.id}: ${m0} min`);
+    assert.equal(w.durationMin, m0, `${w.id}.durationMin`);
     const plan = buildSessionPlan(w, fresh(w, maxLevels), content, { settings });
-    assert.ok(estimateWorkoutMinutes(plan, content, null, settings) <= 15, `${w.id} max`);
+    assert.ok(estimateWorkoutMinutes(plan, content, null, settings) <= 16, `${w.id} max`);
     const knee = w.blocks.find((b) => b.id === 'knee').items;
     const arch = w.blocks.find((b) => b.id === 'archery').items.map((i) => i.exerciseId);
     assert.ok(knee.length >= 2 && knee.length <= 3 && arch.length >= 2 && arch.length <= 3);
@@ -221,7 +224,7 @@ test('rowing: guided phases, validation, pace, totals', () => {
   assert.equal(pacePer500({ durationSec: 960, distanceM: 3200 }), 150);
   assert.equal(pacePer500({}), null);
   const sessions = [S('2026-11-02', { kind: 'cardio', rowing: { durationSec: 900, distanceM: 3000, kcalDisplay: 150 } }), S('2026-11-03', { kind: 'cardio', rowing: { durationSec: 600, distanceM: 2000 } }), S('2026-11-04')];
-  assert.deepEqual(rowingTotals(sessions), { sessions: 2, distanceM: 5000, durationSec: 1500, kcalDisplay: 150 });
+  assert.deepEqual(rowingTotals(sessions), { sessions: 2, warmups: 0, distanceM: 5000, durationSec: 1500, kcalDisplay: 150 });
 });
 
 // ---------------------------------------------------------------------------- energy
@@ -360,7 +363,7 @@ test('stats: strength goal excludes rowing, cardio goal, same-day hint, cardio s
   const s = [S('2026-11-02'), S('2026-11-03', { kind: 'cardio', rowing: { durationSec: 900, distanceM: 3000 } }), S('2026-11-04', { kind: 'short' }), S('2026-11-04', { kind: 'cardio', rowing: { durationSec: 600 } })];
   assert.equal(isCardioSession(s[1]), true);
   assert.equal(weeklyProgress(s, 3, '2026-11-05').done, 2);
-  assert.deepEqual(cardioProgress(s, 3, '2026-11-05'), { done: 2, goal: 3, ratio: 2 / 3, minutes: 25, distanceM: 3000 });
+  assert.deepEqual(cardioProgress(s, 3, '2026-11-05'), { done: 2, goal: 3, ratio: 2 / 3, minutes: 25, distanceM: 3000, warmupMinutes: 0, warmupCount: 0 });
   assert.match(sameDayLoadHint(s, '2026-11-04'), /Erholung/);
   assert.equal(sameDayLoadHint(s, '2026-11-02'), null);
   assert.match(sameDayLoadHint(s, '2026-11-02', 'cardio'), /Erholung/);
@@ -395,7 +398,7 @@ test('badges v2: rowing, custom workout (v3.1: weight/diary badges removed)', ()
 test('store v2 defaults: additive keys, no schema bump, surgery date never set silently', () => {
   const d = store.defaults();
   assert.equal(store.SCHEMA_VERSION, 1);
-  assert.equal(d.settings.cardioGoalPerWeek, 3);
+  assert.equal(d.settings.cardioGoalPerWeek, 2, 'v4 default: 2 separate rowing sessions');
   assert.equal(d.settings.surgeryDate, null);
   assert.equal(d.settings.surgeryDateSuggested, '2027-01-05');
   assert.deepEqual(d.settings.profile, { weightKg: null });
@@ -408,7 +411,8 @@ test('store v2 defaults: additive keys, no schema bump, surgery date never set s
   const old = { schemaVersion: 1, settings: { surgeryDate: '2027-01-15', weeklyGoal: 3 }, state: { phaseId: 'p1-basis', xp: 50 }, sessions: [] };
   const m = store.migrate(old);
   assert.equal(m.settings.surgeryDate, '2027-01-15');
-  assert.equal(m.settings.cardioGoalPerWeek, 3);
+  assert.equal(m.settings.cardioGoalPerWeek, 2);
+  assert.equal(store.migrate({ ...old, settings: { ...old.settings, cardioGoalPerWeek: 3 } }).settings.cardioGoalPerWeek, 3, 'stored goal is kept');
   assert.deepEqual(m.settings.profile, { weightKg: null });
   // v2/v3 data: weightGoal / healthLog / legacy profile keys stay untouched, weightKg prefilled from the latest log weight
   const log = [{ date: '2026-11-01', weightKg: 91.2 }, { date: '2026-11-05', steps: 5000 }, { date: '2026-11-03', weightKg: 90.44 }, { date: '2026-10-01', weightKg: 95 }];

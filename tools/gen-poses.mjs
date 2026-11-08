@@ -1010,6 +1010,125 @@ const armLen = (e) => Math.hypot(SEG.upperArm + SEG.forearm * Math.cos(e * RAD),
   add('supine-right-leg-press', press(135, 4, 200));
 }
 
+// ================================================================ v4: dynamic warm-up & static stretching (SPEC §15)
+// ---------------------------------------------------------------- leg swing front/back, hands on a wall in front
+{
+  const mk = (hipR, kneeR) => {
+    const p = flat(side('standing', { trunk: 0, hipL: 0, kneeL: 5, hipR, kneeR, shoulderL: 84, shoulderR: 84, elbowL: 0, elbowR: 0 }), 'L');
+    ground(p, FLOOR, ['legL']);
+    p.ankleR = r1(hipR - kneeR + 15); // swinging foot relaxed
+    return p;
+  };
+  const a = mk(22, 6);
+  const b = mk(-18, 10); atFoot(b, a, 'L');
+  const wall = { type: 'wall', x: r1(pts(a).handR.x + 4.5), facing: -1 };
+  a.props = [wall]; b.props = [wall];
+  add('leg-swing-front-a', a);
+  add('leg-swing-front-b', b);
+}
+// ---------------------------------------------------------------- leg swing sideways (front view, left hand on a chair)
+alias('leg-swing-side-out', 'front-hip-abd-right', (p) => { p.props = p.props.filter((x) => x.type === 'chair'); });
+alias('leg-swing-side-in', 'front-hip-abd-right', (p) => { p.hipR = -10; p.props = p.props.filter((x) => x.type === 'chair'); });
+// ---------------------------------------------------------------- pelvis circles (front view, hands on the hips, feet stay)
+{
+  const base = ground(front('standing', { hipL: 6, hipR: 6, kneeL: 0, kneeR: 0 }), FLOOR);
+  const P0 = pts(base);
+  const mk = (dx) => {
+    const p = clone(base);
+    p.root.x = r1(p.root.x + dx);
+    p.trunk = r1(-dx * 0.6);
+    for (const s of ['L', 'R']) aim(p, 'leg' + s, P0['foot' + s], (k) => k >= 0);
+    return handsOnHips(p);
+  };
+  add('hip-circle-left', mk(7));
+  add('hip-circle-right', mk(-7));
+}
+// ---------------------------------------------------------------- seated ankle circles (right leg long, heel on the floor)
+{
+  const mk = (toe) => {
+    const p = flat(side('sitting', { root: { x: 92, y: seatY }, trunk: -3, hipL: 90, hipR: 90, kneeL: 90, kneeR: 15, shoulderL: 15, shoulderR: 15, elbowL: 25, elbowR: 25 }));
+    // lowest of heel/toes touches the floor (sole angle follows the hip angle)
+    solve(p, 'hipR', 40, 90, (q) => { q.ankleR = q.hipR - q.kneeR + toe; const P = pts(q); return Math.max(P.footR.y + 4.25, P.toeR.y + 3) - FLOOR; });
+    p.ankleR = r1(p.hipR - p.kneeR + toe);
+    p.props = [{ type: 'chair', x: chairX, y: SEAT, facing: 1 }];
+    return p;
+  };
+  add('sit-ankle-up', mk(-22));
+  add('sit-ankle-down', mk(32));
+}
+// ---------------------------------------------------------------- band dislocates (front view, wide grip low → overhead)
+add('band-dislocate-low', ground(front('standing', { shoulderL: 28, shoulderR: 28, elbowL: 0, elbowR: 0 }), FLOOR));
+add('band-dislocate-high', ground(front('standing', { shoulderL: 158, shoulderR: 158, elbowL: 0, elbowR: 0 }), FLOOR));
+// ---------------------------------------------------------------- hip flexor stretch standing (short split stance, back = left leg)
+{
+  const a = flat(side('standing', { trunk: 2, hipR: 20, kneeR: 22, hipL: -20, kneeL: 3, shoulderL: 12, shoulderR: 12, elbowL: 25, elbowR: 25 }));
+  ground(a, FLOOR);
+  a.ankleL = r1(a.hipL - a.kneeL + 12); // back heel lifts slightly
+  const P0 = pts(a);
+  const b = clone(a);
+  b.trunk = -4; b.root.x = r1(b.root.x + 3); b.root.y = r1(b.root.y + 1.5);
+  aim(b, 'legR', P0.footR, (k) => k >= 0); flat(b, 'R');
+  aim(b, 'legL', P0.footL, (k) => k >= 0); b.ankleL = r1(b.hipL - b.kneeL + 12);
+  add('stand-hip-flexor-stagger', a);
+  add('stand-hip-flexor-stretch', b);
+}
+// ---------------------------------------------------------------- supine: knee hug right (left hip flexor), hamstring band, figure 4
+{
+  const hug = lie(supine({ hipR: 212, kneeR: 122, hipL: 90, kneeL: 0, ankleL: 20 }));
+  ground(hug, MAT, ['trunk', 'head', 'legL']);
+  { const P = pts(hug); aim(hug, 'armR', { x: P.kneeR.x - 3, y: P.kneeR.y + 3 }, (j2) => j2 >= 0); sameArms(hug); }
+  hug.props = ['mat'];
+  add('supine-knee-hug-right', hug);
+  const ham = (hipR) => {
+    const p = lie(supine({ hipR, kneeR: 0, hipL: 90, kneeL: 0, ankleL: 20, ankleR: -8 }));
+    ground(p, MAT, ['trunk', 'head', 'legL']);
+    // hands hold the band ends above the chest, arms toward the raised foot
+    p.shoulderL = p.shoulderR = 148; p.elbowL = p.elbowR = 12;
+    p.props = ['mat'];
+    return p;
+  };
+  add('supine-hamstring-band-low', ham(132));
+  add('supine-hamstring-band', ham(158));
+  const f4 = hook({}, ['L'], 85);
+  { const P = pts(f4); aim(f4, 'legR', { x: P.kneeL.x - 5, y: P.kneeL.y - 6 }, (k) => k > 0); f4.ankleR = 10; }
+  f4.props = ['mat'];
+  add('supine-figure-4', f4);
+}
+// ---------------------------------------------------------------- seated front view: tall, side bend, cross-body, neck
+{
+  const mk = (o = {}) => {
+    const p = front('sitting', { hipL: 80, hipR: 80, thighLenL: 0.25, thighLenR: 0.25, kneeL: 80, kneeR: 80, shoulderL: 14, shoulderR: 14, elbowL: -25, elbowR: -25, props: [{ type: 'chair' }], ...o });
+    return ground(p, FLOOR, ['legL', 'legR']);
+  };
+  add('front-sit-tall', mk());
+  add('front-sit-side-bend', mk({ trunk: 16, shoulderR: 168, elbowR: -20, shoulderL: 18, elbowL: 0, headTilt: 6 }));
+  {
+    const p = mk();
+    const P = pts(p);
+    aim(p, 'armR', { x: P.shoulderL.x + 14, y: P.shoulderL.y + 4 }, (e, el) => el.y >= P.shoulderR.y - 2);
+    const Q = pts(p);
+    aim(p, 'armL', { x: Q.elbowR.x, y: Q.elbowR.y + 1 }, (e, el) => el.y > Q.elbowR.y);
+    add('front-sit-cross-body', p);
+  }
+  {
+    const p = mk({ headTilt: -40, shoulderL: 10, elbowL: 0 });
+    const P = pts(p);
+    aim(p, 'armR', { x: P.head.x - 6, y: P.head.y - 8 }, (e, el) => el.y < P.shoulderR.y + 6);
+    add('front-sit-neck-stretch', p);
+  }
+}
+// ---------------------------------------------------------------- seated forearm flexor stretch (side view)
+{
+  const mk = (pull) => {
+    const p = flat(side('sitting', { root: { x: 92, y: seatY }, trunk: -2, hipL: 90, hipR: 90, kneeL: 90, kneeR: 90, shoulderR: 88, elbowR: 0, shoulderL: 15, elbowL: 40 }));
+    if (pull) { const P = pts(p); aim(p, 'armL', { x: P.handR.x - 2, y: P.handR.y - 3 }, (e) => e >= 0); }
+    p.props = [{ type: 'chair', x: chairX, y: SEAT, facing: 1 }];
+    return p;
+  };
+  add('sit-forearm-stretch-start', mk(false));
+  add('sit-forearm-stretch', mk(true));
+}
+
 // lying with the neck lower than the hips (bridges): tilt the head back to the mat
 for (const p of Object.values(poses)) {
   if (p.view === 'side' && p.ground === 'lying' && p.trunk < -92) p.headTilt = r1(-90 - p.trunk);

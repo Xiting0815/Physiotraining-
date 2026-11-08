@@ -1,7 +1,7 @@
 // Workout rotation, levels, phases. PURE. See docs/SPEC.md §5.3, §7.7.
 import { addDays, daysBetween, startOfIsoWeek, todayISO } from '../util/date.js';
 import { dayOf, doneSessions, sessionLight, sessionsPerWeek, streak } from './stats.js';
-import { cappedSets, fitPlanToMinutes } from './duration.js';
+import { cappedSets, fitPlanToMinutes, workoutItems, MAX_SESSION_MIN, MAX_SESSION_WITH_ROW_MIN } from './duration.js';
 
 /** Workout kinds (v2). Missing `kind` = "strength". */
 export const WORKOUT_KINDS = ['strength', 'short', 'cardio', 'custom'];
@@ -122,25 +122,64 @@ function phaseOrder(content, phaseId) {
 }
 
 /**
+ * v4 (SPEC §15.3): can this workout start with the rowing warm-up?
+ * True when the workout names a rowing exercise in `rowWarmup` (strength workouts p1–p3), the current phase is not
+ * post-op, the exercise exists, its phaseMin is reached and it is available (`exerciseAvailable`: user toggle,
+ * `postOpAllowed: false`). Short, cardio, custom and p4 workouts → false.
+ * @param {import('../types.js').Workout} workout
+ * @param {import('../types.js').State} state
+ * @param {import('../types.js').Content} content
+ * @returns {boolean}
+ */
+export function canRowWarmup(workout, state, content) {
+  if (!workout || typeof workout.rowWarmup !== 'string' || workoutKind(workout) !== 'strength') return false;
+  const phases = content?.phases || [];
+  const phase = phases.find((p) => p.id === (state?.phaseId ?? workout.phaseId)) ?? phases.find((p) => p.id === workout.phaseId);
+  if (phase?.kind === 'postop') return false;
+  const ex = (content?.exercises || []).find((e) => e.id === workout.rowWarmup);
+  if (!ex) return false;
+  const cur = phaseOrder(content, phase?.id);
+  const min = phaseOrder(content, ex.phaseMin);
+  if (cur != null && min != null && cur < min) return false;
+  return exerciseAvailable(ex, phase, state);
+}
+
+/**
+ * Time budget (minutes) of a plan built from `workout`: cardio → null; with rowing warm-up →
+ * `workout.maxMinutesWithRow ?? MAX_SESSION_WITH_ROW_MIN` (42); else `workout.maxMinutes ?? MAX_SESSION_MIN` (content strength
+ * workouts carry 32, short 16; custom 30).
+ * @param {import('../types.js').Workout} workout
+ * @param {boolean} [rowWarmup] the plan contains the rowing warm-up
+ * @returns {number|null}
+ */
+export function planBudgetMinutes(workout, rowWarmup = false) {
+  if (workoutKind(workout) === 'cardio') return null;
+  if (rowWarmup) return workout.maxMinutesWithRow ?? MAX_SESSION_WITH_ROW_MIN;
+  return workout.maxMinutes ?? MAX_SESSION_MIN;
+}
+
+/**
  * Build an active session from a workout.
  * - Unknown exercise ids are dropped; `phaseMin` is respected (order ≥ phase(phaseMin).order).
  * - `taper`: exercises never performed in a previous done session are skipped (only if there is
  *   any history), and every entry gets `plannedSets` reduced by applyTaper.
  * - Each entry carries `plannedSets` (planned set count of its level, after taper).
+ * - v4 `rowWarmup` (default `settings.rowWarmupDefault`, else false): when `canRowWarmup` is true, the plan starts
+ *   with the rowing block (`workout.rowWarmup`, section "cardio") and keeps only the warm-up items marked
+ *   `keepWithRow`; otherwise the full mobility warm-up. The plan records `rowWarmup: boolean` and (when rowing)
+ *   `warmupRowing: null` (display values of the warm-up row, SPEC §15.3).
  * @param {import('../types.js').Workout} workout
  * @param {import('../types.js').State} state
  * @param {import('../types.js').Content} content
- * @param {{taper?: boolean, today?: string, history?: import('../types.js').Session[], now?: Date}} [opts]
+ * @param {{taper?: boolean, history?: import('../types.js').Session[], now?: Date, settings?: import('../types.js').Settings|null, fit?: boolean, rowWarmup?: boolean}} [opts]
  * @returns {import('../types.js').Session}
  */
-export function buildSessionPlan(workout, state, content, { taper = false, history = [], now = new Date(), settings = null, fit = true } = {}) {
+export function buildSessionPlan(workout, state, content, { taper = false, history = [], now = new Date(), settings = null, fit = true, rowWarmup } = {}) {
   const kind = workoutKind(workout);
   const phase = (content?.phases || []).find((p) => p.id === (state?.phaseId ?? workout.phaseId)) ?? (content?.phases || []).find((p) => p.id === workout.phaseId);
-  const items = [
-    ...(workout.warmup || []).map((it) => ({ ...it, section: 'warmup' })),
-    ...(workout.blocks || []).flatMap((b) => (b.items || []).map((it) => ({ ...it, section: b.id }))),
-    ...(workout.cooldown || []).map((it) => ({ ...it, section: 'cooldown' })),
-  ];
+  const wantRow = rowWarmup ?? settings?.rowWarmupDefault ?? false;
+  const withRow = !!wantRow && canRowWarmup(workout, state, content);
+  const items = workoutItems(workout, { rowWarmup: withRow });
   const curOrder = phaseOrder(content, state?.phaseId ?? workout.phaseId) ?? phaseOrder(content, workout.phaseId);
   const done = doneSessions(history);
   const performedBefore = new Set();
@@ -159,7 +198,7 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
     if (!exerciseAvailable(ex, phase, state)) continue;
     if (taper && done.length && !performedBefore.has(ex.id)) continue;
     const level = levelOf(state, it.exerciseId, ex);
-    const sets = kind === 'cardio' ? (ex.levels[level]?.sets ?? 1) : cappedSets(ex.levels[level]?.sets ?? 1, it, workout);
+    const sets = kind === 'cardio' || it.section === 'cardio' ? (ex.levels[level]?.sets ?? 1) : cappedSets(ex.levels[level]?.sets ?? 1, it, workout);
     exercises.push({
       exerciseId: it.exerciseId,
       section: it.section,
@@ -180,6 +219,9 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
     kind,
     ...(phase?.kind === 'postop' ? { postOp: true } : {}),
     ...(kind === 'cardio' ? { rowing: null } : {}),
+    ...(kind !== 'cardio' ? { rowWarmup: withRow } : {}),
+    ...(withRow ? { warmupRowing: null } : {}),
+    ...(kind !== 'cardio' ? { budgetMin: planBudgetMinutes(workout, withRow) } : {}),
     status: 'active',
     startedAt: now.toISOString(),
     endedAt: null,
@@ -192,8 +234,8 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
     recommendations: [],
     cursor: { index: 0, set: 0, step: 'pre' },
   };
-  // v2: keep strength/short/custom sessions inside their time budget (default 30 / 15 min) by trimming sets.
-  const maxMinutes = workout.maxMinutes ?? (kind === 'cardio' ? null : 30);
+  // keep strength/short/custom sessions inside their time budget (v4: 32 / 42 with rowing / short 16 / custom 30) by trimming sets.
+  const maxMinutes = planBudgetMinutes(workout, withRow);
   if (fit && maxMinutes && kind !== 'cardio') fitPlanToMinutes(plan, content, settings, maxMinutes);
   return plan;
 }

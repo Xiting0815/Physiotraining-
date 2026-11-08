@@ -1,19 +1,36 @@
 {
-  "version": 2,
+  "version": 3,
   "workouts": [
     {
       "id": "p1-a",
       "name": "A – Kraft & Zug",
       "phaseId": "p1-basis",
       "kind": "strength",
-      "durationMin": 25,
+      "durationMin": 31,
+      "durationMinWithRow": 39,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
+      "maxMinutesWithRow": 42,
+      "rowWarmup": "row-warmup-10",
       "description": "Quadrizeps anschalten, rechtes Bein für die Krückenzeit kräftigen, Rückenspannung und SPT.",
       "warmup": [
         {
-          "exerciseId": "knee-pendulum",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
+        },
+        {
+          "exerciseId": "hip-circles-standing",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1,
+          "keepWithRow": true
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation",
+          "maxSets": 1,
+          "keepWithRow": true
         }
       ],
       "blocks": [
@@ -61,7 +78,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hip-flexor-stretch-standing",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "calf-stretch-wall",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "doorway-pec-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "forearm-flexor-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "neck-side-stretch",
           "maxSets": 1
         }
       ]
@@ -71,14 +104,31 @@
       "name": "B – Stabilität & Stütz",
       "phaseId": "p1-basis",
       "kind": "strength",
-      "durationMin": 27,
+      "durationMin": 32,
+      "durationMinWithRow": 40,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
+      "maxMinutesWithRow": 42,
+      "rowWarmup": "row-warmup-10",
       "description": "Hüfte und Beinachse stabilisieren, Stütz für die Krücken, Schulterschutz.",
       "warmup": [
         {
-          "exerciseId": "knee-pendulum",
+          "exerciseId": "leg-swing-side",
           "maxSets": 1
+        },
+        {
+          "exerciseId": "ankle-circles-seated",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1,
+          "keepWithRow": true
+        },
+        {
+          "exerciseId": "seated-spine-wave",
+          "maxSets": 1,
+          "keepWithRow": true
         }
       ],
       "blocks": [
@@ -125,7 +175,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hamstring-stretch-band",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "figure-4-stretch-supine",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "lat-side-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "cross-body-shoulder-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "neck-side-stretch",
           "maxSets": 1
         }
       ]
@@ -135,15 +201,31 @@
       "name": "C – Funktion & Haltung",
       "phaseId": "p1-basis",
       "kind": "strength",
-      "durationMin": 26,
+      "durationMin": 32,
+      "durationMinWithRow": 40,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
+      "maxMinutesWithRow": 42,
+      "rowWarmup": "row-warmup-10",
       "description": "Streckung sichern, Alltagskraft, Lat und Trizeps für die Krücken, SPT.",
       "warmup": [
         {
-          "exerciseId": "heel-slides",
-          "note": "Locker, 1 Satz reicht zum Aufwärmen",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
+        },
+        {
+          "exerciseId": "leg-swing-side",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1,
+          "keepWithRow": true
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation",
+          "maxSets": 1,
+          "keepWithRow": true
         }
       ],
       "blocks": [
@@ -189,7 +271,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hip-flexor-stretch-standing",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "hamstring-stretch-band",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "doorway-pec-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "cross-body-shoulder-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "forearm-flexor-stretch",
           "maxSets": 1
         }
       ]
@@ -199,14 +297,31 @@
       "name": "A – Kraft & Auszug",
       "phaseId": "p2-aufbau",
       "kind": "strength",
-      "durationMin": 27,
+      "durationMin": 32,
+      "durationMinWithRow": 40,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
+      "maxMinutesWithRow": 42,
+      "rowWarmup": "row-warmup-10",
       "description": "Step-ups und rechtes Bein, Zugkraft, Dips für den Krückenstütz, SPT.",
       "warmup": [
         {
-          "exerciseId": "knee-pendulum",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
+        },
+        {
+          "exerciseId": "hip-circles-standing",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1,
+          "keepWithRow": true
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation",
+          "maxSets": 1,
+          "keepWithRow": true
         }
       ],
       "blocks": [
@@ -251,7 +366,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hip-flexor-stretch-standing",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "calf-stretch-wall",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "doorway-pec-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "forearm-flexor-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "neck-side-stretch",
           "maxSets": 1
         }
       ]
@@ -261,14 +392,31 @@
       "name": "B – Balance & Stütz",
       "phaseId": "p2-aufbau",
       "kind": "strength",
-      "durationMin": 29,
+      "durationMin": 30,
+      "durationMinWithRow": 38,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
+      "maxMinutesWithRow": 42,
+      "rowWarmup": "row-warmup-10",
       "description": "Hüftstabilität, Beinkontrolle links, Rotatoren und Rumpf, Abstützen.",
       "warmup": [
         {
-          "exerciseId": "knee-pendulum",
+          "exerciseId": "leg-swing-side",
           "maxSets": 1
+        },
+        {
+          "exerciseId": "ankle-circles-seated",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1,
+          "keepWithRow": true
+        },
+        {
+          "exerciseId": "seated-spine-wave",
+          "maxSets": 1,
+          "keepWithRow": true
         }
       ],
       "blocks": [
@@ -285,10 +433,6 @@
             },
             {
               "exerciseId": "glute-bridge"
-            },
-            {
-              "exerciseId": "straight-leg-raise",
-              "note": "Links beginnen, links ist das Trainingsbein."
             },
             {
               "exerciseId": "single-leg-stance"
@@ -317,7 +461,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hamstring-stretch-band",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "figure-4-stretch-supine",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "lat-side-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "cross-body-shoulder-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "neck-side-stretch",
           "maxSets": 1
         }
       ]
@@ -327,15 +487,31 @@
       "name": "C – Funktion & Ausdauer",
       "phaseId": "p2-aufbau",
       "kind": "strength",
-      "durationMin": 26,
+      "durationMin": 32,
+      "durationMinWithRow": 40,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
+      "maxMinutesWithRow": 42,
+      "rowWarmup": "row-warmup-10",
       "description": "Funktionelle Beinkraft, Kontrolle links, Auszug und Schussablauf.",
       "warmup": [
         {
-          "exerciseId": "heel-slides",
-          "note": "Locker, 1 Satz reicht zum Aufwärmen",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
+        },
+        {
+          "exerciseId": "leg-swing-side",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1,
+          "keepWithRow": true
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation",
+          "maxSets": 1,
+          "keepWithRow": true
         }
       ],
       "blocks": [
@@ -382,7 +558,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hip-flexor-stretch-standing",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "hamstring-stretch-band",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "doorway-pec-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "cross-body-shoulder-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "forearm-flexor-stretch",
           "maxSets": 1
         }
       ]
@@ -392,14 +584,31 @@
       "name": "A – Kraft sichern",
       "phaseId": "p3-op-vorbereitung",
       "kind": "strength",
-      "durationMin": 26,
+      "durationMin": 32,
+      "durationMinWithRow": 40,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
+      "maxMinutesWithRow": 42,
+      "rowWarmup": "row-warmup-10",
       "description": "Bremskraft (Step-down), Post-OP-Übungen, rechtes Bein und Stütz für die Krückenzeit.",
       "warmup": [
         {
-          "exerciseId": "knee-pendulum",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
+        },
+        {
+          "exerciseId": "hip-circles-standing",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1,
+          "keepWithRow": true
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation",
+          "maxSets": 1,
+          "keepWithRow": true
         }
       ],
       "blocks": [
@@ -444,7 +653,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hip-flexor-stretch-standing",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "calf-stretch-wall",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "doorway-pec-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "forearm-flexor-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "neck-side-stretch",
           "maxSets": 1
         }
       ]
@@ -454,14 +679,31 @@
       "name": "B – Stabil in die OP",
       "phaseId": "p3-op-vorbereitung",
       "kind": "strength",
-      "durationMin": 25,
+      "durationMin": 31,
+      "durationMinWithRow": 39,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
+      "maxMinutesWithRow": 42,
+      "rowWarmup": "row-warmup-10",
       "description": "Streckung und Hüfte sichern, Rumpf und Stütz – ausgeruht in die OP.",
       "warmup": [
         {
-          "exerciseId": "knee-pendulum",
+          "exerciseId": "leg-swing-side",
           "maxSets": 1
+        },
+        {
+          "exerciseId": "ankle-circles-seated",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1,
+          "keepWithRow": true
+        },
+        {
+          "exerciseId": "seated-spine-wave",
+          "maxSets": 1,
+          "keepWithRow": true
         }
       ],
       "blocks": [
@@ -508,7 +750,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hamstring-stretch-band",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "figure-4-stretch-supine",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "lat-side-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "cross-body-shoulder-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "neck-side-stretch",
           "maxSets": 1
         }
       ]
@@ -518,15 +776,31 @@
       "name": "C – Turnierform & Ausdauer",
       "phaseId": "p3-op-vorbereitung",
       "kind": "strength",
-      "durationMin": 27,
+      "durationMin": 31,
+      "durationMinWithRow": 39,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
+      "maxMinutesWithRow": 42,
+      "rowWarmup": "row-warmup-10",
       "description": "Streckkraft, Alltagskraft, Trizeps für die Krücken und Halte-Ausdauer am Bogen.",
       "warmup": [
         {
-          "exerciseId": "heel-slides",
-          "note": "Locker, 1 Satz reicht zum Aufwärmen",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
+        },
+        {
+          "exerciseId": "leg-swing-side",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1,
+          "keepWithRow": true
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation",
+          "maxSets": 1,
+          "keepWithRow": true
         }
       ],
       "blocks": [
@@ -554,7 +828,8 @@
           "title": "Bogen, Rücken & Stütz",
           "items": [
             {
-              "exerciseId": "band-pull-apart"
+              "exerciseId": "band-pull-apart",
+              "maxSets": 1
             },
             {
               "exerciseId": "band-triceps-extension"
@@ -572,7 +847,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hip-flexor-stretch-standing",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "hamstring-stretch-band",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "doorway-pec-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "cross-body-shoulder-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "forearm-flexor-stretch",
           "maxSets": 1
         }
       ]
@@ -584,11 +875,11 @@
       "kind": "short",
       "durationMin": 15,
       "maxSets": 1,
-      "maxMinutes": 15,
+      "maxMinutes": 16,
       "description": "Das Wichtigste in ca. 15 Minuten: Quadrizeps, Hüfte, Rücken und SPT.",
       "warmup": [
         {
-          "exerciseId": "knee-pendulum",
+          "exerciseId": "mobility-flow-short",
           "maxSets": 1
         }
       ],
@@ -598,8 +889,7 @@
           "title": "Knie & Beine",
           "items": [
             {
-              "exerciseId": "quad-set",
-              "maxSets": 2
+              "exerciseId": "quad-set"
             },
             {
               "exerciseId": "sit-to-stand",
@@ -615,8 +905,7 @@
           "title": "Bogen & Rücken",
           "items": [
             {
-              "exerciseId": "seated-row",
-              "maxSets": 2
+              "exerciseId": "seated-row"
             },
             {
               "exerciseId": "band-pull-apart"
@@ -628,20 +917,25 @@
           ]
         }
       ],
-      "cooldown": []
+      "cooldown": [
+        {
+          "exerciseId": "stretch-flow-short",
+          "maxSets": 1
+        }
+      ]
     },
     {
       "id": "p2-short",
       "name": "Kurztraining – Aufbau",
       "phaseId": "p2-aufbau",
       "kind": "short",
-      "durationMin": 15,
+      "durationMin": 14,
       "maxSets": 1,
-      "maxMinutes": 15,
+      "maxMinutes": 16,
       "description": "Das Wichtigste in ca. 15 Minuten: Step-up, Hüfte, Stütz und SPT.",
       "warmup": [
         {
-          "exerciseId": "knee-pendulum",
+          "exerciseId": "mobility-flow-short",
           "maxSets": 1
         }
       ],
@@ -651,8 +945,7 @@
           "title": "Knie & Beine",
           "items": [
             {
-              "exerciseId": "step-up",
-              "maxSets": 2
+              "exerciseId": "step-up"
             },
             {
               "exerciseId": "glute-bridge"
@@ -668,8 +961,7 @@
           "title": "Bogen & Rücken",
           "items": [
             {
-              "exerciseId": "seated-row",
-              "maxSets": 2
+              "exerciseId": "seated-row"
             },
             {
               "exerciseId": "chair-dip"
@@ -681,7 +973,12 @@
           ]
         }
       ],
-      "cooldown": []
+      "cooldown": [
+        {
+          "exerciseId": "stretch-flow-short",
+          "maxSets": 1
+        }
+      ]
     },
     {
       "id": "p3-short",
@@ -690,11 +987,11 @@
       "kind": "short",
       "durationMin": 14,
       "maxSets": 1,
-      "maxMinutes": 15,
+      "maxMinutes": 16,
       "description": "Das Wichtigste in ca. 15 Minuten: Post-OP-Übungen, Stütz und SPT.",
       "warmup": [
         {
-          "exerciseId": "knee-pendulum",
+          "exerciseId": "mobility-flow-short",
           "maxSets": 1
         }
       ],
@@ -704,8 +1001,7 @@
           "title": "Knie & Beine",
           "items": [
             {
-              "exerciseId": "quad-set",
-              "maxSets": 2
+              "exerciseId": "quad-set"
             },
             {
               "exerciseId": "straight-leg-raise"
@@ -720,8 +1016,7 @@
           "title": "Bogen & Rücken",
           "items": [
             {
-              "exerciseId": "seated-row",
-              "maxSets": 2
+              "exerciseId": "seated-row"
             },
             {
               "exerciseId": "seated-press-up"
@@ -733,20 +1028,37 @@
           ]
         }
       ],
-      "cooldown": []
+      "cooldown": [
+        {
+          "exerciseId": "stretch-flow-short",
+          "maxSets": 1
+        }
+      ]
     },
     {
       "id": "p4-a",
       "name": "A – Aktivieren & Stütz",
       "phaseId": "p4-entlastung",
       "kind": "strength",
-      "durationMin": 24,
+      "durationMin": 30,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
       "description": "Quadrizeps, Streckung und Kniescheibe aktiv halten, Oberkörper und SPT im Sitzen.",
       "warmup": [
         {
           "exerciseId": "ankle-pumps",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "shoulder-circles",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "seated-spine-wave",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
           "maxSets": 1
         }
       ],
@@ -796,7 +1108,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hip-flexor-stretch-supine",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "hamstring-stretch-band",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "seated-pec-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "forearm-flexor-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "neck-side-stretch",
           "maxSets": 1
         }
       ]
@@ -806,13 +1134,25 @@
       "name": "B – Hüfte & gesundes Bein",
       "phaseId": "p4-entlastung",
       "kind": "strength",
-      "durationMin": 29,
+      "durationMin": 31,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
       "description": "Gesäß und Hüfte ohne Kniebelastung, rechtes Bein kräftigen, Trizeps und Rotatoren.",
       "warmup": [
         {
           "exerciseId": "ankle-pumps",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "band-dislocate",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "shoulder-circles",
           "maxSets": 1
         }
       ],
@@ -827,11 +1167,13 @@
             },
             {
               "exerciseId": "glute-set",
-              "note": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang."
+              "note": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+              "maxSets": 1
             },
             {
               "exerciseId": "side-lying-hip-abduction",
-              "note": "Linkes Bein gestreckt, ggf. mit Schiene. Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang."
+              "note": "Linkes Bein gestreckt, ggf. mit Schiene. Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+              "maxSets": 1
             },
             {
               "exerciseId": "right-leg-band-press",
@@ -861,7 +1203,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hamstring-stretch-band",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "lat-side-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "cross-body-shoulder-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "forearm-flexor-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "neck-side-stretch",
           "maxSets": 1
         }
       ]
@@ -871,13 +1229,25 @@
       "name": "C – Beweglichkeit & Bogen",
       "phaseId": "p4-entlastung",
       "kind": "strength",
-      "durationMin": 28,
+      "durationMin": 30,
       "maxSets": 2,
-      "maxMinutes": 30,
+      "maxMinutes": 32,
       "description": "Kniescheibe und Beugung im erlaubten Bereich, rechtes Bein, Bogen-Halteübungen im Sitzen.",
       "warmup": [
         {
           "exerciseId": "ankle-pumps",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "seated-spine-wave",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "seated-thoracic-rotation",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "shoulder-circles",
           "maxSets": 1
         }
       ],
@@ -916,7 +1286,8 @@
             },
             {
               "exerciseId": "pallof-press",
-              "note": "Im Sitzen."
+              "note": "Im Sitzen.",
+              "maxSets": 1
             },
             {
               "exerciseId": "mirror-draw",
@@ -927,7 +1298,23 @@
       ],
       "cooldown": [
         {
-          "exerciseId": "breathing-reset",
+          "exerciseId": "hip-flexor-stretch-supine",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "seated-pec-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "lat-side-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "cross-body-shoulder-stretch",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "forearm-flexor-stretch",
           "maxSets": 1
         }
       ]
@@ -937,13 +1324,13 @@
       "name": "Kurztraining – Entlastung",
       "phaseId": "p4-entlastung",
       "kind": "short",
-      "durationMin": 14,
+      "durationMin": 13,
       "maxSets": 1,
-      "maxMinutes": 15,
-      "description": "Das Wichtigste in ca. 15 Minuten: Quadrizeps, Gesäß, Kniescheibe, Stütz und SPT im Sitzen.",
+      "maxMinutes": 16,
+      "description": "Das Wichtigste in ca. 15 Minuten: Quadrizeps, Kniescheibe, Stütz und SPT im Sitzen.",
       "warmup": [
         {
-          "exerciseId": "ankle-pumps",
+          "exerciseId": "mobility-flow-seated",
           "maxSets": 1
         }
       ],
@@ -954,11 +1341,6 @@
           "items": [
             {
               "exerciseId": "quad-set",
-              "note": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
-              "maxSets": 2
-            },
-            {
-              "exerciseId": "glute-set",
               "note": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang."
             },
             {
@@ -972,8 +1354,7 @@
           "title": "Bogen & Rücken",
           "items": [
             {
-              "exerciseId": "seated-row",
-              "maxSets": 2
+              "exerciseId": "seated-row"
             },
             {
               "exerciseId": "seated-press-up",
@@ -987,7 +1368,12 @@
           ]
         }
       ],
-      "cooldown": []
+      "cooldown": [
+        {
+          "exerciseId": "stretch-flow-seated",
+          "maxSets": 1
+        }
+      ]
     },
     {
       "id": "p1-row",

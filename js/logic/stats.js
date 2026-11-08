@@ -27,8 +27,29 @@ function worstOf(lights) {
   return best < 0 ? null : LIGHT_ORDER[best];
 }
 
-/** v2: rowing/cardio session? (`kind === "cardio"` or a `rowing` object). @param {Session} s */
-export const isCardioSession = (s) => s?.kind === 'cardio' || (s?.rowing != null && typeof s.rowing === 'object');
+/**
+ * v2: rowing/cardio session? `kind === "cardio"`; legacy sessions without `kind`: a `rowing` object.
+ * v4: a strength session with the rowing warm-up (`warmupRowing`) is NOT a cardio session.
+ * @param {Session} s
+ */
+export const isCardioSession = (s) => s?.kind === 'cardio' || (s?.kind == null && s?.rowing != null && typeof s.rowing === 'object');
+
+/**
+ * v4 (SPEC §15.3): seconds rowed in the warm-up of a strength session: `warmupRowing.durationSec` if entered,
+ * else Σ `seconds` of the done sets of performed `section: "cardio"` entries. Cardio sessions → 0.
+ * @param {Session} s
+ */
+export function warmupRowingSec(s) {
+  if (!s || isCardioSession(s)) return 0;
+  const d = s.warmupRowing?.durationSec;
+  if (typeof d === 'number' && Number.isFinite(d) && d > 0) return d;
+  let sum = 0;
+  for (const e of s.exercises || []) {
+    if (e?.section !== 'cardio' || e.skipped) continue;
+    for (const set of e.sets || []) if (set?.done && typeof set.seconds === 'number') sum += set.seconds;
+  }
+  return sum;
+}
 /** Done strength-type sessions (strength, short, custom – everything except cardio). @param {Session[]} sessions */
 export const strengthSessions = (sessions) => doneSessions(sessions).filter((s) => !isCardioSession(s));
 /** Done cardio (rowing) sessions. @param {Session[]} sessions */
@@ -93,17 +114,22 @@ export function weeklyProgress(sessions, weeklyGoal, today) {
 }
 
 /**
- * v2: rowing sessions this ISO week vs `settings.cardioGoalPerWeek` (default 3).
+ * v2: rowing sessions this ISO week vs `settings.cardioGoalPerWeek` (default 2 since v4).
+ * v4: `done`/`ratio` count only separate rowing (cardio) sessions; `minutes`/`distanceM` also include the rowing
+ * warm-ups of strength sessions (`warmupMinutes`, `warmupCount` show that part separately).
  * @param {Session[]} sessions @param {number} cardioGoal @param {string} today
- * @returns {{done: number, goal: number, ratio: number, minutes: number, distanceM: number}}
+ * @returns {{done: number, goal: number, ratio: number, minutes: number, distanceM: number, warmupMinutes: number, warmupCount: number}}
  */
 export function cardioProgress(sessions, cardioGoal, today) {
   const wk = startOfIsoWeek(today);
-  const list = cardioSessions(sessions).filter((s) => startOfIsoWeek(dayOf(s)) === wk);
-  const minutes = Math.round(list.reduce((a, s) => a + (s.rowing?.durationSec ?? 0), 0) / 60);
-  const distanceM = list.reduce((a, s) => a + (s.rowing?.distanceM ?? 0), 0);
-  const goal = cardioGoal ?? 3;
-  return { done: list.length, goal, ratio: goal > 0 ? Math.min(1, list.length / goal) : 0, minutes, distanceM };
+  const inWeek = doneSessions(sessions).filter((s) => startOfIsoWeek(dayOf(s)) === wk);
+  const list = inWeek.filter(isCardioSession);
+  const warm = inWeek.filter((s) => warmupRowingSec(s) > 0);
+  const warmSec = warm.reduce((a, s) => a + warmupRowingSec(s), 0);
+  const minutes = Math.round((list.reduce((a, s) => a + (s.rowing?.durationSec ?? 0), 0) + warmSec) / 60);
+  const distanceM = list.reduce((a, s) => a + (s.rowing?.distanceM ?? 0), 0) + warm.reduce((a, s) => a + (s.warmupRowing?.distanceM ?? 0), 0);
+  const goal = cardioGoal ?? 2;
+  return { done: list.length, goal, ratio: goal > 0 ? Math.min(1, list.length / goal) : 0, minutes, distanceM, warmupMinutes: Math.round(warmSec / 60), warmupCount: warm.length };
 }
 
 /**
@@ -203,8 +229,11 @@ export function bandRank(settings, band) {
   return bands.findIndex((b) => b.id === band);
 }
 
+/** v4: mobility warm-up, stretching cool-down and rowing blocks do not count for hold/rep records or hold totals. */
+const recordSection = (e) => e?.section !== 'warmup' && e?.section !== 'cooldown' && e?.section !== 'cardio';
+
 /**
- * Personal records over done sessions (non-skipped exercises, done sets). Ties keep the earliest.
+ * Personal records over done sessions (non-skipped main-block exercises, done sets). Ties keep the earliest.
  * - longestHold: max `set.hold` seconds.
  * - mostReps: max `set.reps` in a single set without `hold` (pure rep sets).
  * - strongestBand: band with the highest index in `settings.bands` (record also carries `rank`).
@@ -219,7 +248,7 @@ export function personalRecords(sessions, settings) {
   for (const s of sorted) {
     const date = dayOf(s);
     for (const e of s.exercises || []) {
-      if (e.skipped) continue;
+      if (e.skipped || !recordSection(e)) continue;
       for (const set of e.sets || []) {
         if (!set?.done) continue;
         if (typeof set.hold === 'number' && set.hold > 0 && (!longestHold || set.hold > longestHold.seconds)) {
@@ -262,6 +291,7 @@ export function newRecords(prev, next) {
 
 /**
  * Cumulative hold seconds of done sets (hold × reps), skipped exercises and active sessions ignored.
+ * v4: stretches/mobility (sections warmup/cooldown) are not counted.
  * @param {Session[]} sessions
  */
 export function totalHoldSeconds(sessions) {
@@ -269,7 +299,7 @@ export function totalHoldSeconds(sessions) {
   for (const s of Array.isArray(sessions) ? sessions : []) {
     if (!s || s.status === 'active') continue;
     for (const e of s.exercises || []) {
-      if (e.skipped) continue;
+      if (e.skipped || !recordSection(e)) continue;
       for (const set of e.sets || []) if (set?.done && set.hold) sum += set.hold * (set.reps || 1);
     }
   }

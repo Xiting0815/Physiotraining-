@@ -21,7 +21,34 @@
  * @property {[number, number]} [targetSpm]  v2 rowing strokes/min range
  * @property {[number, number]} [targetRpe]  v2 rowing RPE range
  * @property {boolean} [restActive]          v2 rowing: rest = easy rowing
- * @property {{label: string, seconds: number, intensity?: string}[]} [phases]  v2 rowing technique drills
+ * @property {{label: string, seconds: number, intensity?: string, say?: string}[]} [phases]  v2 rowing technique
+ *   drills; v4 also timed flows (Kurztraining mobility/stretch rounds): Σ seconds = `seconds`, `say` = spoken text
+ * @property {number} [restBetween]  pause between hold reps (v4: effective = max(restBetween ?? 5, settings.holdRelaxSeconds))
+ */
+
+/**
+ * v4 spoken words of an exercise (SPEC §15.5). All optional; defaults by cue kind (cues.DEFAULT_CUE_WORDS).
+ * `up` = first movement of a rep (figure start → end pose), `hold` = pause / isometric or stretch hold,
+ * `down` = return movement, `release` = end of a hold, `switch` = change sides, `work` = start of a timed block.
+ * @typedef {{up?: string, hold?: string, down?: string, release?: string, switch?: string, work?: string}} CueWords
+ */
+
+/**
+ * v4 one step of a cue plan (cues.exerciseCuePlan). `say` is spoken at the start ('' = silent), then `seconds` pass
+ * (0 = marker). `setIndex`/`repIndex` 0-based (null when not applicable), `side` 1|2 for perSide exercises.
+ * @typedef {Object} CuePhase
+ * @property {'prep'|'work'|'hold'|'relax'|'switch'|'rep-up'|'rep-hold'|'rep-down'|'rest'|'set-done'|'exercise-done'} phase
+ * @property {number} seconds
+ * @property {string} say
+ * @property {number|null} setIndex
+ * @property {number|null} repIndex
+ * @property {1|2|null} side
+ * @property {number} [sets]
+ * @property {number} [reps]
+ * @property {string} [label]       timed flows / rowing drills: display label
+ * @property {'easy'|'moderate'|'vigorous'} [intensity]  rowing
+ * @property {[number, number]|null} [targetSpm]         rowing
+ * @property {[number, number]|null} [targetRpe]         rowing
  */
 
 /**
@@ -52,9 +79,13 @@
  * @property {FigureSpec} figure
  * @property {boolean} [postOpAllowed]  v2: false → hidden in post-op phases unless enabled via state.exerciseToggles
  * @property {string} [postOpNote]      v2: how to do it after surgery
+ * @property {string} [description]
+ * @property {string[]} [tags]
+ * @property {number} [setupSec]         v4: setup seconds for the duration estimate (default 20; flows/stretches 5)
+ * @property {CueWords} [cueWords]       v4: spoken words (SPEC §15.5)
  */
 
-/** @typedef {{exerciseId: string, note?: string, maxSets?: number}} WorkoutItem */
+/** @typedef {{exerciseId: string, note?: string, maxSets?: number, keepWithRow?: boolean}} WorkoutItem  v4 keepWithRow: warm-up item stays after the rowing warm-up */
 /** @typedef {{id: 'knee'|'archery'|'cardio', title: string, items: WorkoutItem[]}} WorkoutBlock */
 
 /**
@@ -65,7 +96,10 @@
  * @property {number} durationMin   estimate at level 0 (duration.estimateWorkoutMinutes)
  * @property {WorkoutKind} [kind]   v2, default "strength"
  * @property {number} [maxSets]     v2 set cap per item (item.maxSets wins)
- * @property {number} [maxMinutes]  v2 time budget; buildSessionPlan trims sets to fit (not for cardio)
+ * @property {number} [maxMinutes]  v2 time budget; buildSessionPlan trims sets to fit (not for cardio). v4: strength 32, short 16
+ * @property {string} [rowWarmup]   v4 rowing exercise id of the optional rowing warm-up (strength p1–p3: "row-warmup-10")
+ * @property {number} [maxMinutesWithRow] v4 budget with the rowing warm-up (42)
+ * @property {number} [durationMinWithRow] v4 estimate at level 0 with the rowing warm-up
  * @property {string} [description]
  * @property {WorkoutItem[]} warmup
  * @property {WorkoutBlock[]} blocks
@@ -145,7 +179,14 @@
  * @property {number} fontScale         1 | 1.125 | 1.25 (applied to <html> font-size)
  * @property {string[]} ownedEquipment  equipment ids the user owns (Ausrüstung)
  * @property {string|null} lastBackupAt ISO timestamp of the last JSON export
- * @property {number} cardioGoalPerWeek   v2 rowing sessions per week (default 3)
+ * @property {number} cardioGoalPerWeek   v2 separate rowing sessions per week (default 2 since v4; was 3)
+ * @property {number} prepSeconds         v4 „Bereit machen“ seconds before every set (default 5)
+ * @property {number} holdRelaxSeconds    v4 minimum „Loslassen“ seconds between hold reps (default 5)
+ * @property {boolean} rowWarmupDefault   v4 strength sessions p1–p3 start with 10 min rowing (default true)
+ * @property {boolean} voiceEnabled       v4 German speech cues (default true; `sound: false` silences all)
+ * @property {number} voiceRate           v4 speech rate (default 1.05)
+ * @property {number} voiceVolume         v4 speech volume 0–1 (default 1)
+ * @property {boolean} beepsWithVoice     v4 soft tick under the voice on phase changes (default true)
  * @property {string} surgeryDateSuggested v2 pre-fill value ("2027-01-05"), never auto-applied
  * @property {Profile} profile            v2; v3.1: only weightKg is used (kcal estimate per session)
  * @property {any} [weightGoal]           legacy (v2/v3 weight goal) – unused since v3.1, kept untouched
@@ -182,6 +223,8 @@
  * @property {boolean} skipped
  * @property {SetLog[]} sets
  * @property {string} [note]
+ * @property {number} [plannedSets]
+ * @property {boolean} [trimmed]
  */
 
 /**
@@ -245,6 +288,9 @@
  * @property {RowingLog|null} [rowing] v2 cardio sessions: display values
  * @property {boolean} [postOp]       v2 session in a post-op phase (stricter traffic light)
  * @property {{kcal: number, method: string}} [energy] v2 optional stored estimate
+ * @property {boolean} [rowWarmup]    v4 strength/short/custom plans: the plan starts with the rowing warm-up
+ * @property {RowingLog|null} [warmupRowing] v4 display values of the rowing warm-up (strength sessions only)
+ * @property {number} [budgetMin]     v4 time budget the plan was fitted to (32 / 42 with rowing / 16 short / 30 custom)
  */
 
 /**

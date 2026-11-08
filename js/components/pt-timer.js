@@ -10,7 +10,15 @@
 //           Otherwise a tempo-guided rep counter: `reps` × tempo ("ecc-pause-con", default 2-0-2),
 //           emitting `rep` after every rep.
 //
-// Methods: start(), pause(), reset(), skip(), adjust(deltaSeconds). Props: running, remaining, rep, phase.
+// Cue plan (SPEC §15, logic/cues.js): property `plan` = [{phase:"prep"|"work"|"hold"|"relax"|"switch"|"rest"|
+//   "rep-up"|"rep-hold"|"rep-down"|"set-done"|"exercise-done" (+ "tense"), seconds, say, setIndex, repIndex,
+//   label?, countdown?}] replaces the attribute
+//   timeline. Every phase start is announced in German (util/voice.js: `say`, interrupting stale cues) with a
+//   distinct fallback tone; prep phases count down "Drei, Zwei, Eins"; holds ≥ 15 s get "Noch 5 Sekunden";
+//   rests ≥ 10 s "Gleich geht's weiter" (+ spoken countdown when the step has `countdown: true`).
+//   Zero-second steps (set-done, exercise-done) carry no time and are not spoken by the timer (the session
+//   announces them). Attribute `block="knee|archery|neutral"` colors the big phase banner (.pt-timer__cue).
+// Methods: start(), pause(), reset(), skip(), adjust(deltaSeconds). Props: running, remaining, rep, phase, cue, plan.
 // Events (bubbling CustomEvent): tick {remaining, elapsed, rep}, rep {rep, total, set, sets}, done {elapsed}.
 //
 // Timing is timestamp based (Date.now() deltas), never interval counting, so it stays correct when
@@ -20,6 +28,7 @@
 // with zero specificity (:where) – override freely via classes or the CSS custom properties
 // --pt-timer-color, --pt-timer-rest-color, --pt-timer-size, --pt-timer-progress (set by the element).
 import { beep, vibrate, unlock } from '../util/audio.js';
+import { say as voiceSay, cancel as voiceCancel, unlock as voiceUnlock, countdownWord, voiceActive, cueVibrate } from '../util/voice.js';
 import { formatDuration } from '../util/date.js';
 
 const Base = globalThis.HTMLElement ?? class {};
@@ -36,6 +45,7 @@ export function parseTempo(str) {
 }
 
 const LABELS = {
+  prep: 'Bereit machen',
   rest: 'Pause',
   hold: 'Halten',
   pause: 'Locker lassen',
@@ -142,6 +152,91 @@ export function phaseStart(phases, index) {
   return s;
 }
 
+/* ------------------------------------------------------------------ cue plan → timeline */
+
+/** Cue-plan phase → internal timeline kind. */
+export const CUE_KIND = {
+  prep: 'prep', tense: 'hold', hold: 'hold', work: 'work', relax: 'pause', switch: 'pause', rest: 'rest',
+  'rep-up': 'con', 'rep-hold': 'iso', 'rep-down': 'ecc',
+};
+/** Big banner label per cue-plan phase. */
+export const CUE_LABELS = {
+  prep: 'Bereit machen', tense: 'Anspannen', hold: 'Halten', work: 'Los!', relax: 'Locker lassen', switch: 'Seite wechseln',
+  rest: 'Pause', 'rep-up': 'Hoch', 'rep-hold': 'Halten', 'rep-down': 'Runter',
+};
+/** A short spoken word doubles as banner label („Anspannen – 2“ → „Anspannen“; sentences are not used). */
+const sayLabel = (say) => {
+  const t = String(say || '').replace(/\s*[–-]\s*\d+\s*$/, '').trim();
+  return t && t.length <= 16 && !/[.:,!?]/.test(t) ? t : null;
+};
+/** Internal kind → cue name (attribute mode, so the banner works without a plan too). */
+const KIND_CUE = { prep: 'prep', hold: 'hold', work: 'work', pause: 'relax', setrest: 'rest', rest: 'rest', ecc: 'rep-down', iso: 'rep-hold', con: 'rep-up' };
+export const cueOfKind = (kind) => KIND_CUE[kind] || 'rest';
+
+/**
+ * Convert a cue plan (SPEC §15) into the timer timeline. Zero-second steps become `endSay` /
+ * `endCue` of the previous timed phase. Reps are numbered per set by distinct repIndex (1-based),
+ * sets by distinct setIndex, so 0- or 1-based indexes both work.
+ * @param {any[]} plan
+ */
+export function phasesFromPlan(plan) {
+  const steps = (Array.isArray(plan) ? plan : []).filter((s) => s && typeof s.phase === 'string');
+  const tempo = steps.some((s) => s.phase === 'rep-up' || s.phase === 'rep-down');
+  const setKeys = [];
+  const repKeys = new Map(); // setKey → [repKey]
+  const out = [];
+  steps.forEach((st, i) => {
+    const sec = Number(st.seconds) || 0;
+    const setKey = st.setIndex ?? 0;
+    if (!setKeys.includes(setKey)) setKeys.push(setKey);
+    if (sec <= 0 || !(st.phase in CUE_KIND)) {
+      const prev = out.at(-1);
+      if (prev && !prev.endCue) { prev.endCue = st.phase; prev.endSay = st.say || ''; }
+      return;
+    }
+    let kind = CUE_KIND[st.phase];
+    if (tempo && st.phase === 'hold') kind = 'iso';
+    const work = isWorkPhase(kind);
+    const reps = repKeys.get(setKey) || [];
+    repKeys.set(setKey, reps);
+    let repKey = null;
+    if (work) {
+      repKey = st.repIndex ?? `auto-${i}`;
+      if (!reps.includes(repKey)) reps.push(repKey);
+    }
+    out.push({
+      kind,
+      cue: st.phase,
+      label: st.label || (['prep', 'relax', 'switch', 'rest'].includes(st.phase) ? null : sayLabel(st.say)) || CUE_LABELS[st.phase],
+      say: st.say || '',
+      countdown: st.countdown ?? st.phase === 'prep',
+      ms: Math.round(sec * 1000),
+      setKey,
+      repKey,
+      repIndex: st.repIndex ?? null,
+      endsRep: false,
+    });
+  });
+  const sets = Math.max(1, setKeys.length);
+  out.forEach((p, i) => {
+    const reps = repKeys.get(p.setKey) || [];
+    p.set = setKeys.indexOf(p.setKey) + 1;
+    p.sets = sets;
+    p.totalReps = Math.max(1, reps.length);
+    // non-work phases (prep, relax, rest) belong to the rep before/after them
+    let key = p.repKey;
+    if (key == null) {
+      const before = out.slice(0, i).reverse().find((q) => q.repKey != null && q.setKey === p.setKey);
+      const after = out.slice(i + 1).find((q) => q.repKey != null && q.setKey === p.setKey);
+      key = p.kind === 'prep' ? (after?.repKey ?? before?.repKey) : (before?.repKey ?? after?.repKey);
+    }
+    p.rep = Math.max(1, reps.indexOf(key) + 1);
+    const next = out[i + 1];
+    p.endsRep = isWorkPhase(p.kind) && !(next && isWorkPhase(next.kind) && next.setKey === p.setKey && next.repKey === p.repKey);
+  });
+  return out;
+}
+
 /* ------------------------------------------------------------------ default styles */
 
 const STYLE_ID = 'pt-timer-styles';
@@ -163,8 +258,20 @@ const CSS = `
 :where(pt-timer) :where(.pt-timer__secondary){display:flex;justify-content:center;gap:var(--s-3,12px);margin-top:var(--s-3,12px)}
 :where(pt-timer) :where(.pt-timer__secondary .btn){min-height:var(--tap,48px);background:transparent;color:var(--muted,#5B6573)}
 pt-timer[data-adjust="off"] .pt-timer__adj{display:none}
+:where(pt-timer) :where(.pt-timer__cue){display:block;margin:0 0 var(--s-4,16px);padding:.18em .4em;border-radius:var(--radius,16px);font-size:var(--pt-cue-size,clamp(44px,14vw,80px));font-weight:900;line-height:1.08;letter-spacing:-.01em;background:var(--surface-2,#EEF1F4);color:var(--text,#14181F);transition:background-color .2s ease-out,color .2s ease-out;overflow-wrap:anywhere;hyphens:auto}
+pt-timer{--pt-cue-work:var(--block-knee,var(--primary,#0E7C86));--pt-cue-on:var(--on-primary,#fff)}
+pt-timer[block="archery"]{--pt-cue-work:var(--block-archery,var(--accent,#E07A1F));--pt-cue-on:var(--on-accent,#fff)}
+pt-timer[block="neutral"]{--pt-cue-work:var(--primary,#0E7C86);--pt-cue-on:var(--on-primary,#fff)}
+pt-timer[data-cue="prep"] .pt-timer__cue{background:var(--gold,#D4A72C);color:#14181F}
+pt-timer:is([data-cue="tense"],[data-cue="hold"],[data-cue="work"],[data-cue="rep-up"],[data-cue="rep-hold"],[data-cue="rep-down"]) .pt-timer__cue{background:var(--pt-cue-work);color:var(--pt-cue-on)}
+pt-timer:is([data-cue="relax"],[data-cue="switch"],[data-cue="done"]) .pt-timer__cue{background:var(--green,#1F8A4C);color:var(--on-primary,#fff)}
+pt-timer[data-cue="rest"] .pt-timer__cue{background:var(--surface-2,#EEF1F4);color:var(--text,#14181F)}
+pt-timer:is([data-state="idle"],[data-state="paused"]) .pt-timer__cue{background:transparent;color:var(--muted,#5B6573);box-shadow:inset 0 0 0 2px var(--border,#E1E5EA);font-size:clamp(28px,9vw,44px)}
+pt-timer[data-kind="prep"] .pt-timer__progress{stroke:var(--gold,#D4A72C)}
+pt-timer[data-kind="pause"] .pt-timer__progress{stroke:var(--green,#1F8A4C)}
+pt-timer .pt-timer__phase{display:none}
 :where(pt-timer) :where(.pt-timer__live){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (prefers-reduced-motion: reduce){:where(pt-timer) :where(.pt-timer__progress){transition:none}}
+@media (prefers-reduced-motion: reduce){:where(pt-timer) :where(.pt-timer__progress),:where(pt-timer) :where(.pt-timer__cue){transition:none}}
 `;
 
 function ensureStyles() {
@@ -197,6 +304,7 @@ export class PtTimer extends Base {
     this._timer = 0;
     this._wake = null;
     this._built = false;
+    this._plan = null;
     this._onClick = (e) => this._handleClick(e);
     this._onVisibility = () => this._handleVisibility();
   }
@@ -218,6 +326,17 @@ export class PtTimer extends Base {
   /** current phase kind ('rest'|'hold'|'pause'|'setrest'|'work'|'ecc'|'iso'|'con') or null when done */
   get phase() { return locate(this._phases, this._elapsed()).phase?.kind ?? null; }
   get done() { return this._done; }
+  /** current cue-plan phase name ('prep'|'tense'|'hold'|'relax'|'rest'|'rep-up'|'rep-down') or null */
+  get cue() {
+    const p = locate(this._phases, this._elapsed()).phase;
+    return p ? (p.cue || cueOfKind(p.kind)) : null;
+  }
+  /** Cue plan (SPEC §15) – replaces the attribute timeline when set (null/[] = attribute mode). */
+  get plan() { return this._plan; }
+  set plan(v) {
+    this._plan = Array.isArray(v) && v.length ? v : null;
+    if (this._built && !this.running) this.reset();
+  }
 
   _now() { return Date.now(); }
   _elapsed() { return this._accum + (this._runStart !== null ? this._now() - this._runStart : 0); }
@@ -240,6 +359,7 @@ export class PtTimer extends Base {
   }
 
   disconnectedCallback() {
+    if (this.running && this._plan) this._voiceCancel();
     this._stopLoop();
     this._releaseWake();
     this.removeEventListener('click', this._onClick);
@@ -255,12 +375,18 @@ export class PtTimer extends Base {
   start() {
     if (this.running) return;
     unlock();
+    this._voiceUnlock();
     if (this._done) this.reset();
     if (!this._phases.length) return;
     const fresh = this._accum === 0;
     this._runStart = this._now();
     this._lastUpdate = this._now();
-    if (fresh) {
+    if (this._plan) {
+      const loc = locate(this._phases, this._elapsed());
+      if (fresh) this._phaseCue(this._phases[0]);
+      else if (loc.phase) this._say(`Weiter. ${loc.phase.label}`, { priority: 'high', interrupt: true });
+      this._announce(fresh ? this._describe(this._phases[0], true) : 'Weiter');
+    } else if (fresh) {
       const first = this._phases[0];
       beep(isWorkPhase(first.kind) ? 'start' : 'tick');
       this._announce(this._describe(first, true));
@@ -278,6 +404,7 @@ export class PtTimer extends Base {
     this._runStart = null;
     this._stopLoop();
     this._releaseWake();
+    if (this._plan) this._voiceCancel();
     this._announce('Pausiert');
     this._paint();
   }
@@ -285,7 +412,7 @@ export class PtTimer extends Base {
   reset() {
     this._stopLoop();
     this._releaseWake();
-    this._phases = buildPhases({
+    this._phases = this._plan ? phasesFromPlan(this._plan) : buildPhases({
       mode: this.mode,
       seconds: this.seconds,
       reps: this.getAttribute('reps'),
@@ -374,7 +501,9 @@ export class PtTimer extends Base {
     if (sec !== this._lastSec) {
       this._lastSec = sec;
       this._emit('tick', { remaining: sec, elapsed: Math.floor(el / 1000), rep: loc.phase.rep });
-      if (this.running && !quiet && loc.phase.ms >= 5000 && sec > 0 && sec <= 3) {
+      if (this._plan) {
+        if (this.running && !quiet) this._secondCue(loc.phase, sec);
+      } else if (this.running && !quiet && loc.phase.ms >= 5000 && sec > 0 && sec <= 3) {
         beep('tick');
         if (sec === 3) this._announce('3');
       }
@@ -385,6 +514,7 @@ export class PtTimer extends Base {
   _phaseStarted(phase, silent) {
     if (silent) return;
     if (!this.running) { this._announce(this._describe(phase)); return; }
+    if (this._plan) { this._phaseCue(phase); this._announce(this._describe(phase)); return; }
     if (phase.kind === 'hold' || phase.kind === 'work') { beep('start'); vibrate(60); }
     else if (phase.kind === 'ecc' || phase.kind === 'iso' || phase.kind === 'con') beep('tick');
     else { beep('rep'); vibrate(40); }
@@ -393,9 +523,53 @@ export class PtTimer extends Base {
     else if (phase === this._phases.find((p) => p.rep === phase.rep && p.set === phase.set)) this._announce(`Wiederholung ${phase.rep} von ${phase.totalReps}`);
   }
 
+  /* --- voice cues (plan mode). _say/_tone/_voice* are overridable for tests. */
+  _say(text, opts) { return voiceSay(text, opts); }
+  _tone(kind) { beep(kind); }
+  _voiceOn() { return voiceActive(); }
+  _voiceCancel() { voiceCancel(); }
+  _voiceUnlock() { voiceUnlock(); }
+
+  /** A plan phase starts: speak its text (cutting stale cues) or play its tone; vibrate as secondary. */
+  _phaseCue(phase) {
+    const cue = phase.cue || cueOfKind(phase.kind);
+    cueVibrate(cue);
+    if (phase.say) this._say(phase.say, { priority: 'high', interrupt: true, cue });
+    else this._say('', { cue }); // tone only (e.g. tempo reps after the first)
+  }
+
+  /** Second boundary inside a plan phase (`sec` = whole seconds remaining). */
+  _secondCue(phase, sec) {
+    const total = Math.round(phase.ms / 1000);
+    const voice = this._voiceOn();
+    const countWord = () => this._say(countdownWord(sec), { priority: 'high', cue: 'count', maxAgeMs: 700, fallbackOnDrop: true, tick: false });
+    if (sec <= 0) return;
+    if (phase.kind === 'prep') {
+      if (phase.countdown !== false && sec <= 3 && total >= 3) countWord();
+      return;
+    }
+    if (phase.kind === 'rest' || phase.kind === 'setrest') {
+      if (sec === 5 && total >= 10) this._say('Gleich geht\'s weiter', { priority: 'normal', maxAgeMs: 1500 });
+      if (sec <= 3 && total >= 5) {
+        if (phase.countdown) countWord();
+        else this._tone('tick');
+      }
+      return;
+    }
+    if (isWorkPhase(phase.kind) && phase.kind !== 'ecc' && phase.kind !== 'con' && phase.kind !== 'iso') {
+      if (total >= 60 && sec === Math.ceil(total / 2) && sec > 10) this._say('Halbzeit', { priority: 'normal', maxAgeMs: 1500 });
+      if (total >= 15 && sec === 5) this._say('Noch 5 Sekunden', { priority: 'normal', maxAgeMs: 1500 });
+      if (!voice && total >= 5 && sec <= 3) this._tone('tick');
+      return;
+    }
+    if (phase.kind === 'pause' && total >= 4 && sec <= 3) this._tone(voice ? 'soft' : 'tick');
+  }
+
   _describe(phase, first = false) {
     const secs = Math.round(phase.ms / 1000);
+    if (phase.say) return phase.say;
     switch (phase.kind) {
+      case 'prep': return `Bereit machen, ${secs} Sekunden`;
       case 'hold': {
         const set = phase.sets > 1 ? `, Satz ${phase.set} von ${phase.sets}` : '';
         return `Wiederholung ${phase.rep} von ${phase.totalReps}${set}: ${secs} Sekunden halten`;
@@ -415,9 +589,15 @@ export class PtTimer extends Base {
     this._idx = this._phases.length;
     this._stopLoop();
     this._releaseWake();
-    beep('done');
-    vibrate([150, 80, 150]);
-    this._announce(this.mode === 'rest' ? 'Pause vorbei' : 'Fertig');
+    if (this._plan) {
+      // the session announces "Satz geschafft …" / "Übung fertig …" right after `done`
+      const last = this._phases.at(-1);
+      if (last?.kind !== 'rest') vibrate([150, 80, 150]);
+    } else {
+      beep('done');
+      vibrate([150, 80, 150]);
+    }
+    this._announce(this.mode === 'rest' || this._phases.at(-1)?.kind === 'rest' ? 'Pause vorbei' : 'Fertig');
     this._emit('done', { elapsed: Math.round(el / 1000) });
     this._paint();
   }
@@ -425,7 +605,11 @@ export class PtTimer extends Base {
   _handleVisibility() {
     if (document.visibilityState === 'visible' && this.running) {
       this._acquireWake();
+      const before = this._idx;
       this._update();
+      // speech may have stopped in the background → re-sync the user with the current phase
+      const p = locate(this._phases, this._elapsed()).phase;
+      if (this._plan && p && this._idx !== before) this._say(p.label, { priority: 'high', interrupt: true, cue: p.cue });
     }
   }
 
@@ -473,6 +657,7 @@ export class PtTimer extends Base {
   _renderShell() {
     if (this._display) return;
     this.innerHTML = `
+      <div class="pt-timer__cue" aria-hidden="true"></div>
       <div class="pt-timer__dial">
         <svg class="pt-timer__ring" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
           <circle class="pt-timer__track" cx="60" cy="60" r="${R}"></circle>
@@ -500,6 +685,7 @@ export class PtTimer extends Base {
     this._ringEl = this.querySelector('.pt-timer__progress');
     this._btn = this.querySelector('.pt-timer__toggle');
     this._live = this.querySelector('.pt-timer__live');
+    this._cueEl = this.querySelector('.pt-timer__cue');
   }
 
   _paint(loc = locate(this._phases, this._elapsed())) {
@@ -520,6 +706,16 @@ export class PtTimer extends Base {
     // ring shows the remaining part of the current phase; full (green) ring when done
     this._ringEl.setAttribute('stroke-dashoffset', this._done ? '0' : (CIRC * progress).toFixed(2));
     this._phaseEl.textContent = this._done ? 'Fertig' : phase ? phase.label : '';
+    const cue = this._done ? 'done' : phase ? (phase.cue || cueOfKind(phase.kind)) : 'rest';
+    this.dataset.cue = cue;
+    if (this._cueEl) {
+      const first = phases[0];
+      const text = this._done ? (phases.at(-1)?.kind === 'rest' ? 'Weiter geht’s' : 'Geschafft')
+        : state === 'idle' ? (first?.kind === 'prep' ? 'Start tippen' : first?.label || '')
+        : state === 'paused' ? 'Pausiert'
+        : phase?.label || '';
+      if (this._cueEl.textContent !== text) this._cueEl.textContent = text;
+    }
 
     let meta = '';
     if (phase && (phase.totalReps > 1 || this.mode === 'hold' || tempoMode)) {

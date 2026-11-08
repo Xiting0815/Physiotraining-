@@ -1,5 +1,5 @@
 // Rowing (cardio) helpers. PURE. See docs/SPEC.md §12.4.
-import { cardioSessions } from './stats.js';
+import { cardioSessions, doneSessions, warmupRowingSec } from './stats.js';
 import { levelOf } from './progression.js';
 
 /** Labels for level.intensity (German UI copy). */
@@ -85,30 +85,47 @@ export function pacePer500(r) {
 }
 
 /**
- * Totals over done rowing sessions.
+ * v4: rowing logs of all done sessions: cardio sessions (`rowing`) and strength sessions with a rowing warm-up
+ * (`warmupRowing`, durationSec falls back to `warmupRowingSec`). → `[{session, log, warmup}]`.
  * @param {import('../types.js').Session[]} sessions
- * @returns {{sessions: number, distanceM: number, durationSec: number, kcalDisplay: number}}
+ */
+export function rowingLogs(sessions) {
+  const out = [];
+  for (const s of doneSessions(sessions)) {
+    if (cardioSessions([s]).length) { out.push({ session: s, log: s.rowing || {}, warmup: false }); continue; }
+    const sec = warmupRowingSec(s);
+    if (sec > 0 || s.warmupRowing) out.push({ session: s, log: { ...(s.warmupRowing || {}), ...(sec > 0 ? { durationSec: sec } : {}) }, warmup: true });
+  }
+  return out;
+}
+
+/**
+ * Totals over done rowing: separate rowing sessions plus (v4) rowing warm-ups of strength sessions.
+ * `sessions` counts rowing sessions only, `warmups` the strength sessions with a rowing warm-up.
+ * @param {import('../types.js').Session[]} sessions
+ * @returns {{sessions: number, warmups: number, distanceM: number, durationSec: number, kcalDisplay: number}}
  */
 export function rowingTotals(sessions) {
-  const list = cardioSessions(sessions);
-  let distanceM = 0, durationSec = 0, kcalDisplay = 0;
-  for (const s of list) {
-    distanceM += s.rowing?.distanceM ?? 0;
-    durationSec += s.rowing?.durationSec ?? 0;
-    kcalDisplay += s.rowing?.kcalDisplay ?? 0;
+  let distanceM = 0, durationSec = 0, kcalDisplay = 0, n = 0, warmups = 0;
+  for (const { log, warmup } of rowingLogs(sessions)) {
+    if (warmup) warmups += 1; else n += 1;
+    distanceM += log.distanceM ?? 0;
+    durationSec += log.durationSec ?? 0;
+    kcalDisplay += log.kcalDisplay ?? 0;
   }
-  return { sessions: list.length, distanceM, durationSec, kcalDisplay };
+  return { sessions: n, warmups, distanceM, durationSec, kcalDisplay };
 }
 
 /**
  * Best rowing values (for PR chips): longest distance, best avg watt, longest duration.
+ * v4: entered display values of rowing warm-ups count too.
  * @param {import('../types.js').Session[]} sessions
  */
 export function rowingRecords(sessions) {
   const best = { distanceM: null, avgWatt: null, durationSec: null };
-  for (const s of cardioSessions(sessions)) {
+  for (const { session: s, log } of rowingLogs(sessions)) {
     for (const k of Object.keys(best)) {
-      const v = s.rowing?.[k];
+      const v = log[k];
       if (typeof v === 'number' && (best[k] == null || v > best[k].value)) best[k] = { value: v, sessionId: s.id };
     }
   }
