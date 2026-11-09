@@ -72,8 +72,12 @@ export function render(root, ctx) {
   };
   /** true when the last store write reached storage (WP-1: store.save() returns a boolean; older store: undefined = ok). */
   const savedOk = () => {
-    try { return typeof store.save !== 'function' || store.save() !== false; } catch { return false; }
+    try {
+      if (typeof store.lastSaveOk === 'function') return store.lastSaveOk() !== false;
+      return typeof store.save !== 'function' || store.save() !== false;
+    } catch { return false; }
   };
+  const saveReadonly = () => { try { return store.getLastSaveError?.()?.code === 'readonly'; } catch { return false; } };
   const setCta = (on) => document.body.classList.toggle('has-cta', on);
   const scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
   const smooth = (el) => el?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
@@ -413,7 +417,7 @@ export function render(root, ctx) {
         <p class="ses-hint">Der Satz wird nach dem Timer automatisch abgehakt.</p>`;
     }
     if (tempoCoachOn(dose, entry)) {
-      return html`<div data-slot="tempo"><pt-timer mode="set" block="${blk}" reps="${dose.reps ?? 10}" tempo="${dose.tempo}" data-role="work"></pt-timer>
+      return html`<div data-slot="tempo"><pt-timer compact mode="set" block="${blk}" reps="${dose.reps ?? 10}" tempo="${dose.tempo}" data-role="work"></pt-timer>
         <p class="ses-hint">Tempo-Coach ${dose.tempo}: einmal Start tippen, dann führt die Stimme. Der Satz wird danach abgehakt.</p>
         <button type="button" class="ses-link" data-act="tempo-manual">Lieber selbst zählen</button></div>`;
     }
@@ -1581,7 +1585,7 @@ export function render(root, ctx) {
         <span class="chip chip--gold">⚡ <span class="num">${gained}</span> XP</span></header>
       ${unsaved ? html`<section class="card stop-card ses-savewarn" role="alert" data-slot="savewarn">
           <h2 class="card__title">Konnte nicht gespeichert werden – bitte Sicherung exportieren</h2>
-          <p class="mt-2">Der Speicher des Browsers ist voll oder gesperrt. Lass diese Seite offen, versuch es erneut oder exportiere eine Sicherung unter „Mehr“.</p>
+          <p class="mt-2">${saveReadonly() ? 'Die App ist im Nur-Lesen-Modus (Daten aus einer neueren Version). Exportiere eine Sicherung unter „Mehr“, damit dieses Training nicht verloren geht.' : 'Der Speicher des Browsers ist voll oder gesperrt. Lass diese Seite offen, versuch es erneut oder exportiere eine Sicherung unter „Mehr“.'}</p>
           <div class="btn-row"><button type="button" class="btn btn--primary" data-act="save-retry">Erneut speichern</button><a class="btn btn--outline" href="#/mehr">Sicherung exportieren</a></div>
         </section>` : ''}
       ${doctor ? html`<section class="card stop-card ses-doctor" role="alert">
@@ -1840,7 +1844,9 @@ export function render(root, ctx) {
     onChange = () => {};
     actions = {
       'broken-discard': () => {
-        store.update((d) => { d.state.activeSession = null; if (d.state.droppedActiveSession != null) d.state.droppedActiveSession = null; });
+        // droppedActiveSession is shown and reset by app.js (WP-1) – only acknowledge it locally
+        brokenAck = true;
+        if (active) store.update((d) => { d.state.activeSession = null; });
         H.toast('Verworfen', { icon: '🗑', kind: '' });
         boot();
       },
@@ -1928,10 +1934,11 @@ export function render(root, ctx) {
     show();
   }
 
+  let brokenAck = false;
   async function boot() {
     const data = store.get();
     const active = data.state.activeSession;
-    const dropped = data.state.droppedActiveSession;
+    const dropped = brokenAck ? null : data.state.droppedActiveSession;
     if ((active && !H.validActiveSession(active, content)) || (!active && dropped)) { renderBroken(active, dropped); return; }
     const wanted = query.workout ? getWorkout(query.workout, content, data.state) : null;
     if (active) {
