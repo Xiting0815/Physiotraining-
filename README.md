@@ -65,6 +65,23 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
 - **Vorbereitung auf die Krücken** – Stütz-Dips, Trizeps, Abstützen im Sitz und Einbeinstand bereits vor der OP.
 - **Offline** – nach dem ersten Laden komplett offline nutzbar, installierbar als App.
 
+### Version 5.1 – stabiler und übersichtlicher
+
+- **Speicherfehler-Banner** – kann der Browser nicht speichern (Speicher voll, privater Modus), erscheint ein
+  deutlicher Hinweis mit Knopf zum Sofort-Sichern (Export), damit nichts verloren geht.
+- **Reparatur beschädigter Daten** – fehlerhafte Einträge werden beim Laden bereinigt; sind die gespeicherten Daten
+  unlesbar, bewahrt die App vorher eine Kopie auf (zum Herunterladen). Startet die App gar nicht mehr, bietet eine
+  **Notfall-Seite** „Neu laden“ und „Daten sichern“ an.
+- **Doppeltipp-Schutz mit Rückgängig** – versehentliches Doppeltippen zählt nicht doppelt; ein abgehakter Satz lässt
+  sich über „Rückgängig“ im Hinweis sofort zurücknehmen.
+- **Echte Trainingszeit** – wird die App während einer Einheit beendet, zählt die Zeit dazwischen nicht als
+  Trainingszeit. Nach mehr als 12 h Pause fragt die App: fortsetzen, jetzt abschließen oder verwerfen.
+- **Im Training** – der Übungsname steht groß oben, ein **Tempo-Coach** gibt bei Knie-Wiederholungen den Takt vor,
+  ein großer **„Satz fertig“**-Button zählt Sätze, und **„Wie eben“** übernimmt den letzten Schmerzwert.
+- **Heute kompakter**, größere Tippflächen (mind. 44 px) überall.
+- **Folgetag-Check für alle Einheiten eines Tages** – Krafttraining und Rudern am selben Tag werden mit einem Check
+  beantwortet; Hinweis auf Heute und Folgetag-Seite zeigen immer dieselben Einheiten.
+
 ### Neu in Version 5 – Deine Ausrüstung steuert den Plan
 
 - **Meine Ausrüstung** (Mehr → Meine Ausrüstung) – oben die Schalter mit Symbol für alles, was über die

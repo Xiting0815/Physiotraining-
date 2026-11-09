@@ -3,6 +3,7 @@
 import { html, raw } from '../render.js';
 import { parseISODate } from '../util/date.js';
 import { EQUIPMENT_INFO } from '../logic/equipment.js';
+import { pendingNextDay as pendingNextDayGroup } from '../logic/next-day.js';
 import { defaults as storeDefaults } from '../store.js';
 
 /* ------------------------------------------------------------------ */
@@ -125,20 +126,14 @@ export function workoutLetter(w, phases) {
 }
 
 /**
- * Most recent done session that still needs a next-day check-in (≥ 12 h after its end, or from
- * the next calendar day on). Sessions older than 4 days are not asked for anymore.
+ * Heute banner: the latest session of the most recent training day whose next-day check-in is due right
+ * now, else null. Delegates to logic/next-day.js `pendingNextDay` (same source as #/folgetag), so the
+ * banner shows exactly when the check-in page has something to ask (all sessions of that day).
  * @param {any[]} sessions @param {Date} [now]
  */
 export function pendingNextDay(sessions, now = new Date()) {
-  const done = (sessions || []).filter((s) => s && s.status === 'done');
-  const last = done.at(-1);
-  if (!last || last.nextDay) return null;
-  const end = new Date(last.endedAt || last.startedAt);
-  if (Number.isNaN(end.getTime())) return null;
-  const hours = (now.getTime() - end.getTime()) / 3600e3;
-  const nextCalendarDay = now.toDateString() !== end.toDateString() && now > end;
-  if (hours > 96) return null;
-  return hours >= 12 || nextCalendarDay ? last : null;
+  const p = pendingNextDayGroup(sessions, now);
+  return p?.due ? p.session : null;
 }
 
 /** "8–15" → [8, 15]; "2–5" → [2, 5]; "25–60 (einfach) / 100–135" → [25, 60]; "12" → [12, 12]. */

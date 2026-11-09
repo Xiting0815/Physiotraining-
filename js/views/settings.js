@@ -12,7 +12,7 @@ import {
 } from './ui.js';
 
 export const title = 'Mehr';
-export const APP_VERSION = '5.0.0';
+export const APP_VERSION = '5.1.0';
 
 const REST_OPTIONS = [null, 30, 45, 60, 90, 120];
 const FONT_SCALES = [{ v: 1, l: 'Normal' }, { v: 1.125, l: 'Groß' }, { v: 1.25, l: 'Sehr groß' }];

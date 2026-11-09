@@ -48,6 +48,32 @@ test('pendingNextDay: ≥ 12 h or next calendar day, not when checked in', () =>
   assert.equal(pendingNextDay([], new Date()), null);
 });
 
+test('pendingNextDay (Heute banner) agrees with session-helpers for all sessions of the latest day', async () => {
+  const H = await import('../js/views/session-helpers.js');
+  const L = await import('../js/logic/next-day.js');
+  assert.equal(H.pendingNextDay, L.pendingNextDay, 'session-helpers re-exports the shared logic');
+  const day = (h, m = 0) => new Date(2026, 10, 7, h, m).toISOString();
+  const strength = { id: 's', status: 'done', startedAt: day(9), endedAt: day(9, 40), nextDay: null };
+  const row = { id: 'r', status: 'done', startedAt: day(17), endedAt: day(17, 20), nextDay: null };
+  // rowing already checked in (legacy), strength still open → banner still offered (old logic: hidden)
+  const sessions = [strength, { ...row, nextDay: { pain: 1 } }];
+  const morning = new Date(2026, 10, 8, 9, 0);
+  assert.equal(pendingNextDay(sessions, morning)?.id, 's');
+  assert.deepEqual(H.pendingNextDay(sessions, morning).sessions.map((s) => s.id), ['s']);
+  // both open: banner points at the latest, the check-in covers both
+  const both = [strength, row];
+  assert.equal(pendingNextDay(both, morning)?.id, 'r');
+  assert.deepEqual(H.pendingNextDay(both, morning).sessions.map((s) => s.id), ['s', 'r']);
+  // not yet due → banner hidden although helpers know the open group
+  const evening = new Date(2026, 10, 7, 21, 0);
+  assert.equal(pendingNextDay(both, evening), null);
+  assert.equal(H.pendingNextDay(both, evening).due, false);
+  // banner visible exactly when the helpers say due
+  for (const t of [evening, new Date(2026, 10, 8, 0, 0), morning, new Date(2026, 10, 12, 9)]) {
+    assert.equal(!!pendingNextDay(both, t), H.nextDayBannerVisible(both, t));
+  }
+});
+
 test('price parsing and budget sum', () => {
   assert.deepEqual(parsePriceRange('8–15'), [8, 15]);
   assert.deepEqual(parsePriceRange('25–60 (einfach) / 100–135 (leise)'), [25, 60]);
