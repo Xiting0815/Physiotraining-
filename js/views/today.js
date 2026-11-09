@@ -688,7 +688,7 @@ export function render(root, { store, content }) {
 
   // P2-3: the tab may stay open over midnight (PWA in the background) → re-render on a new day
   const onVisible = () => {
-    if (document.visibilityState === 'visible' && todayISO() !== renderedDay) draw();
+    if (document.visibilityState !== 'hidden' && todayISO() !== renderedDay) draw();
   };
 
   draw();
@@ -696,13 +696,12 @@ export function render(root, { store, content }) {
   root.addEventListener('change', onChange);
   root.addEventListener('input', onInput);
   root.addEventListener('toggle', onToggle, true);
-  document.addEventListener('visibilitychange', onVisible);
-  window.addEventListener('focus', onVisible);
+  const hasDom = typeof document !== 'undefined' && typeof window !== 'undefined';
+  if (hasDom) { document.addEventListener('visibilitychange', onVisible); window.addEventListener('focus', onVisible); }
   const unsub = store.subscribe(draw);
   return () => {
     unsub();
-    document.removeEventListener('visibilitychange', onVisible);
-    window.removeEventListener('focus', onVisible);
+    if (hasDom) { document.removeEventListener('visibilitychange', onVisible); window.removeEventListener('focus', onVisible); }
     root.removeEventListener('click', onClick);
     root.removeEventListener('change', onChange);
     root.removeEventListener('input', onInput);

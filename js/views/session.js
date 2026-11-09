@@ -88,16 +88,16 @@ export function render(root, ctx) {
   const perfNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
   let lastTap = { x: 0, y: 0, t: -1e9 };
   let guard = { until: 0, x: null, y: null };
-  /** Swallow taps for `ms` – only near the tap that caused the re-render (if it was a recent tap). */
+  /** Swallow taps for `ms` near the tap that caused the re-render. */
   const armGuard = (ms = 450) => {
-    const recent = perfNow() - lastTap.t < 1000;
-    guard = { until: perfNow() + ms, x: recent ? lastTap.x : null, y: recent ? lastTap.y : null };
+    if (perfNow() - lastTap.t > 1000) return; // re-render not caused by a tap (boot, timer) → nothing to guard
+    guard = { until: perfNow() + ms, x: lastTap.x, y: lastTap.y };
   };
   const onGuard = (e) => {
     if (e.detail === 0) return; // keyboard activation
     const t = perfNow();
     if (t < guard.until) {
-      const near = guard.x == null || (Math.abs(e.clientX - guard.x) < 60 && Math.abs(e.clientY - guard.y) < 60);
+      const near = (Math.abs(e.clientX - guard.x) < 60 && Math.abs(e.clientY - guard.y) < 60);
       if (near) { e.stopImmediatePropagation(); e.preventDefault(); return; }
     }
     lastTap = { x: e.clientX, y: e.clientY, t };

@@ -587,7 +587,8 @@ const VIEW_CSS = `
 .pv-recs > summary { list-style: none; display: flex; align-items: center; gap: var(--s-3); min-height: 64px; padding: var(--s-3) var(--s-4); cursor: pointer; }
 .pv-recs > summary::-webkit-details-marker { display: none; }
 .pv-recs__title { display: block; font-weight: var(--fw-bold); line-height: 1.3; }
-.pv-recs__sub { display: block; font-size: var(--fs-sm); color: var(--muted); line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-recs__sub { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: var(--fs-sm); color: var(--muted); line-height: 1.35; }
+.pv-recs[open] .pv-recs__sub { display: none; }
 .pv-recs .grow { min-width: 0; }
 .pv-recs__chev { flex: none; width: 24px; height: 24px; color: var(--muted); transition: transform var(--dur) var(--ease); }
 .pv-recs__chev svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }

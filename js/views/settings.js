@@ -2,7 +2,7 @@
 import { html, raw, render as paint } from '../render.js';
 import { normalizeOwned, EQUIPMENT_INFO } from '../logic/equipment.js';
 import { todayISO, formatDE, daysBetween } from '../util/date.js';
-import { defaults } from '../store.js';
+import { defaults, corruptBackupKeys, readCorruptBackup } from '../store.js';
 import { suggestedSurgeryDate } from '../logic/schedule.js';
 import { downloadBackup, readBackupFile } from '../util/export-import.js';
 import { voice, voiceSettings, testVoice, DEFAULT_RATE } from '../util/voice.js';
@@ -50,6 +50,15 @@ export function normThresholds(t) {
   const yellowMax = Math.max(greenMax + 1, Math.min(8, Math.round(t.yellowMax ?? 5)));
   const greenStreakToProgress = Math.max(1, Math.min(5, Math.round(t.greenStreakToProgress ?? 2)));
   return { greenMax, yellowMax, greenStreakToProgress };
+}
+
+/** „09.11.2026, 18:04“ from a corrupt-copy key `pt.v1.corrupt-<ISO>` (fallback: the key). */
+export function corruptLabel(key) {
+  const m = String(key).match(/(\d{4}-\d{2}-\d{2}T[\d:.]+Z?)/);
+  const d = m ? new Date(m[1]) : null;
+  if (!d || Number.isNaN(d.getTime())) return String(key);
+  const p = (n) => String(n).padStart(2, '0');
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}, ${p(d.getHours())}:${p(d.getMinutes())} Uhr`;
 }
 
 /** Days since last backup or null (never). */
@@ -114,6 +123,8 @@ export function render(root, { store, content, query }) {
     const kg = s.profile?.weightKg;
     const vs = voiceSettings(s);
     const vStat = voiceStatus(voice.voice, !!globalThis.speechSynthesis);
+    let corrupt = [];
+    try { corrupt = typeof corruptBackupKeys === 'function' ? corruptBackupKeys() : []; } catch { corrupt = []; }
 
     paint(root, html`
       ${pageHeader({ title: 'Mehr', eyebrow: 'Einstellungen & Daten' })}
@@ -249,6 +260,9 @@ export function render(root, { store, content, query }) {
         </div>
         <p class="field__hint mb-2">${importMode === 'replace' ? 'Alle Daten auf diesem Gerät werden durch die Sicherung ersetzt.' : 'Einheiten werden ergänzt, höhere Stufen und Abzeichen bleiben erhalten.'}</p>
         <label class="btn btn--outline btn--block" style="cursor:pointer">${raw(ICON.upload)} Datei wählen …<input type="file" accept="application/json,.json" data-import class="visually-hidden"></label>
+        ${corrupt.length ? html`<div class="pv-callout pv-callout--warn mt-4 mb-0"><span class="pv-callout__icon" aria-hidden="true">🧯</span>
+          <div class="grow"><p class="text-sm"><strong>Aufbewahrte beschädigte Daten (${corrupt.length})</strong><br>Diese Kopien konnten nicht gelesen werden und wurden sicherheitshalber aufgehoben. Zum Retten herunterladen und ggf. mit Hilfe reparieren.</p>
+          ${corrupt.map((k) => html`<button class="btn btn--outline btn--sm btn--block mt-2" data-corrupt="${k}">${raw(ICON.download)} Kopie vom ${corruptLabel(k)}</button>`)}</div></div>` : ''}
       </section>
 
       <ul class="list list--card">
@@ -338,6 +352,17 @@ export function render(root, { store, content, query }) {
     if (e.target.closest('[data-voice-test]')) {
       const spoke = testVoice();
       if (!spoke) toast('Keine deutsche Stimme – du hörst die Signaltöne.', { icon: '🔔', kind: 'accent', ms: 3500 });
+      return;
+    }
+    const cb = e.target.closest('[data-corrupt]');
+    if (cb) {
+      const text = readCorruptBackup(cb.dataset.corrupt);
+      if (!text) { toast('Kopie nicht mehr vorhanden', { kind: 'accent', icon: '⚠️' }); return; }
+      const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = `physio-beschaedigt-${cb.dataset.corrupt.replace(/[^0-9T-]/g, '').slice(0, 15)}.txt`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       return;
     }
     if (e.target.closest('[data-clear-date]')) { set((s) => { s.surgeryDate = null; }); return; }

@@ -1065,12 +1065,15 @@ pt-timer[data-ses-onerep] .pt-timer__meta{display:none}
 .ses-intro{padding:var(--s-4)}
 .ses-intro .hero__title{margin-bottom:var(--s-1);font-size:var(--fs-xl);line-height:1.15}
 .ses-intro .hero__eyebrow{margin-bottom:2px}
-.ses-intro .ses-intro__desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 var(--s-2)}
+.ses-intro .ses-intro__desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ses-intro .hero__split{margin-top:var(--s-2)}
 .ses-rowopt{padding:var(--s-2) var(--s-4)}
 .ses-rowopt .switch-row{min-height:52px}
 .ses-rowopt__hint{font-size:14px}
-.ses-pre-q{font-size:var(--fs-xl);margin:var(--s-3) 0 var(--s-2)}
+.ses-big-q.ses-pre-q{font-size:var(--fs-xl);margin:var(--s-3) 0 var(--s-2)}
+.ses-intro .hero__meta{margin-bottom:var(--s-2)}
+.ses-intro .hero__split{margin:var(--s-2) 0 0}
+.ses-intro .ses-intro__desc{margin:0 0 var(--s-2)}
 .ses-choices{display:flex;flex-direction:column;gap:var(--s-2);margin-top:var(--s-4)}
 .ses-choices .btn{min-height:60px;justify-content:flex-start;gap:var(--s-3);text-align:left}
 .ses-choices .btn small{display:block;font-weight:var(--fw-semibold);opacity:.85;font-size:14px}
