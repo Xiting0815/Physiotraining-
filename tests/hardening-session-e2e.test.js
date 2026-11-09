@@ -37,6 +37,8 @@ const MOCK = () => {
 
 const PRE = { pain: 0, swelling: 0, mechanical: { locking: false, givingWay: false }, nightPain: false, swellingOver48h: false };
 
+const w0 = (id) => content.workouts.find((x) => x.id === id);
+
 function baseData() {
   const d = defaults();
   d.state.welcomeDone = true;
@@ -48,7 +50,7 @@ function baseData() {
 /** Active session of `workoutId` (real plan); `entries` overrides the exercise list. */
 function withActive(workoutId, { entries, cursor, startedAt, ...extra } = {}) {
   const d = baseData();
-  d.settings.ownedEquipment = ['rowing-machine'];
+  if (w0(workoutId).kind === 'cardio') d.settings.ownedEquipment = ['rowing-machine'];
   const w = content.workouts.find((x) => x.id === workoutId);
   const s = buildSessionPlan(w, d.state, content, { history: [], settings: d.settings, rowFinisher: false, rowWarmup: false });
   s.kind = w.kind;

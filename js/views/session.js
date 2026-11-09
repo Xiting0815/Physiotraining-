@@ -80,6 +80,8 @@ export function render(root, ctx) {
   const saveReadonly = () => { try { return store.getLastSaveError?.()?.code === 'readonly'; } catch { return false; } };
   const setCta = (on) => document.body.classList.toggle('has-cta', on);
   const scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+  /** Timer card: align its top below the sticky header (scroll-margin-top) so „Satz x von y“ + cue + clock show. */
+  const toTimer = (el) => el?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
   const smooth = (el) => el?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
 
   // ------------------------------------------------------------------ delegation
@@ -564,14 +566,14 @@ export function render(root, ctx) {
         renderExercise();
         const card = root.querySelector('[data-slot="timer"]');
         root.querySelector('pt-timer[data-role="work"]')?.start();
-        smooth(card);
+        toTimer(card);
       },
       'tempo-manual': () => {
         entry.manualTempo = true;
         entry.tempoCoach = false;
         persist();
         renderExercise();
-        smooth(root.querySelector('[data-slot="timer"]'));
+        toTimer(root.querySelector('[data-slot="timer"]'));
       },
       'pain-same': (b) => {
         const v = Number(b.dataset.v);
@@ -841,7 +843,7 @@ export function render(root, ctx) {
       applyWorkPlan(work, entry);
       work.reset();
       work.start(); // starts with „Satz n von m. Bereit machen“ + 3-2-1
-      smooth(timerCard);
+      toTimer(timerCard);
     } else {
       if (!allDone) say(H.nextSetAnnouncement(H.doneCount(entry) + 1, dose.sets), { priority: 'high', interrupt: true, cue: 'tense' });
       smooth(root.querySelector('[data-slot="timer"]:not([hidden]) .ses-bigdone') || root.querySelector('.set-check.is-current') || root.querySelector('.ses-ex'));
@@ -865,7 +867,7 @@ export function render(root, ctx) {
     applyWorkPlan(t, entry);
     // P1-4: once started, bring the whole timer card (cue banner + clock) into view above the sticky CTA
     t.addEventListener('click', (e) => {
-      if (/** @type {HTMLElement} */ (e.target).closest?.('[data-action="toggle"]') && t.running) smooth(t.closest('[data-slot="timer"]'));
+      if (/** @type {HTMLElement} */ (e.target).closest?.('[data-action="toggle"]') && t.running) toTimer(t.closest('[data-slot="timer"]'));
     });
     hideSingleRep(t);
     t.addEventListener('done', (e) => {

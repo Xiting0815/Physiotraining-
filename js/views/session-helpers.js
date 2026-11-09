@@ -1003,7 +1003,7 @@ const CSS = `
 .ses-top__title .eyebrow{margin:0}
 .ses-top__title strong{font-size:var(--fs-md);font-variant-numeric:tabular-nums}
 .ses-top__title .ses-top__eyebrow{font-size:15px;font-weight:var(--fw-semibold);color:var(--muted);letter-spacing:0;text-transform:none}
-.ses-top__title strong.ses-top__ex{font-size:clamp(20px,5.6vw,24px);font-weight:var(--fw-black,800);line-height:1.15;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-variant-numeric:normal}
+.ses-top__title strong.ses-top__ex{font-size:clamp(20px,5.6vw,24px);font-weight:var(--fw-black,800);line-height:1.15;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-variant-numeric:normal;hyphens:auto;-webkit-hyphens:auto}
 .ses-top__side{display:inline-block;vertical-align:.12em;margin-left:6px;padding:2px 10px;border-radius:999px;font-size:16px;font-weight:var(--fw-bold);background:var(--primary-soft);color:var(--primary-ink);white-space:nowrap}
 .ses-top__side--left{background:var(--accent-soft);color:var(--accent-ink)}
 .ses-top .btn--icon{width:var(--tap);height:var(--tap);border-radius:50%;background:var(--surface);box-shadow:var(--shadow-1)}
@@ -1046,7 +1046,8 @@ pt-timer[data-ses-onerep] .pt-timer__meta{display:none}
 @keyframes ses-float{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}20%{opacity:1;transform:translate(-50%,-6px) scale(1.1)}100%{opacity:0;transform:translate(-50%,-38px) scale(1)}}
 .ses-rest{border:2px solid color-mix(in srgb,var(--accent) 35%,transparent);animation:view-in .25s var(--ease) both}
 .ses-rest .eyebrow{text-align:center;font-size:18px;font-weight:var(--fw-bold);letter-spacing:0;text-transform:none;color:var(--text)}
-.ses-timer pt-timer{--pt-timer-size:min(62vw,240px)}
+.ses-timer{scroll-margin-top:calc(var(--safe-top,0px) + 100px);scroll-margin-bottom:110px}
+.ses-timer pt-timer{--pt-timer-size:min(58vw,230px)}
 .ses-rest pt-timer{--pt-timer-size:min(52vw,200px)}
 .ses-done{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-3) var(--s-4);border-radius:var(--radius);background:var(--green-soft);color:var(--green-ink);font-weight:var(--fw-bold);animation:pop-in .4s var(--spring) both}
 .ses-done__icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--green);color:var(--on-primary);font-size:20px;flex:none}
