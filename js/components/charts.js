@@ -325,17 +325,19 @@ export function calendarHeatmap(container, data, opts = {}) {
 
 /**
  * Progress ring markup (styled by .ring in components.css).
- * @param {{value: number, max?: number, label?: string|number, unit?: string, size?: 'sm'|'md'|'lg', variant?: 'primary'|'accent'|'gold'|'on-hero', ariaLabel?: string}} o
+ * @param {{value: number, max?: number, label?: string|number, unit?: string, size?: 'xs'|'sm'|'md'|'lg', variant?: 'primary'|'accent'|'gold'|'on-hero', ariaLabel?: string}} o
  * @returns {string}
  */
 export function progressRing(o) {
-  const max = o.max ?? 1;
-  const p = Math.max(0, Math.min(1, max ? o.value / max : 0));
+  const max = Number(o.max ?? 1);
+  const raw = Number.isFinite(max) && max ? Number(o.value) / max : 0;
+  const p = Number.isFinite(raw) ? Math.max(0, Math.min(1, raw)) : 0;
+  const lbl = o.label == null || (typeof o.label === 'number' && !Number.isFinite(o.label)) ? Math.round(p * 100) : o.label;
   const cls = ['ring', o.size && o.size !== 'md' ? `ring--${o.size}` : '', o.variant && o.variant !== 'primary' ? `ring--${o.variant}` : ''].filter(Boolean).join(' ');
   const aria = o.ariaLabel ?? `${Math.round(p * 100)} %`;
   return `<div class="${cls}" style="--p:${p.toFixed(4)}" role="img" aria-label="${esc(aria)}">`
     + '<svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring__track" cx="60" cy="60" r="52"/><circle class="ring__bar" cx="60" cy="60" r="52" pathLength="100"/></svg>'
-    + `<div class="ring__label" aria-hidden="true"><span class="ring__value">${esc(o.label ?? Math.round(p * 100))}</span>${o.unit ? `<span class="ring__unit">${esc(o.unit)}</span>` : ''}</div></div>`;
+    + `<div class="ring__label" aria-hidden="true"><span class="ring__value">${esc(lbl)}</span>${o.unit ? `<span class="ring__unit">${esc(o.unit)}</span>` : ''}</div></div>`;
 }
 
 let flameId = 0;
@@ -364,11 +366,14 @@ export function streakFlame(o) {
  * @returns {string}
  */
 export function xpBar(o) {
-  const { xp, level } = o;
-  const pct = Math.round((level.progress ?? 0) * 100);
-  const left = level.next != null ? `noch <strong>${level.next - xp}</strong> XP` : 'Höchste Stufe erreicht';
-  return `<div class="xp" style="--p:${(level.progress ?? 0).toFixed(4)}">`
+  const xp = Number.isFinite(Number(o.xp)) ? Math.max(0, Number(o.xp)) : 0;
+  const level = o.level || { index: 0, title: '', progress: 0, next: null };
+  const prog = Number.isFinite(Number(level.progress)) ? Math.max(0, Math.min(1, Number(level.progress))) : 0;
+  const pct = Math.round(prog * 100);
+  const de = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const left = level.next != null && Number.isFinite(Number(level.next)) ? `noch <strong>${de(Math.max(0, level.next - xp))}</strong> XP` : 'Höchste Stufe erreicht';
+  return `<div class="xp" style="--p:${prog.toFixed(4)}">`
     + `<div class="xp__head"><span class="xp__level">Lv ${level.index + 1}</span><span class="xp__title">${esc(level.title)}</span>${o.nextTitle ? `<span class="xp__next">→ ${esc(o.nextTitle)}</span>` : ''}</div>`
     + `<div class="xp__bar" role="progressbar" aria-label="Fortschritt zur nächsten Stufe" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div class="xp__fill"></div></div>`
-    + `<div class="xp__meta"><span><strong>${xp}</strong> XP</span><span>${left}</span></div></div>`;
+    + `<div class="xp__meta"><span><strong>${de(xp)}</strong> XP</span><span>${left}</span></div></div>`;
 }

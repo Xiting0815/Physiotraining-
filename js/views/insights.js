@@ -6,7 +6,8 @@ import { weeklyReport, opReadiness, loadVsPain, MIN_POINTS } from '../logic/insi
 import { currentPhase } from '../logic/progression.js';
 import { doneSessions } from '../logic/stats.js';
 import { barChart, progressRing } from '../components/charts.js';
-import { ICON, ensureViewStyles, applyFontScale, pageHeader, shortDate, trafficPill } from './ui.js';
+import { ICON, ensureViewStyles, applyFontScale, pageHeader, shortDate, trafficPill, safeData, fmtMinutes
+} from './ui.js';
 import { ensureV2Styles, ICON2, fmtNum, fmtDistance, meter } from './v2-shared.js';
 
 export const title = 'Auswertung';
@@ -53,7 +54,7 @@ export function render(root, { store, content, query }) {
   const kpi = (v, l, met = false) => html`<div class="v2-kpi ${met ? 'is-met' : ''}"><span class="v2-kpi__v">${v}</span><span class="v2-kpi__l">${l}</span></div>`;
 
   const draw = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     applyFontScale(data.settings);
     const phase = currentPhase(data.state, content.phases);
     const prehab = (phase?.kind ?? 'prehab') === 'prehab';
@@ -97,12 +98,12 @@ export function render(root, { store, content, query }) {
         <div class="v2-kpis">
           ${kpi(html`<span class="num">${rep.strength.done}</span><small>/ ${rep.strength.goal}</small>`, 'Kraft-Einheiten', rep.strength.done >= rep.strength.goal)}
           ${kpi(html`<span class="num">${rep.cardio.done}</span><small>/ ${rep.cardio.goal}</small>`, 'Rudereinheiten', rep.cardio.done >= rep.cardio.goal)}
-          ${kpi(html`${rep.cardio.distanceM ? fmtDistance(rep.cardio.distanceM) : '–'}`, `Gerudert${rep.cardio.minutes ? ` · ${rep.cardio.minutes} Min` : ''}`)}
+          ${kpi(html`${rep.cardio.distanceM ? fmtDistance(rep.cardio.distanceM) : '–'}`, `Gerudert${rep.cardio.minutes ? ` · ${fmtMinutes(rep.cardio.minutes)}` : ''}`)}
           ${kpi(html`≈ <span class="num">${fmtNum(rep.kcal)}</span><small>kcal</small>`, 'Training (Schätzung)')}
           ${kpi(html`<span class="num">${fmtNum(rep.load)}</span>${loadDelta == null ? '' : html`<small>${loadDelta > 0 ? '+' : ''}${loadDelta} %</small>`}`, 'Trainingslast')}
           ${kpi(html`${rep.avgNextDayPain == null ? '–' : html`<span class="num">${fmtNum(rep.avgNextDayPain, 1)}</span>${painDelta == null ? '' : html`<small>${painDelta < -0.2 ? '↓ besser' : painDelta > 0.2 ? '↑ höher' : '→ stabil'}</small>`}`}`, 'Knie Folgetag Ø')}
         </div>
-        ${rep.cardio.inSessionMinutes ? html`<p class="text-sm muted mt-2 mb-0">🚣 Rudern im Krafttraining (Aufwärmen/Finisher): <span class="num">${rep.cardio.inSessionMinutes}</span> Min${rep.cardio.inSessionDistanceM ? html` · <span class="num">${fmtDistance(rep.cardio.inSessionDistanceM)}</span>` : ''} – zählt nicht als Rudereinheit.</p>` : ''}
+        ${rep.cardio.inSessionMinutes ? html`<p class="text-sm muted mt-2 mb-0">🚣 Rudern im Krafttraining (Aufwärmen/Finisher): <span class="num">${fmtMinutes(rep.cardio.inSessionMinutes)}</span>${rep.cardio.inSessionDistanceM ? html` · <span class="num">${fmtDistance(rep.cardio.inSessionDistanceM)}</span>` : ''} – zählt nicht als Rudereinheit.</p>` : ''}
         ${['green', 'yellow', 'red', 'stop'].some((l) => rep.lights[l]) ? html`<div class="chip-row mt-4">
           ${['green', 'yellow', 'red', 'stop'].filter((l) => rep.lights[l]).map((l) => html`<span class="row" style="gap:4px">${trafficPill(l)}<span class="num text-sm">× ${rep.lights[l]}</span></span>`)}
         </div>` : ''}

@@ -4,6 +4,7 @@ import { html, raw, render as paint } from '../render.js';
 import {
   ICON, ensureViewStyles, applyFontScale, pageHeader, equipmentItems, normPriority, PRIORITY_ORDER, PRIORITY_LABEL,
   budgetSum, parsePriceRange, toast,
+  safeData,
 } from './ui.js';
 import { OPTIONAL_EQUIPMENT, BASE_EQUIPMENT, EQUIPMENT_INFO, normalizeOwned, nameList } from '../logic/equipment.js';
 import { equipmentPlanChanges } from '../logic/progression.js';
@@ -107,7 +108,7 @@ export function render(root, { content, store }) {
         ${[['theraband', 'TheraBand'], ['loop', 'Loop-Bänder']].map(([k, t]) => bandList(k).length ? html`
           <p class="field__label mb-2">${t} <span class="muted text-xs">leicht → schwer</span></p>
           <div class="chip-row mb-4">${bandList(k).map((b) => html`<span class="chip chip--band" style="--band:${b.color}"><i class="chip__swatch"></i>${b.label}</span>`)}</div>` : '')}
-        <p class="text-sm muted mb-0">Damit läuft der ganze Grundplan. <a href="#/mehr">Reihenfolge der Bänder</a></p>
+        <p class="text-sm muted mb-0">Damit läuft der ganze Grundplan.</p><a class="tap-link pv-tap-left" href="#/mehr">Reihenfolge der Bänder ${raw(ICON.right)}</a>
       </section>
 
       ${missing.length ? html`
@@ -142,7 +143,7 @@ export function render(root, { content, store }) {
 
   /** Apply a change to the owned list, then report what it changes in the current phase's plans. */
   const setOwned = (mutate, label, removedFirst = false) => {
-    const before = store.get();
+    const before = safeData(store.get());
     const next = new Set(normalizeOwned(before.settings.ownedEquipment));
     mutate(next);
     const list = normalizeOwned([...next]);

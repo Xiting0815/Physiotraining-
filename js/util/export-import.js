@@ -37,14 +37,37 @@ export function validateBackup(obj, { target = SCHEMA_VERSION } = {}) {
   const errors = [];
   if (!isObj(obj)) return { ok: false, errors: ['Die Datei ist keine gültige Physio-Sicherung.'] };
   if (!isObj(obj.settings)) errors.push('Einstellungen fehlen.');
+  else {
+    // v5.1 type checks (P1-7). Wrong scalar types (numbers, dates, enums) are repaired later by store.sanitize;
+    // wrong container types are rejected because they mean the file is not a Physio backup.
+    const st = obj.settings;
+    if ('bands' in st && !Array.isArray(st.bands)) errors.push('Einstellungen: Bänder sind ungültig.');
+    if ('ownedEquipment' in st && !Array.isArray(st.ownedEquipment)) errors.push('Einstellungen: Ausrüstung ist ungültig.');
+    if ('painThresholds' in st && !isObj(st.painThresholds)) errors.push('Einstellungen: Schmerzgrenzen sind ungültig.');
+    if ('profile' in st && st.profile !== null && !isObj(st.profile)) errors.push('Einstellungen: Profil ist ungültig.');
+  }
   if (!isObj(obj.state)) errors.push('Trainingsstand fehlt.');
+  else {
+    const s = obj.state;
+    if ('customWorkouts' in s && !Array.isArray(s.customWorkouts)) errors.push('Eigene Workouts sind ungültig.');
+    if ('activeSession' in s && s.activeSession !== null && !isObj(s.activeSession)) errors.push('Laufendes Training ist ungültig.');
+    for (const k of ['exerciseLevels', 'exitCriteriaDone', 'badges', 'records']) {
+      if (k in s && s[k] !== null && !isObj(s[k])) if (!errors.includes('Trainingsstand ist beschädigt.')) errors.push('Trainingsstand ist beschädigt.');
+    }
+    if ('xp' in s && s.xp !== null && typeof s.xp !== 'number' && typeof s.xp !== 'string') errors.push('Trainingsstand ist beschädigt.');
+  }
   if (!Array.isArray(obj.sessions)) errors.push('Trainingsverlauf fehlt.');
   else {
     const ids = new Set();
+    const dateish = (v) => typeof v === 'string' && v.length >= 10 && Number.isFinite(Date.parse(v));
     obj.sessions.forEach((s, i) => {
       if (!isObj(s) || typeof s.id !== 'string' || !s.id) errors.push(`Einheit ${i + 1} hat keine gültige ID.`);
       else if (ids.has(s.id)) errors.push(`Einheit ${s.id} ist doppelt vorhanden.`);
-      else ids.add(s.id);
+      else {
+        ids.add(s.id);
+        if (!dateish(s.startedAt) && !dateish(s.endedAt) && !dateish(s.date)) errors.push(`Einheit ${i + 1} hat kein gültiges Datum.`);
+        if ('exercises' in s && s.exercises != null && !Array.isArray(s.exercises)) errors.push(`Einheit ${i + 1} ist beschädigt.`);
+      }
     });
   }
   if (obj.schemaVersion !== undefined) {

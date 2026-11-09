@@ -8,6 +8,7 @@ import { downloadBackup, readBackupFile } from '../util/export-import.js';
 import { voice, voiceSettings, testVoice, DEFAULT_RATE } from '../util/voice.js';
 import {
   ICON, ensureViewStyles, applyFontScale, pageHeader, confirmDialog, toast, openSheet, equipmentItems,
+  safeData,
 } from './ui.js';
 
 export const title = 'Mehr';
@@ -97,7 +98,7 @@ export function render(root, { store, content, query }) {
   let importMode = 'replace';
 
   const draw = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     const s = data.settings;
     applyFontScale(s);
     const today = todayISO();
@@ -177,7 +178,7 @@ export function render(root, { store, content, query }) {
         <p class="field__label mb-2 mt-4">Rudern im Krafttraining</p>
         ${ownsRower ? html`<label class="switch-row"><span>Mit 10 Min. Rudern aufwärmen<span class="pv-setting-row__hint">Standard beim Start (Phase 1–3) – vor jedem Training umschaltbar</span></span><input type="checkbox" class="switch" name="rowWarmupDefault" ${s.rowWarmupDefault !== false ? 'checked' : ''}></label>
         <label class="switch-row"><span>Ruder-Finisher vorschlagen<span class="pv-setting-row__hint">„Ja“ als Vorauswahl, wenn nach dem Kraftteil gefragt wird – nur bei grüner Knie-Ampel</span></span><input type="checkbox" class="switch" name="rowFinisherDefault" ${s.rowFinisherDefault ? 'checked' : ''}></label>`
-          : html`<p class="text-sm muted mb-0">Ausgeblendet – <a href="#/ausruestung">Rudergerät in Ausrüstung abhaken</a>, dann kannst du mit Rudern aufwärmen und einen Finisher anhängen.</p>`}
+          : html`<p class="text-sm muted mb-0">Ausgeblendet – mit Rudergerät kannst du mit Rudern aufwärmen und einen Finisher anhängen.</p><a class="tap-link pv-tap-left" href="#/ausruestung">Rudergerät in Ausrüstung abhaken ${raw(ICON.right)}</a>`}
       </section>
 
       <h2 class="section-title">Sprachansagen</h2>
@@ -237,9 +238,9 @@ export function render(root, { store, content, query }) {
         <button class="btn btn--ghost btn--sm" data-thr-reset>Auf Standard zurücksetzen (2 / 5 / 2×)</button>
       </section>
 
-      <h2 class="section-title">Daten</h2>
-      <section class="card">
-        <p class="card__sub" style="margin-top:0">${age == null ? 'Noch keine Sicherung erstellt.' : age === 0 ? 'Letzte Sicherung: heute ✓' : `Letzte Sicherung: vor ${age} ${age === 1 ? 'Tag' : 'Tagen'}`} · ${data.sessions.length} Einheiten gespeichert</p>
+      <h2 class="section-title" id="backup">Daten & Sicherung</h2>
+      <section class="card pv-backup" data-backup-card aria-labelledby="backup">
+        <p class="card__sub" style="margin-top:0">${age == null ? 'Noch keine Sicherung erstellt.' : age === 0 ? 'Letzte Sicherung: heute ✓' : `Letzte Sicherung: vor ${age} ${age === 1 ? 'Tag' : 'Tagen'}`} · ${data.sessions.length} ${data.sessions.length === 1 ? 'Einheit' : 'Einheiten'} gespeichert. Deine Daten liegen nur auf diesem Gerät.</p>
         <button class="btn btn--primary btn--block mt-4" data-export>${raw(ICON.download)} Sicherung exportieren (JSON)</button>
         <p class="field__label mb-2 mt-4">Sicherung importieren</p>
         <div class="segmented mb-2" role="radiogroup" aria-label="Import-Modus">
@@ -369,6 +370,18 @@ export function render(root, { store, content, query }) {
     if (el) el.textContent = voiceStatus(voice.voice, !!synth).text;
   };
   synth?.addEventListener?.('voiceschanged', onVoices);
+  if (query.focus === 'backup') {
+    // deep link from the backup reminder (#/mehr?focus=backup): scroll to the section and highlight it briefly
+    setTimeout(() => {
+      const card = root.querySelector('[data-backup-card]');
+      root.querySelector('#backup')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      if (card) {
+        card.classList.add('is-highlight');
+        setTimeout(() => card.classList.remove('is-highlight'), 2400);
+        card.querySelector('[data-export]')?.focus({ preventScroll: true });
+      }
+    }, 60);
+  }
   if (query.focus === 'surgeryDate') {
     setTimeout(() => { const el = root.querySelector('#surgeryDate'); el?.scrollIntoView({ block: 'center' }); el?.focus({ preventScroll: true }); }, 60);
   }

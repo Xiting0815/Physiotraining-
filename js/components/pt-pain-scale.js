@@ -128,7 +128,7 @@ export class PtPainScale extends Base {
   <div class="pain-scale__head"><span class="pain-scale__label" id="${id}-l">${escape(label)}</span><span class="pain-scale__current" aria-hidden="true"></span></div>
   <div class="pain-scale__buttons" role="radiogroup" aria-labelledby="${id}-l">${btns}</div>
   <div class="pain-scale__bar" aria-hidden="true"></div>
-  <div class="pain-scale__anchors" aria-hidden="true"><span>${min} ${anchors[0]}</span><span>${anchors[1]}</span><span>${anchors[2]} ${max}</span></div>
+  <div class="pain-scale__anchors" aria-hidden="true" style="font-size:max(14px,var(--fs-sm,0.875rem))"><span>${min} ${anchors[0]}</span><span>${anchors[1]}</span><span>${anchors[2]} ${max}</span></div>
 </div>`;
     this._built = true;
     this._sync();

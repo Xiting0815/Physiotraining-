@@ -3,6 +3,7 @@
 import { html, raw } from '../render.js';
 import { parseISODate } from '../util/date.js';
 import { EQUIPMENT_INFO } from '../logic/equipment.js';
+import { defaults as storeDefaults } from '../store.js';
 
 /* ------------------------------------------------------------------ */
 /* Labels                                                              */
@@ -200,7 +201,8 @@ export function fmtInt(n) {
 
 /** Distance in m → "850 m" / "12,4 km". */
 export function fmtDistance(m) {
-  if (!m) return '0 m';
+  m = Number(m);
+  if (!Number.isFinite(m) || m <= 0) return '0 m';
   return m < 1000 ? `${Math.round(m)} m` : `${fmtNum(m / 1000, 1, { trim: true })} km`;
 }
 
@@ -231,7 +233,8 @@ export function greeting(now = new Date()) {
 export const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 export function monthTitle(ym) {
   const [y, m] = String(ym).split('-').map(Number);
-  return `${MONTHS[(m || 1) - 1]} ${y}`;
+  if (!Number.isFinite(y) || !(m >= 1 && m <= 12)) return '–';
+  return `${MONTHS[m - 1]} ${y}`;
 }
 /** Shift "YYYY-MM" by n months. */
 export function shiftMonth(ym, n) {
@@ -243,16 +246,199 @@ export function shiftMonth(ym, n) {
 /** "Sa., 31.10." short date. */
 export function shortDate(iso) {
   const WD = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
-  const d = parseISODate(iso);
+  if (!iso) return '–';
+  const d = parseISODate(String(iso));
+  if (Number.isNaN(d.getTime())) return '–';
   return `${WD[d.getDay()]}, ${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.`;
 }
 
-/** Seconds → "4:05 min" or "45 s" or "1 h 05 min". */
+/**
+ * Seconds → value/unit pair for stat tiles, consistent with fmtDuration():
+ * < 1 min „45 s“, < 1 h „21 min“, ≥ 1 h „1 h 05 min“ (value „1 h 05“, unit „min“).
+ */
 export function humanSeconds(sec) {
-  const s = Math.max(0, Math.round(sec || 0));
+  const n = Number(sec);
+  const s = Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
   if (s < 60) return { value: String(s), unit: 's' };
-  if (s < 3600) return { value: `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`, unit: 'min' };
-  return { value: `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}`, unit: 'h' };
+  const totalMin = Math.round(s / 60);
+  if (totalMin < 60) return { value: String(totalMin), unit: 'min' };
+  return { value: `${Math.floor(totalMin / 60)} h ${String(totalMin % 60).padStart(2, '0')}`, unit: 'min' };
+}
+
+/**
+ * Duration text used across the app: < 1 min „45 s“, < 1 h „21 min“, ≥ 1 h „1 h 05 min“; junk → „–“.
+ * @param {number|null|undefined} sec @param {{seconds?: boolean}} [o] seconds=false → „< 1 min“ instead of „45 s“
+ */
+export function fmtDuration(sec, { seconds = true } = {}) {
+  const n = Number(sec);
+  if (sec == null || sec === '' || !Number.isFinite(n) || n < 0) return '–';
+  const s = Math.round(n);
+  if (s < 60) return seconds ? `${s} s` : (s ? '< 1 min' : '0 min');
+  const h = humanSeconds(s);
+  return `${h.value} ${h.unit}`;
+}
+
+/** Minutes → „21 min“ / „1 h 05 min“ (junk → „–“). */
+export const fmtMinutes = (min) => (min == null || !Number.isFinite(Number(min)) ? '–' : fmtDuration(Number(min) * 60, { seconds: false }));
+
+/**
+ * Display guard for template interpolation: null/undefined/NaN/Infinity/'' and stringified junk
+ * („NaN“, „undefined“, „null“, „Invalid Date“) render as „–“ (or `fallback`). Numbers are rounded to `digits`
+ * and use the German decimal comma.
+ * @param {unknown} v @param {{fallback?: string, digits?: number}} [o]
+ */
+export function show(v, { fallback = '–', digits } = {}) {
+  if (v == null || v === '' || v === false) return fallback;
+  if (typeof v === 'number') {
+    if (!Number.isFinite(v)) return fallback;
+    return digits != null ? fmtNum(v, digits, { trim: true }) : String(v).replace('.', ',');
+  }
+  const s = String(v);
+  if (/^(NaN|undefined|null|Infinity|-Infinity|Invalid Date|\[object \w+\])$/.test(s.trim())) return fallback;
+  if (/NaN|undefined|Invalid Date/.test(s)) return fallback;
+  return s;
+}
+
+/** Finite number or `fallback` (default null). */
+export const num = (v, fallback = null) => {
+  if (v == null || v === '' || typeof v === 'boolean') return fallback;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+/** "YYYY-MM-DD" that is a real calendar day. */
+export function isISODay(v) {
+  if (typeof v !== 'string' || !ISO_DAY.test(v)) return false;
+  const [y, m, d] = v.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
+}
+/** Parsable timestamp string. */
+export const isValidTs = (v) => (typeof v === 'string' || typeof v === 'number') && v !== '' && !Number.isNaN(new Date(v).getTime());
+
+const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const arr = (v) => (Array.isArray(v) ? v : []);
+const objs = (v) => arr(v).filter(isObj);
+
+function safeCheck(c) {
+  if (!isObj(c)) return null;
+  const out = { ...c };
+  for (const k of ['pain', 'swelling', 'stiffness', 'rpe']) if (k in out) out[k] = num(out[k]);
+  return out;
+}
+
+function safeRowing(r) {
+  if (!isObj(r)) return null;
+  const out = {};
+  for (const [k, v] of Object.entries(r)) { const n = num(v); if (n != null && n >= 0) out[k] = n; }
+  return out;
+}
+
+function safeItems(v) { return objs(v).filter((it) => typeof it.exerciseId === 'string' && it.exerciseId); }
+
+/** One session made safe for rendering (null when it cannot be placed in time). */
+export function safeSession(s, i = 0) {
+  if (!isObj(s) || !isValidTs(s.startedAt)) return null;
+  const traffic = isObj(s.traffic) ? s.traffic : {};
+  const LIGHTS = ['green', 'yellow', 'red', 'stop'];
+  return {
+    ...s,
+    id: typeof s.id === 'string' && s.id ? s.id : `s-${i}`,
+    workoutId: typeof s.workoutId === 'string' ? s.workoutId : '',
+    status: ['active', 'done', 'aborted'].includes(s.status) ? s.status : 'aborted',
+    endedAt: isValidTs(s.endedAt) ? s.endedAt : null,
+    kind: ['strength', 'short', 'cardio', 'custom'].includes(s.kind) ? s.kind : undefined,
+    pre: safeCheck(s.pre), post: safeCheck(s.post), nextDay: safeCheck(s.nextDay),
+    exercises: objs(s.exercises).filter((e) => typeof e.exerciseId === 'string').map((e) => ({
+      ...e,
+      level: num(e.level, 0),
+      painDuring: num(e.painDuring), rpe: num(e.rpe),
+      sets: objs(e.sets).map((x) => ({ ...x, reps: num(x.reps), hold: num(x.hold), seconds: num(x.seconds) })),
+    })),
+    traffic: {
+      provisional: LIGHTS.includes(traffic.provisional) ? traffic.provisional : null,
+      final: LIGHTS.includes(traffic.final) ? traffic.final : null,
+      reasons: arr(traffic.reasons).filter((r) => typeof r === 'string'),
+    },
+    recommendations: objs(s.recommendations).filter((r) => typeof r.action === 'string'),
+    rowing: s.rowing == null ? s.rowing : safeRowing(s.rowing),
+    warmupRowing: s.warmupRowing == null ? s.warmupRowing : safeRowing(s.warmupRowing),
+    finisherRowing: s.finisherRowing == null ? s.finisherRowing : safeRowing(s.finisherRowing),
+    xpEarned: num(s.xpEarned, 0),
+  };
+}
+
+function safeCustom(c) {
+  if (!isObj(c) || typeof c.id !== 'string' || !c.id) return null;
+  return {
+    ...c,
+    name: typeof c.name === 'string' && c.name.trim() ? c.name : 'Eigenes Workout',
+    warmup: safeItems(c.warmup), cooldown: safeItems(c.cooldown),
+    blocks: objs(c.blocks).map((b) => ({ ...b, items: safeItems(b.items) })),
+    updatedAt: typeof c.updatedAt === 'string' ? c.updatedAt : '',
+    createdAt: typeof c.createdAt === 'string' ? c.createdAt : '',
+  };
+}
+
+const safeCache = new WeakMap();
+/**
+ * Read-only, render-safe view of the store data: junk sessions (null, missing/invalid start date) are dropped,
+ * arrays/objects/numbers that views and logic rely on are guaranteed, missing settings fall back to the defaults.
+ * NEVER write the result back – mutate via store.update() as before. Memoised per data object.
+ * @param {any} data
+ */
+export function safeData(data) {
+  if (isObj(data) && safeCache.has(data)) return safeCache.get(data);
+  const def = storeDefaults();
+  const src = isObj(data) ? data : {};
+  const s0 = isObj(src.settings) ? src.settings : {};
+  const settings = { ...def.settings, ...s0 };
+  for (const [k, v] of Object.entries(def.settings)) {
+    if (v === null) continue;
+    if (typeof v === 'number') settings[k] = num(s0[k], v);
+    else if (typeof v === 'boolean') settings[k] = typeof s0[k] === 'boolean' ? s0[k] : v;
+    else if (typeof v === 'string' && typeof s0[k] !== 'string') settings[k] = v;
+    else if (Array.isArray(v) && !Array.isArray(s0[k])) settings[k] = v;
+    else if (isObj(v) && !isObj(s0[k])) settings[k] = v;
+  }
+  settings.bands = objs(settings.bands).filter((b) => typeof b.id === 'string');
+  if (!settings.bands.length) settings.bands = def.settings.bands;
+  settings.bands = settings.bands.map((b) => ({ ...b, label: typeof b.label === 'string' ? b.label : b.id, color: typeof b.color === 'string' ? b.color : 'var(--muted)', kind: b.kind === 'loop' ? 'loop' : 'theraband' }));
+  const pt = isObj(settings.painThresholds) ? settings.painThresholds : {};
+  settings.painThresholds = Object.fromEntries(Object.entries(def.settings.painThresholds).map(([k, v]) => [k, num(pt[k], v)]));
+  if (settings.weeklyGoal < 1 || settings.weeklyGoal > 14) settings.weeklyGoal = def.settings.weeklyGoal;
+  if (settings.cardioGoalPerWeek < 0 || settings.cardioGoalPerWeek > 14) settings.cardioGoalPerWeek = def.settings.cardioGoalPerWeek;
+  settings.surgeryDate = isISODay(s0.surgeryDate) ? s0.surgeryDate : null;
+  if (!isISODay(settings.prehabStart)) settings.prehabStart = def.settings.prehabStart;
+  if (!isISODay(settings.surgeryDateSuggested)) settings.surgeryDateSuggested = null;
+  settings.lastBackupAt = isValidTs(s0.lastBackupAt) ? s0.lastBackupAt : null;
+  settings.ownedEquipment = arr(s0.ownedEquipment).filter((x) => typeof x === 'string');
+  settings.profile = { ...(isObj(s0.profile) ? s0.profile : {}), weightKg: num(isObj(s0.profile) ? s0.profile.weightKg : null) };
+  settings.restDefault = num(s0.restDefault);
+
+  const st0 = isObj(src.state) ? src.state : {};
+  const state = { ...def.state, ...st0 };
+  state.phaseId = typeof st0.phaseId === 'string' && st0.phaseId ? st0.phaseId : def.state.phaseId;
+  state.nextWorkoutId = typeof st0.nextWorkoutId === 'string' && st0.nextWorkoutId ? st0.nextWorkoutId : def.state.nextWorkoutId;
+  state.xp = Math.max(0, num(st0.xp, 0));
+  state.badges = Object.fromEntries(Object.entries(isObj(st0.badges) ? st0.badges : {}).filter(([, v]) => isValidTs(v)));
+  state.exerciseLevels = Object.fromEntries(Object.entries(isObj(st0.exerciseLevels) ? st0.exerciseLevels : {})
+    .filter(([, v]) => Number.isInteger(v) && v >= 0));
+  state.exitCriteriaDone = isObj(st0.exitCriteriaDone) ? st0.exitCriteriaDone : {};
+  state.exerciseToggles = isObj(st0.exerciseToggles) ? st0.exerciseToggles : {};
+  state.records = isObj(st0.records) ? st0.records : def.state.records;
+  state.phaseHistory = objs(st0.phaseHistory);
+  state.customWorkouts = arr(st0.customWorkouts).map(safeCustom).filter(Boolean);
+  state.activeSession = st0.activeSession ? safeSession(st0.activeSession) : null;
+  if (state.activeSession && state.activeSession.status !== 'active') state.activeSession = { ...state.activeSession, status: 'active' };
+  state.postOpClearance = isObj(st0.postOpClearance) ? st0.postOpClearance : null;
+  state.postOpEndClearance = isObj(st0.postOpEndClearance) ? st0.postOpEndClearance : null;
+
+  const sessions = arr(src.sessions).map((x, i) => safeSession(x, i)).filter(Boolean);
+  const out = { ...src, settings, state, sessions };
+  if (isObj(data)) safeCache.set(data, out);
+  return out;
 }
 
 /** Session duration in minutes (rounded) or null. */
@@ -383,14 +569,45 @@ const VIEW_CSS = `
 .pv-hero-tags { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: 0 0 var(--s-4); }
 .pv-split-legend { display: flex; gap: var(--s-4); font-size: var(--fs-xs); color: var(--on-hero-muted); margin: calc(-1 * var(--s-2)) 0 var(--s-4); font-weight: var(--fw-semibold); }
 .pv-split-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-.pv-hero-alt { margin-top: var(--s-3); text-align: center; font-size: var(--fs-sm); }
-.pv-hero-alt a { color: var(--on-hero); font-weight: var(--fw-semibold); }
+.pv-hero-alt { margin: var(--s-2) 0 calc(-1 * var(--s-2)); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 var(--s-3); text-align: center; font-size: var(--fs-sm); }
+.pv-hero-alt a { color: var(--on-hero); font-weight: var(--fw-semibold); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255,255,255,0.5); }
+.pv-hero-alt__done { color: var(--on-hero-muted); }
+.pv-hero-alt--note { color: var(--on-hero-muted); margin-bottom: 0; }
+.pv-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #7FFFB0; box-shadow: 0 0 0 0 rgba(127,255,176,0.6); animation: pv-pulse 1.8s ease-out infinite; }
+@keyframes pv-pulse { 0% { box-shadow: 0 0 0 0 rgba(127,255,176,0.55); } 80%, 100% { box-shadow: 0 0 0 8px rgba(127,255,176,0); } }
+@media (prefers-reduced-motion: reduce) { .pv-live-dot { animation: none; } }
+.pv-level-tap { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; text-decoration: none; }
+.pv-level-tap .chip { pointer-events: none; }
+.pv-op-ready { display: flex; align-items: center; gap: var(--s-3); min-height: 56px; margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); color: inherit; text-decoration: none; }
+.pv-op-ready .ring { flex: none; }
+.pv-op-ready__k { display: block; font-size: var(--fs-xs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.pv-op-ready__v { display: block; font-weight: var(--fw-semibold); line-height: 1.3; }
+.pv-op-ready__tip { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: var(--fs-sm); color: var(--muted); line-height: 1.35; }
+.pv-recs { padding: 0; }
+.pv-recs > summary { list-style: none; display: flex; align-items: center; gap: var(--s-3); min-height: 64px; padding: var(--s-3) var(--s-4); cursor: pointer; }
+.pv-recs > summary::-webkit-details-marker { display: none; }
+.pv-recs__title { display: block; font-weight: var(--fw-bold); line-height: 1.3; }
+.pv-recs__sub { display: block; font-size: var(--fs-sm); color: var(--muted); line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-recs .grow { min-width: 0; }
+.pv-recs__chev { flex: none; width: 24px; height: 24px; color: var(--muted); transition: transform var(--dur) var(--ease); }
+.pv-recs__chev svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.pv-recs[open] .pv-recs__chev { transform: rotate(180deg); }
+.pv-recs__list { display: flex; flex-direction: column; gap: var(--s-4); padding: 0 var(--s-4) var(--s-4); }
+.pv-recs__list > .rec + .rec { border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); padding-top: var(--s-4); }
+.pv-icon-badge--sm { width: 40px; height: 40px; border-radius: 12px; font-size: 20px; }
+.pv-icon-badge--sm svg { width: 20px; height: 20px; }
+.pv-quickstart .card__header { align-items: flex-start; }
+a.card.pv-xp-card { display: block; }
 .pv-ring-empty { flex: none; width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center; border: 10px dashed var(--surface-2); color: var(--primary); }
 .pv-ring-empty svg { width: 40px; height: 40px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.pv-mini { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); text-align: center; height: 100%; justify-content: center; }
-.pv-mini .streak { flex-direction: column; gap: var(--s-1); text-align: center; }
-.pv-mini .streak__label { max-width: 14ch; }
-.pv-mini__note { font-size: var(--fs-xs); color: var(--muted); font-weight: var(--fw-semibold); }
+.pv-mini { display: flex; flex-direction: row; align-items: center; gap: var(--s-3); min-height: 88px; }
+a.card.pv-mini { display: flex; }
+.pv-mini__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pv-mini .streak { gap: var(--s-2); }
+.pv-mini .streak__flame { width: 40px; height: 46px; }
+.pv-mini .streak__count { font-size: var(--fs-xl); }
+.pv-mini .streak__label { font-size: var(--fs-xs); line-height: 1.3; }
+.pv-mini__note { font-size: var(--fs-sm); color: var(--text); font-weight: var(--fw-semibold); line-height: 1.3; }
 .pv-mini__note.is-gold { color: var(--gold-ink); }
 a.card.pv-last, .pv-last { display: flex; align-items: center; gap: var(--s-3); }
 .pv-welcome { border: 2px solid color-mix(in srgb, var(--primary) 30%, transparent); }
@@ -501,13 +718,20 @@ a.card.pv-badge-row, .pv-badge-row { display: flex; align-items: center; gap: va
 .pv-band__swatch { flex: none; width: 34px; height: 14px; border-radius: 7px; background: var(--band); box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.15); }
 .pv-band__rank { flex: none; width: 22px; font-weight: var(--fw-black); color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
 .pv-band__name { flex: 1; min-width: 0; font-weight: var(--fw-semibold); }
-.pv-band .btn--icon { width: 40px; min-height: 40px; }
+.pv-band .btn--icon { width: 44px; min-height: 44px; }
 .pv-band-scale { display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin-top: var(--s-2); }
 .pv-band-scale > span { flex: 1; background: var(--band); }
 .pv-setting-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: var(--tap); padding: var(--s-2) 0; }
 .pv-setting-row + .pv-setting-row, .pv-setting-row + .switch-row, .switch-row + .pv-setting-row { border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
 .pv-setting-row__label { font-weight: var(--fw-semibold); }
 .pv-setting-row__hint { display: block; font-size: var(--fs-xs); color: var(--muted); font-weight: 400; }
+.pv-tap-left { padding-left: 0; justify-content: flex-start; }
+.pv-tap-inline { min-height: 44px; padding: 0 2px; margin-block: -12px; vertical-align: baseline; }
+.is-highlight { animation: pv-highlight 2.4s var(--ease) both; }
+@keyframes pv-highlight { 0%, 60% { box-shadow: 0 0 0 3px var(--primary), var(--shadow-1); } 100% { box-shadow: var(--shadow-1); } }
+@media (prefers-reduced-motion: reduce) { .pv-tap-left { padding-left: 0; justify-content: flex-start; }
+.pv-tap-inline { min-height: 44px; padding: 0 2px; margin-block: -12px; vertical-align: baseline; }
+.is-highlight { animation: none; box-shadow: 0 0 0 3px var(--primary); } }
 .pv-version { text-align: center; color: var(--muted); font-size: var(--fs-xs); margin: var(--s-6) 0 var(--s-2); }
 .pv-eq { display: flex; flex-direction: column; gap: var(--s-2); }
 .pv-eq__head { display: flex; gap: var(--s-3); align-items: flex-start; }

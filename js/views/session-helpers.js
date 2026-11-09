@@ -65,6 +65,113 @@ function restFor(lvl, settings) {
   return isNum(def) && def >= 0 && base !== 0 ? def : base;
 }
 
+/** "30 s", "90 s" → "1:30 min", "600 s" → "10 min" (dose texts). */
+function secText(sec) {
+  const n = Math.max(0, Math.round(Number(sec) || 0));
+  if (n < 90) return `${n} s`;
+  const m = Math.floor(n / 60), r = n % 60;
+  return r ? `${m}:${String(r).padStart(2, '0')} min` : `${m} min`;
+}
+
+/** Compact dose text of the EFFECTIVE dose: „2 × 30 s“, „3 × 10 je Seite“, „2 × 5 × 10 s“. */
+export function doseText(dose) {
+  const side = dose?.perSide ? ' je Seite' : '';
+  const n = Math.max(1, dose?.sets ?? 1);
+  if (dose?.type === 'hold') {
+    const r = dose.reps ?? 1;
+    return `${n > 1 ? `${n} × ` : ''}${r > 1 ? `${r} × ` : ''}${dose.hold ?? '–'} s${side}`;
+  }
+  if (dose?.type === 'timed') return `${n > 1 ? `${n} × ` : ''}${secText(dose.seconds)}${side}`;
+  return `${n} × ${dose?.reps ?? '–'}${side}${dose?.hold ? `, ${dose.hold} s halten` : ''}`;
+}
+
+const DOSE_SEG = /\d\s*[×x]\s*\d|\d\s*(s|min|Minuten|Wdh\.?|Wiederholungen)\b/;
+
+/**
+ * Level label that matches the effective dose (P2-9): the stored label („Augen offen · 3 × 30 s“) is kept
+ * when sets and values are unchanged; otherwise its dose part is rebuilt from `dose` (capped/tapered sets,
+ * overrides) → „Augen offen · 2 × 30 s“.
+ */
+export function doseLabel(entry, exercise, dose) {
+  const lvl = exercise?.levels?.[entry?.level ?? 0] ?? exercise?.levels?.[0] ?? {};
+  const label = String(lvl.label ?? '');
+  const o = entry?.override || {};
+  const same = dose.sets === Math.max(1, lvl.sets ?? 1)
+    && (o.reps == null || o.reps === lvl.reps) && (o.hold == null || o.hold === lvl.hold) && (o.seconds == null || o.seconds === lvl.seconds);
+  if (same && label) return label;
+  const segs = label ? label.split(' · ') : [];
+  let idx = -1;
+  segs.forEach((seg, i) => { if (DOSE_SEG.test(seg)) idx = i; });
+  if (idx < 0) return [...segs, doseText(dose)].filter(Boolean).join(' · ');
+  segs[idx] = doseText(dose);
+  return segs.join(' · ');
+}
+
+/** Pain of the previous knee entry in this session (one-tap „Wie eben“), else null. */
+export function prevKneePain(session, index, content) {
+  const list = session?.exercises || [];
+  for (let i = Math.min(index, list.length) - 1; i >= 0; i--) {
+    const e = list[i];
+    if (isKneeEntry(e, content) && e.section !== 'cardio' && isNum(e.painDuring)) return e.painDuring;
+  }
+  return null;
+}
+
+/* ------------------------------------------------------------------ resume / dead time (P1-2) */
+
+/** An active session untouched for longer than this asks „Fortsetzen / Jetzt abschließen / Verwerfen“. */
+export const STALE_SESSION_MS = 12 * 3600e3;
+/** Heartbeat: the running session stores `lastActiveAt` at least this often. */
+export const HEARTBEAT_MS = 15e3;
+
+/** Last moment the session was known to be in use: lastActiveAt, newest set tick, start (ms, or NaN). */
+export function lastActiveMs(session) {
+  let t = NaN;
+  const take = (v) => { const n = Date.parse(v); if (Number.isFinite(n) && !(n <= t)) t = n; };
+  take(session?.startedAt);
+  for (const e of session?.exercises || []) for (const x of e?.sets || []) if (x?.at) take(x.at);
+  take(session?.lastActiveAt);
+  return t;
+}
+
+/**
+ * When did the session stop being used and how long ago: `pausedAt` (set on pause / hide / leave) else the
+ * heartbeat `lastActiveAt` (the app was killed). `stale` = gap > STALE_SESSION_MS.
+ */
+export function resumeInfo(session, now = Date.now()) {
+  const p = Date.parse(session?.pausedAt);
+  const last = lastActiveMs(session);
+  const stopMs = Number.isFinite(p) ? p : Number.isFinite(last) ? Math.min(last, now) : now;
+  const gapMs = Math.max(0, now - stopMs);
+  return { stopMs, gapMs, stale: gapMs > STALE_SESSION_MS };
+}
+
+/**
+ * Resume an active session (mutates + returns it): the dead time since it stopped is added to `pausedMs`
+ * (duration/kcal exclude it) and a rowing timer that was running is paused at the stop time (rowed time
+ * excludes it).
+ */
+export function applyResume(session, now = Date.now()) {
+  if (!session) return session;
+  const { stopMs, gapMs } = resumeInfo(session, now);
+  if (session.rowTimer && session.rowTimer.runAt != null) rowingPause(session.rowTimer, Math.max(session.rowTimer.runAt, stopMs));
+  session.pausedMs = (session.pausedMs || 0) + gapMs;
+  delete session.pausedAt;
+  session.lastActiveAt = new Date(now).toISOString();
+  return session;
+}
+
+/** Is a stored active session usable (shape after a crash / an older version)? */
+export function validActiveSession(session, content) {
+  if (!session || typeof session !== 'object') return false;
+  if (!Array.isArray(session.exercises) || !session.exercises.length) return false;
+  if (!Number.isFinite(Date.parse(session.startedAt))) return false;
+  if (session.exercises.some((e) => !e || typeof e !== 'object' || typeof e.exerciseId !== 'string')) return false;
+  if (session.cursor != null && (typeof session.cursor !== 'object' || !Number.isInteger(session.cursor.index ?? 0))) return false;
+  if (content?.exercises && !session.exercises.some((e) => exOf(content, e.exerciseId))) return false;
+  return true;
+}
+
 /** Values logged for one done set (SPEC §6.7 set shape; `seconds` for timed exercises). */
 export function setValues(dose) {
   const v = { reps: null, hold: null, band: dose.band ?? null };
@@ -233,18 +340,25 @@ export function nextDayDueAt(endedAt) {
 }
 
 /**
- * The session awaiting a next-day check-in: the most recent DONE session if it has no `nextDay`.
- * `due` = check-in is open (≥ 12 h after end or from the next calendar day). Sessions older than
- * `maxDays` (default 4, same as ui.pendingNextDay) are not offered anymore.
+ * The next-day check-in that is open: all DONE sessions of the most recent training day without `nextDay`
+ * (e.g. strength + rowing on the same day are answered by ONE check). `session` = the latest of them,
+ * `sessions` = all of them (oldest first). `due` = check-in is open (≥ 12 h after the latest end or from the
+ * next calendar day). Days older than `maxDays` (default 4, same as ui.pendingNextDay) are not offered anymore.
  * @param {Session[]} sessions
- * @returns {{session: Session, due: boolean, dueAt: string}|null}
+ * @returns {{session: Session, sessions: Session[], due: boolean, dueAt: string}|null}
  */
 export function pendingNextDay(sessions, now = new Date(), { maxDays = 4 } = {}) {
-  const last = doneSessions(sessions).filter((s) => s.endedAt).sort((a, b) => Date.parse(a.endedAt) - Date.parse(b.endedAt)).at(-1);
-  if (!last || last.nextDay) return null;
-  const dueAt = nextDayDueAt(last.endedAt);
-  if (now.getTime() - Date.parse(last.endedAt) > maxDays * 86400e3) return null;
-  return { session: last, due: now.getTime() >= Date.parse(dueAt), dueAt };
+  const done = doneSessions(sessions).filter((s) => s.endedAt && Number.isFinite(Date.parse(s.endedAt)))
+    .sort((a, b) => Date.parse(a.endedAt) - Date.parse(b.endedAt));
+  const last = done.at(-1);
+  if (!last) return null;
+  const day = dayOf(last);
+  const group = done.filter((s) => dayOf(s) === day && !s.nextDay);
+  const latest = group.at(-1);
+  if (!latest) return null;
+  const dueAt = nextDayDueAt(latest.endedAt);
+  if (now.getTime() - Date.parse(latest.endedAt) > maxDays * 86400e3) return null;
+  return { session: latest, sessions: group, due: now.getTime() >= Date.parse(dueAt), dueAt };
 }
 
 /** Next-day banner on Heute: true when a check-in is due right now. */
@@ -686,7 +800,7 @@ const recKey = (r) => `${r.exerciseId}|${r.action}|${r.toLevel}|${r.toExerciseId
  * kept), +XP.nextDayCheckIn, new badges. Pure.
  * @returns {{data: any, session: Session, result: {traffic: string, reasons: string[]}, xpGained: number, badges: string[]}|null}
  */
-export function applyNextDay(data, sessionId, nextDay, content, { now = new Date() } = {}) {
+export function applyNextDay(data, sessionId, nextDay, content, { now = new Date(), xp = true } = {}) {
   const d = clone(data);
   const idx = d.sessions.findIndex((s) => s.id === sessionId);
   if (idx < 0) return null;
@@ -704,14 +818,40 @@ export function applyNextDay(data, sessionId, nextDay, content, { now = new Date
     merged.push(r);
   }
   s.recommendations = merged;
-  let xpGained = XP.nextDayCheckIn;
-  d.state.xp = (d.state.xp || 0) + XP.nextDayCheckIn;
+  let xpGained = xp ? XP.nextDayCheckIn : 0;
+  d.state.xp = (d.state.xp || 0) + xpGained;
   if (d.state.nextDayReminder?.sessionId === s.id) d.state.nextDayReminder = null;
   const badges = evaluateBadges(d, content?.badges || [], { today: todayISO(now) });
   for (const id of badges) d.state.badges = { ...(d.state.badges || {}), [id]: now.toISOString() };
   d.state.xp += badges.length * XP.badge;
   xpGained += badges.length * XP.badge;
   return { data: d, session: s, result: { traffic: res.traffic, reasons: res.reasons }, xpGained, badges };
+}
+
+/**
+ * One next-day check-in for several sessions of the same training day (strength + rowing): `applyNextDay`
+ * for each id (XP for the check-in only once). Pure.
+ * @returns {{data: any, sessions: Session[], result: {traffic: string, reasons: string[]}, xpGained: number, badges: string[]}|null}
+ */
+export function applyNextDayGroup(data, sessionIds, nextDay, content, { now = new Date() } = {}) {
+  let d = data;
+  const out = [];
+  let xpGained = 0;
+  const badges = [];
+  let traffic = 'green';
+  const reasons = [];
+  for (const id of sessionIds || []) {
+    const r = applyNextDay(d, id, nextDay, content, { now, xp: out.length === 0 });
+    if (!r) continue;
+    d = r.data;
+    out.push(r.session);
+    xpGained += r.xpGained;
+    badges.push(...r.badges);
+    traffic = worst(traffic, r.result.traffic);
+    for (const x of r.result.reasons) if (!reasons.includes(x)) reasons.push(x);
+  }
+  if (!out.length) return null;
+  return { data: d, sessions: out.map((s) => d.sessions.find((x) => x.id === s.id) || s), result: { traffic, reasons }, xpGained, badges };
 }
 
 /** Accept (→ applyRecommendation) or dismiss recommendation `index` of a stored session. Pure. */
@@ -810,7 +950,7 @@ export function recCardsHtml(session, content) {
 /* ------------------------------------------------------------------ DOM helpers (browser only) */
 
 /** Toast in the shared region (created on demand). kind: success | gold | accent | '' */
-export function toast(text, { icon = '✓', kind = 'success', ms = 2400 } = {}) {
+export function toast(text, { icon = '✓', kind = 'success', ms = 2400, action = null } = {}) {
   if (typeof document === 'undefined') return;
   let region = document.querySelector('.toast-region');
   if (!region) {
@@ -824,6 +964,14 @@ export function toast(text, { icon = '✓', kind = 'success', ms = 2400 } = {}) 
   const i = document.createElement('span'); i.className = 'toast__icon'; i.textContent = icon;
   const t = document.createElement('span'); t.className = 'toast__text'; t.textContent = text;
   el.append(i, t);
+  if (action?.label) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'toast__action ses-toast-action';
+    b.textContent = action.label;
+    b.addEventListener('click', () => { try { action.onClick?.(); } finally { el.remove(); } });
+    el.appendChild(b);
+  }
   region.appendChild(el);
   while (region.children.length > 2) region.firstElementChild.remove();
   setTimeout(() => { el.classList.add('is-leaving'); setTimeout(() => el.remove(), 220); }, ms);
@@ -854,6 +1002,10 @@ const CSS = `
 .ses-top__title{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;line-height:1.2}
 .ses-top__title .eyebrow{margin:0}
 .ses-top__title strong{font-size:var(--fs-md);font-variant-numeric:tabular-nums}
+.ses-top__title .ses-top__eyebrow{font-size:15px;font-weight:var(--fw-semibold);color:var(--muted);letter-spacing:0;text-transform:none}
+.ses-top__title strong.ses-top__ex{font-size:clamp(20px,5.6vw,24px);font-weight:var(--fw-black,800);line-height:1.15;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-variant-numeric:normal}
+.ses-top__side{display:inline-block;vertical-align:.12em;margin-left:6px;padding:2px 10px;border-radius:999px;font-size:16px;font-weight:var(--fw-bold);background:var(--primary-soft);color:var(--primary-ink);white-space:nowrap}
+.ses-top__side--left{background:var(--accent-soft);color:var(--accent-ink)}
 .ses-top .btn--icon{width:var(--tap);height:var(--tap);border-radius:50%;background:var(--surface);box-shadow:var(--shadow-1)}
 .ses-top .btn--icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
 .ses-xp{transition:transform .2s var(--spring)}
@@ -864,24 +1016,40 @@ const CSS = `
 .session-progress>.is-skipped{background:repeating-linear-gradient(90deg,var(--border) 0 3px,transparent 3px 6px)}
 .ses-fig{margin:calc(-1*var(--s-2)) calc(-1*var(--s-2)) var(--s-3);border-radius:var(--radius-sm);background:var(--surface-2);overflow:hidden;display:grid;place-items:center;min-height:160px}
 .ses-fig pt-figure{display:block;width:100%;max-width:330px}
+.ses-fig--compact{min-height:0}
+.ses-fig--compact pt-figure{max-width:none;max-height:28vh}
 .ses-ex .card__title{font-size:var(--fs-xl);margin:0;line-height:1.15}
-.ses-note{color:var(--muted);font-size:var(--fs-sm);margin:var(--s-1) 0 0}
+.ses-note{color:var(--muted);font-size:16px;margin:var(--s-1) 0 0}
+.ses-meta .chip{font-size:15px;min-height:36px}
+body.is-session .block-header{font-size:15px}
+.ses-dose .dose__label{font-size:14px}
+.ses-ovw{min-height:48px;min-width:48px;font-size:15px}
 .ses-meta{display:flex;flex-wrap:wrap;gap:var(--s-2);margin-top:var(--s-3)}
 .ses-dose{position:relative}
 .ses-dose .dose{margin-bottom:var(--s-4)}
-.ses-edit{position:absolute;right:-6px;top:-14px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--shadow-1);color:var(--muted)}
-.ses-edit svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ses-edit{position:absolute;right:-10px;top:-20px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--shadow-1);color:var(--muted)}
+.ses-edit svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ses-sets{position:relative}
 .ses-sets .set-check{width:64px;height:64px;font-size:var(--fs-lg);touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.ses-hint{text-align:center;font-size:var(--fs-xs);color:var(--muted);margin:var(--s-3) 0 0}
+.ses-hint{text-align:center;font-size:15px;color:var(--muted);margin:var(--s-3) 0 0}
+.ses-timer .ses-hint{font-size:16px}
+.ses-setno{text-align:center;font-size:22px;font-weight:var(--fw-black,800);color:var(--text);margin:0 0 var(--s-3);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+pt-timer[data-ses-onerep] .pt-timer__meta{display:none}
+.ses-bigdone{display:flex;align-items:center;justify-content:center;gap:var(--s-3);width:100%;min-height:128px;font-size:clamp(26px,7.5vw,34px);font-weight:var(--fw-black,800);border-radius:var(--radius);touch-action:manipulation}
+.ses-bigdone svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ses-link{display:block;margin:var(--s-3) auto 0;min-height:48px;padding:0 var(--s-4);background:transparent;border:0;color:var(--muted);font-size:15px;font-weight:var(--fw-semibold);text-decoration:underline;text-underline-offset:3px}
+.ses-pain-same{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-2);margin:0 0 var(--s-3)}
+.ses-pain-same .btn{min-height:52px;font-size:17px;font-weight:var(--fw-bold)}
+.ses-pain-same span{font-size:15px;color:var(--muted)}
+.ses-savewarn .btn{min-height:52px}
 .ses-float{position:absolute;pointer-events:none;transform:translate(-50%,0);animation:ses-float 1s var(--ease) forwards;font-size:var(--fs-md);white-space:nowrap;z-index:5}
 @keyframes ses-float{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}20%{opacity:1;transform:translate(-50%,-6px) scale(1.1)}100%{opacity:0;transform:translate(-50%,-38px) scale(1)}}
 .ses-rest{border:2px solid color-mix(in srgb,var(--accent) 35%,transparent);animation:view-in .25s var(--ease) both}
-.ses-rest .eyebrow{text-align:center}
+.ses-rest .eyebrow{text-align:center;font-size:18px;font-weight:var(--fw-bold);letter-spacing:0;text-transform:none;color:var(--text)}
 .ses-timer pt-timer{--pt-timer-size:min(62vw,240px)}
 .ses-rest pt-timer{--pt-timer-size:min(52vw,200px)}
 .ses-done{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-3) var(--s-4);border-radius:var(--radius);background:var(--green-soft);color:var(--green-ink);font-weight:var(--fw-bold);animation:pop-in .4s var(--spring) both}
-.ses-done__icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;font-size:20px;flex:none}
+.ses-done__icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--green);color:var(--on-primary);font-size:20px;flex:none}
 .ses-sharp{margin-top:var(--s-3);min-height:56px}
 .ses-sharp[aria-pressed="true"]{background:var(--red);color:#fff}
 .ses-shake{animation:ses-shake .45s ease-in-out}
@@ -894,10 +1062,18 @@ const CSS = `
 .ses-cta svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .ses-check{display:flex;flex-direction:column;gap:2px}
 .ses-check .check-row{min-height:56px}
-.ses-intro .hero__title{margin-bottom:var(--s-2)}
+.ses-intro{padding:var(--s-4)}
+.ses-intro .hero__title{margin-bottom:var(--s-1);font-size:var(--fs-xl);line-height:1.15}
+.ses-intro .hero__eyebrow{margin-bottom:2px}
+.ses-intro .ses-intro__desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 var(--s-2)}
+.ses-intro .hero__split{margin-top:var(--s-2)}
+.ses-rowopt{padding:var(--s-2) var(--s-4)}
+.ses-rowopt .switch-row{min-height:52px}
+.ses-rowopt__hint{font-size:14px}
+.ses-pre-q{font-size:var(--fs-xl);margin:var(--s-3) 0 var(--s-2)}
 .ses-choices{display:flex;flex-direction:column;gap:var(--s-2);margin-top:var(--s-4)}
 .ses-choices .btn{min-height:60px;justify-content:flex-start;gap:var(--s-3);text-align:left}
-.ses-choices .btn small{display:block;font-weight:var(--fw-semibold);opacity:.8;font-size:var(--fs-xs)}
+.ses-choices .btn small{display:block;font-weight:var(--fw-semibold);opacity:.85;font-size:14px}
 .ses-reasons{list-style:disc !important;margin:var(--s-3) 0;padding-left:1.2em !important;display:flex;flex-direction:column;gap:var(--s-1)}
 .ses-consult{padding:var(--s-3);border-radius:var(--radius-sm);background:var(--surface);font-weight:var(--fw-semibold)}
 .ses-summary .target{margin-top:var(--s-2)}
@@ -925,15 +1101,15 @@ const CSS = `
 .row-timer .eyebrow{margin:0;color:var(--c-ink)}
 .row-phase{font-size:clamp(30px,9vw,42px);font-weight:var(--fw-black);letter-spacing:-.03em;line-height:1.05;margin:var(--s-2) 0 var(--s-1);color:var(--c-ink)}
 .row-phase.is-new{animation:pop-in .45s var(--spring) both}
-.row-sub{color:var(--muted);font-size:var(--fs-sm);margin:0}
+.row-sub{color:var(--muted);font-size:16px;margin:0}
 .row-targets{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s-2);margin:var(--s-3) 0 var(--s-2)}
 .row-int{background:var(--c);color:var(--surface);border-color:transparent}
 .row-clock{font-size:var(--fs-timer);font-weight:var(--fw-black);font-variant-numeric:tabular-nums;letter-spacing:-.04em;line-height:1;margin:var(--s-2) 0;color:var(--text)}
 .row-bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--c) 18%,var(--surface-2));overflow:hidden}
 .row-bar>span{display:block;height:100%;width:0;background:var(--c);border-radius:inherit;transition:width .25s linear}
-.row-total{display:flex;justify-content:space-between;gap:var(--s-2);font-size:var(--fs-sm);color:var(--muted);margin:var(--s-2) 0 0;font-variant-numeric:tabular-nums}
+.row-total{display:flex;justify-content:space-between;gap:var(--s-2);font-size:16px;color:var(--muted);margin:var(--s-2) 0 0;font-variant-numeric:tabular-nums}
 .row-total strong{color:var(--text)}
-.row-next{display:flex;align-items:center;gap:var(--s-2);justify-content:center;margin:var(--s-3) 0 0;padding:var(--s-2) var(--s-3);border-radius:var(--radius-sm);background:var(--surface);font-size:var(--fs-sm);font-weight:var(--fw-semibold)}
+.row-next{display:flex;align-items:center;gap:var(--s-2);justify-content:center;margin:var(--s-3) 0 0;padding:var(--s-2) var(--s-3);border-radius:var(--radius-sm);background:var(--surface);font-size:16px;font-weight:var(--fw-semibold)}
 .row-next i{width:10px;height:10px;border-radius:50%;flex:none;background:var(--primary)}
 .row-next i.is-easy{background:var(--green)}.row-next i.is-vigorous{background:var(--accent)}
 .row-ctrl{display:flex;gap:var(--s-2);margin-top:var(--s-4)}
@@ -943,11 +1119,12 @@ const CSS = `
 .row-form .input{font-variant-numeric:tabular-nums;font-size:var(--fs-lg)}
 .row-form .grid-2{gap:var(--s-3)}
 .row-form .field{margin-bottom:0}
-.ses-err{color:var(--red-ink);font-size:var(--fs-xs);font-weight:var(--fw-semibold)}
+.ses-err{color:var(--red-ink);font-size:14px;font-weight:var(--fw-semibold)}
+.row-form .field__hint{font-size:15px}
 .row-pace{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-2);padding:var(--s-3);border-radius:var(--radius-sm);background:var(--primary-soft);color:var(--primary-ink);font-weight:var(--fw-bold)}
 .row-pace strong{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
 .ses-hero-icon{font-size:56px;line-height:1;display:block;margin-bottom:var(--s-2)}
-.ses-postop{border-left:4px solid var(--stop);padding:var(--s-2) var(--s-3);background:var(--stop-soft);border-radius:var(--radius-sm);font-size:var(--fs-sm);margin:var(--s-3) 0 var(--s-2)}
+.ses-postop{border-left:4px solid var(--stop);padding:var(--s-2) var(--s-3);background:var(--stop-soft);border-radius:var(--radius-sm);font-size:15px;margin:var(--s-3) 0 var(--s-2)}
 .ses-doctor .card__title{font-size:var(--fs-xl)}
 .ses-doctor .ses-doctor__icon{font-size:40px;line-height:1}
 @media (prefers-reduced-motion: reduce){.ses-float,.ses-pulse,.ses-shake,.row-phase.is-new{animation:none}}

@@ -107,15 +107,25 @@ a.card:active, .card--interactive:active { transform: scale(0.985); }
 .btn--light { background: #FFFFFF; color: #0A5C63; box-shadow: 0 6px 16px -6px rgba(0,0,0,0.35); }
 .card--accent .btn--light { color: #843C08; }
 .btn--glass { background: var(--hero-glass); color: var(--on-hero); border-color: var(--hero-glass-strong); }
-.btn--sm { min-height: 36px; padding: 0 var(--s-3); font-size: var(--fs-sm); }
+/* Small buttons keep the compact look (small text, tight padding) but stay ≥ 44 px tall for touch (WCAG 2.5.5). */
+.btn--sm { min-height: 44px; padding: 0 var(--s-4); font-size: var(--fs-sm); }
 .btn--sm svg { width: 16px; height: 16px; }
 .btn--lg { min-height: 56px; font-size: var(--fs-lg); padding: 0 var(--s-6); }
 .btn--block { width: 100%; }
 .btn--session { min-height: var(--tap-session); font-size: 1.1875rem; padding: 0 var(--s-6); }
 .btn--icon { width: var(--tap); padding: 0; flex: none; }
-.btn--icon.btn--sm { width: 36px; }
+.btn--icon.btn--sm { width: 44px; min-width: 44px; }
 .btn-row { display: flex; gap: var(--s-2); }
 .btn-row > .btn { flex: 1 1 0; }
+/* Text link with a ≥ 44 px tap area that still looks like an inline link.
+   <a class="tap-link" href="#/plan">Anderes Training wählen</a> */
+.tap-link {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; min-width: 44px; padding: 0 var(--s-2);
+  font-weight: var(--fw-semibold); text-decoration: none; color: var(--primary-ink);
+}
+.tap-link:active { opacity: 0.7; }
+.tap-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Sticky thumb-zone CTA. Put at end of the view; add body.has-cta (optional) to reserve space.
    <div class="sticky-cta"><a class="btn btn--primary btn--block btn--session">Training starten</a></div> */
@@ -160,7 +170,7 @@ body.is-session .sticky-cta, .sticky-cta--bottom { bottom: 0; padding-bottom: ca
   animation: pop-in 420ms var(--spring) both;
 }
 /* Filter chips (toggle): <button class="chip chip--filter" aria-pressed="true"> */
-.chip--filter { min-height: 36px; padding: 6px var(--s-4); border-color: var(--border); background: var(--surface); cursor: pointer; transition: background-color var(--dur-fast) var(--ease); }
+.chip--filter { min-height: 44px; padding: 6px var(--s-4); border-color: var(--border); background: var(--surface); cursor: pointer; transition: background-color var(--dur-fast) var(--ease); }
 .chip--filter[aria-pressed="true"], .chip--filter.is-active { background: var(--text); color: var(--bg); border-color: var(--text); }
 .chip-row { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 .chip-row--scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--s-4)); padding: 2px var(--s-4); }
@@ -256,6 +266,9 @@ a.list-item:active, button.list-item:active { background: var(--surface-2); }
 .ring--sm { --size: 64px; --stroke: 9; }
 .ring--sm .ring__value { font-size: var(--fs-md); }
 .ring--lg { --size: 148px; --stroke: 11; }
+.ring--xs { --size: 44px; --stroke: 11; }
+.ring--xs .ring__value { font-size: var(--fs-xs); font-weight: var(--fw-black); }
+.ring--xs .ring__unit { display: none; }
 .ring--accent { --ring-color: var(--accent); }
 .ring--gold { --ring-color: var(--gold); }
 .ring--gold .ring__bar { filter: drop-shadow(0 0 6px rgba(212, 167, 44, 0.55)); }

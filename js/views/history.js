@@ -12,6 +12,7 @@ import { targetFace } from '../components/celebrate.js';
 import {
   ICON, ensureViewStyles, applyFontScale, pageHeader, trafficPill, shortDate, monthTitle, shiftMonth, humanSeconds,
   sessionMinutes, bandInfo, openSheet, confirmDialog, toast,
+  safeData, fmtDuration, fmtMinutes, fmtInt,
 } from './ui.js';
 
 export const title = 'Verlauf';
@@ -79,7 +80,7 @@ export function rowingLine(s) {
   if (r.distanceM) parts.push(fmtDistance(r.distanceM));
   const pace = pacePer500(r);
   if (pace) parts.push(fmtPace(pace));
-  else if (r.durationSec) parts.push(`${Math.round(r.durationSec / 60)} Min`);
+  else if (r.durationSec) parts.push(fmtDuration(r.durationSec));
   return parts.join(' · ');
 }
 
@@ -94,11 +95,11 @@ export function render(root, { store, content, query }) {
   let kind = KIND_FILTERS.some(([k]) => k === query.filter) ? query.filter : 'all';
   let barMode = 'strength';
   const exName = (id) => content.exercises.find((e) => e.id === id)?.name ?? id;
-  const sTitle = (s) => sessionTitle(s, content, store.getState());
+  const sTitle = (s) => sessionTitle(s, content, safeData(store.get()).state);
   const kcalOf = (s, data) => sessionKcal(s, bodyWeightKg(data.settings), content);
 
   const draw = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     applyFontScale(data.settings);
     const { settings, state } = data;
     const done = doneSessions(data.sessions);
@@ -145,7 +146,7 @@ export function render(root, { store, content, query }) {
         <div class="stat"><span class="stat__value">${done.length}</span><span class="stat__label">Einheiten</span></div>
         <div class="stat"><span class="stat__value">${hold.value}<span class="stat__unit">${hold.unit}</span></span><span class="stat__label">Haltezeit gesamt</span></div>
         <div class="stat"><span class="stat__value">${st.weeks ? '🔥 ' : ''}${st.weeks}<span class="stat__unit">${st.weeks === 1 ? 'Woche' : 'Wochen'}</span></span><span class="stat__label">Serie</span></div>
-        <div class="stat stat--gold"><span class="stat__value">${state.xp || 0}<span class="stat__unit">XP</span></span><span class="stat__label">${lvl.title}</span></div>
+        <div class="stat stat--gold"><span class="stat__value">${fmtInt(state.xp || 0)}<span class="stat__unit">XP</span></span><span class="stat__label">${lvl.title}</span></div>
       </div>
 
       <a class="card pv-report" href="#/auswertung" aria-label="Auswertung öffnen: OP-Bereitschaft, Wochenbericht, Trainingslast">
@@ -160,12 +161,12 @@ export function render(root, { store, content, query }) {
         <div class="hero__row"><div class="grow"><p class="hero__eyebrow">Rudern gesamt</p>
           <h2 class="hero__title">${fmtDistance(rows.distanceM)}</h2></div>
           <span class="v2-row-icon" aria-hidden="true" style="color:var(--on-hero)">${raw(ICON2.row)}</span></div>
-        <p class="hero__meta mb-0"><span><span class="num">${rows.sessions}</span>&nbsp;${rows.sessions === 1 ? 'Einheit' : 'Einheiten'}</span><span>${raw(ICON.clock)} ${humanSeconds(rows.durationSec).value} ${humanSeconds(rows.durationSec).unit}</span>${rows.kcalDisplay ? html`<span>🔥 ${fmtNum(rows.kcalDisplay)} kcal (Anzeige)</span>` : ''}</p>
+        <p class="hero__meta mb-0"><span><span class="num">${rows.sessions}</span>&nbsp;${rows.sessions === 1 ? 'Einheit' : 'Einheiten'}</span><span>${raw(ICON.clock)} ${fmtDuration(rows.durationSec)}</span>${rows.kcalDisplay ? html`<span>🔥 ${fmtInt(rows.kcalDisplay)} kcal (Anzeige)</span>` : ''}</p>
       </section>
       <section class="card pv-records">
         ${recordRow('📏', 'Weiteste Strecke', rrec.distanceM ? fmtDistance(rrec.distanceM.value) : null, recDate(rrec.distanceM), null)}
-        ${recordRow('⚡', 'Beste Ø-Leistung', rrec.avgWatt ? `${fmtNum(rrec.avgWatt.value)} W` : null, recDate(rrec.avgWatt), null)}
-        ${recordRow('⏱️', 'Längste Fahrt', rrec.durationSec ? `${fmtClock(rrec.durationSec.value)} min` : null, recDate(rrec.durationSec), null)}
+        ${recordRow('⚡', 'Beste Ø-Leistung', rrec.avgWatt ? `${fmtNum(rrec.avgWatt.value, 0)} W` : null, recDate(rrec.avgWatt), null)}
+        ${recordRow('⏱️', 'Längste Fahrt', rrec.durationSec ? fmtDuration(rrec.durationSec.value) : null, recDate(rrec.durationSec), null)}
       </section>` : ''}
 
       <div class="chip-row chip-row--scroll v2-filter-row" role="group" aria-label="Einheiten filtern">
@@ -225,8 +226,8 @@ export function render(root, { store, content, query }) {
           const name = sTitle(s);
           const kc = kcalOf(s, data).kcal;
           const sub = k === 'cardio'
-            ? [shortDate(dayOf(s)), rowingLine(s) || (sessionMinutes(s) ? `${sessionMinutes(s)} Min` : ''), kc ? `${fmtNum(kc)} kcal` : ''].filter(Boolean).join(' · ')
-            : `${shortDate(dayOf(s))}${sessionMinutes(s) ? ` · ${sessionMinutes(s)} Min` : ''}${kc ? ` · ≈ ${fmtNum(kc)} kcal` : ''}`;
+            ? [shortDate(dayOf(s)), rowingLine(s) || (sessionMinutes(s) ? fmtMinutes(sessionMinutes(s)) : ''), kc ? `≈ ${fmtInt(kc)} kcal` : ''].filter(Boolean).join(' · ')
+            : `${shortDate(dayOf(s))}${sessionMinutes(s) ? ` · ${fmtMinutes(sessionMinutes(s))}` : ''}${kc ? ` · ≈ ${fmtInt(kc)} kcal` : ''}`;
           const iconCls = k === 'cardio' || (s.exercises?.some((e) => e.section === 'archery') && !s.exercises?.some((e) => e.section === 'knee' && !e.skipped)) ? 'list-item__icon--accent' : k === 'custom' ? 'list-item__icon--gold' : '';
           return html`<li><button class="list-item pv-session-item" data-session="${s.id}">
           <span class="list-item__icon ${iconCls}" aria-hidden="true">${k === 'cardio' ? raw(ICON2.row) : String(name).trim().charAt(0)}</span>
@@ -247,7 +248,7 @@ export function render(root, { store, content, query }) {
         { name: 'Folgetag', color: 'var(--chart-3, var(--accent))', points: tr.nextDay },
       ],
       yMax: 10,
-    }, { label: 'Schmerzverlauf vorher, nachher, Folgetag', greenMax: settings.painThresholds?.greenMax, yellowMax: settings.painThresholds?.yellowMax, from: addDays(today, -(RANGE[range] - 1)), to: today });
+    }, { label: 'Schmerzverlauf vorher, nachher, Folgetag', greenMax: settings.painThresholds?.greenMax, yellowMax: settings.painThresholds?.yellowMax, from: chartFrom(tr, today, RANGE[range]), to: today });
     const weeks = tr.perWeek.slice(-8);
     const cardioMode = barMode === 'cardio' && rows.sessions;
     barChart(root.querySelector('[data-bar]'), weeks.map((w) => (cardioMode
@@ -256,7 +257,7 @@ export function render(root, { store, content, query }) {
   };
 
   const openSession = (id) => {
-    const data = store.get();
+    const data = safeData(store.get());
     const s = data.sessions.find((x) => x.id === id);
     if (!s) return;
     const settings = data.settings;
@@ -269,7 +270,7 @@ export function render(root, { store, content, query }) {
     const pace = pacePer500(r);
     const wName = () => sTitle(s);
     const dlg = openSheet(html`
-      <p class="eyebrow">${formatDE(dayOf(s))}${minutes ? ` · ${minutes} Min` : ''}</p>
+      <p class="eyebrow">${formatDE(dayOf(s))}${minutes ? ` · ${fmtMinutes(minutes)}` : ''}</p>
       <h2 class="sheet__title">${wName()}</h2>
       <div class="pv-lights">${trafficPill(light, { long: true })}${s.traffic?.final ? html`<span class="chip chip--sm chip--outline">final</span>` : html`<span class="chip chip--sm chip--outline">vorläufig</span>`}${s.taper ? html`<span class="chip chip--sm chip--accent">Taper</span>` : ''}</div>
       ${(s.traffic?.reasons || []).length ? html`<ul class="pv-reasons">${s.traffic.reasons.map((r) => html`<li>${r}</li>`)}</ul>` : ''}
@@ -278,14 +279,14 @@ export function render(root, { store, content, query }) {
         <div class="v2-kpis mt-4">
           <div class="v2-kpi"><span class="v2-kpi__v num">${r.durationSec ? fmtClock(r.durationSec) : minutes ? `${minutes}:00` : '–'}</span><span class="v2-kpi__l">Zeit</span></div>
           <div class="v2-kpi"><span class="v2-kpi__v num">${r.avgSpm ?? '–'}</span><span class="v2-kpi__l">Schläge/Min</span></div>
-          <div class="v2-kpi"><span class="v2-kpi__v num">${r.avgWatt != null ? html`${fmtNum(r.avgWatt)}<small>W</small>` : '–'}</span><span class="v2-kpi__l">Ø Leistung</span></div>
+          <div class="v2-kpi"><span class="v2-kpi__v num">${r.avgWatt != null ? html`${fmtNum(r.avgWatt, 0)}<small>W</small>` : '–'}</span><span class="v2-kpi__l">Ø Leistung</span></div>
           <div class="v2-kpi"><span class="v2-kpi__v num">${r.avgHr != null ? html`${r.avgHr}<small>${r.maxHr ? `/ ${r.maxHr}` : 'bpm'}</small>` : '–'}</span><span class="v2-kpi__l">Puls Ø${r.maxHr ? ' / max' : ''}</span></div>
         </div>`
       : html`<div class="summary-head mb-0"><p class="summary-head__title" style="font-size:var(--fs-2xl)">${score.headline}</p>
         <p class="summary-head__sub">${s.xpEarned ? html`<span class="xp-gain">+${s.xpEarned} XP</span> · ` : ''}<span class="num">${score.points}/${score.max}</span> Punkte</p></div>
       <div class="pv-target" data-target></div>`}
       <div class="banner banner--accent mt-4 mb-0"><span class="banner__icon" aria-hidden="true">${raw(ICON2.fire)}</span>
-        <span class="banner__body"><span class="banner__title">≈ ${fmtNum(kc.kcal)} kcal</span><span class="banner__text">Schätzung · ${KCAL_METHOD_LABEL[kc.method] ?? kc.method}</span></span></div>
+        <span class="banner__body"><span class="banner__title">≈ ${fmtInt(kc.kcal)} kcal</span><span class="banner__text">Schätzung · ${KCAL_METHOD_LABEL[kc.method] ?? kc.method}</span></span></div>
       <div class="pv-sum-grid">
         <div class="stat"><span class="stat__value">${s.pre?.pain ?? '–'}</span><span class="stat__label">Vorher</span></div>
         <div class="stat"><span class="stat__value">${s.post?.pain ?? '–'}</span><span class="stat__label">Nachher</span></div>
@@ -299,7 +300,7 @@ export function render(root, { store, content, query }) {
           return html`<li>
             <span class="pv-sec-dot ${e.section === 'knee' ? 'is-knee' : e.section === 'archery' || e.section === 'cardio' ? 'is-archery' : ''}"></span>
             <span class="pv-ex-sum__name">${exName(e.exerciseId)}</span>
-            <span class="pv-ex-sum__val">${e.skipped ? 'übersprungen' : e.section === 'cardio' || (e.sets || []).some((x) => x?.seconds && !x?.reps) ? fmtClock((e.sets || []).reduce((a, x) => a + (x?.done ? x.seconds || 0 : 0), 0)) + ' min' : `${doneSets} ${doneSets === 1 ? 'Satz' : 'Sätze'}`}${e.painDuring != null ? ` · S ${e.painDuring}` : ''}${e.rpe != null ? ` · RPE ${e.rpe}` : ''}${e.sharpPain ? ' · ⚡' : ''}</span>
+            <span class="pv-ex-sum__val">${e.skipped ? 'übersprungen' : e.section === 'cardio' || (e.sets || []).some((x) => x?.seconds && !x?.reps) ? fmtDuration((e.sets || []).reduce((a, x) => a + (x?.done ? x.seconds || 0 : 0), 0)) : `${doneSets} ${doneSets === 1 ? 'Satz' : 'Sätze'}`}${e.painDuring != null ? ` · S ${e.painDuring}` : ''}${e.rpe != null ? ` · RPE ${e.rpe}` : ''}${e.sharpPain ? ' · ⚡' : ''}</span>
           </li>`;
         })}</ul>
       </details>
@@ -334,7 +335,7 @@ export function render(root, { store, content, query }) {
     if (s) { openSession(s.dataset.session); return; }
     const cell = e.target.closest('.cell[data-date]');
     if (cell) {
-      const hit = filterSessions(doneSessions(store.get().sessions), kind).filter((x) => dayOf(x) === cell.dataset.date).at(-1);
+      const hit = filterSessions(doneSessions(safeData(store.get()).sessions), kind).filter((x) => dayOf(x) === cell.dataset.date).at(-1);
       if (hit) openSession(hit.id);
     }
   };
@@ -374,13 +375,28 @@ export function render(root, { store, content, query }) {
   }
 }
 
+/**
+ * Start of the pain chart's x-axis (P2-21): the first data point inside the range, but at least a 2-week span –
+ * with little data the curve no longer gets squeezed against the right edge.
+ * @param {{pre?: {x: string}[], post?: {x: string}[], nextDay?: {x: string}[]}} tr @param {string} today @param {number} days
+ */
+export function chartFrom(tr, today, days) {
+  const rangeStart = addDays(today, -(days - 1));
+  const minSpanStart = addDays(today, -13);
+  const xs = [...(tr?.pre || []), ...(tr?.post || []), ...(tr?.nextDay || [])]
+    .map((p) => p?.x).filter((x) => typeof x === 'string' && x >= rangeStart).sort();
+  if (!xs.length) return minSpanStart < rangeStart ? rangeStart : minSpanStart;
+  const first = xs[0] < minSpanStart ? xs[0] : minSpanStart;
+  return first < rangeStart ? rangeStart : first;
+}
+
 function isoDay(ts) {
   const d = new Date(ts);
   if (Number.isNaN(d.getTime())) return todayISO();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-const fmt1 = (n) => (Math.round(n * 10) / 10).toLocaleString('de-DE');
+const fmt1 = (n) => (Number.isFinite(Number(n)) ? (Math.round(n * 10) / 10).toLocaleString('de-DE') : '–');
 
 function recordRow(icon, label, value, rec, exName, swatch = null) {
   return html`<div class="pv-record">

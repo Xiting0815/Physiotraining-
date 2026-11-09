@@ -60,6 +60,30 @@ export function navigate(path) {
 }
 
 /**
+ * v5.1 (audit P0-3): error card with „Neu laden“; on /session additionally „Laufendes Training verwerfen“
+ * (clears state.activeSession) so broken session data can never lock the app.
+ * @param {HTMLElement} root @param {any} ctx @param {ReturnType<typeof matchRoute>} m
+ */
+export function renderErrorCard(root, ctx, m) {
+  let hasActive = false;
+  try { hasActive = m.route.view === 'session' && !!ctx?.store?.getState?.()?.activeSession; } catch { hasActive = false; }
+  root.innerHTML = '<div class="card" role="alert"><h2>Hoppla</h2><p>Diese Seite konnte nicht geladen werden.</p>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:8px">'
+    + '<button type="button" class="btn btn--primary" data-err-reload style="min-height:48px">Neu laden</button>'
+    + '<a class="btn" href="#/heute" style="min-height:48px">Zu Heute</a></div>'
+    + (hasActive ? '<p style="margin:16px 0 8px">Wenn das Training immer wieder hier hängen bleibt, kannst du es verwerfen. Dein bisheriger Verlauf bleibt erhalten.</p>'
+      + '<button type="button" class="btn btn--danger" data-err-discard style="min-height:48px">Laufendes Training verwerfen</button>' : '')
+    + '</div>';
+  root.querySelector('[data-err-reload]')?.addEventListener('click', () => location.reload());
+  root.querySelector('[data-err-discard]')?.addEventListener('click', () => {
+    const ok = typeof window.confirm === 'function' ? window.confirm('Laufendes Training wirklich verwerfen? Die Sätze dieses Trainings gehen verloren.') : true;
+    if (!ok) return;
+    try { ctx.store.update((d) => { d.state.activeSession = null; }); } catch (e) { console.error(e); }
+    navigate('/heute');
+  });
+}
+
+/**
  * @param {{root: HTMLElement, ctx: Omit<import('./types.js').ViewContext,'params'|'query'>, onRoute?: (m: ReturnType<typeof matchRoute>) => void}} opts
  */
 export function startRouter({ root, ctx, onRoute }) {
@@ -87,7 +111,7 @@ export function startRouter({ root, ctx, onRoute }) {
       cleanup = typeof result === 'function' ? result : null;
     } catch (err) {
       console.error('Route render failed', err);
-      root.innerHTML = '<div class="card"><h2>Hoppla</h2><p>Diese Seite konnte nicht geladen werden.</p><a class="btn" href="#/heute">Zu Heute</a></div>';
+      if (my === token) renderErrorCard(root, ctx, m);
     }
     window.scrollTo(0, 0);
     root.focus({ preventScroll: true });

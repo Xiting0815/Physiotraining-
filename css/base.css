@@ -70,6 +70,7 @@ small, .text-sm { font-size: var(--fs-sm); }
   position: absolute; left: -999px; top: 0; z-index: 200;
   background: var(--surface); color: var(--text); padding: var(--s-2) var(--s-4);
   border-radius: var(--radius-sm); box-shadow: var(--shadow-2); font-weight: var(--fw-bold);
+  min-height: 44px; display: inline-flex; align-items: center;
 }
 .skip-link:focus { left: calc(var(--s-2) + var(--safe-left)); top: calc(var(--s-2) + var(--safe-top)); }
 
@@ -124,7 +125,9 @@ body.is-session.has-cta .app-shell { padding-bottom: calc(var(--tap-session) + v
   font-size: var(--fs-xs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em;
   color: var(--muted); margin: var(--s-6) 0 var(--s-3);
 }
-.section-title a { text-transform: none; letter-spacing: 0; font-size: var(--fs-sm); font-weight: var(--fw-semibold); text-decoration: none; }
+.section-title a, .section-title .btn { text-transform: none; letter-spacing: 0; font-size: var(--fs-sm); font-weight: var(--fw-semibold); text-decoration: none; }
+.section-title a:not(.btn) { display: inline-flex; align-items: center; min-height: 44px; margin-block: -14px; }
+.section-title { align-items: center; }
 
 /* ---------- Tab bar ---------- */
 .tabbar {

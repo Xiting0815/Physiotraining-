@@ -73,6 +73,7 @@ export function defaults() {
       postOpClearance: null,               // { confirmedAt, note } – unlocks phase p4 after the surgery date
       postOpEndClearance: null,            // { confirmedAt, note } – doctor's release ends p4 early
       equipmentNotice: null,               // v5: "pending" → Heute shows „Neu: Deine Ausrüstung steuert jetzt den Plan“ once; "seen" afterwards
+      droppedActiveSession: false,         // v5.1: true = a broken stored activeSession was discarded on load (UI notice, then reset to false)
     },
     sessions: [],
   };
@@ -87,14 +88,174 @@ export const migrations = {
 };
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 
-/** Fill missing keys from defaults (objects only; arrays/primitives from data win). */
+/**
+ * Fill missing keys from defaults. Arrays/primitives from data win – unless their type contradicts the default
+ * (hardening): an object/array/number/boolean/string default is never replaced by null or a value of another type.
+ * Defaults that are `null` accept anything.
+ */
 function mergeDefaults(def, data) {
-  if (!isObj(def) || !isObj(data)) return data === undefined ? def : data;
-  const out = { ...def };
-  for (const k of Object.keys(data)) out[k] = k in def ? mergeDefaults(def[k], data[k]) : data[k];
-  return out;
+  if (data === undefined) return def;
+  if (isObj(def)) {
+    if (!isObj(data)) return def;
+    const out = { ...def };
+    for (const k of Object.keys(data)) out[k] = k in def ? mergeDefaults(def[k], data[k]) : data[k];
+    return out;
+  }
+  if (Array.isArray(def)) return Array.isArray(data) ? data : def;
+  if (isNum(def)) return isNum(data) ? data : def;
+  if (typeof def === 'boolean') return typeof data === 'boolean' ? data : def;
+  if (typeof def === 'string') return typeof data === 'string' ? data : def;
+  return data;
 }
+
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+/** Valid calendar date "YYYY-MM-DD" (rejects 2026-02-31). */
+export function isISODay(v) {
+  if (typeof v !== 'string' || !ISO_DAY.test(v)) return false;
+  const [y, m, d] = v.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+const isDateish = (v) => typeof v === 'string' && v.length >= 10 && Number.isFinite(Date.parse(v));
+
+/** Numeric settings: [min, max] – out-of-range values are clamped, non-numbers fall back to the default. */
+const NUM_RANGES = {
+  weeklyGoal: [1, 7], cardioGoalPerWeek: [0, 7], fontScale: [0.75, 2], prepSeconds: [0, 30], holdRelaxSeconds: [0, 30],
+  voiceRate: [0.5, 2], voiceVolume: [0, 1],
+};
+const ENUMS = { theme: ['system', 'light', 'dark'], operatedSide: ['left', 'right'] };
+
+/** Problems fixed by the last sanitize() run (for diagnostics / persisting the repaired data once). */
+let lastFixes = [];
+
+/**
+ * v5.1 hardening (audit P0-3/P1-7): repair structurally broken data BEFORE defaults are merged, so the app never
+ * crashes on null parts, junk sessions or a half-written active session. Never mutates the input.
+ * - non-object settings/state → {} (defaults fill in); non-array sessions → []
+ * - sessions: only objects with a string id and a date-ish startedAt/endedAt/date; duplicates (same id) dropped;
+ *   non-array `exercises` → []
+ * - settings.bands: valid {id,label} objects, else the default bands; ownedEquipment: strings only
+ * - settings: numbers finite + clamped (NUM_RANGES), enums checked, surgeryDate valid YYYY-MM-DD else null,
+ *   painThresholds numeric
+ * - state: xp finite ≥ 0, customWorkouts objects only, maps (exerciseLevels, badges, …) objects,
+ *   activeSession valid (exercises non-empty objects, string workoutId, cursor in bounds) else null +
+ *   `state.droppedActiveSession = true`
+ * @param {any} data @returns {any}
+ */
+export function sanitize(data) {
+  const fixes = [];
+  lastFixes = fixes;
+  if (!isObj(data)) { fixes.push('root'); return {}; }
+  const d = { ...data };
+  const def = defaults();
+
+  // ---- settings
+  let st = d.settings;
+  if (!isObj(st)) { if (st !== undefined) fixes.push('settings'); st = {}; } else st = { ...st };
+  if ('bands' in st) {
+    const bands = Array.isArray(st.bands) ? st.bands.filter((b) => isObj(b) && typeof b.id === 'string' && b.id && typeof b.label === 'string') : [];
+    if (!bands.length) { fixes.push('bands'); st.bands = def.settings.bands; } else if (bands.length !== st.bands.length) { fixes.push('bands'); st.bands = bands; }
+  }
+  if ('ownedEquipment' in st) {
+    const owned = Array.isArray(st.ownedEquipment) ? st.ownedEquipment.filter((x) => typeof x === 'string' && x) : [];
+    if (!Array.isArray(st.ownedEquipment) || owned.length !== st.ownedEquipment.length) { fixes.push('ownedEquipment'); st.ownedEquipment = owned; }
+  }
+  if ('surgeryDate' in st && st.surgeryDate !== null && !isISODay(st.surgeryDate)) { fixes.push('surgeryDate'); st.surgeryDate = null; }
+  if ('prehabStart' in st && !isISODay(st.prehabStart)) { fixes.push('prehabStart'); delete st.prehabStart; }
+  for (const [k, [lo, hi]] of Object.entries(NUM_RANGES)) {
+    if (!(k in st)) continue;
+    const v = typeof st[k] === 'string' && st[k].trim() !== '' ? Number(st[k]) : st[k];
+    if (!isNum(v)) { fixes.push(k); delete st[k]; } else if (v < lo || v > hi || v !== st[k]) { fixes.push(k); st[k] = Math.min(hi, Math.max(lo, v)); }
+  }
+  for (const [k, allowed] of Object.entries(ENUMS)) if (k in st && !allowed.includes(st[k])) { fixes.push(k); delete st[k]; }
+  if ('restDefault' in st && st.restDefault !== null && !(isNum(st.restDefault) && st.restDefault >= 0)) { fixes.push('restDefault'); st.restDefault = null; }
+  if ('painThresholds' in st) {
+    const pt = isObj(st.painThresholds) ? { ...st.painThresholds } : {};
+    for (const k of Object.keys(def.settings.painThresholds)) if (k in pt && !(isNum(pt[k]) && pt[k] >= 0 && pt[k] <= 10)) { fixes.push('painThresholds'); delete pt[k]; }
+    if (!isObj(st.painThresholds)) fixes.push('painThresholds');
+    st.painThresholds = pt;
+  }
+  if ('profile' in st && !isObj(st.profile)) { fixes.push('profile'); delete st.profile; }
+  else if (isObj(st.profile) && 'weightKg' in st.profile && st.profile.weightKg !== null && !isNum(st.profile.weightKg)) {
+    fixes.push('weightKg'); st.profile = { ...st.profile, weightKg: null };
+  }
+  d.settings = st;
+
+  // ---- state
+  let s = d.state;
+  if (!isObj(s)) { if (s !== undefined) fixes.push('state'); s = {}; } else s = { ...s };
+  if ('xp' in s) {
+    const xp = typeof s.xp === 'string' && s.xp.trim() !== '' ? Number(s.xp) : s.xp;
+    if (!isNum(xp) || xp < 0) { fixes.push('xp'); s.xp = 0; } else if (xp !== s.xp) { fixes.push('xp'); s.xp = xp; }
+  }
+  if ('customWorkouts' in s) {
+    const cw = Array.isArray(s.customWorkouts) ? s.customWorkouts.filter((w) => isObj(w) && typeof w.id === 'string' && w.id) : [];
+    if (!Array.isArray(s.customWorkouts) || cw.length !== s.customWorkouts.length) { fixes.push('customWorkouts'); s.customWorkouts = cw; }
+  }
+  for (const k of ['exerciseLevels', 'exitCriteriaDone', 'badges', 'records', 'exerciseToggles']) {
+    if (k in s && !isObj(s[k])) { fixes.push(k); delete s[k]; }
+  }
+  if (isObj(s.exerciseLevels)) {
+    const lv = {};
+    for (const [k, v] of Object.entries(s.exerciseLevels)) if (Number.isInteger(v) && v >= 0) lv[k] = v; else fixes.push('exerciseLevels');
+    s.exerciseLevels = lv;
+  }
+  if (isObj(s.exitCriteriaDone)) {
+    const ec = {};
+    for (const [k, v] of Object.entries(s.exitCriteriaDone)) if (Array.isArray(v)) ec[k] = v.filter(Number.isInteger); else fixes.push('exitCriteriaDone');
+    s.exitCriteriaDone = ec;
+  }
+  if ('phaseHistory' in s) {
+    const ph = Array.isArray(s.phaseHistory) ? s.phaseHistory.filter((p) => isObj(p) && typeof p.phaseId === 'string') : [];
+    if (!ph.length) { fixes.push('phaseHistory'); delete s.phaseHistory; } else if (ph.length !== s.phaseHistory.length) { fixes.push('phaseHistory'); s.phaseHistory = ph; }
+  }
+  for (const k of ['phaseId', 'nextWorkoutId']) if (k in s && (typeof s[k] !== 'string' || !s[k])) { fixes.push(k); delete s[k]; }
+  for (const k of ['postOpClearance', 'postOpEndClearance']) if (k in s && s[k] !== null && !isObj(s[k])) { fixes.push(k); s[k] = null; }
+  if (s.activeSession != null && !validActiveSession(s.activeSession)) {
+    fixes.push('activeSession');
+    s.activeSession = null;
+    s.droppedActiveSession = true;
+  }
+  d.state = s;
+
+  // ---- sessions
+  if (!Array.isArray(d.sessions)) { if (d.sessions !== undefined) fixes.push('sessions'); d.sessions = []; }
+  else {
+    const seen = new Set();
+    const out = [];
+    for (const x of d.sessions) {
+      if (!isObj(x) || typeof x.id !== 'string' || !x.id || seen.has(x.id)) continue;
+      if (!isDateish(x.startedAt) && !isDateish(x.endedAt) && !isDateish(x.date)) continue;
+      seen.add(x.id);
+      out.push(Array.isArray(x.exercises) ? x : { ...x, exercises: [] });
+    }
+    if (out.length !== d.sessions.length || out.some((x, i) => x !== d.sessions[i])) fixes.push('sessions');
+    d.sessions = out;
+  }
+  return d;
+}
+
+/**
+ * Is a stored active session safe to resume? Object, string workoutId, non-empty `exercises` of objects and a
+ * cursor `{index, set, step}` within bounds.
+ * @param {any} a
+ */
+export function validActiveSession(a) {
+  if (!isObj(a)) return false;
+  if (typeof a.workoutId !== 'string' || !a.workoutId) return false;
+  if (!Array.isArray(a.exercises) || !a.exercises.length || !a.exercises.every(isObj)) return false;
+  const c = a.cursor;
+  if (!isObj(c)) return false;
+  if (!Number.isInteger(c.index) || c.index < 0 || c.index >= a.exercises.length) return false;
+  if (c.set !== undefined && !(Number.isInteger(c.set) && c.set >= 0)) return false;
+  if (typeof c.step !== 'string' || !c.step) return false;
+  return true;
+}
+
+/** Problems repaired by the last migrate() (empty = data was clean). @returns {string[]} */
+export const lastSanitizeFixes = () => lastFixes.slice();
 
 const isKg = (v) => typeof v === 'number' && Number.isFinite(v) && v >= 30 && v <= 300;
 
@@ -118,6 +279,7 @@ export function prefillWeight(data) {
 
 /** @param {any} data @returns {import('./types.js').Data} */
 export function migrate(data) {
+  lastFixes = [];
   if (!isObj(data)) return defaults();
   let d = data;
   let v = Number.isInteger(d.schemaVersion) ? d.schemaVersion : 1;
@@ -128,7 +290,7 @@ export function migrate(data) {
     v += 1;
     d.schemaVersion = v;
   }
-  d = mergeDefaults(defaults(), prefillWeight(migrateEquipment(d)));
+  d = mergeDefaults(defaults(), prefillWeight(migrateEquipment(sanitize(d))));
   if (!Array.isArray(d.sessions)) d.sessions = [];
   d.schemaVersion = SCHEMA_VERSION;
   return d;
@@ -142,6 +304,8 @@ function memoryStorage() {
     getItem: (k) => (m.has(k) ? m.get(k) : null),
     setItem: (k, v) => { m.set(k, String(v)); },
     removeItem: (k) => { m.delete(k); },
+    key: (i) => [...m.keys()][i] ?? null,
+    get length() { return m.size; },
   };
 }
 
@@ -161,16 +325,34 @@ let storage = null;
 /** @type {import('./types.js').Data|null} */
 let cache = null;
 const subscribers = new Set();
+const saveErrorListeners = new Set();
+const externalListeners = new Set();
+
+/** Save status (audit P0-1). */
+let saveOk = true;
+/** @type {Error|null} */
+let lastSaveError = null;
+/** Read-only: stored data is newer than this app (P2-4) or a corrupt copy could not be preserved (P0-2). */
+let readOnly = false;
+/**
+ * Problems found on the last load().
+ * @type {{corrupt: null|{key: string|null, preserved: boolean, at: string, error: string}, newerVersion: number|null, fixes: string[]}}
+ */
+let issues = { corrupt: null, newerVersion: null, fixes: [] };
 
 function backend() {
   if (!storage) storage = detectStorage();
   return storage;
 }
 
-/** Test hook. @param {{getItem:Function,setItem:Function,removeItem:Function}|null} s */
+/** Test hook. @param {{getItem:Function,setItem:Function,removeItem:Function,key?:Function,length?:number}|null} s */
 export function _setStorage(s) {
   storage = s;
   cache = null;
+  saveOk = true;
+  lastSaveError = null;
+  readOnly = false;
+  issues = { corrupt: null, newerVersion: null, fixes: [] };
 }
 
 const clone = (v) => (typeof structuredClone === 'function' ? structuredClone(v) : JSON.parse(JSON.stringify(v)));
@@ -179,6 +361,54 @@ function notify() {
   for (const fn of subscribers) {
     try { fn(cache); } catch (e) { console.error('store subscriber failed', e); }
   }
+}
+
+/** All keys of the backend (empty if it cannot enumerate). @returns {string[]} */
+function storageKeys() {
+  const b = backend();
+  const out = [];
+  try {
+    const n = typeof b.length === 'number' ? b.length : 0;
+    for (let i = 0; i < n; i++) { const k = b.key?.(i); if (typeof k === 'string') out.push(k); }
+  } catch { /* ignore */ }
+  return out;
+}
+
+export const CORRUPT_PREFIX = `${STORAGE_KEY}.corrupt-`;
+const MAX_CORRUPT_COPIES = 2;
+
+/** Keys of preserved corrupt copies, oldest first. @returns {string[]} */
+export function corruptBackupKeys() {
+  return storageKeys().filter((k) => k.startsWith(CORRUPT_PREFIX)).sort();
+}
+
+/** Raw text of a preserved corrupt copy (or null). @param {string} key */
+export function readCorruptBackup(key) {
+  if (typeof key !== 'string' || !key.startsWith(CORRUPT_PREFIX)) return null;
+  try { return backend().getItem(key); } catch { return null; }
+}
+
+/**
+ * P0-2: keep the unreadable raw string under `pt.v1.corrupt-<ISO>` (max. 2 copies, oldest removed).
+ * If the copy cannot be written the store goes read-only so the original is never overwritten.
+ */
+function preserveCorrupt(raw, err) {
+  const at = new Date().toISOString();
+  const key = CORRUPT_PREFIX + at;
+  const prune = (keep) => {
+    const keys = corruptBackupKeys().filter((k) => k !== key);
+    while (keys.length > keep) { try { backend().removeItem(keys.shift()); } catch { break; } }
+  };
+  let preserved = false;
+  try { backend().setItem(key, raw); preserved = true; }
+  catch {
+    prune(0); // make room: older corrupt copies first
+    try { backend().setItem(key, raw); preserved = true; } catch { preserved = false; }
+  }
+  if (preserved) prune(MAX_CORRUPT_COPIES - 1);
+  else readOnly = true;
+  issues.corrupt = { key: preserved ? key : null, preserved, at, error: String(err?.message || err) };
+  console.warn(preserved ? `pt.v1 unlesbar – Kopie unter ${key} aufbewahrt.` : 'pt.v1 unlesbar – Kopie nicht möglich, Speichern gesperrt.', err);
 }
 
 // ---- public API ------------------------------------------------------------
@@ -192,22 +422,48 @@ function needsPersist(raw, data) {
   } catch { return false; }
 }
 
+/**
+ * Parse + migrate a raw stored string. Never throws.
+ * @returns {{data: any, corrupt?: any, newer?: number}}
+ */
+function parseStored(raw) {
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch (e) { return { data: null, corrupt: e }; }
+  if (!isObj(parsed)) return { data: null, corrupt: new Error('Gespeicherte Daten sind kein Objekt.') };
+  if (Number.isInteger(parsed.schemaVersion) && parsed.schemaVersion > SCHEMA_VERSION) {
+    let data;
+    try { data = migrate(clone(parsed)); } catch { data = defaults(); }
+    return { data, newer: parsed.schemaVersion };
+  }
+  try { return { data: migrate(parsed) }; } catch (e) { return { data: null, corrupt: e }; }
+}
+
 /** @returns {import('./types.js').Data} */
 export function load() {
   let raw = null;
   try { raw = backend().getItem(STORAGE_KEY); } catch { raw = null; }
+  readOnly = false;
+  issues = { corrupt: null, newerVersion: null, fixes: [] };
   let data;
   if (!raw) data = defaults();
   else {
-    try { data = migrate(JSON.parse(raw)); }
-    catch (e) {
-      console.warn('pt.v1 unlesbar – Standardwerte werden verwendet.', e);
-      data = defaults();
+    const r = parseStored(raw);
+    if (r.corrupt) { preserveCorrupt(raw, r.corrupt); data = defaults(); }
+    else {
+      data = r.data;
+      issues.fixes = lastSanitizeFixes();
+      if (r.newer) {
+        readOnly = true;
+        issues.newerVersion = r.newer;
+        console.warn(`pt.v1 stammt aus Datenversion ${r.newer} (App: ${SCHEMA_VERSION}) – nur lesen.`);
+      }
     }
   }
   cache = data;
-  // persist defaults once so e.g. prehabStart stays stable; persist migrations (e.g. v3.1 weightKg prefill) once
-  if (!raw || needsPersist(raw, data)) save();
+  watchStorageEvents();
+  // persist defaults once so e.g. prehabStart stays stable; persist migrations (e.g. v3.1 weightKg prefill),
+  // repairs (sanitize) and the defaults that replace a preserved corrupt copy once. Read-only: save() refuses.
+  if (!raw || issues.corrupt || issues.fixes.length || needsPersist(raw, data)) save();
   return cache;
 }
 
@@ -216,12 +472,54 @@ export function get() {
   return cache ?? load();
 }
 
-/** @param {import('./types.js').Data} [data] */
+/**
+ * Write the cache to storage.
+ * @param {import('./types.js').Data} [data]
+ * @returns {boolean} true when written; false on failure (QuotaExceeded, blocked) or read-only mode.
+ */
 export function save(data) {
   if (data) cache = data;
   if (!cache) cache = defaults();
-  try { backend().setItem(STORAGE_KEY, JSON.stringify(cache)); }
-  catch (e) { console.error('Speichern fehlgeschlagen', e); }
+  if (readOnly) {
+    saveOk = false;
+    lastSaveError = Object.assign(new Error('Nur-Lese-Modus: Daten werden nicht gespeichert.'), { code: 'readonly' });
+    return false;
+  }
+  try {
+    backend().setItem(STORAGE_KEY, JSON.stringify(cache));
+    saveOk = true;
+    lastSaveError = null;
+    return true;
+  } catch (e) {
+    console.error('Speichern fehlgeschlagen', e);
+    saveOk = false;
+    lastSaveError = e instanceof Error ? e : new Error(String(e));
+    for (const fn of saveErrorListeners) {
+      try { fn(lastSaveError); } catch (err) { console.error('onSaveError listener failed', err); }
+    }
+    return false;
+  }
+}
+
+/** Did the last save() succeed? (false also in read-only mode) */
+export const lastSaveOk = () => saveOk;
+/** Error of the last failed save() (null after a successful one). */
+export const getLastSaveError = () => lastSaveError;
+/** Read-only mode (newer data version / unpreservable corrupt data): save() never writes. */
+export const isReadOnly = () => readOnly;
+/**
+ * What load() found: `corrupt` (a copy of unreadable data was kept under `corrupt.key`), `newerVersion` (schema
+ * version of the stored data, store is read-only) and `fixes` (parts repaired by sanitize).
+ */
+export const loadIssues = () => ({ ...issues, fixes: issues.fixes.slice() });
+
+/**
+ * Called on every failed write (not in read-only mode). Every later update() retries the full write.
+ * @param {(err: Error) => void} cb @returns {() => void} unsubscribe
+ */
+export function onSaveError(cb) {
+  saveErrorListeners.add(cb);
+  return () => saveErrorListeners.delete(cb);
 }
 
 /**
@@ -232,7 +530,7 @@ export function update(fn) {
   const draft = clone(get());
   const result = fn(draft);
   cache = result && typeof result === 'object' ? result : draft;
-  save();
+  save(); // writes the whole cache → also retries an earlier failed write
   notify();
   return cache;
 }
@@ -247,12 +545,97 @@ export const getSettings = () => get().settings;
 export const getState = () => get().state;
 export const getSessions = () => get().sessions;
 
+/**
+ * P2-8: approximate size of everything this origin keeps in localStorage (key + value length in UTF-16 code
+ * units – the unit browsers count against their ~5 MB quota).
+ * @returns {number}
+ */
+export function usageBytes() {
+  const b = backend();
+  const keys = storageKeys();
+  let n = 0;
+  try {
+    if (keys.length) for (const k of keys) n += k.length + String(b.getItem(k) ?? '').length;
+    else n = STORAGE_KEY.length + String(b.getItem(STORAGE_KEY) ?? '').length;
+  } catch { /* ignore */ }
+  return n;
+}
+
+/** Raw snapshot of all `pt.*` keys (emergency „Daten sichern“). @returns {Record<string, string|null>} */
+export function rawSnapshot() {
+  const out = {};
+  const b = backend();
+  const keys = storageKeys().filter((k) => k.startsWith('pt.'));
+  if (!keys.includes(STORAGE_KEY)) keys.unshift(STORAGE_KEY);
+  for (const k of keys) { try { out[k] = b.getItem(k); } catch { out[k] = null; } }
+  return out;
+}
+
+let persistAsked = false;
+/** Ask the browser once for persistent storage (no eviction under storage pressure). @returns {Promise<boolean>} */
+export async function requestPersistentStorage() {
+  if (persistAsked) return false;
+  persistAsked = true;
+  try {
+    const sm = typeof navigator !== 'undefined' ? navigator.storage : null;
+    if (!sm?.persist) return false;
+    if (await sm.persisted?.()) return true;
+    return await sm.persist();
+  } catch { return false; }
+}
+
+// ---- P2-5: changes from another context (second tab, WebAPK vs. browser) ----------------------
+
+/**
+ * Re-read pt.v1 after another context changed it; notifies subscribers and onExternalChange listeners.
+ * Unreadable data written by the other context is ignored (that context handles it).
+ * @returns {boolean} true when the cache was replaced
+ */
+export function reloadFromStorage() {
+  let raw = null;
+  try { raw = backend().getItem(STORAGE_KEY); } catch { return false; }
+  if (!raw) return false;
+  const r = parseStored(raw);
+  if (r.corrupt || !r.data) return false;
+  const hadActive = !!cache?.state?.activeSession;
+  cache = r.data;
+  if (r.newer) { readOnly = true; issues.newerVersion = r.newer; }
+  notify();
+  for (const fn of externalListeners) {
+    try { fn(cache, { hadActiveSession: hadActive }); } catch (e) { console.error('onExternalChange listener failed', e); }
+  }
+  return true;
+}
+
+/** @param {(data: import('./types.js').Data, info: {hadActiveSession: boolean}) => void} cb @returns {() => void} */
+export function onExternalChange(cb) {
+  externalListeners.add(cb);
+  return () => externalListeners.delete(cb);
+}
+
+let watching = false;
+function watchStorageEvents() {
+  if (watching || typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+  watching = true;
+  window.addEventListener('storage', (e) => {
+    if (e.key !== STORAGE_KEY && e.key !== null) return;
+    if (e.storageArea && typeof localStorage !== 'undefined' && e.storageArea !== localStorage) return;
+    reloadFromStorage();
+  });
+}
+
 /** @returns {string} */
 export function exportData() {
   return JSON.stringify({ ...get(), exportedAt: new Date().toISOString() }, null, 2);
 }
 
-/** @param {string|object} input */
+const SAVE_FAILED_MSG = 'Speichern fehlgeschlagen – Speicher voll oder gesperrt. Bitte zuerst eine Sicherung exportieren.';
+
+/**
+ * Replace all data. Throws a German Error when the input is invalid or the result cannot be saved
+ * (then the previous data stays active).
+ * @param {string|object} input
+ */
 export function importData(input) {
   let obj = input;
   if (typeof input === 'string') {
@@ -265,9 +648,14 @@ export function importData(input) {
   if (Number.isInteger(obj.schemaVersion) && obj.schemaVersion > SCHEMA_VERSION) {
     throw new Error('Die Sicherung stammt aus einer neueren App-Version.');
   }
+  if (readOnly) throw new Error('Diese Daten stammen aus einer neueren App-Version. Bitte App aktualisieren.');
   const { exportedAt, ...rest } = obj;
+  const prev = cache;
   cache = migrate(clone(rest));
-  save();
+  if (!save()) {
+    cache = prev;
+    throw new Error(SAVE_FAILED_MSG);
+  }
   notify();
   return cache;
 }

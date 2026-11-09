@@ -6,7 +6,8 @@ import { levelOf } from '../logic/progression.js';
 import {
   CUSTOM_BLOCKS, MAX_CUSTOM_ITEMS, toWorkout, normalizeCustom, validateCustomWorkout, createCustomWorkout, updateCustomWorkout,
 } from '../logic/custom-workouts.js';
-import { ICON, ensureViewStyles, applyFontScale, pageHeader, doseText, figureThumb, toast, openSheet, confirmDialog } from './ui.js';
+import { ICON, ensureViewStyles, applyFontScale, pageHeader, doseText, figureThumb, toast, openSheet, confirmDialog, safeData, fmtMinutes
+} from './ui.js';
 import { ensureV2Styles, availability, availabilityChip, awardBadges, celebrateBadges, blockLabel, meter } from './v2-shared.js';
 import { filterExercises } from './exercises.js';
 
@@ -70,7 +71,7 @@ export function render(root, { store, content, params, navigate }) {
   ensureViewStyles();
   ensureV2Styles();
   const isNew = !params.id || params.id === 'neu';
-  const existing = isNew ? null : (store.getState().customWorkouts || []).find((w) => w.id === params.id);
+  const existing = isNew ? null : (safeData(store.get()).state.customWorkouts || []).find((w) => w.id === params.id);
   const exById = new Map(content.exercises.map((e) => [e.id, e]));
 
   if (!isNew && !existing) {
@@ -90,14 +91,14 @@ export function render(root, { store, content, params, navigate }) {
   if (existing) document.title = `${existing.name} · Physio`;
 
   const estimate = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     const clean = { ...draft, blocks: draft.blocks.map((b) => ({ ...b, items: b.items.filter((it) => exById.get(it.exerciseId)?.block !== 'cardio') })) };
     if (!totalItems(clean)) return 0;
     try { return estimateWorkoutMinutes(toWorkout(clean, data.state), content, data.state, data.settings); } catch { return 0; }
   };
 
   const draw = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     applyFontScale(data.settings);
     const { state, settings } = data;
     const v = validateCustomWorkout({ ...draft, name: draft.name || 'x' }, content, state, settings);
@@ -162,7 +163,7 @@ export function render(root, { store, content, params, navigate }) {
         <div class="v2-durbar__row">
           <div class="grow">
             <span class="eyebrow">Geschätzte Dauer</span>
-            <div class="v2-durbar__min">ca. ${minutes} Min</div>
+            <div class="v2-durbar__min">ca. ${fmtMinutes(minutes)}</div>
             <div class="text-xs muted num">${count}/${MAX_CUSTOM_ITEMS} Übungen</div>
           </div>
           <button class="btn btn--primary" data-save>${raw(ICON.check)} Speichern</button>

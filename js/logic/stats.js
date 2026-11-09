@@ -1,6 +1,6 @@
 // Statistics. PURE. See docs/SPEC.md §7.7.
 // Weeks are ISO weeks (Monday-based) in LOCAL time; a session belongs to the local day of
-// its `endedAt` (fallback `startedAt`). Week keys use `startOfIsoWeek` (Monday "YYYY-MM-DD"),
+// its `startedAt` (fallback `endedAt`, then `date`) – v5.1: a session crossing midnight stays on its start day. Week keys use `startOfIsoWeek` (Monday "YYYY-MM-DD"),
 // which is DST-safe because it works on calendar dates, not on 7×24 h offsets.
 import { addDays, isoWeekKey, startOfIsoWeek, toISODate, todayISO } from '../util/date.js';
 
@@ -9,8 +9,16 @@ import { addDays, isoWeekKey, startOfIsoWeek, toISODate, todayISO } from '../uti
 
 const LIGHT_ORDER = ['green', 'yellow', 'red', 'stop'];
 
-/** Local "YYYY-MM-DD" of a session. @param {Session} s */
-export const dayOf = (s) => toISODate(new Date(s.endedAt || s.startedAt));
+/** Local "YYYY-MM-DD" of a session (start day). @param {Session} s */
+export function dayOf(s) {
+  for (const v of [s?.startedAt, s?.endedAt, s?.date]) {
+    if (typeof v !== 'string' || !v) continue;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v; // plain local day
+    const t = Date.parse(v);
+    if (Number.isFinite(t)) return toISODate(new Date(t));
+  }
+  return toISODate(new Date(NaN));
+}
 
 /** Only completed sessions count for statistics. @param {Session[]} sessions */
 export const doneSessions = (sessions) => (Array.isArray(sessions) ? sessions : []).filter((s) => s && s.status === 'done');

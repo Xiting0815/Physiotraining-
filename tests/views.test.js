@@ -72,8 +72,8 @@ test('month helpers, humanSeconds, bandInfo, greeting, trafficPill', () => {
   assert.equal(shiftMonth('2026-01', -1), '2025-12');
   assert.equal(shiftMonth('2026-12', 1), '2027-01');
   assert.deepEqual(humanSeconds(45), { value: '45', unit: 's' });
-  assert.deepEqual(humanSeconds(245), { value: '4:05', unit: 'min' });
-  assert.deepEqual(humanSeconds(4500), { value: '1:15', unit: 'h' });
+  assert.deepEqual(humanSeconds(245), { value: '4', unit: 'min' });
+  assert.deepEqual(humanSeconds(4500), { value: '1 h 15', unit: 'min' });
   assert.equal(bandInfo(defaults().settings, 'red').label, 'Rot');
   assert.equal(bandInfo(defaults().settings, null), null);
   assert.equal(greeting(new Date(2026, 0, 1, 8)), 'Guten Morgen');

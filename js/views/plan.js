@@ -11,6 +11,7 @@ import { phaseSchedule, scheduleHint, canEnterPhase, postOpStatus } from '../log
 import {
   ICON, BLOCK_LONG, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip, workoutItems,
   workoutSplit, workoutLetter, confirmDialog, toast, KIND_ICON, awardBadges, shortDate,
+  safeData, fmtMinutes
 } from './ui.js';
 import { confetti } from '../components/celebrate.js';
 
@@ -66,7 +67,7 @@ export function render(root, { store, content, navigate }) {
   let firstDraw = true;
 
   const draw = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     applyFontScale(data.settings);
     const { state, settings, sessions } = data;
     const today = todayISO();
@@ -136,8 +137,8 @@ export function render(root, { store, content, navigate }) {
       const blockTitle = (sec) => (sec === 'knee' || sec === 'archery' || sec === 'cardio') ? (w.blocks.find((b) => b.id === sec)?.title ?? BLOCK_LONG[sec]) : BLOCK_LONG[sec];
       const lbl = kind === 'cardio' ? cardioMainLabel(w, content, state) : '';
       const sub = kind === 'cardio'
-        ? `ca. ${minutes(w)} Min${lbl ? ` · ${lbl}` : ''}`
-        : `ca. ${minutes(w)} Min${withRow(w) ? ' inkl. 10 Min Rudern' : ''} · ${split.knee} Knie · ${split.archery} Bogen`;
+        ? `ca. ${fmtMinutes(minutes(w))}${lbl ? ` · ${lbl}` : ''}`
+        : `ca. ${fmtMinutes(minutes(w))}${withRow(w) ? ' inkl. 10 min Rudern' : ''} · ${split.knee} Knie · ${split.archery} Bogen`;
       return html`<details class="card pv-workout" data-wid="${w.id}" ${open.has(w.id) ? 'open' : ''}>
         <summary class="pv-workout__head" style="margin:0;list-style:none">
           <span class="pv-letter${isNext ? ' is-next' : ''}" ${kind === 'cardio' ? html`style="background:var(--accent-soft);color:var(--accent-ink)"` : ''}>${badge}</span>
@@ -205,7 +206,7 @@ export function render(root, { store, content, navigate }) {
         </summary>
         <div class="pv-phase-item__body" style="padding:0 var(--s-4) var(--s-4)">
           ${all.map(([w, b]) => html`<div class="pv-start"><span class="pv-letter" style="width:32px;height:32px;font-size:var(--fs-md)">${b}</span>
-            <span class="pv-start__body"><span class="pv-start__name">${w.name}</span><span class="pv-start__meta">ca. ${minutes(w)} Min</span></span></div>`)}
+            <span class="pv-start__body"><span class="pv-start__name">${w.name}</span><span class="pv-start__meta">ca. ${fmtMinutes(minutes(w))}</span></span></div>`)}
           ${pk && p.clearanceNote ? html`<p class="text-sm muted">${p.clearanceNote}</p>` : ''}
           ${pk && !gate.ok ? html`<div class="pv-lock mt-2">${raw(ICON.lock)}<div><p class="text-sm strong mb-0">Noch gesperrt</p>${lockReasons(gate.reasons)}</div></div>` : ''}
           ${isCur ? '' : html`<div class="btn-row mt-4"><button class="btn btn--outline btn--sm" data-phase="${p.id}" ${gate.ok ? '' : 'disabled'}>${i < pIdx ? 'Zurück zu dieser Phase' : 'Zu dieser Phase wechseln'}</button></div>`}
@@ -233,7 +234,7 @@ export function render(root, { store, content, navigate }) {
       ${hint.text ? html`<div class="pv-callout ${hint.status === 'behind' ? 'pv-callout--warn' : 'pv-callout--knee'}"><span class="pv-callout__icon" aria-hidden="true">🗓️</span>
         <p class="text-sm">${hint.text}${settings.surgeryDate ? html` <span class="muted">OP: ${formatDE(settings.surgeryDate, { weekday: false })}.</span>` : ''}</p></div>`
         : !settings.surgeryDate ? html`<div class="pv-callout pv-callout--knee"><span class="pv-callout__icon" aria-hidden="true">🗓️</span>
-        <p class="text-sm">Mit OP-Termin zeigt der Plan, wann welche Phase ungefähr dran ist. <a href="#/mehr?focus=surgeryDate">Termin eintragen</a></p></div>` : ''}
+        <p class="text-sm">Mit OP-Termin zeigt der Plan, wann welche Phase ungefähr dran ist.</p><a class="tap-link pv-tap-left" href="#/mehr?focus=surgeryDate">Termin eintragen ${raw(ICON.right)}</a></div>` : ''}
 
       ${isPostOp ? html`<div class="pv-callout pv-callout--stop"><span class="pv-callout__icon" aria-hidden="true">⛔</span>
         <p class="text-sm"><strong>Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.</strong> ${phase.redFlagNote ?? ''}</p></div>` : ''}
@@ -277,7 +278,7 @@ export function render(root, { store, content, navigate }) {
         return w ? workoutCard(w, workoutLetter(w, phases)) : html`<section class="card"><h3 class="card__title">Training ${k}</h3><p class="placeholder">Noch nicht angelegt.</p></section>`;
       })}
 
-      ${pw.short ? html`<h2 class="section-title">Kurztraining <span class="count">~15 Min</span></h2>${workoutCard(pw.short, KIND_ICON.short)}` : ''}
+      ${pw.short ? html`<h2 class="section-title">Kurztraining <span class="chip chip--sm chip--outline">~15 min</span></h2>${workoutCard(pw.short, KIND_ICON.short)}` : ''}
 
       ${pw.cardio.length ? html`<h2 class="section-title">Rudern</h2>
         <p class="pv-count mt-0">Separate Ausdauer-Einheiten, 3× pro Woche. Die Schmerz-Ampel gilt auch beim Rudern. „Grundlage lang“ (25–29 Min) hilft beim Abnehmen – die Kalorien kommen vor allem aus dem Wochenumfang, der größte Hebel bleibt die Ernährung.</p>
@@ -318,7 +319,7 @@ export function render(root, { store, content, navigate }) {
       return;
     }
     if (e.target.closest('[data-advance]')) {
-      const data = store.get();
+      const data = safeData(store.get());
       const phases = content.phases;
       const cur = phases.findIndex((p) => p.id === data.state.phaseId);
       const next = phases[cur + 1];
@@ -335,7 +336,7 @@ export function render(root, { store, content, navigate }) {
     const ph = e.target.closest('[data-phase]');
     if (ph) {
       const target = content.phases.find((p) => p.id === ph.dataset.phase);
-      const data = store.get();
+      const data = safeData(store.get());
       const gate = canEnterPhase(target, data.settings, data.state, todayISO());
       if (!gate.ok) { toast(gate.reasons[0] || 'Noch gesperrt', { kind: 'accent', icon: '🔒' }); return; }
       const curOrder = content.phases.find((p) => p.id === data.state.phaseId)?.order ?? 0;
@@ -371,7 +372,7 @@ export function render(root, { store, content, navigate }) {
     }
     const cb = e.target.closest('[data-crit]');
     if (!cb) return;
-    const data = store.get();
+    const data = safeData(store.get());
     const phaseId = data.state.phaseId;
     const idx = Number(cb.dataset.crit);
     const ticked = (data.state.exitCriteriaDone?.[phaseId] || []).includes(idx);

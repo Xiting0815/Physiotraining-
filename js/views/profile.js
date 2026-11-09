@@ -3,7 +3,7 @@
 // Weight / health data itself is tracked in Samsung Health (v3.1: no diary, no weight goal).
 import { html, raw, render as paint } from '../render.js';
 import { MET, DEFAULT_WEIGHT_KG } from '../logic/energy.js';
-import { ICON, ensureViewStyles, applyFontScale, pageHeader, toast, fmtNum } from './ui.js';
+import { ICON, ensureViewStyles, applyFontScale, pageHeader, toast, fmtNum, safeData } from './ui.js';
 
 export const title = 'Trainingsziele';
 
@@ -43,7 +43,7 @@ export function render(root, { store }) {
   let weightErr = null;
 
   const draw = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     const s = data.settings;
     applyFontScale(s);
     const kg = s.profile?.weightKg;
@@ -64,7 +64,7 @@ export function render(root, { store }) {
           </div>
         </div>
         <div class="pv-setting-row">
-          <span class="pv-setting-row__label">Krafttraining pro Woche<span class="pv-setting-row__hint">Änderbar unter <a href="#/mehr">Mehr</a></span></span>
+          <span class="pv-setting-row__label">Krafttraining pro Woche<a class="pv-setting-row__hint tap-link pv-tap-left" href="#/mehr">Änderbar unter „Mehr“ ${raw(ICON.right)}</a></span>
           <span class="chip chip--primary num">${s.weeklyGoal}×</span>
         </div>
       </section>

@@ -9,7 +9,7 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F6F7F9",
+  "background_color": "#0F1216",
   "theme_color": "#0E7C86",
   "categories": ["health", "fitness", "sports"],
   "icons": [

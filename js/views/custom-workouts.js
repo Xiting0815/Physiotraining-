@@ -4,7 +4,8 @@ import { todayISO } from '../util/date.js';
 import { estimateWorkoutMinutes, MAX_SESSION_MIN } from '../logic/duration.js';
 import { toWorkout, deleteCustomWorkout, duplicateAsCustom } from '../logic/custom-workouts.js';
 import { phaseWorkouts, currentPhase } from '../logic/progression.js';
-import { ICON, ensureViewStyles, applyFontScale, pageHeader, workoutSplit, shortDate, toast, confirmDialog } from './ui.js';
+import { ICON, ensureViewStyles, applyFontScale, pageHeader, workoutSplit, shortDate, toast, confirmDialog, safeData, fmtMinutes
+} from './ui.js';
 import { ensureV2Styles, ICON2, awardBadges, celebrateBadges } from './v2-shared.js';
 
 export const title = 'Eigene Workouts';
@@ -35,7 +36,7 @@ export function render(root, { store, content, navigate }) {
   const usage = (sessions, id) => (sessions || []).filter((s) => s?.status === 'done' && s.workoutId === id).length;
 
   const draw = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     applyFontScale(data.settings);
     const { state, settings, sessions } = data;
     const list = (state.customWorkouts || []).slice().sort((a, b) => (String(a.updatedAt) < String(b.updatedAt) ? 1 : -1));
@@ -67,7 +68,7 @@ export function render(root, { store, content, navigate }) {
           </div>
           <div class="v2-cw-meta">
             <span class="chip chip--sm">${raw(ICON.list)} <span class="num">${sum.count}</span> ${sum.count === 1 ? 'Übung' : 'Übungen'}</span>
-            <span class="chip chip--sm ${sum.over ? 'v2-chip--warn' : 'chip--green'}">${raw(ICON.clock)} ca. <span class="num">${sum.minutes}</span> Min</span>
+            <span class="chip chip--sm ${sum.over ? 'v2-chip--warn' : 'chip--green'}">${raw(ICON.clock)} ca. <span class="num">${fmtMinutes(sum.minutes)}</span></span>
             ${sum.split.knee ? html`<span class="chip chip--sm chip--knee">Knie ${sum.split.knee}</span>` : ''}
             ${sum.split.archery ? html`<span class="chip chip--sm chip--archery">Bogen ${sum.split.archery}</span>` : ''}
           </div>
@@ -88,7 +89,7 @@ export function render(root, { store, content, navigate }) {
       ${templates.length ? html`<h2 class="section-title">Aus Vorlage kopieren</h2>
         <p class="text-sm muted mt-0">Starte mit einem Plan-Workout der aktuellen Phase und passe es an.</p>
         <div class="v2-tpl mb-4">
-          ${templates.map((w) => html`<button data-tpl="${w.id}"><strong>${w.name}</strong><span>${workoutSplit(w).total} Übungen · ca. ${estimateWorkoutMinutes(w, content, state, settings)} Min</span></button>`)}
+          ${templates.map((w) => html`<button data-tpl="${w.id}"><strong>${w.name}</strong><span>${workoutSplit(w).total} Übungen · ca. ${fmtMinutes(estimateWorkoutMinutes(w, content, state, settings))}</span></button>`)}
         </div>` : ''}
 
       <div class="pv-callout pv-callout--knee"><span class="pv-callout__icon" aria-hidden="true">🦵</span>

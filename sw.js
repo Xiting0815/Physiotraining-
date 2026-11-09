@@ -5,8 +5,8 @@
 // Strategy
 //   - install: precache the complete app (PRECACHE, generated) into a versioned cache.
 //   - navigations + app shell (html/css/js/icons/manifest): cache-first, network fallback.
-//   - data/*.json: network-first (3 s timeout) with cache fallback, so content updates arrive
-//     when online and the app still works offline.
+//   - data/*.json: cache-first from the SAME versioned cache as the JS (v5.1, audit P1-6). Content and code
+//     always come from one app version; new content arrives with a new SW version (content hash) like code.
 //   - activate: delete caches of older versions, claim clients.
 //   - updates: the new worker waits; the page shows "Update verfügbar – neu laden" and posts
 //     {type: 'SKIP_WAITING'} when the user taps it.
@@ -17,7 +17,7 @@
 // removing or changing app files (the version is a content hash, so any change triggers an update).
 
 // <precache-version>
-const CACHE_VERSION = 'b97b193bab';
+const CACHE_VERSION = 'a0b3540068';
 // </precache-version>
 const CACHE_PREFIX = 'physio-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
@@ -93,7 +93,6 @@ const PRECACHE = [
 const isLegacyCache = (k) => k === 'pt-share' || k.startsWith('pt-ocr-');
 
 const scopeUrl = (path) => new URL(path, self.registration.scope).href;
-const DATA_TIMEOUT_MS = 3000;
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -130,10 +129,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(appShell(req));
     return;
   }
-  if (/\/data\/[^/]+\.json$/.test(url.pathname)) {
-    event.respondWith(networkFirst(req));
-    return;
-  }
+  // data/*.json is precached → cacheFirst like the app shell (no version skew between JS and content)
   event.respondWith(cacheFirst(req));
 });
 
@@ -160,27 +156,4 @@ async function cacheFirst(req) {
   } catch (err) {
     return new Response('', { status: 504, statusText: 'Offline' });
   }
-}
-
-async function networkFirst(req) {
-  const cache = await caches.open(CACHE_NAME);
-  try {
-    const res = await withTimeout(fetch(req), DATA_TIMEOUT_MS);
-    if (res.ok) {
-      cache.put(req, res.clone());
-      return res;
-    }
-    // 404 etc.: fall back to a cached copy if we have one (e.g. optional equipment.json)
-    return (await cache.match(req, { ignoreSearch: true })) || res;
-  } catch {
-    const cached = await cache.match(req, { ignoreSearch: true });
-    return cached || new Response('', { status: 504, statusText: 'Offline' });
-  }
-}
-
-function withTimeout(promise, ms) {
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error('timeout')), ms);
-    promise.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
-  });
 }

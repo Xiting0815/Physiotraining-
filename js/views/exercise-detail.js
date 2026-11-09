@@ -8,6 +8,7 @@ import { rowingPhases, INTENSITY_LABELS } from '../logic/cardio.js';
 import {
   ICON, SIDE_LABEL, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip,
   bandInfo, workoutItems, shortDate, confirmDialog, toast,
+  safeData, fmtDuration
 } from './ui.js';
 import { ensureV2Styles, availability, availabilityChip, blockLabel, equipLabel, fmtClock } from './v2-shared.js';
 
@@ -33,7 +34,7 @@ export function rowingLevelText(ex, lvl) {
     const rest = lvl.rest ? `, dazwischen ${fmtClock(lvl.rest)} ${lvl.restActive ? 'locker rudern' : 'Pause'}` : '';
     return `${lvl.sets} × ${fmtClock(lvl.seconds)} ${it}${rest}`;
   }
-  return `${fmtClock(lvl.seconds)} min ${it} am Stück`;
+  return `${fmtDuration(lvl.seconds)} ${it} am Stück`.replace(/\s+/g, ' ').trim();
 }
 
 export const title = 'Übung';
@@ -93,7 +94,7 @@ export function render(root, { store, content, params, query }) {
   const cardio = ex.block === 'cardio';
 
   const draw = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     applyFontScale(data.settings);
     const { settings, state } = data;
     const li = levelOf(state, ex.id, ex);
@@ -191,7 +192,7 @@ export function render(root, { store, content, params, query }) {
           return html`<li><button class="v2-rowlevel ${i === li ? 'is-current' : ''}" style="width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer" data-level="${i}" ${i === li ? 'aria-current="true"' : ''}>
             <span class="v2-rowlevel__head"><strong>Stufe ${i + 1}: ${l.label}</strong>${i === li ? html`<span class="chip chip--accent chip--sm">aktuell</span>` : ''}</span>
             ${rowPhasesBar(pv)}
-            <span class="v2-rowlevel__meta"><span>⏱ ${fmtClock(pv.totalSec)} min</span>${l.intensity ? html`<span>${INTENSITY_LABELS[l.intensity] ?? ''}</span>` : ''}${l.targetSpm ? html`<span>SPM ${l.targetSpm[0]}–${l.targetSpm[1]}</span>` : ''}${l.targetRpe ? html`<span>RPE ${l.targetRpe[0]}–${l.targetRpe[1]}</span>` : ''}</span>
+            <span class="v2-rowlevel__meta"><span>⏱ ${fmtDuration(pv.totalSec)}</span>${l.intensity ? html`<span>${INTENSITY_LABELS[l.intensity] ?? ''}</span>` : ''}${l.targetSpm ? html`<span>SPM ${l.targetSpm[0]}–${l.targetSpm[1]}</span>` : ''}${l.targetRpe ? html`<span>RPE ${l.targetRpe[0]}–${l.targetRpe[1]}</span>` : ''}</span>
           </button></li>`;
         })}</ol>` : html`<ol class="pv-ladder">
           ${ex.levels.map((l, i) => html`<li>
@@ -248,7 +249,7 @@ export function render(root, { store, content, params, query }) {
   };
 
   const setLevel = async (to) => {
-    const cur = levelOf(store.getState(), ex.id, ex);
+    const cur = levelOf(safeData(store.get()).state, ex.id, ex);
     if (to === cur || to < 0 || to >= ex.levels.length) return;
     const harder = to > cur;
     const ok = await confirmDialog({
@@ -265,7 +266,7 @@ export function render(root, { store, content, params, query }) {
     const lv = e.target.closest('[data-level]');
     if (lv) { setLevel(Number(lv.dataset.level)); return; }
     const st = e.target.closest('[data-step]');
-    if (st) setLevel(levelOf(store.getState(), ex.id, ex) + Number(st.dataset.step));
+    if (st) setLevel(levelOf(safeData(store.get()).state, ex.id, ex) + Number(st.dataset.step));
   };
 
   const setToggle = (val) => store.update((d) => {

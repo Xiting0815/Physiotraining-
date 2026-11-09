@@ -156,11 +156,11 @@ const CSS_TEXT = `
 .v2-item { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); background: var(--surface); border: 1px solid color-mix(in srgb, var(--border) 80%, transparent); border-radius: var(--radius-sm); box-shadow: var(--shadow-1); }
 .v2-item__num { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: var(--fs-xs); font-weight: var(--fw-bold); background: var(--surface-2); color: var(--muted); }
 .v2-item__body { flex: 1; min-width: 0; }
-.v2-item__name { display: block; font-weight: var(--fw-semibold); line-height: 1.25; color: var(--text); text-decoration: none; }
+.v2-item__name { display: flex; align-items: center; min-height: 44px; font-weight: var(--fw-semibold); line-height: 1.25; color: var(--text); text-decoration: none; }
 .v2-item__name:hover { color: var(--primary-ink); text-decoration: underline; }
 .v2-item__sub { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; color: var(--muted); font-size: var(--fs-xs); margin-top: 2px; }
 .v2-item__btns { display: flex; gap: 2px; flex: none; }
-.v2-item__btns .btn { width: 40px; min-height: 40px; padding: 0; }
+.v2-item__btns .btn { width: 44px; min-height: 44px; padding: 0; }
 .v2-empty-sec { border: 1.5px dashed var(--border); border-radius: var(--radius-sm); padding: var(--s-3); text-align: center; color: var(--muted); font-size: var(--fs-sm); }
 .v2-durbar { position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + var(--s-2)); z-index: 6; margin-top: var(--s-5); padding: var(--s-3) var(--s-4); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-2); border: 1px solid var(--border); }
 .v2-durbar__row { display: flex; align-items: center; gap: var(--s-3); }

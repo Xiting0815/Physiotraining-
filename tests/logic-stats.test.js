@@ -21,10 +21,13 @@ test('time zone is applied (sanity)', () => {
   assert.equal(new Date('2026-12-01T12:00:00Z').getTimezoneOffset(), -60);
 });
 
-test('dayOf uses local date of endedAt (late evening UTC → next local day)', () => {
+test('dayOf uses local date of startedAt (session crossing midnight stays on its start day)', () => {
   const s = { endedAt: '2026-11-01T23:30:00.000Z', startedAt: '2026-11-01T22:50:00.000Z' };
-  assert.equal(dayOf(s), '2026-11-02'); // 00:30 CET
+  assert.equal(dayOf(s), '2026-11-01'); // started 23:50 CET, ended 00:30 CET next day
+  assert.equal(dayOf({ startedAt: '2026-11-01T23:10:00.000Z', endedAt: null }), '2026-11-02'); // 00:10 CET = local next day
   assert.equal(dayOf({ startedAt: '2026-11-01T10:00:00.000Z', endedAt: null }), '2026-11-01');
+  assert.equal(dayOf({ startedAt: null, endedAt: '2026-11-01T10:00:00.000Z' }), '2026-11-01'); // fallback endedAt
+  assert.equal(dayOf({ date: '2026-10-30' }), '2026-10-30'); // fallback date
 });
 
 test('sessionLight: final over provisional', () => {

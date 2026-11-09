@@ -29,6 +29,7 @@ const ICON = {
   next: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
   edit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
   check: '<svg class="set-check__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  done: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4"/></svg>',
   list: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M4 6h16M4 18h10"/></svg>',
   minus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg>',
@@ -60,17 +61,43 @@ export function render(root, ctx) {
   let onChange = () => {};   // change events, per screen
   let screen = {};           // per-screen transient state (timers, nudges)
 
+  let lastBeat = 0;         // Date.now() of the last write (heartbeat throttle)
   const persist = () => {
     if (!session) return;
     saved = true;
+    if (!session.pausedAt) session.lastActiveAt = new Date().toISOString();
+    lastBeat = Date.now();
     const copy = clone(session);
     store.update((d) => { d.state.activeSession = copy; });
+  };
+  /** true when the last store write reached storage (WP-1: store.save() returns a boolean; older store: undefined = ok). */
+  const savedOk = () => {
+    try { return typeof store.save !== 'function' || store.save() !== false; } catch { return false; }
   };
   const setCta = (on) => document.body.classList.toggle('has-cta', on);
   const scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
   const smooth = (el) => el?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
 
   // ------------------------------------------------------------------ delegation
+  // P1-1 double taps: after a (re-)render, a second tap on the same spot within the guard window is swallowed
+  // (it would hit the button that just appeared under the finger: „Los geht’s“ → „Nächste Übung“ …).
+  const perfNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  let lastTap = { x: 0, y: 0, t: -1e9 };
+  let guard = { until: 0, x: null, y: null };
+  /** Swallow taps for `ms` – only near the tap that caused the re-render (if it was a recent tap). */
+  const armGuard = (ms = 450) => {
+    const recent = perfNow() - lastTap.t < 1000;
+    guard = { until: perfNow() + ms, x: recent ? lastTap.x : null, y: recent ? lastTap.y : null };
+  };
+  const onGuard = (e) => {
+    if (e.detail === 0) return; // keyboard activation
+    const t = perfNow();
+    if (t < guard.until) {
+      const near = guard.x == null || (Math.abs(e.clientX - guard.x) < 60 && Math.abs(e.clientY - guard.y) < 60);
+      if (near) { e.stopImmediatePropagation(); e.preventDefault(); return; }
+    }
+    lastTap = { x: e.clientX, y: e.clientY, t };
+  };
   const onClick = (e) => {
     const b = /** @type {HTMLElement} */ (e.target).closest?.('[data-act]');
     if (!b || !root.contains(b) || b.closest('pt-timer')) return;
@@ -78,15 +105,19 @@ export function render(root, ctx) {
     if (fn) { e.preventDefault(); fn(b, e); }
   };
   const onChangeEvt = (e) => onChange(e);
+  root.addEventListener('click', onGuard, true);
   root.addEventListener('click', onClick);
   root.addEventListener('change', onChangeEvt);
   root.addEventListener('input', onChangeEvt);
 
   // ------------------------------------------------------------------ shared markup
-  const topBar = (eyebrow, strong, { menu = true, xp = true } = {}) => html`
+  /** Sticky header. `ex` (exercise screens): the exercise name is the big line (readable from the mat), the
+   *  eyebrow carries „Übung n von m · Workout“. */
+  const topBar = (eyebrow, strong, { menu = true, xp = true, ex = null } = {}) => html`
     <header class="ses-top">
       ${menu ? html`<button type="button" class="btn btn--icon" data-act="menu" aria-label="Pausieren oder abbrechen">${raw(ICON.close)}</button>` : ''}
-      <div class="ses-top__title"><span class="eyebrow truncate">${eyebrow}</span><strong>${strong}</strong></div>
+      ${ex ? html`<div class="ses-top__title"><span class="eyebrow truncate ses-top__eyebrow">${eyebrow}</span><strong class="ses-top__ex" data-top-ex>${ex.name}${ex.side ? html` <span class="ses-top__side ${ex.side === 'Links' ? 'ses-top__side--left' : ''}">${ex.side}</span>` : ''}</strong></div>`
+        : html`<div class="ses-top__title"><span class="eyebrow truncate">${eyebrow}</span><strong>${strong}</strong></div>`}
       ${xp ? html`<span class="chip chip--gold ses-xp" title="XP in dieser Einheit">⚡ <span class="num" data-xp>${H.liveXp(session, settings())}</span> XP</span>` : ''}
     </header>`;
 
@@ -193,7 +224,7 @@ export function render(root, ctx) {
             <h1 class="hero__title">${cardio ? '🚣 ' : ''}${t.title}</h1>
           </div>
         </div>
-        ${w?.description ? html`<p class="hero__meta" style="display:block;margin-bottom:var(--s-2)">${w.description}</p>` : ''}
+        ${w?.description ? html`<p class="hero__meta ses-intro__desc">${w.description}</p>` : ''}
         <p class="hero__meta">
           <span>${raw(ICON.clock)}ca. <span class="num" data-min>${minutes}</span>&nbsp;Min</span>
           <span>${raw(ICON.list)}${cardio ? `${rowingPhases(session, content).length} Abschnitte` : html`<span class="num" data-count>${vis.length}</span>&nbsp;Übungen`}</span>
@@ -203,18 +234,18 @@ export function render(root, ctx) {
         </div>`}
       </section>
       ${rowOpt ? html`<section class="card ses-rowopt">
-        <label class="switch-row"><span>🚣 Mit 10 Min. Rudern aufwärmen<small class="muted ses-rowopt__hint" style="display:block;font-weight:400;margin-top:2px" data-row-hint>${session.rowWarmup ? 'Ersetzt das allgemeine Aufwärmen – danach kurz Schultern & Brustwirbelsäule für den Bogen.' : 'Aus: klassisches Mobilisations-Aufwärmen (ca. 3–4 Min).'}</small></span>
+        <label class="switch-row"><span>🚣 Mit 10 Min. Rudern aufwärmen<small class="muted ses-rowopt__hint" style="display:block;font-weight:400;margin-top:2px" data-row-hint>${rowHint(session.rowWarmup)}</small></span>
           <input type="checkbox" class="switch" data-f="rowWarmup" ${session.rowWarmup ? 'checked' : ''}></label>
       </section>` : ''}
       ${session.taper ? html`<div class="banner banner--accent"><span class="banner__icon">🗓️</span><span class="banner__body"><span class="banner__title">OP-Woche</span><span class="banner__text">Weniger Umfang, gleiche Qualität.</span></span></div>` : ''}
       ${loadHint ? html`<div class="banner banner--gold"><span class="banner__icon">⚖️</span><span class="banner__body"><span class="banner__title">Heute schon trainiert</span><span class="banner__text">${loadHint}</span></span></div>` : ''}
       ${postOp && phase?.redFlagNote ? html`<div class="banner" style="--c:var(--stop);--c-soft:var(--stop-soft);--c-ink:var(--stop-ink)"><span class="banner__icon">🩺</span><span class="banner__body"><span class="banner__title">Entlastungsphase – Warnzeichen</span><span class="banner__text">${phase.redFlagNote}</span></span></div>` : ''}
-      <h2 class="ses-big-q">Wie geht’s dem Knie gerade?</h2>
-      <p class="muted">${cardio ? 'Kurzer Check vor dem Rudern – die Ampel gilt auch auf dem Rudergerät.' : 'Kurzer Check vor dem Start – ehrliche Antworten machen die Empfehlungen gut.'}</p>
+      <h2 class="ses-big-q ses-pre-q">Wie geht’s dem Knie gerade?</h2>
       <section class="card stack">
         <pt-pain-scale label="Schmerz jetzt" data-f="pain" ${draft.pain != null ? html`value="${draft.pain}"` : ''}></pt-pain-scale>
         <div class="ses-field"><span class="field__label">Schwellung</span>${segmented('pre-swelling', draft.swelling, 'Schwellung')}</div>
       </section>
+      <p class="muted">${cardio ? 'Die Ampel gilt auch auf dem Rudergerät.' : 'Ehrliche Antworten machen die Empfehlungen gut.'}</p>
       <section class="card ses-check">
         <p class="field__label mb-2">Seit dem letzten Training …</p>
         ${checkRow('locking', 'Knie blockiert oder hakt', draft.mechanical.locking)}
@@ -276,6 +307,8 @@ export function render(root, ctx) {
     }
   }
 
+  const rowHint = (on) => (on ? 'Statt Mobilisation · danach kurz Schultern für den Bogen' : 'Aus: Mobilisations-Aufwärmen (3–4 Min)');
+
   /** v4: rebuild the plan with/without the rowing warm-up (start screen toggle); updates „ca. N Min“ live. */
   function setRowWarmup(on) {
     const w = workoutOf(session);
@@ -289,7 +322,7 @@ export function render(root, ctx) {
     const cnt = root.querySelector('[data-count]');
     if (cnt) cnt.textContent = String(session.exercises.filter(H.isVisible).length);
     const hint = root.querySelector('[data-row-hint]');
-    if (hint) hint.textContent = session.rowWarmup ? 'Ersetzt das allgemeine Aufwärmen – danach kurz Schultern & Brustwirbelsäule für den Bogen.' : 'Aus: klassisches Mobilisations-Aufwärmen (ca. 3–4 Min).';
+    if (hint) hint.textContent = rowHint(session.rowWarmup);
   }
 
   function showStopCard(a, scroll = true) {
@@ -318,6 +351,7 @@ export function render(root, ctx) {
     const cta = root.querySelector('[data-slot="cta"]');
     if (cta) cta.remove();
     setCta(false);
+    armGuard();
     if (scroll) smooth(slot.firstElementChild);
   }
 
@@ -359,6 +393,10 @@ export function render(root, ctx) {
     return out;
   }
 
+  /** Knee reps with a tempo run with the Tempo-Coach by default (hands-free); others on request. */
+  const tempoCoachOn = (dose, entry) => !!dose.tempo && dose.type !== 'hold' && dose.type !== 'timed'
+    && (entry?.section === 'knee' ? !entry.manualTempo : !!entry?.tempoCoach);
+
   function timerMarkup(dose, entry) {
     const blk = H.timerBlock(entry?.section);
     if (dose.type === 'hold') {
@@ -369,16 +407,21 @@ export function render(root, ctx) {
     if (dose.type === 'timed') {
       if (dose.perSide) {
         return html`<pt-timer mode="hold" block="${blk}" seconds="${dose.seconds ?? 30}" reps="2" rest-between="5" data-role="work"></pt-timer>
-          <p class="ses-hint">Wdh. 1 = erste Seite, Wdh. 2 = zweite Seite. Satz wird danach automatisch abgehakt.</p>`;
+          <p class="ses-hint">Erst eine Seite, nach der kurzen Pause die andere. Satz wird danach automatisch abgehakt.</p>`;
       }
       return html`<pt-timer mode="set" block="${blk}" seconds="${dose.seconds ?? 30}" data-role="work"></pt-timer>
         <p class="ses-hint">Der Satz wird nach dem Timer automatisch abgehakt.</p>`;
     }
-    if (dose.tempo) {
-      return html`<div data-slot="tempo"><button type="button" class="btn btn--soft btn--block btn--session" data-act="tempo">Tempo-Coach · ${dose.tempo}</button>
-        <p class="ses-hint">Optional: gibt den Takt vor (Nachgeben–Halten–Anspannen) – mit 5 s „Bereit machen“ und Ansage.</p></div>`;
+    if (tempoCoachOn(dose, entry)) {
+      return html`<div data-slot="tempo"><pt-timer mode="set" block="${blk}" reps="${dose.reps ?? 10}" tempo="${dose.tempo}" data-role="work"></pt-timer>
+        <p class="ses-hint">Tempo-Coach ${dose.tempo}: einmal Start tippen, dann führt die Stimme. Der Satz wird danach abgehakt.</p>
+        <button type="button" class="ses-link" data-act="tempo-manual">Lieber selbst zählen</button></div>`;
     }
-    return '';
+    // plain reps (or manual tempo): one big target – readable and tappable from the mat
+    return html`<button type="button" class="btn btn--primary ses-bigdone" data-act="set-done">${raw(ICON.done)}<span>Satz fertig</span></button>
+      ${dose.tempo ? html`<button type="button" class="btn btn--soft btn--block btn--session mt-3" data-act="tempo">Tempo-Coach · ${dose.tempo}</button>
+        <p class="ses-hint">Gibt den Takt vor (Hoch–Halten–Runter) – mit 5 s „Bereit machen“ und Ansage.</p>`
+        : html`<p class="ses-hint">Nach jedem Satz einmal tippen – die Satzpause startet automatisch.</p>`}`;
   }
 
   function renderExercise() {
@@ -400,23 +443,26 @@ export function render(root, ctx) {
     const prev = H.prevIndex(session, idx);
     const next = H.nextIndex(session, idx);
     const allDone = H.doneCount(entry) >= dose.sets;
-    screen = { rpeNudged: false, pressTimer: 0, longPressed: false, plan: H.cuePlanFor(entry, ex, settings()) };
+    screen = { rpeNudged: false, pressTimer: 0, longPressed: false, plan: H.cuePlanFor(entry, ex, settings()), openedAt: perfNow(), lastDoneAt: -1e9 };
     const sideLabel = { left: 'Links (OP-Seite)', right: 'Rechts', perSide: 'Je Seite', alternate: 'Abwechselnd' }[dose.side];
+    const sideShort = { left: 'Links', right: 'Rechts', perSide: 'je Seite', alternate: 'abwechselnd' }[dose.side];
     const timer = timerMarkup(dose, entry);
+    const compactFig = dose.type === 'hold' || dose.type === 'timed' || tempoCoachOn(dose, entry);
+    const samePain = knee ? H.prevKneePain(session, idx, content) : null;
     paint(root, html`
-      ${topBar(titleOf(session).title, `Übung ${pos.pos} von ${pos.total}`)}
+      ${topBar(`Übung ${pos.pos} von ${pos.total} · ${titleOf(session).title}`, '', { ex: { name: ex.name, side: sideShort } })}
       ${progressBar(idx, 'exercise')}
       <div class="row row--between">
         <div class="block-header block-header--${sec}" style="margin:0"><span class="block-header__dot"></span>${H.SECTION_LABELS[sec]}<span class="block-header__count">${pos.secPos}/${pos.secTotal}</span></div>
-        <button type="button" class="btn btn--ghost btn--sm" data-act="overview">${raw(ICON.list)}Übersicht</button>
+        <button type="button" class="btn btn--ghost btn--sm ses-ovw" data-act="overview">${raw(ICON.list)}Übersicht</button>
       </div>
       <section class="card ses-ex mt-4">
-        <div class="ses-fig"><pt-figure aspect="1.5" exercise-id="${ex.id}" level="${entry.level ?? 0}" ${dose.band ? html`band-id="${dose.band}"` : ''} aria-label="${ex.name}"></pt-figure></div>
+        <div class="ses-fig ${compactFig ? 'ses-fig--compact' : ''}"><pt-figure aspect="${compactFig ? '2.2' : '1.5'}" exercise-id="${ex.id}" level="${entry.level ?? 0}" ${dose.band ? html`band-id="${dose.band}"` : ''} aria-label="${ex.name}"></pt-figure></div>
         <div class="row row--between row--top">
           <h1 class="card__title">${ex.name}</h1>
           <span class="chip chip--${archery ? 'archery' : 'knee'} chip--sm" style="flex:none">Stufe ${(entry.level ?? 0) + 1}/${ex.levels.length}</span>
         </div>
-        <p class="ses-note">${dose.label}</p>
+        <p class="ses-note" data-dose-label>${H.doseLabel(entry, ex, dose)}</p>
         ${entry.note ? html`<p class="ses-note">💡 ${entry.note}</p>` : ''}
         <div class="ses-meta">
           ${band ? html`<span class="chip chip--band" style="--band:${band.color}"><i class="chip__swatch"></i>${band.label}</span>` : ''}
@@ -438,8 +484,9 @@ export function render(root, ctx) {
         <div data-slot="done" class="mt-4" ${allDone ? '' : 'hidden'}><div class="ses-done"><span class="ses-done__icon">✓</span><span>Übung geschafft! ${archery ? 'Wie anstrengend war’s?' : knee ? 'Wie war das Knie?' : 'Weiter geht’s.'}</span></div></div>
       </section>
       <div data-slot="rest"></div>
-      ${timer ? html`<section class="card ses-timer" data-slot="timer" ${allDone ? 'hidden' : ''}><p class="eyebrow center" data-setno>${allDone ? '' : `Satz ${Math.min(dose.sets, H.doneCount(entry) + 1)} von ${dose.sets}`}</p>${timer}</section>` : ''}
+      ${timer ? html`<section class="card ses-timer" data-slot="timer" ${allDone ? 'hidden' : ''}><p class="ses-setno" data-setno>${allDone ? '' : `Satz ${Math.min(dose.sets, H.doneCount(entry) + 1)} von ${dose.sets}`}</p>${timer}</section>` : ''}
       ${knee ? html`<section class="card" data-slot="pain">
+          ${samePain != null ? html`<div class="ses-pain-same" data-pain-same ${entry.painDuring != null ? 'hidden' : ''}><button type="button" class="btn btn--soft" data-act="pain-same" data-v="${samePain}">Wie eben (${samePain})</button><span>oder unten wählen</span></div>` : ''}
           <pt-pain-scale label="Schmerz während der Übung" data-f="painDuring" ${entry.painDuring != null ? html`value="${entry.painDuring}"` : ''}></pt-pain-scale>
           <button type="button" class="btn btn--danger btn--block ses-sharp" data-act="sharp" aria-pressed="${String(!!entry.sharpPain)}">⚡ Stechender Schmerz</button>
           <p class="text-sm muted mt-2 mb-0" data-sharp-note ${entry.sharpPain ? '' : 'hidden'}>Bei stechendem Schmerz die Übung beenden und mit der nächsten weitermachen. Das ist kluges Training, kein Aufgeben.</p>
@@ -464,13 +511,15 @@ export function render(root, ctx) {
       </div></div>
     `);
     setCta(true);
+    armGuard();
     wireWorkTimer(entry, dose);
     wireLongPress(entry, dose);
 
+    const hidePainSame = () => { const el = root.querySelector('[data-pain-same]'); if (el) el.hidden = entry.painDuring != null; };
     onChange = (e) => {
       const t = /** @type {any} */ (e.target);
       if (t.tagName !== 'PT-PAIN-SCALE' || e.type !== 'change') return;
-      if (t.dataset.f === 'painDuring') { entry.painDuring = e.detail?.value ?? t.value; persist(); bumpXp(); }
+      if (t.dataset.f === 'painDuring') { entry.painDuring = e.detail?.value ?? t.value; persist(); bumpXp(); hidePainSame(); }
       if (t.dataset.f === 'rpe') { entry.rpe = e.detail?.value ?? t.value; persist(); }
     };
 
@@ -482,6 +531,11 @@ export function render(root, ctx) {
         if (screen.longPressed) { screen.longPressed = false; return; }
         const i = Number(b.dataset.set);
         if (entry.sets?.[i]?.done) {
+          // P1-1: a double tap must not tick + untick – offer an explicit undo instead
+          if (perfNow() - (screen.tickedAt?.[i] ?? -1e9) < 600) {
+            H.toast(`Satz ${i + 1} abgehakt`, { icon: '✓', kind: 'success', ms: 4000, action: { label: 'Rückgängig', onClick: () => undoSet(entry, i) } });
+            return;
+          }
           H.unmarkSet(entry, i);
           session.cursor.set = H.doneCount(entry);
           persist();
@@ -491,13 +545,39 @@ export function render(root, ctx) {
         }
         completeSet(entry, dose, i, b);
       },
-      tempo: (b) => {
-        const slot = b.closest('[data-slot="tempo"]');
+      'set-done': () => {
+        if (perfNow() - screen.lastDoneAt < 600) return; // double tap on the big button
+        const open = H.nextOpenSet(entry, dose.sets);
+        if (open < 0) return;
+        screen.lastDoneAt = perfNow();
+        armGuard(600); // the rest card appears where the finger is
+        completeSet(entry, dose, open);
+      },
+      tempo: () => {
         voiceUnlock();
-        paint(slot, html`<pt-timer mode="set" block="${H.timerBlock(entry.section)}" reps="${dose.reps ?? 10}" tempo="${dose.tempo}" data-role="work"></pt-timer>
-          <p class="ses-hint">Folge dem Takt – der Satz wird danach abgehakt.</p>`);
-        wireWorkTimer(entry, dose);
+        if (knee) entry.manualTempo = false; else entry.tempoCoach = true;
+        persist();
+        renderExercise();
+        const card = root.querySelector('[data-slot="timer"]');
         root.querySelector('pt-timer[data-role="work"]')?.start();
+        smooth(card);
+      },
+      'tempo-manual': () => {
+        entry.manualTempo = true;
+        entry.tempoCoach = false;
+        persist();
+        renderExercise();
+        smooth(root.querySelector('[data-slot="timer"]'));
+      },
+      'pain-same': (b) => {
+        const v = Number(b.dataset.v);
+        entry.painDuring = v;
+        const scale = /** @type {any} */ (root.querySelector('[data-slot="pain"] pt-pain-scale'));
+        if (scale) scale.setAttribute('value', String(v));
+        persist();
+        bumpXp();
+        hidePainSame();
+        H.toast(`Schmerz ${v}/10 übernommen`, { icon: '✓', kind: '' });
       },
       sharp: (b) => {
         entry.sharpPain = !entry.sharpPain;
@@ -524,6 +604,8 @@ export function render(root, ctx) {
           nudge(root.querySelector('[data-slot="rpe"]'), 'Wie anstrengend war’s? (hilft bei der Stufen-Empfehlung)');
           return;
         }
+        // P1-1: never auto-skip an exercise that was opened a moment ago (double tap from the screen before)
+        if (done === 0 && !entry.skipped && perfNow() - screen.openedAt < 1000) return;
         if (done === 0 && !entry.skipped) {
           entry.skipped = true;
           H.toast('Übung übersprungen', { icon: '↷', kind: '' });
@@ -649,7 +731,21 @@ export function render(root, ctx) {
     setTimeout(() => el.remove(), 1100);
   }
 
+  /** „Rückgängig“ from the toast: undo set `i` of `entry` (only while that exercise is still on screen). */
+  function undoSet(entry, i) {
+    if (disposed || !session || session.cursor?.step !== 'exercise' || session.exercises[session.cursor.index] !== entry) return;
+    if (!entry.sets?.[i]?.done) return;
+    const dose = H.doseFor(entry, exById(entry.exerciseId), settings());
+    H.unmarkSet(entry, i);
+    session.cursor.set = H.doneCount(entry);
+    stopRest();
+    persist();
+    refreshSets(entry, dose);
+    H.toast(`Satz ${i + 1} zurückgenommen`, { icon: '↺', kind: '' });
+  }
+
   function completeSet(entry, dose, i, btn) {
+    screen.tickedAt = { ...(screen.tickedAt || {}), [i]: perfNow() };
     H.markSet(entry, i, H.setValues(dose));
     session.cursor.set = H.doneCount(entry);
     persist();
@@ -744,7 +840,7 @@ export function render(root, ctx) {
       smooth(timerCard);
     } else {
       if (!allDone) say(H.nextSetAnnouncement(H.doneCount(entry) + 1, dose.sets), { priority: 'high', interrupt: true, cue: 'tense' });
-      smooth(root.querySelector('.set-check.is-current') || root.querySelector('.ses-ex'));
+      smooth(root.querySelector('[data-slot="timer"]:not([hidden]) .ses-bigdone') || root.querySelector('.set-check.is-current') || root.querySelector('.ses-ex'));
     }
   }
 
@@ -763,11 +859,31 @@ export function render(root, ctx) {
     if (!t || t._sesWired) return;
     t._sesWired = true;
     applyWorkPlan(t, entry);
+    // P1-4: once started, bring the whole timer card (cue banner + clock) into view above the sticky CTA
+    t.addEventListener('click', (e) => {
+      if (/** @type {HTMLElement} */ (e.target).closest?.('[data-action="toggle"]') && t.running) smooth(t.closest('[data-slot="timer"]'));
+    });
+    hideSingleRep(t);
     t.addEventListener('done', (e) => {
       if (e.target !== t) return;
       const open = H.nextOpenSet(entry, dose.sets);
       if (open >= 0) completeSet(entry, dose, open);
     });
+  }
+
+  /** „Wdh. 1/1“ carries no information (single hold/timed block) → hide the timer meta line then. */
+  function hideSingleRep(t) {
+    const meta = t.querySelector('.pt-timer__meta');
+    if (!meta || typeof MutationObserver !== 'function') return;
+    const sync = () => {
+      const one = /^Wdh\.\s*1\s*\/\s*1\b/.test(meta.textContent || '');
+      if (one !== t.hasAttribute('data-ses-onerep')) t.toggleAttribute('data-ses-onerep', one);
+    };
+    const mo = new MutationObserver(sync);
+    mo.observe(meta, { childList: true, characterData: true, subtree: true });
+    sync();
+    const prev = screen.observers || [];
+    screen.observers = [...prev, mo];
   }
 
   function wireLongPress(entry, dose) {
@@ -838,7 +954,7 @@ export function render(root, ctx) {
       ${topBar(title, seg ? segName : 'Rudern', { xp: false })}
       ${seg ? progressBar(segIdx, 'exercise') : ''}
       ${seg ? html`<div class="row row--between"><div class="block-header block-header--cardio" style="margin:0"><span class="block-header__dot"></span>${segEntry.finisher ? 'Finisher · Rudern' : 'Aufwärmen · Rudern'}</div>
-        <button type="button" class="btn btn--ghost btn--sm" data-act="overview">${raw(ICON.list)}Übersicht</button></div>` : ''}
+        <button type="button" class="btn btn--ghost btn--sm ses-ovw" data-act="overview">${raw(ICON.list)}Übersicht</button></div>` : ''}
       <section class="card row-timer ${seg ? 'mt-4' : ''}" data-slot="rt" aria-live="off">
         <p class="eyebrow" data-r="eyebrow"></p>
         <h1 class="row-phase" data-r="big"></h1>
@@ -1017,6 +1133,7 @@ export function render(root, ctx) {
       scrollTop();
     }
 
+    screen.pauseRow = () => { if (screen.rowRunning) { setRunning(false); return true; } return false; };
     screen.cleanupRow = () => { clearInterval(screen.loop); if (screen.rowRunning) H.rowingPause(t, Date.now()); screen.rowRunning = false; releaseWake(); };
     screen.onVis = () => { if (document.visibilityState === 'visible' && screen.rowRunning) { acquireWake(); tick(); } };
     document.addEventListener('visibilitychange', screen.onVis);
@@ -1193,7 +1310,7 @@ export function render(root, ctx) {
         <span class="ses-err" data-err="${k}" hidden></span></label>`;
     paint(root, html`
       ${topBar(title, 'Werte vom Display', { xp: false })}
-      <h1 class="ses-big-q">Was zeigt der MERACH? 📟</h1>
+      <h1 class="ses-big-q">Was zeigt dein Rudergerät? 📟</h1>
       <p class="muted">Alles optional – je mehr du einträgst, desto genauer werden Kalorien, Pace und Rekorde.</p>
       <section class="card row-form stack">
         <label class="field">
@@ -1416,19 +1533,21 @@ export function render(root, ctx) {
     };
   }
 
-  function finish() {
-    const { data, session: s } = H.finishSession(store.get(), session, content);
+  /** @param {Date} [at] end time (default now; „Jetzt abschließen“ of a stale session: its last activity) */
+  function finish(at) {
+    const { data, session: s } = H.finishSession(store.get(), session, content, at ? { now: at } : undefined);
     store.update(() => data);
+    const ok = savedOk();
     session = null;
     saved = false;
     history.replaceState(null, '', `#/session?summary=${encodeURIComponent(s.id)}`);
-    renderSummary(s.id, true);
+    renderSummary(s.id, true, { unsaved: !ok });
     scrollTop();
     say('Training geschafft – super!', { priority: 'high', interrupt: true, cue: 'exercise-done' });
   }
 
   // ------------------------------------------------------------------ 6. summary
-  function renderSummary(id, fresh = false) {
+  function renderSummary(id, fresh = false, { unsaved = false } = {}) {
     const s = store.getSessions().find((x) => x.id === id);
     if (!s) { navigate('/heute'); return; }
     const t = titleOf(s);
@@ -1460,6 +1579,11 @@ export function render(root, ctx) {
     paint(root, html`
       <header class="ses-top"><div class="ses-top__title"><span class="eyebrow truncate">${t.title}</span><strong>${cardio ? 'Rudern abgeschlossen' : t.kind === 'short' ? 'Kurztraining geschafft' : 'Einheit abgeschlossen'}</strong></div>
         <span class="chip chip--gold">⚡ <span class="num">${gained}</span> XP</span></header>
+      ${unsaved ? html`<section class="card stop-card ses-savewarn" role="alert" data-slot="savewarn">
+          <h2 class="card__title">Konnte nicht gespeichert werden – bitte Sicherung exportieren</h2>
+          <p class="mt-2">Der Speicher des Browsers ist voll oder gesperrt. Lass diese Seite offen, versuch es erneut oder exportiere eine Sicherung unter „Mehr“.</p>
+          <div class="btn-row"><button type="button" class="btn btn--primary" data-act="save-retry">Erneut speichern</button><a class="btn btn--outline" href="#/mehr">Sicherung exportieren</a></div>
+        </section>` : ''}
       ${doctor ? html`<section class="card stop-card ses-doctor" role="alert">
           <div class="row"><span class="ses-doctor__icon" aria-hidden="true">🩺</span><h2 class="card__title mb-0">Bitte Arzt kontaktieren</h2></div>
           <p class="mt-2">In der Entlastungsphase sind das Warnzeichen. Bitte melde dich heute noch bei deinem Arzt bzw. in der Klinik – bei hohem Fieber oder starken Beschwerden sofort.</p>
@@ -1519,13 +1643,28 @@ export function render(root, ctx) {
       <h2 class="section-title">Empfehlungen</h2>
       <div class="stack stack--sm" data-slot="recs">${H.recCardsHtml(s, content)}</div>
       <div class="banner banner--gold mt-4"><span class="banner__icon">🌤️</span><span class="banner__body"><span class="banner__title">Morgen: Folgetag-Check</span><span class="banner__text">30 Sekunden – macht die Ampel final. Erinnerung erscheint auf „Heute“.</span></span></div>
-      <div class="sticky-cta"><button type="button" class="btn btn--primary btn--block btn--session" data-act="done">Fertig</button></div>
+      <div class="sticky-cta"><button type="button" class="btn btn--primary btn--block btn--session" data-act="done">Fertig – zu Heute</button></div>
     `);
     setCta(true);
     if (sc) root.querySelector('[data-slot="target"]')?.appendChild(targetFace(sc.results, { label: `Trefferbild: ${sc.points} von ${sc.max} Punkten` }));
     onChange = () => {};
+    let warnedLeave = false;
     actions = {
-      done: () => navigate('/heute'),
+      done: () => {
+        if (!warnedLeave && root.querySelector('[data-slot="savewarn"]') && !savedOk()) {
+          warnedLeave = true;
+          H.toast('Noch nicht gespeichert – erst „Erneut speichern“ oder Sicherung exportieren. Nochmal tippen zum Verlassen.', { icon: '⚠️', kind: 'accent', ms: 4000 });
+          return;
+        }
+        navigate('/heute');
+      },
+      'save-retry': () => {
+        store.update((d) => d);
+        if (savedOk()) {
+          root.querySelector('[data-slot="savewarn"]')?.remove();
+          H.toast('Gespeichert', { icon: '✓', kind: 'success' });
+        } else H.toast('Speichern klappt noch nicht – bitte Sicherung exportieren.', { icon: '⚠️', kind: 'accent', ms: 3600 });
+      },
       'rec-accept': (b) => decide(id, Number(b.dataset.i), true),
       'rec-dismiss': (b) => decide(id, Number(b.dataset.i), false),
     };
@@ -1592,6 +1731,7 @@ export function render(root, ctx) {
   function leaveScreen() {
     screen.cleanupRow?.();
     if (screen.onVis) document.removeEventListener('visibilitychange', screen.onVis);
+    (screen.observers || []).forEach((o) => o.disconnect());
   }
 
   function show() {
@@ -1604,15 +1744,50 @@ export function render(root, ctx) {
     else if (step === 'exercise') { if (isRowEntry(session.exercises[session.cursor.index])) renderRow(); else renderExercise(); }
     else if (step === 'post') renderPost();
     else renderPre();
+    armGuard();
     if (step === 'exercise') holdScreenAwake(); else letScreenSleep();
   }
 
+  // ------------------------------------------------------------------ dead time: hide / kill / heartbeat (P1-2)
+  // Hidden or killed → `pausedAt` (dead time is excluded from duration and kcal) and the rowing timer pauses.
+  // While in use the session stores `lastActiveAt` at least every HEARTBEAT_MS, so a killed app resumes from there.
+  const markStopped = () => {
+    if (!session || !saved || leaving || disposed) return;
+    if (!session.pausedAt) session.pausedAt = new Date().toISOString();
+    if (screen.pauseRow?.()) screen.rowPausedByHide = true; // setRunning(false) also persists
+    persist();
+  };
+  const markResumed = () => {
+    if (!session || !saved || leaving || disposed || !session.pausedAt) return;
+    H.applyResume(session);
+    persist();
+    if (screen.rowPausedByHide) {
+      screen.rowPausedByHide = false;
+      H.toast('Rudern pausiert – tippe „▶ Weiter“, wenn du wieder sitzt.', { icon: '⏸', kind: 'accent', ms: 3600 });
+    }
+  };
+  const onLifeVis = () => { if (document.visibilityState === 'hidden') markStopped(); else markResumed(); };
+  const onPageHide = () => markStopped();
+  const onPageShow = (e) => { if (e.persisted) markResumed(); };
+  document.addEventListener('visibilitychange', onLifeVis);
+  window.addEventListener('pagehide', onPageHide);
+  window.addEventListener('pageshow', onPageShow);
+  const heartbeat = setInterval(() => {
+    if (!session || !saved || disposed || leaving || session.pausedAt || document.visibilityState !== 'visible') return;
+    if (Date.now() - lastBeat >= H.HEARTBEAT_MS) persist();
+  }, 5000);
+
   function cleanup() {
     disposed = true;
+    clearInterval(heartbeat);
     leaveScreen();
     letScreenSleep();
     document.removeEventListener('visibilitychange', onWakeVis);
+    document.removeEventListener('visibilitychange', onLifeVis);
+    window.removeEventListener('pagehide', onPageHide);
+    window.removeEventListener('pageshow', onPageShow);
     voiceCancel();
+    root.removeEventListener('click', onGuard, true);
     root.removeEventListener('click', onClick);
     root.removeEventListener('change', onChangeEvt);
     root.removeEventListener('input', onChangeEvt);
@@ -1625,48 +1800,171 @@ export function render(root, ctx) {
   }
 
   // ------------------------------------------------------------------ boot
-  if (query.summary) {
-    renderSummary(query.summary, false);
-    return cleanup;
+  const paintWaiting = () => paint(root, html`<section class="card"><p class="muted mb-0">Training wird geladen …</p></section>`);
+  const fmtWhen = (ms) => {
+    try {
+      return new Date(ms).toLocaleString('de-DE', { weekday: 'short', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch { return new Date(ms).toISOString(); }
+  };
+
+  /** Rowed seconds of a rowing timer that was still open when a stale session is finished („Jetzt abschließen“). */
+  function flushRowTimer(atMs) {
+    const t = session?.rowTimer;
+    if (!t || t.restored) return;
+    H.rowingPause(t, atMs);
+    const seg = !isCardio();
+    const segIdx = seg ? (t.entry ?? -1) : -1;
+    if (seg && segIdx < 0) return;
+    const phases = seg
+      ? rowingPhases({ exercises: session.exercises.map((e, i) => (i === segIdx ? { ...e, skipped: false } : { skipped: true })) }, content)
+      : rowingPhases(session, content);
+    if (!phases.length) return;
+    const log = (t.log || []).slice();
+    if (!t.done && phases[t.idx]) log[t.idx] = Math.min(phases[t.idx].seconds, Math.round(H.rowPhaseElapsed(t, atMs) / 1000));
+    if (log.some((n) => n > 0)) H.applyRowingLog(session, phases, log, content, new Date(atMs).toISOString());
   }
-  const data = store.get();
-  if (data.state.activeSession) {
-    session = clone(data.state.activeSession);
+
+  /** P1-5: the stored session is broken (or was dropped by the store at boot). */
+  function renderBroken(active, dropped) {
+    const name = (active && typeof active === 'object' && (active.workoutName || '')) || (dropped && typeof dropped === 'object' && (dropped.workoutName || dropped.name || '')) || '';
+    paint(root, html`<section class="card stop-card ses-broken" role="alert">
+        <h1 class="card__title">Dieses Training kann nicht fortgesetzt werden.</h1>
+        <p class="mt-2">Die gespeicherte Einheit${name ? html` „${name}“` : ''} ist unvollständig oder stammt aus einer älteren Version. Deine abgeschlossenen Trainings sind nicht betroffen.</p>
+        <div class="ses-choices">
+          <button type="button" class="btn btn--primary btn--block btn--session" data-act="broken-discard">Verwerfen</button>
+          <button type="button" class="btn btn--outline btn--block btn--session" data-act="broken-home">Zu Heute</button>
+        </div>
+      </section>`);
+    setCta(false);
+    armGuard();
+    onChange = () => {};
+    actions = {
+      'broken-discard': () => {
+        store.update((d) => { d.state.activeSession = null; if (d.state.droppedActiveSession != null) d.state.droppedActiveSession = null; });
+        H.toast('Verworfen', { icon: '🗑', kind: '' });
+        boot();
+      },
+      'broken-home': () => navigate('/heute'),
+    };
+  }
+
+  /** P2-2: ?workout=<unknown id> */
+  function renderNotFound(id) {
+    paint(root, html`<section class="card"><div class="empty"><div class="empty__art" aria-hidden="true" style="font-size:44px">🔎</div>
+      <h2 class="empty__title">Kein Training gefunden</h2>
+      <p class="empty__text">Das Workout „${id}“ gibt es nicht (mehr) – vielleicht wurde ein eigenes Workout gelöscht. Wähle im Plan ein anderes.</p>
+      <a class="btn btn--primary" href="#/plan">Zum Plan</a> <a class="btn btn--outline" href="#/heute">Zu Heute</a></div></section>`);
+    setCta(false);
+  }
+
+  /** Resume the stored active session (dead time excluded; > 12 h untouched → ask first). */
+  async function resume(s) {
+    session = s;
     saved = true;
-    if (session.rowTimer?.runAt != null) H.rowingPause(session.rowTimer, session.pausedAt ? Date.parse(session.pausedAt) : Date.now());
-    if (session.pausedAt) {
-      session.pausedMs = (session.pausedMs || 0) + Math.max(0, Date.now() - Date.parse(session.pausedAt));
-      delete session.pausedAt;
-      persist();
+    const info = H.resumeInfo(session);
+    if (info.stale) {
+      paintWaiting();
+      const name = titleOf(session).title;
+      const v = await H.openDialog(String(html`
+        <h2 class="modal__title">„${name}“ ist noch offen</h2>
+        <p class="muted">Zuletzt trainiert: ${fmtWhen(info.stopMs)}. Die Zeit dazwischen zählt nicht als Trainingszeit.</p>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--primary btn--block btn--session" data-value="resume">Fortsetzen</button>
+          <button type="button" class="btn btn--outline btn--block btn--session" data-value="finish">Jetzt abschließen</button>
+          <button type="button" class="btn btn--danger btn--block" data-value="discard">Verwerfen</button>
+        </div>`), { className: 'modal modal--center ses-dlg' });
+      if (disposed) return;
+      if (v === 'finish') {
+        flushRowTimer(info.stopMs);
+        session.pausedAt = new Date(info.stopMs).toISOString();
+        finish(new Date(info.stopMs));
+        return;
+      }
+      if (v === 'discard') {
+        leaving = true;
+        session = null;
+        saved = false;
+        store.update((d) => { d.state.activeSession = null; });
+        H.toast('Training verworfen', { icon: '🗑', kind: '' });
+        navigate('/heute');
+        return;
+      }
     }
+    H.applyResume(session);
+    persist();
     if (['exercise', 'post', 'row', 'rowlog', 'finisher'].includes(session.cursor?.step)) {
-      setTimeout(() => H.toast('Willkommen zurück – weiter geht’s!', { icon: '▶', kind: 'success' }), 300);
+      setTimeout(() => { if (!disposed && !leaving) H.toast('Willkommen zurück – weiter geht’s!', { icon: '▶', kind: 'success' }); }, 300);
     }
-  } else {
-    const workout = (query.workout && getWorkout(query.workout, content, data.state)) || nextWorkout(data.state, content.phases, content.workouts);
+    show();
+  }
+
+  /** Plan a new session for `workout` and show the start screen (not stored before „Los geht’s“). */
+  function startNew(workout) {
+    const data = store.get();
     if (!workout) {
-      paint(root, html`<section class="card"><div class="empty"><h2 class="empty__title">Kein Training gefunden</h2><p class="empty__text">${query.workout ? 'Dieses Workout gibt es nicht (mehr).' : 'Für die aktuelle Phase ist kein Workout hinterlegt.'}</p><a class="btn btn--primary" href="#/heute">Zu Heute</a></div></section>`);
-      return cleanup;
+      paint(root, html`<section class="card"><div class="empty"><h2 class="empty__title">Kein Training gefunden</h2><p class="empty__text">Für die aktuelle Phase ist kein Workout hinterlegt.</p><a class="btn btn--primary" href="#/plan">Zum Plan</a> <a class="btn btn--outline" href="#/heute">Zu Heute</a></div></section>`);
+      return;
     }
     const kind = workoutKind(workout);
     // Taper (§5.2) only concerns the strength-type prehab sessions; rowing stays as planned up to the OP day.
     const taper = kind !== 'cardio' && taperActive(data.settings.surgeryDate, todayISO());
     // v4: rowing warm-up per settings.rowWarmupDefault (toggle on the start screen); the finisher is always asked
     // after the strength part (renderFinisherOffer), never planned up front.
-    session = buildSessionPlan(workout, data.state, content, { taper, history: data.sessions, settings: data.settings, rowFinisher: false });
-    session.kind = kind;
-    session.workoutName = workout.name;
-    session.pausedMs = 0;
-    if (!session.exercises.length) {
+    const plan = buildSessionPlan(workout, data.state, content, { taper, history: data.sessions, settings: data.settings, rowFinisher: false });
+    plan.kind = kind;
+    plan.workoutName = workout.name;
+    plan.pausedMs = 0;
+    if (!plan.exercises.length) {
       const rower = ownsRowingMachine(data.settings);
-      const postop = (content.phases.find((p) => p.id === data.state.phaseId) ?? phaseOf(session))?.kind === 'postop';
+      const postop = (content.phases.find((p) => p.id === data.state.phaseId) ?? phaseOf(plan))?.kind === 'postop';
       paint(root, html`<section class="card"><div class="empty"><div class="empty__art" aria-hidden="true" style="font-size:44px">${kind === 'cardio' ? '🚣' : '🩺'}</div>
         <h2 class="empty__title">${kind === 'cardio' && postop ? 'Rudern ist gerade gesperrt' : kind === 'cardio' && !rower ? 'Rudergerät nicht abgehakt' : 'Keine Übungen verfügbar'}</h2>
         <p class="empty__text">${postop ? 'In der Entlastungsphase nach der OP sind diese Übungen nicht freigegeben. Bitte halte dich an das Protokoll deines Teams.' : kind === 'cardio' && !rower ? 'Rudergerät in Ausrüstung abhaken, dann kannst du diese Einheit starten.' : 'Alle Übungen dieses Workouts sind deaktiviert, für deine Phase noch nicht freigegeben oder brauchen Ausrüstung, die du nicht abgehakt hast.'}</p>
         ${kind === 'cardio' && !rower && !postop ? html`<a class="btn btn--accent" href="#/ausruestung">Zu Meine Ausrüstung</a> ` : ''}<a class="btn btn--primary" href="#/heute">Zu Heute</a></div></section>`);
-      return cleanup;
+      return;
     }
+    session = plan;
+    saved = false;
+    show();
   }
-  show();
+
+  async function boot() {
+    const data = store.get();
+    const active = data.state.activeSession;
+    const dropped = data.state.droppedActiveSession;
+    if ((active && !H.validActiveSession(active, content)) || (!active && dropped)) { renderBroken(active, dropped); return; }
+    const wanted = query.workout ? getWorkout(query.workout, content, data.state) : null;
+    if (active) {
+      if (wanted && query.workout !== active.workoutId) {
+        // P1-3: another workout was opened while a session is still active → ask, never resume silently
+        paintWaiting();
+        const oldName = titleOf(active).title;
+        const v = await H.openDialog(String(html`
+          <h2 class="modal__title">Du hast noch „${oldName}“ offen.</h2>
+          <p class="muted">Du kannst dort weitermachen oder es verwerfen und „${wanted.name}“ starten.</p>
+          <div class="modal__actions">
+            <button type="button" class="btn btn--primary btn--block btn--session" data-value="keep">Weiter mit ${oldName}</button>
+            <button type="button" class="btn btn--outline btn--block btn--session" data-value="discard">Verwerfen &amp; ${wanted.name} starten</button>
+          </div>`), { className: 'modal modal--center ses-dlg' });
+        if (disposed) return;
+        if (v === 'discard') {
+          store.update((d) => { d.state.activeSession = null; });
+          startNew(wanted);
+          return;
+        }
+        try { history.replaceState(null, '', '#/session'); } catch { /* ignore */ }
+      }
+      await resume(clone(active));
+      return;
+    }
+    if (query.workout && !wanted) { renderNotFound(query.workout); return; }
+    startNew(wanted || nextWorkout(data.state, content.phases, content.workouts));
+  }
+
+  if (query.summary) {
+    renderSummary(query.summary, false);
+    return cleanup;
+  }
+  boot();
   return cleanup;
 }

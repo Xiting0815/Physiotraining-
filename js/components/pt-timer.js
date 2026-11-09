@@ -20,6 +20,8 @@
 //   Zero-second steps (set-done, exercise-done) carry no time and are not spoken by the timer (the session
 //   announces them). Attribute `block="knee|archery|neutral"` colors the big phase banner (.pt-timer__cue).
 // Methods: start(), pause(), reset(), skip(), adjust(deltaSeconds). Props: running, remaining, rep, phase, cue, plan.
+// v5.1: attribute/prop `compact` hides ±15 and „Zurücksetzen“ (automatic for breathing plans); the toggle reads
+//   „Anhalten“/„Weiter“ (not „Pause“ – that is the rest cue); meta „Wdh. x/y“ (only reps > 1) + „Satz x von y“ ≥ 20 px bold.
 // Events (bubbling CustomEvent): tick {remaining, elapsed, rep}, rep {rep, total, set, sets}, done {elapsed}.
 //
 // Timing is timestamp based (Date.now() deltas), never interval counting, so it stays correct when
@@ -257,13 +259,14 @@ const CSS = `
 :where(pt-timer) :where(.pt-timer__center){position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 :where(pt-timer) :where(.pt-timer__phase){font-size:var(--fs-sm,14px);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#5B6573);min-height:1.2em}
 :where(pt-timer) :where(.pt-timer__display){font-size:var(--fs-timer,clamp(72px,22vw,112px));font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--text,#14181F)}
-:where(pt-timer) :where(.pt-timer__meta){font-size:var(--fs-md,16px);color:var(--muted,#5B6573);font-variant-numeric:tabular-nums;min-height:1.3em}
+:where(pt-timer) :where(.pt-timer__meta){font-size:max(20px,var(--fs-lg,1.25rem));font-weight:700;line-height:1.2;color:var(--text,#14181F);font-variant-numeric:tabular-nums;min-height:1.2em;white-space:pre-line}
 :where(pt-timer) :where(.pt-timer__controls){display:flex;align-items:center;justify-content:center;gap:var(--s-3,12px)}
 :where(pt-timer) :where(.pt-timer__toggle){min-width:9rem;min-height:var(--tap-session,60px)}
 :where(pt-timer) :where(.pt-timer__adj){min-width:var(--tap-session,60px);min-height:var(--tap-session,60px);padding:0 var(--s-3,12px);font-variant-numeric:tabular-nums}
 :where(pt-timer) :where(.pt-timer__secondary){display:flex;justify-content:center;gap:var(--s-3,12px);margin-top:var(--s-3,12px)}
 :where(pt-timer) :where(.pt-timer__secondary .btn){min-height:var(--tap,48px);background:transparent;color:var(--muted,#5B6573)}
 pt-timer[data-adjust="off"] .pt-timer__adj{display:none}
+pt-timer[data-minimal="on"] .pt-timer__adj,pt-timer[data-minimal="on"] .pt-timer__reset{display:none}
 :where(pt-timer) :where(.pt-timer__cue){display:block;margin:0 0 var(--s-4,16px);padding:.18em .4em;border-radius:var(--radius,16px);font-size:var(--pt-cue-size,clamp(44px,14vw,80px));font-weight:900;line-height:1.08;letter-spacing:-.01em;background:var(--surface-2,#EEF1F4);color:var(--text,#14181F);transition:background-color .2s ease-out,color .2s ease-out;overflow-wrap:anywhere;hyphens:auto}
 pt-timer{--pt-cue-work:var(--block-knee,var(--primary,#0E7C86));--pt-cue-on:var(--on-primary,#fff)}
 pt-timer[block="archery"]{--pt-cue-work:var(--block-archery,var(--accent,#E07A1F));--pt-cue-on:var(--on-accent,#fff)}
@@ -301,7 +304,7 @@ const TICK_MS = 100;
 /* ------------------------------------------------------------------ element */
 
 export class PtTimer extends Base {
-  static get observedAttributes() { return ['mode', 'seconds', 'reps', 'tempo', 'rest-between', 'sets', 'set-rest']; }
+  static get observedAttributes() { return ['mode', 'seconds', 'reps', 'tempo', 'rest-between', 'sets', 'set-rest', 'compact']; }
 
   constructor() {
     super();
@@ -377,7 +380,17 @@ export class PtTimer extends Base {
     document.removeEventListener('visibilitychange', this._onVisibility);
   }
 
+  /**
+   * Compact controls (v5.1): hides ±15 and „Zurücksetzen“ – attribute `compact` / property `compact`.
+   * Breathing plans (inhale/exhale phases) are compact automatically.
+   */
+  get compact() { return this.hasAttribute('compact') && this.getAttribute('compact') !== 'false'; }
+  set compact(v) { if (v) this.setAttribute('compact', ''); else this.removeAttribute('compact'); }
+  /** effective compact state (explicit or breathing plan) */
+  get minimal() { return this.compact || this._phases.some((p) => BREATH_KINDS.has(p.kind)); }
+
   attributeChangedCallback(name, oldV, newV) {
+    if (name === 'compact') { this._paint(); return; }
     if (oldV === newV || !this.isConnected || !this._built || this.running) return;
     this.reset();
   }
@@ -717,6 +730,7 @@ export class PtTimer extends Base {
     this.dataset.kind = this._done ? 'done' : phase?.kind || 'rest';
     const tempoMode = phases.some((p) => p.kind === 'ecc' || p.kind === 'iso' || p.kind === 'con');
     this.dataset.adjust = tempoMode || !phases.length || this._done ? 'off' : 'on';
+    this.dataset.minimal = this.minimal ? 'on' : 'off';
     this.style.setProperty('--pt-timer-progress', progress.toFixed(3));
 
     this._display.textContent = formatDuration(remainingSec);
@@ -734,14 +748,15 @@ export class PtTimer extends Base {
       if (this._cueEl.textContent !== text) this._cueEl.textContent = text;
     }
 
-    let meta = '';
-    if (phase && (phase.totalReps > 1 || this.mode === 'hold' || tempoMode)) {
-      meta = `Wdh. ${phase.rep}/${phase.totalReps}`;
-      if (phase.sets > 1) meta += ` · Satz ${phase.set}/${phase.sets}`;
-    }
-    this._metaEl.textContent = meta;
+    // v5.1: big, bold meta lines; „Wdh.“ only with more than one rep; „Satz x von y“ on its own line
+    const metaParts = [];
+    if (phase && phase.totalReps > 1) metaParts.push(`Wdh. ${phase.rep}/${phase.totalReps}`);
+    if (phase && phase.sets > 1) metaParts.push(`Satz ${phase.set} von ${phase.sets}`);
+    const meta = metaParts.join('\n');
+    if (this._metaEl.textContent !== meta) this._metaEl.textContent = meta;
 
-    const label = { idle: 'Start', running: 'Pause', paused: 'Weiter', done: 'Nochmal' }[state];
+    // „Anhalten“ instead of „Pause“ – „Pause“ is the rest cue in the big banner
+    const label = { idle: 'Start', running: 'Anhalten', paused: 'Weiter', done: 'Nochmal' }[state];
     if (this._btn.textContent !== label) this._btn.textContent = label;
     this._btn.setAttribute('aria-label', { idle: 'Timer starten', running: 'Timer pausieren', paused: 'Timer fortsetzen', done: 'Timer neu starten' }[state]);
     this._btn.disabled = !phases.length;

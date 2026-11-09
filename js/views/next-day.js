@@ -1,10 +1,11 @@
 // Folgetag-Check – see docs/SPEC.md §4.2 step 6, §5.1 (WP-Session-flow).
-// Next-day check-in for the most recent done session without `nextDay` → finalizeWithNextDay
+// Next-day check-in for ALL done sessions of the most recent training day without `nextDay` (strength +
+// rowing on the same day are answered by one check, H.pendingNextDay / applyNextDayGroup) → finalizeWithNextDay
 // (final light), updated recommendations (accept/dismiss), +XP.nextDayCheckIn, encouraging message.
 // v2: rowing (cardio) sessions get the same knee check; post-op sessions also ask redness + fever
 // and show „Arzt kontaktieren“ prominently when the final light says so (SPEC §12.10).
 import { html, raw, render as paint } from '../render.js';
-import { LIGHT_LABELS } from '../logic/traffic-light.js';
+import { LIGHT_LABELS, worst } from '../logic/traffic-light.js';
 import { formatDE } from '../util/date.js';
 import { confetti } from '../components/celebrate.js';
 import * as H from './session-helpers.js';
@@ -28,7 +29,7 @@ export function render(root, { store, content, navigate }) {
   const draft = { pain: null, swelling: 0, stiffness: 0, nightPain: false, locking: false, givingWay: false };
   let draftFor = null; // session id the draft belongs to (post-op flags are added per session)
   let actions = {};
-  let resultFor = null; // session id after submit
+  let resultFor = null; // session ids after submit
 
   const onClick = (e) => {
     const b = /** @type {HTMLElement} */ (e.target).closest?.('[data-act]');
@@ -69,25 +70,28 @@ export function render(root, { store, content, navigate }) {
       return;
     }
     const s = p.session;
-    const postOp = !!s.postOp;
-    const cardio = H.sessionKind(s) === 'cardio';
+    const group = p.sessions?.length ? p.sessions : [s];
+    const postOp = group.some((x) => !!x.postOp);
+    const cardio = group.every((x) => H.sessionKind(x) === 'cardio');
     if (draftFor !== s.id) {
       draftFor = s.id;
       delete draft.redness; delete draft.fever;
       Object.assign(draft, H.withPostOpFlags({}, postOp));
     }
-    const t = H.sessionTitle(s, content, store.getState());
+    const titles = group.map((x) => `${H.sessionKind(x) === 'cardio' ? '🚣 ' : ''}${H.sessionTitle(x, content, store.getState()).title}`);
     const phase = content.phases.find((x) => x.id === s.phaseId);
     const day = formatDE(H.sessionDay(s));
     const dueTime = new Date(p.dueAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-    const prov = s.traffic?.provisional;
-    paint(root, html`${header(`${cardio ? '🚣 ' : ''}${t.title} · ${day}`)}
+    const prov = group.map((x) => x.traffic?.provisional).filter(Boolean).reduce((a, b) => (a ? worst(a, b) : b), null);
+    const prePain = group.find((x) => typeof x.pre?.pain === 'number')?.pre?.pain ?? 0;
+    const multi = group.length > 1;
+    paint(root, html`${header(`${titles.join(' + ')} · ${day}`)}
       <h2 class="ses-big-q">Wie geht’s dem Knie heute?</h2>
-      <p class="muted">Dauert 30 Sekunden und macht die Ampel ${cardio ? 'deiner letzten Rudereinheit' : 'deiner letzten Einheit'} final.${prov ? html` Vorläufig: <span class="traffic traffic--${prov}">${LIGHT_LABELS[prov]}</span>` : ''}</p>
+      <p class="muted">Dauert 30 Sekunden und macht die Ampel ${multi ? `deiner ${group.length} Einheiten vom ${day}` : cardio ? 'deiner letzten Rudereinheit' : 'deiner letzten Einheit'} final.${prov ? html` Vorläufig: <span class="traffic traffic--${prov}">${LIGHT_LABELS[prov]}</span>` : ''}</p>
       ${p.due ? '' : html`<div class="banner"><span class="banner__icon">⏳</span><span class="banner__body"><span class="banner__title">Eigentlich erst ab ${dueTime} Uhr</span><span class="banner__text">Am aussagekräftigsten am Morgen danach – eintragen geht trotzdem.</span></span></div>`}
       <section class="card stack">
         <pt-pain-scale label="Schmerz heute" ${draft.pain != null ? html`value="${draft.pain}"` : ''}></pt-pain-scale>
-        <p class="text-xs muted mb-0">Vor dem Training warst du bei <strong class="num">${s.pre?.pain ?? 0}/10</strong>.</p>
+        <p class="text-sm muted mb-0">Vor dem Training warst du bei <strong class="num">${prePain}/10</strong>.</p>
         <div class="ses-field"><span class="field__label">Schwellung</span>${seg('nd-swelling', H.SWELLING_LABELS, draft.swelling, 'Schwellung')}</div>
         <div class="ses-field"><span class="field__label">Steifigkeit</span>${seg('nd-stiffness', H.SWELLING_LABELS, draft.stiffness, 'Steifigkeit')}</div>
       </section>
@@ -110,10 +114,10 @@ export function render(root, { store, content, navigate }) {
           H.toast('Bitte „Schmerz heute“ wählen.', { icon: '👉', kind: 'accent' });
           return;
         }
-        const out = H.applyNextDay(store.get(), s.id, { ...draft }, content);
+        const out = H.applyNextDayGroup(store.get(), group.map((x) => x.id), { ...draft }, content);
         if (!out) return;
         store.update(() => out.data);
-        resultFor = s.id;
+        resultFor = group.map((x) => x.id);
         drawResult(out);
         window.scrollTo(0, 0);
       },
@@ -121,10 +125,14 @@ export function render(root, { store, content, navigate }) {
   }
 
   function drawResult(out) {
-    const s = store.getSessions().find((x) => x.id === resultFor);
+    const list = (resultFor || []).map((id) => store.getSessions().find((x) => x.id === id)).filter(Boolean);
+    const s = list[list.length - 1];
     if (!s) return drawForm();
-    const light = s.traffic?.final ?? out?.result?.traffic ?? 'green';
-    const doctor = light === 'stop' && H.needsDoctor(s.traffic?.reasons);
+    const light = list.map((x) => x.traffic?.final).filter(Boolean).reduce((a, b) => (a ? worst(a, b) : b), null) ?? out?.result?.traffic ?? 'green';
+    const reasons = [...new Set(list.flatMap((x) => x.traffic?.reasons || []))];
+    const doctor = light === 'stop' && H.needsDoctor(reasons);
+    const multi = list.length > 1;
+    const recsOf = (x) => html`<div class="stack stack--sm" data-recs-for="${x.id}">${multi ? html`<p class="field__label mb-0">${H.sessionTitle(x, content, store.getState()).title}</p>` : ''}${H.recCardsHtml(x, content)}</div>`;
     const m = doctor ? MESSAGES.doctor : MESSAGES[light];
     const badges = (out?.badges || []).map((id) => content.badges.find((b) => b.id === id)).filter(Boolean);
     paint(root, html`${header('Ergebnis')}
@@ -138,19 +146,21 @@ export function render(root, { store, content, navigate }) {
       </section>
       <section class="card">
         <h3 class="card__title">Begründung</h3>
-        <ul class="ses-reasons mb-0">${(s.traffic?.reasons || []).map((r) => html`<li>${r}</li>`)}</ul>
+        <ul class="ses-reasons mb-0">${reasons.map((r) => html`<li>${r}</li>`)}</ul>
       </section>
       ${badges.length ? html`<h2 class="section-title">Neue Abzeichen</h2><ul class="ses-badges">${badges.map((b) => html`<li class="badge-tile is-unlocked is-new"><span class="badge-tile__icon">${b.icon}</span><span class="badge-tile__name">${b.name}</span><span class="badge-tile__hint">heute</span></li>`)}</ul>` : ''}
       <h2 class="section-title">Empfehlungen</h2>
-      <div class="stack stack--sm" data-slot="recs">${H.recCardsHtml(s, content)}</div>
+      <div class="stack" data-slot="recs">${list.map(recsOf)}</div>
       <div class="sticky-cta"><button type="button" class="btn btn--primary btn--block btn--session" data-act="home">Zurück zu Heute</button></div>`);
     document.body.classList.add('has-cta');
     const decide = (b, accept) => {
       const i = Number(b.dataset.i);
-      const d = H.decideRecommendation(store.get(), s.id, i, accept);
+      const sid = b.closest('[data-recs-for]')?.dataset.recsFor || s.id;
+      const d = H.decideRecommendation(store.get(), sid, i, accept);
       store.update(() => d);
-      const fresh = store.getSessions().find((x) => x.id === s.id);
-      paint(root.querySelector('[data-slot="recs"]'), H.recCardsHtml(fresh, content));
+      const fresh = store.getSessions().find((x) => x.id === sid);
+      const box = root.querySelector(`[data-recs-for="${CSS.escape(sid)}"]`);
+      if (box && fresh) box.outerHTML = String(recsOf(fresh));
       if (accept && fresh?.recommendations?.[i]?.action !== 'consult') H.toast('Übernommen', { icon: '✓' });
     };
     actions = {

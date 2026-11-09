@@ -4,6 +4,7 @@ import { levelOf, phasePlanExerciseIds } from '../logic/progression.js';
 import { usesEquipment, missingEquipment, EQUIPMENT_INFO } from '../logic/equipment.js';
 import {
   ICON, figureThumb, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip, workoutItems,
+  safeData,
 } from './ui.js';
 import { ensureV2Styles, availability, availabilityChip, blockLabel, equipLabel } from './v2-shared.js';
 
@@ -56,7 +57,7 @@ export function render(root, { store, content, query }) {
   const usedEquip = EQUIP_ORDER.filter((id) => content.exercises.some((e) => usesEquipment(e, id)));
 
   // v5: exercises as the plans of the current phase use them (upgrades / missing equipment applied)
-  const planIds = () => phasePlanExerciseIds(store.getState(), content, store.getSettings());
+  const planIds = () => phasePlanExerciseIds(safeData(store.get()).state, content, safeData(store.get()).settings);
 
   paint(root, html`
     ${pageHeader({ title: 'Übungen', eyebrow: `${content.exercises.length} Übungen · Knie, Bogen & Rudern` })}
@@ -76,7 +77,7 @@ export function render(root, { store, content, query }) {
   const listEl = root.querySelector('[data-list]');
 
   const drawList = () => {
-    const state = store.getState();
+    const state = safeData(store.get()).state;
     const settings = store.getSettings();
     const list = filterExercises(content.exercises, { q: f.q, block: f.block, equipment: f.equipment, planIds: f.plan ? planIds() : null });
     let lastBlock = null;

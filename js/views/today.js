@@ -1,8 +1,11 @@
 // Heute – see docs/SPEC.md §3.1, §8, §12.12.
-// Card order (priority): banners → post-op status → welcome → hero (next strength workout) → OP countdown with
-// schedule hint → recommendations → Kurztraining + Rudern → week rings → OP-Bereitschaft (→ #/auswertung)
-// → Wochenbericht (Mondays) → Eigene Workouts (only with favourites) → XP → collapsed „Mehr für heute“
-// (Eigene-Workouts CTA when none exist yet, quote, last session, badge). The week ring replaces the reminder line.
+// Card order (priority): banners → post-op status → welcome → hero (next strength workout, big Start) →
+// recommendations (one collapsed summary card) → OP card (countdown + schedule + OP-Bereitschaft in one) →
+// Schnellstart (Kurztraining + eigene Favoriten) → Rudern → week rings → collapsed „Mehr für heute“
+// (XP, Wochenbericht on Mondays, Eigene-Workouts CTA, quote, last session, badge).
+// With an active session only ONE resume entry is shown (the hero) plus the essentials (post-op status,
+// week rings, „Mehr für heute“) – no other Start links, so there is no second way into a parallel session.
+// The view re-renders when the app becomes visible on a new calendar day (P2-3).
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE, daysBetween, addDays, parseISODate } from '../util/date.js';
 import { nextWorkout, applyRecommendation, getWorkout, phaseWorkouts, plannedWorkoutMinutes, cardioWorkoutsFor } from '../logic/progression.js';
@@ -19,7 +22,8 @@ import { confetti } from '../components/celebrate.js';
 import { switchPhase } from './plan.js';
 import {
   ICON, ensureViewStyles, applyFontScale, greeting, pendingNextDay, workoutSplit, workoutLetter,
-  trafficPill, shortDate, toast, sessionMinutes, bandChip, fmtNum, fmtDistance, confirmDialog, KIND_ICON,
+  trafficPill, shortDate, toast, sessionMinutes, bandChip, fmtDistance, confirmDialog, KIND_ICON, fmtMinutes, num,
+  safeData,
 } from './ui.js';
 
 export const title = 'Heute';
@@ -35,7 +39,8 @@ export function pendingRecommendations(sessions) {
   const recent = (sessions || []).filter((s) => s?.status === 'done').slice(-3).reverse();
   for (const s of recent) {
     (s.recommendations || []).forEach((rec, index) => {
-      if (rec?.status !== 'pending' || rec.action === 'hold') return;
+      if (rec?.status !== 'pending' || rec.action === 'hold' || !rec.action) return;
+      if ((rec.action === 'progress' || rec.action === 'regress') && !rec.exerciseId) return;
       const key = rec.exerciseId ?? `__${rec.action}`;
       if (seen.has(key)) return;
       seen.add(key);
@@ -100,11 +105,13 @@ export function render(root, { store, content }) {
   ensureViewStyles();
   const exName = (id) => content.exercises.find((e) => e.id === id)?.name ?? id;
   let moreOpen = false;
+  let recOpen = false;
+  let renderedDay = '';
   let clearChecked = false;
   let clearNote = '';
 
   const draw = () => {
-    const data = store.get();
+    const data = safeData(store.get());
     applyFontScale(data.settings);
     const { settings, state, sessions } = data;
     const now = new Date();
@@ -162,13 +169,15 @@ export function render(root, { store, content }) {
     const report = isMonday(today) && done.length ? weeklyReport(data, content, today, { weekOf: addDays(today, -7) }) : null;
     const customs = recentCustomWorkouts(state.customWorkouts, sessions, 3);
     const p4 = content.phases.find((p) => (p.kind ?? 'prehab') === 'postop');
+    const ownedCount = Array.isArray(settings.ownedEquipment) ? settings.ownedEquipment.length : 0;
+    renderedDay = today;
 
     /* ---------------- welcome (first run) ---------------- */
     const opValue = settings.surgeryDate ?? suggested ?? '';
     const welcome = firstRun ? html`<section class="card pv-welcome" aria-labelledby="welcome-title">
         <p class="eyebrow">Willkommen</p>
         <h2 class="pv-welcome__title" id="welcome-title">Schön, dass du da bist! 👋</h2>
-        <p class="pv-welcome__lead">Dein Plan bis zur OP: 3× pro Woche Kraft (max. 30 Minuten) für Knie, Rücken & Schultern, dazu 3× Rudern als Ausdauer. Drei kurze Schritte zum Start:</p>
+        <p class="pv-welcome__lead">Dein Plan bis zur OP: 3× pro Woche Kraft (max. 30 Minuten) für Knie, Rücken & Schultern, dazu 3× Rudern als Ausdauer. Vier kurze Schritte zum Start:</p>
         <ol class="pv-steps">
           <li class="${settings.surgeryDate ? 'is-done' : ''}">
             <span class="pv-steps__num" aria-hidden="true">${settings.surgeryDate ? raw(ICON.check) : '1'}</span>
@@ -186,12 +195,22 @@ export function render(root, { store, content }) {
             <div class="pv-steps__body">
               <span class="pv-steps__title">Deine Bänder – leicht → schwer</span>
               <div class="pv-welcome__bands">${(settings.bands || []).map((b) => bandChip(settings, b.id, { sm: true }))}</div>
-              ${bandsOk ? html`<span class="pv-steps__hint">Bestätigt · Reihenfolge änderbar unter <a href="#/mehr">Mehr</a>.</span>`
+              ${bandsOk ? html`<span class="pv-steps__hint">Bestätigt · Reihenfolge änderbar unter <a class="tap-link pv-tap-inline" href="#/mehr">Mehr</a></span>`
                 : html`<div class="btn-row"><a class="btn btn--outline btn--sm" href="#/mehr">Anpassen</a><button type="button" class="btn btn--primary btn--sm" data-welcome-bands>Passt so</button></div>`}
             </div>
           </li>
+          <li class="${ownedCount ? 'is-done' : ''}">
+            <span class="pv-steps__num" aria-hidden="true">${ownedCount ? raw(ICON.check) : '3'}</span>
+            <div class="pv-steps__body">
+              <span class="pv-steps__title">Meine Ausrüstung abhaken</span>
+              <span class="pv-steps__hint">${ownedCount
+                ? `${ownedCount} ${ownedCount === 1 ? 'Gerät' : 'Geräte'} abgehakt – dein Plan nutzt sie automatisch.`
+                : 'Rudergerät, Schlingentrainer, Türanker …? Was du hast, steuert deinen Plan.'}</span>
+              <div class="btn-row"><a class="btn ${ownedCount ? 'btn--outline' : 'btn--soft'} btn--sm" href="#/ausruestung" data-welcome-eq>🎒 ${ownedCount ? 'Ausrüstung ansehen' : 'Ausrüstung abhaken'}</a></div>
+            </div>
+          </li>
           <li>
-            <span class="pv-steps__num" aria-hidden="true">3</span>
+            <span class="pv-steps__num" aria-hidden="true">4</span>
             <div class="pv-steps__body">
               <span class="pv-steps__title">Auf dein Knie hören</span>
               <span class="pv-steps__hint">Die Ampel hilft dir bei der Dosierung – auch beim Rudern. Bei stechendem Schmerz, Blockade oder starker Schwellung: aufhören und Rücksprache halten. Die App ersetzt keine ärztliche oder physiotherapeutische Beratung.</span>
@@ -200,7 +219,7 @@ export function render(root, { store, content }) {
         </ol>
         <div class="pv-welcome__cta">
           <a class="btn btn--primary btn--block btn--session" href="#/session?workout=${encodeURIComponent(w?.id ?? '')}">${raw(ICON.play)}Erstes Training starten</a>
-          <p class="pv-welcome__sub">${w ? html`${w.name} · ca. ${wMin} Min<br>` : ''}<button type="button" class="pv-linkbtn" data-welcome-hide>Hinweis ausblenden</button></p>
+          <p class="pv-welcome__sub">${w ? html`${w.name} · ca. ${fmtMinutes(wMin)}<br>` : ''}<button type="button" class="pv-linkbtn tap-link" data-welcome-hide>Hinweis ausblenden</button></p>
         </div>
       </section>` : '';
 
@@ -265,6 +284,15 @@ export function render(root, { store, content }) {
       </section>`;
     })();
 
+    /* ---------------- OP-Bereitschaft (row inside the OP card, P2-18) ---------------- */
+    const readyRow = readiness && !firstRun && Number.isFinite(Number(readiness.score)) ? html`<a class="pv-op-ready" href="#/auswertung?focus=bereitschaft" aria-label="OP-Bereitschaft ${readiness.score} von 100: ${readiness.label} – zur Auswertung">
+        ${raw(progressRing({ value: readiness.score, max: 100, label: readiness.score, size: 'xs', variant: readiness.score >= 80 ? 'gold' : 'primary', ariaLabel: `${readiness.score} von 100` }))}
+        <span class="grow"><span class="pv-op-ready__k">OP-Bereitschaft</span>
+          <span class="pv-op-ready__v">${readiness.label}</span>
+          ${readiness.tips?.[0] ? html`<span class="pv-op-ready__tip">${readiness.tips[0]}</span>` : ''}</span>
+        ${raw(ICON.chev)}
+      </a>` : '';
+
     /* ---------------- OP countdown + schedule hint ---------------- */
     const schedRow = sched.text ? html`<div class="pv-sched">
         <span class="chip chip--sm ${STATUS_CHIP[sched.status]?.cls ?? 'chip--outline'}">${STATUS_CHIP[sched.status]?.text ?? 'Zeitplan'}</span>
@@ -279,6 +307,7 @@ export function render(root, { store, content }) {
             <p class="ring-card__sub">${suggested ? html`Vorgeschlagen: <strong>${formatDE(suggested, { weekday: false })}</strong>. Mit Termin gibt's Countdown und Phasen-Zeitplan.` : 'Dann zählen wir gemeinsam die Tage bis zur OP.'}</p>
           </div>
         </div>
+        ${readyRow}
         <div class="btn-row mt-4">
           <a class="btn btn--outline btn--sm" href="#/mehr?focus=surgeryDate">Anderes Datum</a>
           ${suggested ? html`<button type="button" class="btn btn--primary btn--sm" data-op-suggest="${suggested}">${raw(ICON.check)} ${formatDE(suggested, { weekday: false })} übernehmen</button>` : ''}
@@ -302,6 +331,7 @@ export function render(root, { store, content }) {
               </div>
             </div>
             ${schedRow}
+            ${readyRow}
             ${taper ? html`<div class="banner banner--accent pv-taper mb-0">
               <span class="banner__icon">🌙</span>
               <span class="banner__body"><span class="banner__title">OP-Woche: weniger Umfang, gleiche Qualität.</span>
@@ -309,24 +339,8 @@ export function render(root, { store, content }) {
             </div>` : ''}
           </section>`;
 
-    /* ---------------- hero: next strength workout ---------------- */
-    const strengthHint = rowedToday && !trainedToday && !active ? sameDayLoadHint(sessions, today, 'strength') : null;
-    const hero = w ? html`<section class="card card--hero" aria-labelledby="hero-title">
-        <div class="hero__row">
-          <div>
-            <p class="hero__eyebrow">${active ? 'Training läuft' : 'Nächstes Krafttraining'} · ${phase?.name ?? ''}</p>
-            <h2 class="hero__title" id="hero-title">${w.name}</h2>
-          </div>
-          <span class="hero__letter" aria-hidden="true">${activeW && activeW.kind && activeW.kind !== 'strength' ? KIND_ICON[activeW.kind] : letter}</span>
-        </div>
-        <p class="hero__meta">
-          <span>${raw(ICON.clock)}ca. ${wMin} Min</span>
-          <span>${raw(ICON.list)}${split.total} Übungen</span>
-          ${wPlan.rowWarmup ? html`<span>🚣 mit 10 Min Rudern</span>` : ''}
-          ${taper ? html`<span>🌙 Taper</span>` : ''}
-          ${isPostOpPhase ? html`<span>🪑 im Sitzen/Liegen</span>` : ''}
-        </p>
-        ${split.knee || split.archery ? html`<div class="hero__split" aria-hidden="true">
+    /* ---------------- hero: next strength workout / resume the active session ---------------- */
+    const splitBar = split.knee || split.archery ? html`<div class="hero__split" aria-hidden="true">
           ${split.warmup ? html`<span style="flex:${split.warmup}"></span>` : ''}
           ${split.knee ? html`<span class="is-knee" style="flex:${split.knee}"></span>` : ''}
           ${split.archery ? html`<span class="is-archery" style="flex:${split.archery}"></span>` : ''}
@@ -336,36 +350,95 @@ export function render(root, { store, content }) {
           <span><i style="background:#7FE0E6"></i>Knie <span class="num">${split.knee}</span></span>
           <span><i style="background:#FFB46B"></i>Bogen <span class="num">${split.archery}</span></span>
           <span><i style="background:rgba(255,255,255,.35)"></i>Auf-/Abwärmen <span class="num">${split.warmup + split.cooldown}</span></span>
-        </div>` : ''}
+        </div>` : '';
+    /** The single resume entry while a session is active (P1-3). */
+    function resumeHero() {
+      const exs = Array.isArray(active.exercises) ? active.exercises : [];
+      const step = active.cursor?.step;
+      const idx = Number.isInteger(active.cursor?.index) ? active.cursor.index : 0;
+      const where = step === 'pre' ? 'Vor-Check noch offen'
+        : step === 'post' || step === 'summary' ? 'Fast geschafft – Nach-Check offen'
+          : exs.length ? `Übung ${Math.min(idx + 1, exs.length)} von ${exs.length}` : '';
+      const started = new Date(active.startedAt);
+      const startedTxt = Number.isNaN(started.getTime()) ? ''
+        : `${dayOf(active) === today ? 'heute' : shortDate(dayOf(active))}, ${String(started.getHours()).padStart(2, '0')}:${String(started.getMinutes()).padStart(2, '0')} Uhr`;
+      const progress = exs.length && step === 'exercise' ? Math.min(1, idx / exs.length) : step === 'post' || step === 'summary' ? 1 : 0;
+      const kindIcon = activeW && activeW.kind && activeW.kind !== 'strength' ? KIND_ICON[activeW.kind] : letter;
+      return html`<section class="card card--hero pv-resume" aria-labelledby="hero-title">
+        <div class="hero__row">
+          <div>
+            <p class="hero__eyebrow"><span class="pv-live-dot" aria-hidden="true"></span>Training läuft${startedTxt ? ` · begonnen ${startedTxt}` : ''}</p>
+            <h2 class="hero__title" id="hero-title">${activeW?.name ?? 'Dein Training'}</h2>
+          </div>
+          <span class="hero__letter" aria-hidden="true">${kindIcon}</span>
+        </div>
+        ${where ? html`<p class="hero__meta mb-2"><span>${raw(ICON.list)}${where}</span>${wMin ? html`<span>${raw(ICON.clock)}ca. ${fmtMinutes(wMin)} gesamt</span>` : ''}</p>` : ''}
+        <div class="pv-progress mb-4" role="progressbar" aria-label="Fortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress * 100)}" style="--p:${progress}"><span></span></div>
+        <a class="btn btn--light btn--block btn--session" href="#/session">${raw(ICON.play)}Training fortsetzen</a>
+        <p class="pv-hero-alt pv-hero-alt--note">Genau da weitermachen, wo du warst. Andere Trainings starten erst danach.</p>
+      </section>`;
+    }
+    const strengthHint = rowedToday && !trainedToday && !active ? sameDayLoadHint(sessions, today, 'strength') : null;
+    const hero = active ? resumeHero() : w ? html`<section class="card card--hero" aria-labelledby="hero-title">
+        <div class="hero__row">
+          <div>
+            <p class="hero__eyebrow">Nächstes Krafttraining · ${phase?.name ?? ''}</p>
+            <h2 class="hero__title" id="hero-title">${w.name}</h2>
+          </div>
+          <span class="hero__letter" aria-hidden="true">${letter}</span>
+        </div>
+        <p class="hero__meta">
+          <span>${raw(ICON.clock)}ca. ${fmtMinutes(wMin)}</span>
+          <span>${raw(ICON.list)}${split.total} Übungen</span>
+          ${wPlan.rowWarmup ? html`<span>🚣 mit 10 min Rudern</span>` : ''}
+          ${taper ? html`<span>🌙 Taper</span>` : ''}
+          ${isPostOpPhase ? html`<span>🪑 im Sitzen/Liegen</span>` : ''}
+        </p>
+        ${splitBar}
         ${strengthHint ? html`<p class="pv-hero-hint">ℹ️ ${strengthHint}</p>` : ''}
-        ${active
-          ? html`<a class="btn btn--light btn--block btn--session" href="#/session">${raw(ICON.play)}Training fortsetzen</a>`
-          : html`<a class="btn ${opOver && !isPostOpPhase ? 'btn--glass' : 'btn--light'} btn--block btn--session" href="#/session?workout=${encodeURIComponent(w.id)}">${raw(ICON.play)}Training starten</a>`}
-        <p class="pv-hero-alt">${active ? '' : html`<a href="#/plan">Anderes Training wählen</a>`}${trainedToday && !active ? html` · <span>Heute schon trainiert 💪</span>` : ''}</p>
+        <a class="btn ${opOver && !isPostOpPhase ? 'btn--glass' : 'btn--light'} btn--block btn--session" href="#/session?workout=${encodeURIComponent(w.id)}">${raw(ICON.play)}Training starten</a>
+        <p class="pv-hero-alt"><a class="tap-link" href="#/plan">Anderes Training wählen</a>${trainedToday ? html`<span class="pv-hero-alt__done">Heute schon trainiert 💪</span>` : ''}</p>
       </section>`
       : html`<section class="card"><div class="empty"><h3 class="empty__title">Kein Training gefunden</h3><p class="empty__text">Bitte im Plan eine Phase wählen.</p><a class="btn btn--primary" href="#/plan">Zum Plan</a></div></section>`;
 
     /* ---------------- Kurztraining + Rudern ---------------- */
     const short = pw.short;
     const shortMin = short ? estimateWorkoutMinutes(short, content, state, settings) : 0;
-    const shortCard = short && !active && showHero ? html`<section class="card pv-quick" aria-labelledby="short-title">
-        <span class="pv-icon-badge pv-icon-badge--primary" aria-hidden="true">${raw(ICON.bolt)}</span>
-        <div class="grow">
-          <p class="eyebrow mb-0">Nur 15 Minuten?</p>
-          <h3 class="pv-quick__title" id="short-title">Kurztraining (~${shortMin} Min)</h3>
-          <p class="pv-quick__sub">${short.description || 'Das Wichtigste für Knie und Rücken – zählt fürs Wochenziel.'}</p>
+    const shortCard = !active && showHero && (short || customs.length) ? html`<section class="card pv-quickstart" aria-labelledby="qs-title">
+        <div class="card__header mb-0">
+          <div><h3 class="card__title" id="qs-title">Schnellstart</h3>
+          <p class="card__sub">${short ? 'Wenig Zeit? Zählt trotzdem fürs Wochenziel.' : 'Deine eigenen Workouts'}</p></div>
+          <a class="btn btn--ghost btn--sm" href="#/eigene">Eigene</a>
         </div>
-        <a class="btn btn--soft btn--sm" href="#/session?workout=${encodeURIComponent(short.id)}" aria-label="Kurztraining starten">${raw(ICON.play)} Start</a>
+        <ul class="pv-start-list">
+          ${short ? html`<li class="pv-start">
+            <span class="pv-icon-badge pv-icon-badge--primary pv-icon-badge--sm" aria-hidden="true">${raw(ICON.bolt)}</span>
+            <span class="pv-start__body"><span class="pv-start__name">Kurztraining</span>
+            <span class="pv-start__meta">ca. ${fmtMinutes(shortMin)} · das Wichtigste der Phase</span></span>
+            <a class="btn btn--soft btn--sm" href="#/session?workout=${encodeURIComponent(short.id)}" aria-label="Kurztraining starten">${raw(ICON.play)} Start</a>
+          </li>` : ''}
+          ${customs.map((cw) => {
+            const wo = getWorkout(cw.id, content, state);
+            const min = wo ? estimateWorkoutMinutes(wo, content, state, settings) : 0;
+            const n = (cw.warmup?.length ?? 0) + (cw.blocks || []).reduce((a, b) => a + (b.items?.length ?? 0), 0) + (cw.cooldown?.length ?? 0);
+            return html`<li class="pv-start">
+              <span class="pv-icon-badge pv-icon-badge--gold pv-icon-badge--sm" aria-hidden="true">🧩</span>
+              <span class="pv-start__body"><span class="pv-start__name">${cw.name}</span>
+              <span class="pv-start__meta">${min ? `ca. ${fmtMinutes(min)} · ` : ''}${n} ${n === 1 ? 'Übung' : 'Übungen'}</span></span>
+              <a class="btn btn--soft btn--sm" href="#/session?workout=${encodeURIComponent(cw.id)}" aria-label="${cw.name} starten">${raw(ICON.play)} Start</a>
+            </li>`;
+          })}
+        </ul>
       </section>` : '';
 
     const cardioHint = trainedToday && !rowedToday ? sameDayLoadHint(sessions, today, 'cardio') : null;
-    const rowCard = rowingAllowed && pw.cardio.length && !firstRun ? html`<section class="card pv-row-card" aria-labelledby="row-title">
+    const rowCard = rowingAllowed && pw.cardio.length && !firstRun && !active ? html`<section class="card pv-row-card" aria-labelledby="row-title">
         <div class="pv-row-card__head">
           ${raw(progressRing({ value: cardio.done, max: Math.max(1, cardio.goal), label: `${cardio.done}/${cardio.goal}`, size: 'sm', variant: cardioMet ? 'gold' : 'accent', ariaLabel: `Rudern diese Woche: ${cardio.done} von ${cardio.goal}` }))}
           <div class="grow">
             <p class="eyebrow mb-0">Rudern · diese Woche</p>
             <h3 class="pv-quick__title" id="row-title">${cardioMet ? 'Ruder-Ziel erreicht 🎯' : cardio.goal - cardio.done === 1 ? 'Noch 1 Ruder-Einheit' : `Noch ${Math.max(0, cardio.goal - cardio.done)} Ruder-Einheiten`}</h3>
-            <p class="pv-quick__sub">${cardio.done ? html`<span class="num">${cardio.minutes}</span> Min · <span class="num">${fmtDistance(cardio.distanceM)}</span>` : '15–20 Minuten, locker bis zügig – Ampel gilt auch hier.'}</p>
+            <p class="pv-quick__sub">${cardio.done ? html`<span class="num">${fmtMinutes(cardio.minutes)}</span> · <span class="num">${fmtDistance(cardio.distanceM)}</span>` : '15–20 Minuten, locker bis zügig – Ampel gilt auch hier.'}</p>
           </div>
         </div>
         <ul class="pv-start-list">
@@ -373,7 +446,7 @@ export function render(root, { store, content }) {
             const lbl = cardioMainLabel(cw, content, state);
             return html`<li class="pv-start">
               <span class="pv-start__body"><span class="pv-start__name">${cw.name}</span>
-              <span class="pv-start__meta">ca. ${estimateWorkoutMinutes(cw, content, state, settings)} Min${lbl ? ` · ${lbl}` : ''}</span></span>
+              <span class="pv-start__meta">ca. ${fmtMinutes(estimateWorkoutMinutes(cw, content, state, settings))}${lbl ? ` · ${lbl}` : ''}</span></span>
               <a class="btn btn--accent btn--sm" href="#/session?workout=${encodeURIComponent(cw.id)}" aria-label="${cw.name} starten">${raw(ICON.play)} Start</a>
             </li>`;
           })}
@@ -396,35 +469,19 @@ export function render(root, { store, content }) {
       </div>` : '';
 
     /* ---------------- week rings ---------------- */
-    const weekRings = firstRun ? '' : html`<div class="grid-2 mb-4">
-        <a class="card card--tight" href="#/verlauf" aria-label="Wochenziel Kraft ${wk.done} von ${wk.goal}">
-          <div class="pv-mini">
-            <p class="eyebrow mb-0">Kraft-Woche</p>
-            ${raw(progressRing({ value: wk.done, max: Math.max(1, wk.goal), label: `${wk.done}/${wk.goal}`, size: 'md', variant: goalMet ? 'gold' : 'primary', ariaLabel: `${wk.done} von ${wk.goal} Einheiten` }))}
-            <span class="pv-mini__note${goalMet ? ' is-gold' : ''}">${goalMet ? 'Wochenziel erreicht 🎯' : wk.goal - wk.done === 1 ? 'Noch 1 Einheit' : `Noch ${wk.goal - wk.done} Einheiten`}</span>
-          </div>
+    const weekRings = firstRun ? '' : html`<div class="grid-2 mb-4 pv-week">
+        <a class="card card--tight pv-mini" href="#/verlauf" aria-label="Wochenziel Kraft ${wk.done} von ${wk.goal}">
+          ${raw(progressRing({ value: wk.done, max: Math.max(1, wk.goal), label: `${wk.done}/${wk.goal}`, size: 'sm', variant: goalMet ? 'gold' : 'primary', ariaLabel: `${wk.done} von ${wk.goal} Einheiten` }))}
+          <span class="pv-mini__body"><span class="eyebrow mb-0">Kraft-Woche</span>
+          <span class="pv-mini__note${goalMet ? ' is-gold' : ''}">${goalMet ? 'Ziel erreicht 🎯' : wk.goal - wk.done === 1 ? 'Noch 1 Einheit' : `Noch ${Math.max(0, wk.goal - wk.done)} Einheiten`}</span></span>
         </a>
-        <a class="card card--tight" href="#/verlauf" aria-label="Serie: ${st.weeks} Wochen">
-          <div class="pv-mini">
-            <p class="eyebrow mb-0">Serie</p>
-            ${raw(streakFlame({ weeks: st.weeks, label: st.weeks ? (st.weeks === 1 ? 'Woche in Folge' : 'Wochen in Folge') : 'Neuer Anlauf – diese Woche zählt.' }))}
-          </div>
+        <a class="card card--tight pv-mini" href="#/verlauf" aria-label="Serie: ${st.weeks} Wochen">
+          ${raw(streakFlame({ weeks: st.weeks, label: st.weeks ? (st.weeks === 1 ? 'Woche in Folge' : 'Wochen in Folge') : 'Neuer Anlauf' }))}
         </a>
       </div>`;
 
-    /* ---------------- OP-Bereitschaft ---------------- */
-    const tiles = readiness && !firstRun ? html`<a class="card pv-report pv-ready" href="#/auswertung?focus=bereitschaft" aria-label="OP-Bereitschaft ${readiness.score} von 100: ${readiness.label} – zur Auswertung">
-        ${raw(progressRing({ value: readiness.score, max: 100, label: readiness.score, size: 'sm', variant: readiness.score >= 80 ? 'gold' : 'primary', ariaLabel: `${readiness.score} von 100: ${readiness.label}` }))}
-        <span class="grow">
-          <span class="eyebrow">OP-Bereitschaft</span>
-          <span class="list-item__title">${readiness.label}</span>
-          ${readiness.tips[0] ? html`<span class="list-item__sub pv-ready__tip">${readiness.tips[0]}</span>` : ''}
-        </span>
-        ${raw(ICON.chev)}
-      </a>` : '';
-
     /* ---------------- Wochenbericht (Mondays) ---------------- */
-    const reportCard = report ? html`<a class="card pv-report" href="#/auswertung?focus=bericht">
+    const reportCard = report && report.strength && report.cardio ? html`<a class="card pv-report" href="#/auswertung?focus=bericht">
         <span class="pv-icon-badge pv-icon-badge--gold" aria-hidden="true">📊</span>
         <span class="grow">
           <span class="eyebrow">Wochenbericht · ${shortDate(report.weekStart)} – ${shortDate(report.weekEnd)}</span>
@@ -434,43 +491,42 @@ export function render(root, { store, content }) {
         ${raw(ICON.chev)}
       </a>` : '';
 
-    /* ---------------- Eigene Workouts ---------------- */
-    const customCard = firstRun ? '' : html`<section class="card" aria-labelledby="cw-title">
-        <div class="card__header">
-          <div><h3 class="card__title" id="cw-title">Eigene Workouts</h3>
-          <p class="card__sub">${customs.length ? 'Schnellstart deiner Favoriten' : 'Stell dir dein eigenes Training aus der Übungs-Bibliothek zusammen.'}</p></div>
-          <a class="btn btn--ghost btn--sm" href="#/eigene">${customs.length ? 'Alle' : 'Ansehen'}</a>
-        </div>
-        ${customs.length ? html`<ul class="pv-start-list">
-          ${customs.map((cw) => {
-            const wo = getWorkout(cw.id, content, state);
-            const min = wo ? estimateWorkoutMinutes(wo, content, state, settings) : 0;
-            const n = (cw.warmup?.length ?? 0) + (cw.blocks || []).reduce((a, b) => a + (b.items?.length ?? 0), 0) + (cw.cooldown?.length ?? 0);
-            return html`<li class="pv-start">
-              <span class="pv-start__body"><span class="pv-start__name">${cw.name}</span>
-              <span class="pv-start__meta">ca. ${min} Min · ${n} Übungen</span></span>
-              <a class="btn btn--soft btn--sm" href="#/session?workout=${encodeURIComponent(cw.id)}" aria-label="${cw.name} starten">${raw(ICON.play)} Start</a>
-            </li>`;
-          })}
-        </ul>` : html`<a class="btn btn--outline btn--block" href="#/eigene/neu">${raw(ICON.plus)} Workout erstellen</a>`}
-      </section>`;
+    /* ---------------- Eigene Workouts CTA (only when none exist yet; favourites live in „Schnellstart“) ---------------- */
+    const customCta = firstRun || customs.length ? '' : html`<a class="card pv-report" href="#/eigene/neu">
+        <span class="pv-icon-badge pv-icon-badge--gold" aria-hidden="true">🧩</span>
+        <span class="grow"><span class="eyebrow">Eigene Workouts</span>
+          <span class="list-item__title">Eigenes Training zusammenstellen</span>
+          <span class="list-item__sub">Aus der Übungs-Bibliothek – sortieren, Dauer sehen, starten.</span></span>
+        ${raw(ICON.chev)}
+      </a>`;
 
     /* ---------------- recommendations ---------------- */
-    const recBlock = recs.length ? html`<h2 class="section-title">Vorschläge für dich <span class="count">${recs.length}</span></h2>
-        ${recs.map(({ sessionId, index, rec }) => html`<section class="card rec ${rec.action === 'regress' || rec.action === 'reduce' ? 'rec--regress' : rec.action === 'consult' ? 'rec--consult' : ''}">
+    const recLine = ({ rec }) => (rec.exerciseId ? exName(rec.toExerciseId || rec.exerciseId) : REC_TEXT[rec.action] ?? 'Hinweis');
+    const recBlock = recs.length && !active ? html`<details class="card pv-recs" data-recs ${recOpen ? 'open' : ''}>
+        <summary class="pv-recs__sum">
+          <span class="rec__arrow" aria-hidden="true">${raw(ICON.up)}</span>
+          <span class="grow"><span class="pv-recs__title">${recs.length === 1 ? '1 Vorschlag für dich' : `${recs.length} Vorschläge für dich`}</span>
+          <span class="pv-recs__sub">${recLine(recs[0])}${recs.length > 1 ? ` · +${recs.length - 1} weitere` : ''}</span></span>
+          <span class="pv-recs__chev" aria-hidden="true">${raw(ICON.down)}</span>
+        </summary>
+        <div class="pv-recs__list">
+        ${recs.map(({ sessionId, index, rec }) => html`<div class="rec ${rec.action === 'regress' || rec.action === 'reduce' ? 'rec--regress' : rec.action === 'consult' ? 'rec--consult' : ''}">
           <div class="rec__head">
             <span class="rec__arrow">${raw(rec.action === 'consult' ? ICON.info : ICON.up)}</span>
             <div>
-              <div class="rec__title">${rec.exerciseId ? exName(rec.toExerciseId || rec.exerciseId) : REC_TEXT[rec.action]}${rec.action === 'progress' || rec.action === 'regress'
-                ? html`: <span class="rec__levels">${rec.toExerciseId ? 'neue Übung' : html`Stufe ${(rec.fromLevel ?? 0) + 1} → ${(rec.toLevel ?? 0) + 1}`}</span>` : rec.exerciseId ? html` · ${REC_TEXT[rec.action]}` : ''}</div>
-              <div class="rec__reason">${rec.reason || ''}</div>
+              <div class="rec__title">${recLine({ rec })}${(rec.action === 'progress' || rec.action === 'regress') && rec.exerciseId
+                ? html`: <span class="rec__levels">${rec.toExerciseId ? 'neue Übung' : html`Stufe ${(num(rec.fromLevel, 0)) + 1} → ${(num(rec.toLevel, 0)) + 1}`}</span>` : rec.exerciseId ? html` · ${REC_TEXT[rec.action] ?? ''}` : ''}</div>
+              ${rec.reason ? html`<div class="rec__reason">${rec.reason}</div>` : ''}
             </div>
           </div>
           <div class="btn-row">
             <button class="btn btn--outline btn--sm" data-rec="dismissed" data-sid="${sessionId}" data-i="${index}">Verwerfen</button>
             <button class="btn btn--primary btn--sm" data-rec="accepted" data-sid="${sessionId}" data-i="${index}">${rec.action === 'consult' ? 'Verstanden' : 'Übernehmen'}</button>
           </div>
-        </section>`)}` : '';
+        </div>`)}
+        <p class="field__hint mb-0">Die App schlägt nur vor – du entscheidest. Zurück geht jederzeit.</p>
+        </div>
+      </details>` : '';
 
     /* ---------------- collapsed lower cards ---------------- */
     const lastW = last ? getWorkout(last.workoutId, content, state) : null;
@@ -478,18 +534,20 @@ export function render(root, { store, content }) {
     const more = firstRun ? '' : html`<details class="disclosure pv-more" data-more ${moreOpen ? 'open' : ''}>
         <summary>Mehr für heute</summary>
         <div>
-          ${customs.length ? '' : customCard}
+          <a class="card pv-xp-card" href="#/verlauf" aria-label="Level ${lvl.index + 1}: ${lvl.title} – zum Verlauf">${raw(xpBar({ xp: state.xp || 0, level: lvl, nextTitle }))}</a>
+          ${active ? '' : reportCard}
+          ${active ? '' : customCta}
           <blockquote class="quote"><p>${dailyQuote(today, content.quotes)}</p><span class="quote__src">Gedanke des Tages</span></blockquote>
-          ${last ? html`<p class="pv-sec-label">Letzte Einheit <a class="pv-sec-label__link" href="#/verlauf">Verlauf</a></p>
+          ${last ? html`<p class="pv-sec-label">Letzte Einheit <a class="pv-sec-label__link tap-link" href="#/verlauf">Verlauf</a></p>
             <a class="card pv-last" href="#/verlauf?session=${encodeURIComponent(last.id)}">
               <span class="list-item__icon">${lastIcon}</span>
               <span class="grow">
                 <span class="list-item__title">${lastW?.name ?? 'Training'}</span>
-                <span class="list-item__sub">${shortDate(dayOf(last))}${sessionMinutes(last) ? ` · ${sessionMinutes(last)} Min` : ''}${last.rowing?.distanceM ? ` · ${fmtDistance(last.rowing.distanceM)}` : ''}${last.traffic?.final ? '' : ' · vorläufig'}${last.xpEarned ? ` · +${last.xpEarned} XP` : ''}</span>
+                <span class="list-item__sub">${shortDate(dayOf(last))}${sessionMinutes(last) ? ` · ${fmtMinutes(sessionMinutes(last))}` : ''}${last.rowing?.distanceM ? ` · ${fmtDistance(last.rowing.distanceM)}` : ''}${last.traffic?.final ? '' : ' · vorläufig'}${last.xpEarned ? ` · +${last.xpEarned} XP` : ''}</span>
               </span>
               ${trafficPill(lastLight)}
             </a>` : ''}
-          ${recentBadge ? html`<p class="pv-sec-label">Zuletzt verdient <a class="pv-sec-label__link" href="#/verlauf?show=badges">Alle Abzeichen</a></p>
+          ${recentBadge ? html`<p class="pv-sec-label">Zuletzt verdient <a class="pv-sec-label__link tap-link" href="#/verlauf?show=badges">Alle Abzeichen</a></p>
             <a class="card pv-badge-row" href="#/verlauf?show=badges">
               <span class="badge-tile__icon" aria-hidden="true">${recentBadge.icon}</span>
               <span class="grow"><span class="list-item__title">${recentBadge.name}</span>
@@ -502,6 +560,13 @@ export function render(root, { store, content }) {
         </div>
       </details>`;
 
+    const ndBanner = nd && !active ? html`<a class="banner banner--gold" href="#/folgetag">
+        <span class="banner__icon" aria-hidden="true">🌤️</span>
+        <span class="banner__body"><span class="banner__title">Wie geht's dem Knie heute?</span>
+        <span class="banner__text">Kurzer Folgetag-Check zu ${shortDate(dayOf(nd))} · 30 Sek. · +${XP.nextDayCheckIn} XP</span></span>
+        ${raw(ICON.chev)}
+      </a>` : '';
+
     paint(root, html`
       <header class="page-header pv-greet">
         <div class="grow">
@@ -509,38 +574,21 @@ export function render(root, { store, content }) {
           <h1 class="pv-greet__hello">${greeting(now)}!</h1>
         </div>
         <div class="page-header__actions">
-          <a class="chip chip--gold" href="#/verlauf" aria-label="Level ${lvl.index + 1}: ${lvl.title}">🏹 <span>${lvl.title}</span></a>
+          <a class="pv-level-tap" href="#/verlauf" aria-label="Level ${lvl.index + 1}: ${lvl.title} – zum Verlauf"><span class="chip chip--gold">🏹 <span>${lvl.title}</span></span></a>
         </div>
       </header>
 
-      ${nd ? html`<a class="banner banner--gold" href="#/folgetag">
-        <span class="banner__icon">🌤️</span>
-        <span class="banner__body"><span class="banner__title">Wie geht's dem Knie heute?</span>
-        <span class="banner__text">Kurzer Folgetag-Check zu ${shortDate(dayOf(nd))} · 30 Sek. · +${XP.nextDayCheckIn} XP</span></span>
-        ${raw(ICON.chev)}
-      </a>` : ''}
-
-      ${active ? html`<a class="banner banner--accent" href="#/session">
-        <span class="banner__icon">⏯️</span>
-        <span class="banner__body"><span class="banner__title">Dein Training wartet auf dich</span>
-        <span class="banner__text">Begonnen ${shortDate(dayOf(active))} · genau da weitermachen, wo du warst.</span></span>
-        ${raw(ICON.chev)}
-      </a>` : ''}
-
-      ${eqBanner}
+      ${ndBanner}
+      ${active ? '' : eqBanner}
       ${postCard}
       ${welcome}
-      ${showHero ? hero : ''}
-      ${firstRun ? '' : opCard}
+      ${showHero || active ? hero : ''}
       ${recBlock}
+      ${firstRun || active ? '' : opCard}
       ${shortCard}
       ${rowCard}
       ${reminder && !firstRun && !postMode && !weekRings ? html`<div class="pv-reminder"><span aria-hidden="true">🌱</span><span>${reminder}</span></div>` : ''}
       ${weekRings}
-      ${tiles}
-      ${reportCard}
-      ${customs.length ? customCard : ''}
-      ${firstRun ? '' : html`<a class="card" href="#/verlauf" style="display:block">${raw(xpBar({ xp: state.xp || 0, level: lvl, nextTitle }))}</a>`}
       ${more}
     `);
   };
@@ -566,6 +614,7 @@ export function render(root, { store, content }) {
 
   const onToggle = (e) => {
     if (e.target instanceof HTMLDetailsElement && e.target.matches('[data-more]')) moreOpen = e.target.open;
+    if (e.target instanceof HTMLDetailsElement && e.target.matches('[data-recs]')) recOpen = e.target.open;
   };
 
   const onClick = async (e) => {
@@ -637,14 +686,23 @@ export function render(root, { store, content }) {
     toast(status === 'accepted' ? 'Übernommen – du kannst jederzeit zurück.' : 'Verworfen', { icon: status === 'accepted' ? '✓' : '↩︎' });
   };
 
+  // P2-3: the tab may stay open over midnight (PWA in the background) → re-render on a new day
+  const onVisible = () => {
+    if (document.visibilityState === 'visible' && todayISO() !== renderedDay) draw();
+  };
+
   draw();
   root.addEventListener('click', onClick);
   root.addEventListener('change', onChange);
   root.addEventListener('input', onInput);
   root.addEventListener('toggle', onToggle, true);
+  document.addEventListener('visibilitychange', onVisible);
+  window.addEventListener('focus', onVisible);
   const unsub = store.subscribe(draw);
   return () => {
     unsub();
+    document.removeEventListener('visibilitychange', onVisible);
+    window.removeEventListener('focus', onVisible);
     root.removeEventListener('click', onClick);
     root.removeEventListener('change', onChange);
     root.removeEventListener('input', onInput);
