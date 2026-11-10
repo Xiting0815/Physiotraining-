@@ -113,6 +113,27 @@ export function mergeLegacyLog(current, incoming) {
   return [...m.values()].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }
 
+export const TOMBSTONE_DAYS = 90;
+
+/**
+ * v5.2 (SPEC §17): union of deletion tombstones `[{id, at}]` (latest `at` per id), entries older than
+ * `days` (relative to `now`) dropped, sorted by `at`.
+ * @param {any} a @param {any} b @param {{now?: number, days?: number}} [o]
+ * @returns {{id: string, at: string}[]}
+ */
+export function mergeTombstones(a, b, { now = Date.now(), days = TOMBSTONE_DAYS } = {}) {
+  const m = new Map();
+  const min = now - days * 864e5;
+  for (const t of [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])]) {
+    if (!isObj(t) || typeof t.id !== 'string' || !t.id) continue;
+    const ts = Date.parse(t.at);
+    if (!Number.isFinite(ts) || ts < min) continue;
+    const have = m.get(t.id);
+    if (!have || Date.parse(have.at) < ts) m.set(t.id, { id: t.id, at: t.at });
+  }
+  return [...m.values()].sort((x, y) => Date.parse(x.at) - Date.parse(y.at));
+}
+
 /**
  * Merge `incoming` into `current` by session id (both already migrated).
  * - sessions: union by id; on conflict the current one wins unless only the incoming one has a
@@ -120,6 +141,8 @@ export function mergeLegacyLog(current, incoming) {
  * - settings, phaseId, nextWorkoutId, activeSession, phaseHistory: current wins.
  * - exerciseLevels: max per exercise; exitCriteriaDone: union; badges: union (earliest date);
  *   xp: max; records: per key the better one.
+ * - v5.2: deletion tombstones (state.deletedSessionIds / deletedCustomWorkoutIds) are united; tombstoned
+ *   sessions and custom workouts are dropped (a deleted session never comes back from an old backup).
  * @param {import('../types.js').Data} current
  * @param {import('../types.js').Data} incoming
  * @returns {import('../types.js').Data}
@@ -133,10 +156,15 @@ export function mergeBackups(current, incoming) {
     const have = byId.get(s.id);
     if (!have || (!have.nextDay && s.nextDay)) byId.set(s.id, s);
   }
-  const sessions = [...byId.values()].sort((a, b) => (sessionTime(a) < sessionTime(b) ? -1 : sessionTime(a) > sessionTime(b) ? 1 : 0));
-
   const cs = cur.state || {};
   const is = inc.state || {};
+  const deletedSessionIds = mergeTombstones(cs.deletedSessionIds, is.deletedSessionIds);
+  const deletedCustomWorkoutIds = mergeTombstones(cs.deletedCustomWorkoutIds, is.deletedCustomWorkoutIds);
+  const deadSessions = new Set(deletedSessionIds.map((t) => t.id));
+  const deadCustom = new Set(deletedCustomWorkoutIds.map((t) => t.id));
+  const sessions = [...byId.values()].filter((s) => !deadSessions.has(s.id))
+    .sort((a, b) => (sessionTime(a) < sessionTime(b) ? -1 : sessionTime(a) > sessionTime(b) ? 1 : 0));
+
   const exerciseLevels = { ...(is.exerciseLevels || {}) };
   for (const [k, v] of Object.entries(cs.exerciseLevels || {})) exerciseLevels[k] = Math.max(v, exerciseLevels[k] ?? 0);
   const exitCriteriaDone = {};
@@ -164,7 +192,8 @@ export function mergeBackups(current, incoming) {
     state: {
       ...cs, exerciseLevels, exitCriteriaDone, badges, records, xp: Math.max(cs.xp || 0, is.xp || 0),
       ...(cs.healthLog || is.healthLog ? { healthLog: mergeLegacyLog(cs.healthLog, is.healthLog) } : {}),
-      customWorkouts: mergeCustomWorkouts(cs.customWorkouts, is.customWorkouts),
+      customWorkouts: mergeCustomWorkouts(cs.customWorkouts, is.customWorkouts).filter((w) => !deadCustom.has(w.id)),
+      deletedSessionIds, deletedCustomWorkoutIds,
       exerciseToggles: { ...(is.exerciseToggles || {}), ...(cs.exerciseToggles || {}) },
       postOpClearance: cs.postOpClearance ?? is.postOpClearance ?? null,
       postOpEndClearance: cs.postOpEndClearance ?? is.postOpEndClearance ?? null,

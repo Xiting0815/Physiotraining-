@@ -52,6 +52,11 @@ export function defaults() {
       voiceRate: 1.05,
       voiceVolume: 1,
       beepsWithVoice: true,
+      // v5.2 (SPEC §17): Google-Drive sync. Device-local – never merged, never uploaded.
+      sync: { enabled: false, clientId: '', deviceId: '', deviceName: '', lastSyncAt: null, lastError: null },
+      // v5.2: last-write-wins bookkeeping (written by update(), read by js/sync/merge.js)
+      _updatedAt: {},          // settings key → ISO time of the last local change
+      _equipmentAt: {},        // equipment id → ISO time it was ticked/unticked
     },
     state: {
       phaseId: 'p1-basis',
@@ -74,6 +79,12 @@ export function defaults() {
       postOpEndClearance: null,            // { confirmedAt, note } – doctor's release ends p4 early
       equipmentNotice: null,               // v5: "pending" → Heute shows „Neu: Deine Ausrüstung steuert jetzt den Plan“ once; "seen" afterwards
       droppedActiveSession: false,         // v5.1: true = a broken stored activeSession was discarded on load (UI notice, then reset to false)
+      // v5.2 (SPEC §17): sync bookkeeping
+      deletedSessionIds: [],               // tombstones [{id, at}] – kept 90 days so deletions reach the other device
+      deletedCustomWorkoutIds: [],         // tombstones [{id, at}] for deleted custom workouts
+      levelsUpdatedAt: {},                 // exerciseId → ISO time of the last level change (explicit regress beats max)
+      _updatedAt: {},                      // tracked state key (phaseId, nextWorkoutId, …) → ISO time of the last change
+      remoteActiveSession: null,           // {deviceName, workoutName, startedAt} – a training running on another device (info only)
     },
     sessions: [],
   };
@@ -181,6 +192,13 @@ export function sanitize(data) {
   else if (isObj(st.profile) && 'weightKg' in st.profile && st.profile.weightKg !== null && !isNum(st.profile.weightKg)) {
     fixes.push('weightKg'); st.profile = { ...st.profile, weightKg: null };
   }
+  for (const k of ['_updatedAt', '_equipmentAt']) {
+    if (!(k in st)) continue;
+    if (!isObj(st[k])) { fixes.push(k); st[k] = {}; continue; }
+    const m = Object.fromEntries(Object.entries(st[k]).filter(([, v]) => isDateish(v)));
+    if (Object.keys(m).length !== Object.keys(st[k]).length) { fixes.push(k); st[k] = m; }
+  }
+  if ('sync' in st && !isObj(st.sync)) { fixes.push('sync'); delete st.sync; }
   d.settings = st;
 
   // ---- state
@@ -213,6 +231,20 @@ export function sanitize(data) {
   }
   for (const k of ['phaseId', 'nextWorkoutId']) if (k in s && (typeof s[k] !== 'string' || !s[k])) { fixes.push(k); delete s[k]; }
   for (const k of ['postOpClearance', 'postOpEndClearance']) if (k in s && s[k] !== null && !isObj(s[k])) { fixes.push(k); s[k] = null; }
+  for (const k of ['deletedSessionIds', 'deletedCustomWorkoutIds']) {
+    if (!(k in s)) continue;
+    const list = Array.isArray(s[k]) ? s[k].filter((t) => isObj(t) && typeof t.id === 'string' && t.id && isDateish(t.at)) : [];
+    if (!Array.isArray(s[k]) || list.length !== s[k].length) { fixes.push(k); s[k] = list; }
+  }
+  for (const k of ['levelsUpdatedAt', '_updatedAt']) {
+    if (!(k in s)) continue;
+    if (!isObj(s[k])) { fixes.push(k); s[k] = {}; continue; }
+    const m = Object.fromEntries(Object.entries(s[k]).filter(([, v]) => isDateish(v)));
+    if (Object.keys(m).length !== Object.keys(s[k]).length) { fixes.push(k); s[k] = m; }
+  }
+  if ('remoteActiveSession' in s && s.remoteActiveSession !== null && !(isObj(s.remoteActiveSession) && isDateish(s.remoteActiveSession.startedAt))) {
+    fixes.push('remoteActiveSession'); s.remoteActiveSession = null;
+  }
   if (s.activeSession != null && !validActiveSession(s.activeSession)) {
     fixes.push('activeSession');
     s.activeSession = null;
@@ -522,17 +554,163 @@ export function onSaveError(cb) {
   return () => saveErrorListeners.delete(cb);
 }
 
+// ---- v5.2 (SPEC §17): change tracking for the Google-Drive sync ------------------------------------
+
+/** Server-corrected clock (js/sync/engine.js sets the offset from the Drive `Date` header). */
+let clockOffsetMs = 0;
+/** @type {() => number} */
+let clockNow = () => Date.now();
+/** @param {number} ms difference server − device (bounded to ±7 days) */
+export function setClockOffset(ms) { clockOffsetMs = Number.isFinite(ms) ? Math.max(-7 * 864e5, Math.min(7 * 864e5, ms)) : 0; }
+export const getClockOffset = () => clockOffsetMs;
+/** Test hook: replace the device clock. @param {(() => number)|null} fn */
+export function _setNow(fn) { clockNow = typeof fn === 'function' ? fn : () => Date.now(); }
+/** Current time (ms) corrected by the server offset. */
+export const syncNow = () => clockNow() + clockOffsetMs;
+/** ISO timestamp used for all change bookkeeping. */
+export const nowISO = () => new Date(syncNow()).toISOString();
+
+/** Settings keys that are never compared / merged (device-local or bookkeeping). */
+export const LOCAL_SETTINGS_KEYS = ['sync', '_updatedAt', '_equipmentAt'];
+/**
+ * State keys that are device-local, bookkeeping, or merged by their own rules (not per-key last-write-wins).
+ * Everything else in `state` gets a timestamp in `state._updatedAt` when it changes.
+ */
+export const UNTRACKED_STATE_KEYS = [
+  'activeSession', 'remoteActiveSession', 'droppedActiveSession', 'storageHintShown', '_updatedAt', 'levelsUpdatedAt',
+  'deletedSessionIds', 'deletedCustomWorkoutIds', 'exerciseLevels', 'customWorkouts', 'xp', 'badges', 'records',
+  'exitCriteriaDone', 'healthLog',
+];
+
+const sig = (v) => (v === undefined ? 'u' : JSON.stringify(v));
+const byId = (list) => new Map((Array.isArray(list) ? list : []).filter((x) => isObj(x) && typeof x.id === 'string').map((x) => [x.id, x]));
+const addTombstone = (list, id, at) => [...(Array.isArray(list) ? list : []).filter((t) => t?.id !== id), { id, at }];
+
+/**
+ * Diff `before` → `after` and write the bookkeeping the sync merge needs INTO `after` (mutates it):
+ * - settings: `_updatedAt[key]` for every changed key (except sync/_updatedAt/_equipmentAt); `_equipmentAt[id]`
+ *   for every ticked/unticked equipment id
+ * - state: `_updatedAt[key]` for changed tracked keys (phaseId, nextWorkoutId, phaseHistory, …),
+ *   `levelsUpdatedAt[exerciseId]` for changed levels
+ * - sessions/customWorkouts: removed ids → tombstones (`deletedSessionIds` / `deletedCustomWorkoutIds`),
+ *   changed entries → `updatedAt = at` (unless the change already set a new updatedAt)
+ * @param {any} before @param {any} after @param {string} [at]
+ * @returns {{relevant: boolean, kinds: string[]}} relevant = something the other device should get;
+ *   kinds ⊂ settings|state|levels|sessions|custom|active|finish|nextDay
+ */
+export function trackChanges(before, after, at = nowISO()) {
+  const kinds = new Set();
+  if (!isObj(before) || !isObj(after)) return { relevant: false, kinds: [] };
+  // settings
+  const bs = isObj(before.settings) ? before.settings : {};
+  const as = isObj(after.settings) ? after.settings : null;
+  if (as) {
+    const stamps = { ...(isObj(as._updatedAt) ? as._updatedAt : {}) };
+    let changed = false;
+    for (const k of new Set([...Object.keys(bs), ...Object.keys(as)])) {
+      if (LOCAL_SETTINGS_KEYS.includes(k)) continue;
+      if (sig(bs[k]) !== sig(as[k])) { stamps[k] = at; changed = true; }
+    }
+    if (changed) { as._updatedAt = stamps; kinds.add('settings'); }
+    const ob = new Set(Array.isArray(bs.ownedEquipment) ? bs.ownedEquipment : []);
+    const oa = new Set(Array.isArray(as.ownedEquipment) ? as.ownedEquipment : []);
+    const flips = [...ob, ...oa].filter((id) => ob.has(id) !== oa.has(id));
+    if (flips.length) as._equipmentAt = { ...(isObj(as._equipmentAt) ? as._equipmentAt : {}), ...Object.fromEntries(flips.map((id) => [id, at])) };
+  }
+  // state
+  const bst = isObj(before.state) ? before.state : {};
+  const ast = isObj(after.state) ? after.state : null;
+  if (ast) {
+    const stamps = { ...(isObj(ast._updatedAt) ? ast._updatedAt : {}) };
+    let changed = false;
+    for (const k of new Set([...Object.keys(bst), ...Object.keys(ast)])) {
+      if (UNTRACKED_STATE_KEYS.includes(k)) continue;
+      if (sig(bst[k]) !== sig(ast[k])) { stamps[k] = at; changed = true; }
+    }
+    if (changed) { ast._updatedAt = stamps; kinds.add('state'); }
+    for (const k of ['xp', 'badges', 'records', 'exitCriteriaDone']) if (sig(bst[k]) !== sig(ast[k])) kinds.add('state');
+    // levels
+    const lb = isObj(bst.exerciseLevels) ? bst.exerciseLevels : {};
+    const la = isObj(ast.exerciseLevels) ? ast.exerciseLevels : {};
+    const lvStamps = {};
+    for (const k of new Set([...Object.keys(lb), ...Object.keys(la)])) if (lb[k] !== la[k]) lvStamps[k] = at;
+    if (Object.keys(lvStamps).length) { ast.levelsUpdatedAt = { ...(isObj(ast.levelsUpdatedAt) ? ast.levelsUpdatedAt : {}), ...lvStamps }; kinds.add('levels'); }
+    // custom workouts
+    if (sig(bst.customWorkouts) !== sig(ast.customWorkouts)) {
+      kinds.add('custom');
+      const mb = byId(bst.customWorkouts);
+      const ma = byId(ast.customWorkouts);
+      for (const id of mb.keys()) if (!ma.has(id)) ast.deletedCustomWorkoutIds = addTombstone(ast.deletedCustomWorkoutIds, id, at);
+      for (const [id, w] of ma) {
+        const o = mb.get(id);
+        if (o && sig(o) !== sig(w) && w.updatedAt === o.updatedAt) w.updatedAt = at;
+        else if (!o && !w.updatedAt) w.updatedAt = at;
+      }
+    }
+    // active session
+    const hadActive = !!bst.activeSession;
+    if (sig(bst.activeSession) !== sig(ast.activeSession)) kinds.add('active');
+    if (hadActive && !ast.activeSession) kinds.add('finish');
+  }
+  // sessions
+  if (sig(before.sessions) !== sig(after.sessions)) {
+    kinds.add('sessions');
+    const mb = byId(before.sessions);
+    const ma = byId(after.sessions);
+    if (ast) for (const id of mb.keys()) if (!ma.has(id)) ast.deletedSessionIds = addTombstone(ast.deletedSessionIds, id, at);
+    for (const [id, s] of ma) {
+      const o = mb.get(id);
+      if (!o) continue;
+      if (!o.nextDay && s.nextDay) kinds.add('nextDay');
+      if (sig(o) !== sig(s) && s.updatedAt === o.updatedAt) s.updatedAt = at;
+    }
+  }
+  return { relevant: kinds.size > 0, kinds: [...kinds] };
+}
+
+const changeListeners = new Set();
+/**
+ * v5.2: called after every update() that changed data (not for sync-only bookkeeping, not for applySync()).
+ * @param {(data: import('./types.js').Data, info: {kinds: string[]}) => void} cb @returns {() => void}
+ */
+export function onLocalChange(cb) {
+  changeListeners.add(cb);
+  return () => changeListeners.delete(cb);
+}
+
 /**
  * @param {(draft: import('./types.js').Data) => (import('./types.js').Data|void)} fn
  * @returns {import('./types.js').Data}
  */
 export function update(fn) {
-  const draft = clone(get());
+  const prev = get();
+  const draft = clone(prev);
   const result = fn(draft);
   cache = result && typeof result === 'object' ? result : draft;
+  let info = { relevant: false, kinds: [] };
+  try { info = trackChanges(prev, cache); } catch (e) { console.error('Änderungsverfolgung fehlgeschlagen', e); }
   save(); // writes the whole cache → also retries an earlier failed write
   notify();
+  if (info.relevant) {
+    for (const cb of changeListeners) {
+      try { cb(cache, info); } catch (e) { console.error('onLocalChange listener failed', e); }
+    }
+  }
   return cache;
+}
+
+/**
+ * v5.2: replace the data with a sync merge result (already migrated). No change tracking, no onLocalChange
+ * (would start the next sync), subscribers are notified. Refused in read-only mode.
+ * @param {import('./types.js').Data} data @returns {boolean}
+ */
+export function applySync(data) {
+  if (readOnly || !isObj(data)) return false;
+  const prev = cache;
+  cache = data;
+  if (!save()) { cache = prev; return false; }
+  notify();
+  return true;
 }
 
 /** @param {(data: import('./types.js').Data) => void} fn @returns {() => void} */
