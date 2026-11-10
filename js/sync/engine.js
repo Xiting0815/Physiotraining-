@@ -165,7 +165,7 @@ export function createSyncEngine(o) {
     const syncedAt = new Date(t).toISOString();
     const active = local.state?.activeSession;
     const activeSessions = nextActiveSessions(meta.activeSessions, {
-      deviceId: c.deviceId, deviceName: c.deviceName, active, workoutName: active ? describeWorkout(active.workoutId) : '', now: t,
+      deviceId: c.deviceId, deviceName: c.deviceName, active, workoutName: active ? (active.workoutName || describeWorkout(active.workoutId)) : '', now: t,
     });
     const env = buildEnvelope(merged, { deviceId: c.deviceId, deviceName: c.deviceName, rev: (Number(meta.rev) || 0) + 1, syncedAt, activeSessions });
     if (file) {
@@ -232,7 +232,7 @@ export function createSyncEngine(o) {
       if (!debounce) return; // throttle: keep the earlier timer
       timers.clearTimeout(timer);
     }
-    timer = timers.setTimeout(() => { timer = null; run(); }, Math.max(0, delay));
+    timer = timers.setTimeout(() => { timer = null; return run(); }, Math.max(0, delay));
   }
 
   /**

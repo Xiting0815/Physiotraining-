@@ -196,6 +196,10 @@
  * @property {number} voiceRate           v4 speech rate (default 1.05)
  * @property {number} voiceVolume         v4 speech volume 0–1 (default 1)
  * @property {boolean} beepsWithVoice     v4 soft tick under the voice on phase changes (default true)
+ * @property {{enabled: boolean, clientId: string, deviceId: string, deviceName: string, lastSyncAt: string|null, lastError: string|null}} [sync]
+ *   v5.2 Google-Drive sync connection (device-local, never merged/uploaded; SPEC §17)
+ * @property {Record<string, string>} [_updatedAt]   v5.2 settings key → ISO time of the last change (sync LWW)
+ * @property {Record<string, string>} [_equipmentAt] v5.2 equipment id → ISO time it was ticked/unticked
  * @property {string} surgeryDateSuggested v2 pre-fill value ("2027-01-05"), never auto-applied
  * @property {Profile} profile            v2; v3.1: only weightKg is used (kcal estimate per session)
  * @property {any} [weightGoal]           legacy (v2/v3 weight goal) – unused since v3.1, kept untouched
@@ -321,6 +325,11 @@
  * @property {boolean} bandsConfirmed   band order confirmed in the welcome card
  * @property {CustomWorkout[]} customWorkouts v2
  * @property {"pending"|"seen"|null} [equipmentNotice] v5: one-time Heute banner „Ausrüstung steuert den Plan“
+ * @property {{id: string, at: string}[]} [deletedSessionIds]       v5.2 tombstones (90 days) of deleted sessions
+ * @property {{id: string, at: string}[]} [deletedCustomWorkoutIds] v5.2 tombstones of deleted custom workouts
+ * @property {Record<string, string>} [levelsUpdatedAt] v5.2 exerciseId → ISO time of the last level change
+ * @property {Record<string, string>} [_updatedAt]      v5.2 tracked state key → ISO time of the last change
+ * @property {{deviceName: string, workoutName: string, startedAt: string}|null} [remoteActiveSession] v5.2 training running on another device (info only)
  * @property {any[]} [healthLog]             legacy v2/v3 diary – unused since v3.1, kept untouched (and in backups)
  * @property {Record<string, boolean>} exerciseToggles v2 false = disabled, true = enabled despite postOpAllowed=false
  * @property {{confirmedAt: string, note: string}|null} postOpClearance    v2

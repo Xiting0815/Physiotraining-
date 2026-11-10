@@ -8,6 +8,7 @@
 //   - data/*.json: cache-first from the SAME versioned cache as the JS (v5.1, audit P1-6). Content and code
 //     always come from one app version; new content arrives with a new SW version (content hash) like code.
 //   - activate: delete caches of older versions, claim clients.
+//   - v5.2: Google endpoints (sign-in script, Drive API) are never cached – the sync needs the network anyway.
 //   - updates: the new worker waits; the page shows "Update verfügbar – neu laden" and posts
 //     {type: 'SKIP_WAITING'} when the user taps it.
 //   - v3.1 (SPEC §14): the import features (offline OCR, Web Share Target) were removed. activate also
@@ -17,7 +18,7 @@
 // removing or changing app files (the version is a content hash, so any change triggers an update).
 
 // <precache-version>
-const CACHE_VERSION = '192a884bce';
+const CACHE_VERSION = '2babfb667c';
 // </precache-version>
 const CACHE_PREFIX = 'physio-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
@@ -65,6 +66,12 @@ const PRECACHE = [
   'js/render.js',
   'js/router.js',
   'js/store.js',
+  'js/sync/auth.js',
+  'js/sync/config.js',
+  'js/sync/drive.js',
+  'js/sync/engine.js',
+  'js/sync/merge.js',
+  'js/sync/ui.js',
   'js/types.js',
   'js/util/audio.js',
   'js/util/date.js',
@@ -92,6 +99,10 @@ const PRECACHE = [
 
 /** Caches of removed v3 features (OCR runtime cache, shared-files inbox) – deleted on activate. */
 const isLegacyCache = (k) => k === 'pt-share' || k.startsWith('pt-ocr-');
+
+/** Hosts of Google sign-in / Drive API – never served from or written to the cache. */
+const isGoogleHost = (h) => h === 'accounts.google.com' || h === 'www.googleapis.com' || h === 'oauth2.googleapis.com'
+  || h.endsWith('.google.com') || h.endsWith('.googleapis.com') || h.endsWith('.gstatic.com');
 
 const scopeUrl = (path) => new URL(path, self.registration.scope).href;
 
@@ -121,6 +132,9 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
+  // v5.2 (SPEC §17): Google sign-in (accounts.google.com) and Drive (www.googleapis.com) – like every other
+  // cross-origin request – always go straight to the network and are never cached.
+  if (isGoogleHost(url.hostname)) return;
   if (url.origin !== self.location.origin) return;
   const scope = new URL(self.registration.scope);
   if (!url.pathname.startsWith(scope.pathname)) return;

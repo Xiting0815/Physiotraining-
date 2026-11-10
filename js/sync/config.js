@@ -19,7 +19,7 @@ export const isValidClientId = (v) => typeof v === 'string' && CLIENT_ID_RE.test
 
 export const SYNC_FORMAT = 1;
 export const REMOTE_ACTIVE_MAX_MS = 12 * 3600e3;   // a running training on another device is shown for ≤ 12 h
-export const MAX_FUTURE_SKEW_MS = 5 * 60e3;        // timestamps further in the future are clamped (wrong device clock)
+export const MAX_FUTURE_SKEW_MS = 5 * 60e3;        // timestamps further in the future are ignored (wrong device clock)
 export const DEBOUNCE_MS = 20e3;                   // after store changes
 export const SESSION_MIN_GAP_MS = 2 * 60e3;        // during a running training at most every 2 min
 export const VISIBLE_THROTTLE_MS = 60e3;           // visibilitychange → visible

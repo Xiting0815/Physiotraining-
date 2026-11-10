@@ -300,6 +300,20 @@ function wireStoreNotices(store) {
   });
 }
 
+// ---- v5.2: Google-Drive sync (SPEC §17) ------------------------------------------------------------
+// Optional: loaded after boot; a failure (module, GIS, network) never affects the app. Google's sign-in script is
+// only fetched when sync is switched on (and online).
+function startSync(store, content) {
+  import('./sync/engine.js').then((m) => {
+    m.initSync({
+      store,
+      inSession: () => document.body.classList.contains('is-session') || !!store.getState().activeSession,
+      describeWorkout: (id) => content?.workouts?.find((w) => w.id === id)?.name
+        || store.getState().customWorkouts?.find((w) => w.id === id)?.name || '',
+    });
+  }).catch((e) => console.warn('Synchronisierung nicht geladen', e));
+}
+
 // ---- boot ------------------------------------------------------------------------------------------
 
 async function main() {
@@ -342,6 +356,7 @@ async function main() {
 
     routerMod.startRouter({ root, ctx: { store, content } });
     booted = true;
+    startSync(store, content);
   } catch (err) {
     showFatal(err);
   }

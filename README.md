@@ -65,6 +65,13 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
 - **Vorbereitung auf die Krücken** – Stütz-Dips, Trizeps, Abstützen im Sitz und Einbeinstand bereits vor der OP.
 - **Offline** – nach dem ersten Laden komplett offline nutzbar, installierbar als App.
 
+### Neu in Version 5.2 – Handy und Tablet synchron
+
+- **Synchronisierung über Google Drive** (Mehr → Synchronisierung) – Einheiten, Stufen, XP, Abzeichen, eigene
+  Workouts, Ausrüstung und Einstellungen werden zwischen deinen Geräten abgeglichen. Gelöschte Einheiten
+  verschwinden auch auf dem anderen Gerät. Ein Training, das gerade auf dem anderen Gerät läuft, wird auf Heute nur
+  angezeigt („Training läuft gerade auf Tablet“) – nie übernommen. Details siehe unten.
+
 ### Version 5.1 – stabiler und übersichtlicher
 
 - **Speicherfehler-Banner** – kann der Browser nicht speichern (Speicher voll, privater Modus), erscheint ein
@@ -162,6 +169,41 @@ Die App einmal online öffnen (z. B. `https://<user>.github.io/Physiotraining-/`
 Tipp: Regelmäßig unter **Mehr → Daten → Sicherung exportieren** ein Backup speichern – Browserdaten können
 beim Löschen des Verlaufs oder bei wenig Speicher verloren gehen.
 
+## Synchronisierung zwischen Geräten (Google Drive)
+
+Trainierst du abwechselnd auf Handy und Tablet, kann die App beide Geräte über **dein eigenes Google Drive**
+auf demselben Stand halten. Das ist optional – ohne Synchronisierung funktioniert alles wie bisher, komplett offline.
+
+**Einrichten (einmalig, ca. 15 Minuten):** Schritt-für-Schritt-Anleitung ohne Vorkenntnisse:
+[`docs/SYNC_SETUP.md`](docs/SYNC_SETUP.md). Kurz: In der Google Cloud Console ein Projekt mit „Google Drive API“
+und einer OAuth-Client-ID (Typ „Webanwendung“, JavaScript-Quelle `https://xiting0815.github.io`) anlegen, die
+Client-ID unter **Mehr → Synchronisierung** einfügen und auf **beiden** Geräten **Verbinden** tippen.
+
+**So funktioniert es**
+
+- Gespeichert wird eine einzige Datei `physiobogen-sync.json` im versteckten **App-Ordner** deines Google Drive
+  (Berechtigung `drive.appdata`). Die App sieht keine anderen Dateien, die Datei taucht in „Meine Ablage“ nicht auf.
+  Kein fremder Server, keine Weitergabe – die Anmeldung (Zugangs-Token) bleibt auf dem Gerät.
+- Abgeglichen wird beim Start, beim Zurückkehren in die App, kurz nach Änderungen, sofort nach dem Beenden einer
+  Einheit und dem Folgetag-Check sowie mit **„Jetzt synchronisieren“**. Während eines Trainings höchstens alle
+  2 Minuten. Offline merkt sich die App den Abgleich und holt ihn nach, sobald Internet da ist.
+- **Zusammenführen statt Überschreiben:** Einheiten beider Geräte werden vereint; gelöschte Einheiten und eigene
+  Workouts werden 90 Tage lang als „gelöscht“ vermerkt und verschwinden auch auf dem anderen Gerät. Bei Stufen,
+  Einstellungen, Phase und Ausrüstung gewinnt die jeweils **neueste Änderung** (auch eine bewusst zurückgenommene
+  Stufe). XP: höherer Wert, Abzeichen: alle.
+- Ein **laufendes Training** wird nie vom anderen Gerät übernommen. Auf Heute erscheint nur der Hinweis
+  „Training läuft gerade auf Tablet“.
+- Google gibt Web-Apps keine dauerhafte Anmeldung: Nach einem Neustart der App (bzw. nach etwa einer Stunde) zeigt
+  Heute den Knopf **„Abgleichen“** – ein Tipp meldet dich still neu an und gleicht ab. Während eines Trainings
+  öffnet sich nie ein Anmeldefenster.
+- **Trennen** behält alle Daten auf dem Gerät. Optional lässt sich die Sync-Datei in Google Drive dabei löschen.
+  „Alle Daten löschen“ und „Sicherung importieren (Ersetzen)“ wirken nur auf dem aktuellen Gerät.
+- Stammen die Daten aus einer neueren App-Version (Nur-Lese-Modus), pausiert die Synchronisierung.
+
+Für Entwickler: Code in `js/sync/` (`merge.js` rein funktional, `drive.js` REST, `auth.js` Google Identity Services,
+`engine.js` Auslöser/Status), Spezifikation in `docs/SPEC.md` §17. Optional kann eine Standard-Client-ID in
+`js/sync/config.js` (`DEFAULT_CLIENT_ID`) hinterlegt werden.
+
 ## Lokal starten
 
 ```bash
@@ -175,6 +217,7 @@ python3 -m http.server 8000
 
 ```bash
 node --test
+PW_E2E=1 node --test tests/sync-e2e.test.js   # Browser-Smoke-Test der Synchronisierung (Playwright + python3)
 ```
 
 ## Deployment (GitHub Pages)

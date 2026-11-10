@@ -39,6 +39,10 @@ export function statusInfo(st, now = Date.now()) {
 export function syncDot(st, now = Date.now()) {
   if (!st?.enabled) return '';
   const i = statusInfo(st, now);
+  // token expired (every cold start: Google gives browsers no refresh token) → one tap re-auth + sync right here
+  if (st.phase === 'needsAuth') {
+    return html`<button type="button" class="chip pv-sync-reauth" data-sync-reauth-quick title="${i.text}" aria-label="Bei Google anmelden und abgleichen"><span class="pv-sync-dot--warn pv-sync-dot__mini" aria-hidden="true"></span>Abgleichen</button>`;
+  }
   return html`<a class="pv-sync-dot pv-sync-dot--${i.tone}" href="#/mehr?focus=sync" data-sync-dot title="${i.text}" aria-label="Synchronisierung: ${i.label}"><span aria-hidden="true"></span></a>`;
 }
 
@@ -53,7 +57,7 @@ export function remoteActiveBanner(state, now = Date.now()) {
   return html`<div class="banner banner--accent pv-remote-active" role="status" data-remote-active>
     <span class="banner__icon" aria-hidden="true">📲</span>
     <span class="banner__body"><span class="banner__title">Training läuft gerade auf ${r.deviceName || 'anderem Gerät'}</span>
-    <span class="banner__text">${r.workoutName ? `${r.workoutName} · ` : ''}seit ${hm} Uhr – wird nach dem Abgleich hier angezeigt.</span></span>
+    <span class="banner__text">${r.workoutName ? `${r.workoutName} · ` : ''}seit ${hm} Uhr · erscheint hier, sobald es dort beendet und abgeglichen ist</span></span>
   </div>`;
 }
 
@@ -106,6 +110,8 @@ export const SYNC_CSS = `
 .pv-sync-dot { display: inline-grid; place-items: center; min-width: 44px; min-height: 44px; border-radius: 50%; }
 .pv-sync-dot > span { width: 10px; height: 10px; box-shadow: 0 0 0 3px var(--surface, #fff); }
 .pv-remote-active { margin-bottom: var(--s-4); }
+.pv-sync-reauth { min-height: 44px; gap: 6px; cursor: pointer; border: 0; font: inherit; font-weight: var(--fw-bold, 700); }
+.pv-sync-dot__mini { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); }
 @keyframes pv-sync-pulse { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .pv-sync-dot--busy > span, .pv-sync__status--busy .pv-sync__dot { animation: none; } }
 `;

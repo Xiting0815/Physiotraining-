@@ -830,6 +830,8 @@ export function importData(input) {
   const { exportedAt, ...rest } = obj;
   const prev = cache;
   cache = migrate(clone(rest));
+  // v5.2: the sync connection is device-local – never taken from a backup (another device's deviceId)
+  cache.settings.sync = clone(isObj(prev?.settings?.sync) ? prev.settings.sync : defaults().settings.sync);
   if (!save()) {
     cache = prev;
     throw new Error(SAVE_FAILED_MSG);

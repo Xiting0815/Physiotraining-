@@ -1562,3 +1562,82 @@ figure prop `sling`.
 - **Übungen:** equipment filter chips incl. Schlingentrainer, Türanker, Bandgriffe, Rudergerät; cards show „fehlt: …“.
   **Exercise detail:** „Benötigt“ chips (owned ✓ / fehlt / optional) with link to Meine Ausrüstung, fallback and
   variant hints. **Eigene Workouts:** warnings for missing equipment (fallback or skipped).
+
+## 17. v5.2 – Sync über Google Drive
+
+Optional two-device sync (phone + tablet, trained alternately) through the user's own Google Drive.
+`APP_VERSION` 5.2.0, `SCHEMA_VERSION` stays 1 (all additions are additive and filled by `store.defaults`).
+The app stays fully functional offline and without Google; sync code lives in `js/sync/` and is loaded after boot.
+
+### 17.1 Auth — `js/sync/auth.js`, `js/sync/config.js`
+
+- Google Identity Services token client; `https://accounts.google.com/gsi/client` is injected lazily (only when sync
+  is enabled/used and online), never precached. Scope **only** `https://www.googleapis.com/auth/drive.appdata`.
+- Client id: `settings.sync.clientId` (Mehr → Synchronisierung, pattern `*.apps.googleusercontent.com`), fallback
+  `DEFAULT_CLIENT_ID` in `js/sync/config.js` (empty).
+- Access token in memory + `sessionStorage` (`pt.sync.token`) with expiry (60 s margin). No refresh tokens exist in
+  the browser: re-auth = `requestAccessToken({prompt: ''})` and needs a user gesture (popup), so it is only called
+  from taps (Verbinden, Erneut anmelden, Jetzt synchronisieren, Heute chip „Abgleichen“) – never automatically,
+  never during a training.
+
+### 17.2 Storage & engine — `js/sync/drive.js`, `js/sync/engine.js`
+
+- One file `physiobogen-sync.json` in `appDataFolder` (Drive v3 REST via fetch): `files.list`
+  (`spaces=appDataFolder`, `q=name=…`), `files.get alt=media`, `files.create` (multipart), `files.update`
+  (media upload, `If-Match: <ETag>`), `files.delete`.
+- Content = backup envelope (export format, `exportedAt`) + `{app, syncFormat: 1, deviceId, deviceName, syncedAt, rev,
+  activeSessions}`. Device-local parts are stripped on upload (`settings.sync`, `state.activeSession`,
+  `state.remoteActiveSession`, notices).
+- Cycle: list → download → `parseRemote` (newer schema → error, nothing written; invalid → error) → `mergeSync` →
+  version re-check (`files.get fields=version`) → update with If-Match. 412 or changed version → re-read + re-merge,
+  up to 3 retries, then status error. Several files (created concurrently) are folded into the oldest, others deleted.
+- Result applied via `store.applySync()` (no change tracking, no `onLocalChange`); if local data changed during the
+  upload it is merged again with the uploaded data. `settings.sync.lastSyncAt` = sync time.
+- Clock: the Drive `Date` header sets `store.setClockOffset()` when the device clock is > 60 s off; all change
+  timestamps use `store.nowISO()`.
+- Status (`getStatus()`, window event `pt-sync-status`): `off | syncing | ok | error | needsAuth | offline | readonly`.
+
+### 17.3 Change tracking (store) & merge — `js/store.js`, `js/sync/merge.js`
+
+`store.update()` diffs before/after (`trackChanges`) and writes bookkeeping into the new data:
+`settings._updatedAt[key]`, `settings._equipmentAt[id]`, `state._updatedAt[key]` (all state keys except
+`UNTRACKED_STATE_KEYS`), `state.levelsUpdatedAt[exerciseId]`, `updatedAt` on edited sessions/custom workouts, and
+tombstones `state.deletedSessionIds` / `state.deletedCustomWorkoutIds` (`[{id, at}]`, kept 90 days) for removed
+ones. Listeners: `store.onLocalChange(cb(data, {kinds}))` – not for `settings.sync`-only changes.
+
+`mergeSync(local, remote, {now, join})` (extends `export-import.mergeBackups`, which now also honours tombstones):
+
+| Part | Rule |
+| --- | --- |
+| sessions | union by id minus tombstones; conflict: newer of `updatedAt/endedAt/startedAt`, tie → the one with `nextDay`; a `nextDay` is never lost |
+| customWorkouts | by id, newer `updatedAt` wins, minus tombstones |
+| exerciseLevels | newer `levelsUpdatedAt` wins (explicit regress beats max); one side untracked → the stamped one; none / `join` → max |
+| xp / badges / records / exitCriteriaDone | max / union (earliest date) / better / union |
+| settings | per key last-write-wins via `_updatedAt`; untracked on both: non-null wins, then remote on `join`, else local; `sync` always local |
+| ownedEquipment | per id via `_equipmentAt`; untracked → owned if owned on either side |
+| state keys (phaseId, nextWorkoutId, phaseHistory, clearances, toggles, …) | per key last-write-wins via `state._updatedAt` |
+| activeSession | always local, never taken from remote |
+
+`join` = this device has never synced (`settings.sync.lastSyncAt` null): it adopts shared values for untracked
+settings and keeps the max of levels. Timestamps more than 5 min in the future (broken clock) count as untracked.
+
+Running training on another device: `activeSessions[deviceId] = {deviceName, workoutName, startedAt, updatedAt}` in the
+envelope (own entry set/removed on each sync, entries > 12 h dropped). The newest foreign entry < 12 h becomes
+`state.remoteActiveSession` (info only, never resumed).
+
+### 17.4 Triggers
+
+App start (online + valid token), `visibilitychange` → visible (≥ 60 s since the last attempt), `onLocalChange`
+debounced 20 s (while a training runs: throttled to ≥ 2 min since the last attempt), session finished / next-day
+check → immediately, „Jetzt synchronisieren“, `online` event after a queued (offline) attempt. Never in read-only
+mode (newer schema). Without a token: status `needsAuth`, GIS is preloaded so the next tap can open the popup.
+
+### 17.5 UI
+
+- Mehr → card „Synchronisierung“: status line with dot (Nicht verbunden / Google-Konto verbunden · Letzter Abgleich
+  vor 3 min / Anmeldung nötig / Offline / Fehler: …), Gerätename (default „Handy“/„Tablet“ by screen size),
+  Client-ID with link to `docs/SYNC_SETUP.md`, buttons Verbinden / Jetzt synchronisieren / Erneut anmelden / Trennen,
+  checkbox „Beim Trennen auch die Daten in Google Drive löschen“ (confirm dialog). Deep link `#/mehr?focus=sync`.
+- Heute: status dot in the header (links to the card); without token a chip „Abgleichen“ (one-tap re-auth + sync);
+  info banner „Training läuft gerade auf <Gerät>“ from `state.remoteActiveSession`.
+- `sw.js` never handles Google hosts (and no cross-origin request at all).

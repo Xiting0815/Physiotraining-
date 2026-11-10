@@ -6,13 +6,16 @@ import { defaults, corruptBackupKeys, readCorruptBackup } from '../store.js';
 import { suggestedSurgeryDate } from '../logic/schedule.js';
 import { downloadBackup, readBackupFile } from '../util/export-import.js';
 import { voice, voiceSettings, testVoice, DEFAULT_RATE } from '../util/voice.js';
+import { getSync, guessDeviceName } from '../sync/engine.js';
+import { syncCard, ensureSyncStyles } from '../sync/ui.js';
+import { isValidClientId } from '../sync/config.js';
 import {
   ICON, ensureViewStyles, applyFontScale, pageHeader, confirmDialog, toast, openSheet, equipmentItems,
   safeData,
 } from './ui.js';
 
 export const title = 'Mehr';
-export const APP_VERSION = '5.1.0';
+export const APP_VERSION = '5.2.0';
 
 const REST_OPTIONS = [null, 30, 45, 60, 90, 120];
 const FONT_SCALES = [{ v: 1, l: 'Normal' }, { v: 1.125, l: 'Groß' }, { v: 1.25, l: 'Sehr groß' }];
@@ -104,7 +107,15 @@ const SAFETY = html`
 /** @param {HTMLElement} root @param {import('../types.js').ViewContext} ctx */
 export function render(root, { store, content, query }) {
   ensureViewStyles();
+  ensureSyncStyles();
   let importMode = 'replace';
+  let deleteRemote = false;
+  let skipDraw = false;
+  const isOnline = () => (typeof navigator === 'undefined' ? true : navigator.onLine !== false);
+  const syncCardHtml = () => {
+    const sync = store.get().settings.sync || {};
+    return syncCard(sync, getSync()?.getStatus() ?? null, { online: isOnline(), showDelete: deleteRemote });
+  };
 
   const draw = () => {
     const data = safeData(store.get());
@@ -249,9 +260,12 @@ export function render(root, { store, content, query }) {
         <button class="btn btn--ghost btn--sm" data-thr-reset>Auf Standard zurücksetzen (2 / 5 / 2×)</button>
       </section>
 
+      <h2 class="section-title" id="sync">Synchronisierung</h2>
+      ${syncCardHtml()}
+
       <h2 class="section-title" id="backup">Daten & Sicherung</h2>
       <section class="card pv-backup" data-backup-card aria-labelledby="backup">
-        <p class="card__sub" style="margin-top:0">${age == null ? 'Noch keine Sicherung erstellt.' : age === 0 ? 'Letzte Sicherung: heute ✓' : `Letzte Sicherung: vor ${age} ${age === 1 ? 'Tag' : 'Tagen'}`} · ${data.sessions.length} ${data.sessions.length === 1 ? 'Einheit' : 'Einheiten'} gespeichert. Deine Daten liegen nur auf diesem Gerät.</p>
+        <p class="card__sub" style="margin-top:0">${age == null ? 'Noch keine Sicherung erstellt.' : age === 0 ? 'Letzte Sicherung: heute ✓' : `Letzte Sicherung: vor ${age} ${age === 1 ? 'Tag' : 'Tagen'}`} · ${data.sessions.length} ${data.sessions.length === 1 ? 'Einheit' : 'Einheiten'} gespeichert. ${s.sync?.enabled ? 'Abgleich mit deinem Google Drive ist aktiv – eine eigene Sicherung schadet trotzdem nicht.' : 'Deine Daten liegen nur auf diesem Gerät.'}</p>
         <button class="btn btn--primary btn--block mt-4" data-export>${raw(ICON.download)} Sicherung exportieren (JSON)</button>
         <p class="field__label mb-2 mt-4">Sicherung importieren</p>
         <div class="segmented mb-2" role="radiogroup" aria-label="Import-Modus">
@@ -305,6 +319,25 @@ export function render(root, { store, content, query }) {
       });
     } else if (t.name === 'restDefault') set((s) => { s.restDefault = t.value ? Number(t.value) : null; });
     else if (t.name === 'importMode') { importMode = t.value; draw(); }
+    else if (t.name === 'syncDeleteRemote') { deleteRemote = t.checked; }
+    else if (t.name === 'syncDeviceName' || t.name === 'syncClientId') {
+      // saved without a redraw: a tap on „Verbinden“ right after typing must still hit the button
+      const v = t.value.trim();
+      skipDraw = true;
+      store.update((d) => {
+        const sy = { ...(d.settings.sync || {}) };
+        if (t.name === 'syncDeviceName') sy.deviceName = (v || guessDeviceName()).slice(0, 30);
+        else sy.clientId = v;
+        d.settings.sync = sy;
+      });
+      skipDraw = false;
+      if (t.name === 'syncClientId') {
+        const ok = isValidClientId(v);
+        const btn = root.querySelector('[data-sync-connect]');
+        if (btn) btn.disabled = !(ok && isOnline());
+        if (ok && isOnline()) getSync()?.preload();
+      }
+    }
     else if (t.matches('[data-import]') && t.files?.[0]) {
       const file = t.files[0];
       const replace = importMode === 'replace';
@@ -374,6 +407,41 @@ export function render(root, { store, content, query }) {
       } catch (err) { toast('Export fehlgeschlagen', { kind: 'accent', icon: '⚠️' }); }
       return;
     }
+    if (e.target.closest('[data-sync-connect]')) {
+      const sync = getSync();
+      if (!sync) { toast('Synchronisierung ist gerade nicht verfügbar.', { kind: 'accent', icon: '⚠️' }); return; }
+      const cid = root.querySelector('#syncClientId')?.value.trim() ?? '';
+      const name = root.querySelector('#syncDeviceName')?.value.trim() || guessDeviceName();
+      const r = await sync.connect({ clientId: cid, deviceName: name });
+      if (r?.ok) toast('Verbunden – Daten abgeglichen', { icon: '🔄' });
+      return;
+    }
+    if (e.target.closest('[data-sync-now], [data-sync-reauth]')) {
+      const sync = getSync();
+      if (!sync) { toast('Synchronisierung ist gerade nicht verfügbar.', { kind: 'accent', icon: '⚠️' }); return; }
+      const r = await sync.syncNow({ interactive: true });
+      if (r?.ok) toast('Abgeglichen', { icon: '🔄' });
+      return;
+    }
+    if (e.target.closest('[data-sync-disconnect]')) {
+      const sync = getSync();
+      const ok = await confirmDialog({
+        title: deleteRemote ? 'Trennen und Drive-Daten löschen?' : 'Synchronisierung trennen?',
+        text: deleteRemote
+          ? 'Die Sync-Datei in deinem Google Drive wird gelöscht. Die Daten auf diesem Gerät bleiben erhalten. Das andere Gerät gleicht danach nicht mehr ab, bis du neu verbindest.'
+          : 'Die Daten auf diesem Gerät bleiben erhalten. Die Kopie in Google Drive bleibt ebenfalls liegen.',
+        confirm: deleteRemote ? 'Trennen & löschen' : 'Trennen', danger: deleteRemote, icon: '🔌',
+      });
+      if (!ok) return;
+      if (!sync) {
+        store.update((d) => { d.settings.sync = { ...(d.settings.sync || {}), enabled: false, lastSyncAt: null }; d.state.remoteActiveSession = null; });
+        return;
+      }
+      const wiped = deleteRemote;
+      const r = await sync.disconnect({ deleteRemote: wiped });
+      if (r?.ok) { deleteRemote = false; toast(wiped ? 'Getrennt – Drive-Daten gelöscht' : 'Synchronisierung getrennt', { icon: '🔌' }); draw(); }
+      return;
+    }
     if (e.target.closest('[data-safety]')) { openSheet(SAFETY, { label: 'Sicherheit & Hinweise' }); return; }
     if (e.target.closest('[data-reset]')) {
       const first = await confirmDialog({ title: 'Alle Daten löschen?', text: 'Einheiten, Stufen, XP, Abzeichen und Einstellungen werden von diesem Gerät entfernt.', confirm: 'Weiter', danger: true, icon: '🗑️' });
@@ -388,7 +456,22 @@ export function render(root, { store, content, query }) {
   draw();
   root.addEventListener('change', onChange);
   root.addEventListener('click', onClick);
-  const unsub = store.subscribe(draw);
+  const unsub = store.subscribe(() => { if (!skipDraw) draw(); });
+  // sync status changes: re-render only the sync card (keeps focus elsewhere); while typing in it only the status line
+  const onSyncStatus = () => {
+    const card = root.querySelector('[data-sync-card]');
+    if (!card) return;
+    const tpl = document.createElement('template');
+    tpl.innerHTML = String(syncCardHtml());
+    const fresh = tpl.content.firstElementChild;
+    if (!fresh) return;
+    if (card.contains(document.activeElement) && document.activeElement?.matches?.('input')) {
+      card.querySelector('[data-sync-status]')?.replaceWith(fresh.querySelector('[data-sync-status]'));
+    } else card.replaceWith(fresh);
+  };
+  window.addEventListener('pt-sync-status', onSyncStatus);
+  window.addEventListener('online', onSyncStatus);
+  window.addEventListener('offline', onSyncStatus);
   const synth = globalThis.speechSynthesis;
   const onVoices = () => {
     const el = root.querySelector('[data-voice-status]');
@@ -410,8 +493,14 @@ export function render(root, { store, content, query }) {
   if (query.focus === 'surgeryDate') {
     setTimeout(() => { const el = root.querySelector('#surgeryDate'); el?.scrollIntoView({ block: 'center' }); el?.focus({ preventScroll: true }); }, 60);
   }
+  if (query.focus === 'sync') {
+    setTimeout(() => root.querySelector('#sync')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 60);
+  }
   return () => {
     unsub();
+    window.removeEventListener('pt-sync-status', onSyncStatus);
+    window.removeEventListener('online', onSyncStatus);
+    window.removeEventListener('offline', onSyncStatus);
     synth?.removeEventListener?.('voiceschanged', onVoices);
     root.removeEventListener('change', onChange);
     root.removeEventListener('click', onClick);

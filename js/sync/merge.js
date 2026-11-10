@@ -10,7 +10,8 @@
 //   - settings: per key last-write-wins via settings._updatedAt; ownedEquipment per id via settings._equipmentAt
 //   - state keys (phaseId, nextWorkoutId, phaseHistory, …): per key last-write-wins via state._updatedAt
 //   - activeSession: always the local one (never taken from the other device); settings.sync stays local
-// Timestamps further than MAX_FUTURE_SKEW_MS in the future (wrong device clock) are clamped.
+// Timestamps further than MAX_FUTURE_SKEW_MS in the future (wrong device clock) are ignored; small skews are
+// tolerated, larger device-clock errors are corrected by the engine via the Drive server time (store.setClockOffset).
 import { mergeBackups } from '../util/export-import.js';
 import { LOCAL_SETTINGS_KEYS, UNTRACKED_STATE_KEYS } from '../store.js';
 import { MAX_FUTURE_SKEW_MS, REMOTE_ACTIVE_MAX_MS, SYNC_FORMAT } from './config.js';
@@ -20,10 +21,14 @@ const clone = (v) => (typeof structuredClone === 'function' ? structuredClone(v)
 const fin = (t) => (Number.isFinite(t) ? t : -Infinity);
 const sessionTime = (s) => String(s.startedAt || s.endedAt || '');
 
-/** @param {number} now @returns {(v: any) => number} parsed timestamp (NaN if missing), future clamped */
+/**
+ * @param {number} now
+ * @returns {(v: any) => number} parsed timestamp; NaN when missing or further than MAX_FUTURE_SKEW_MS in the future
+ *   (a device with a wrong clock must not win every conflict – its value counts as "untracked")
+ */
 const stamper = (now) => (v) => {
   const t = typeof v === 'string' ? Date.parse(v) : NaN;
-  return Number.isFinite(t) ? Math.min(t, now + MAX_FUTURE_SKEW_MS) : NaN;
+  return Number.isFinite(t) && t <= now + MAX_FUTURE_SKEW_MS ? t : NaN;
 };
 
 /**

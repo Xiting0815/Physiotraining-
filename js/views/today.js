@@ -20,6 +20,8 @@ import { scheduleHint, suggestedSurgeryDate, postOpStatus, canEnterPhase, cleara
 import { progressRing, streakFlame, xpBar } from '../components/charts.js';
 import { confetti } from '../components/celebrate.js';
 import { switchPhase } from './plan.js';
+import { getSync } from '../sync/engine.js';
+import { syncDot, remoteActiveBanner, ensureSyncStyles } from '../sync/ui.js';
 import {
   ICON, ensureViewStyles, applyFontScale, greeting, pendingNextDay, workoutSplit, workoutLetter,
   trafficPill, shortDate, toast, sessionMinutes, bandChip, fmtDistance, confirmDialog, KIND_ICON, fmtMinutes, num,
@@ -103,6 +105,7 @@ const STATUS_CHIP = {
 /** @param {HTMLElement} root @param {import('../types.js').ViewContext} ctx */
 export function render(root, { store, content }) {
   ensureViewStyles();
+  ensureSyncStyles();
   const exName = (id) => content.exercises.find((e) => e.id === id)?.name ?? id;
   let moreOpen = false;
   let recOpen = false;
@@ -574,10 +577,12 @@ export function render(root, { store, content }) {
           <h1 class="pv-greet__hello">${greeting(now)}!</h1>
         </div>
         <div class="page-header__actions">
+          <span data-sync-dot-host>${syncDot(getSync()?.getStatus() ?? null, now.getTime())}</span>
           <a class="pv-level-tap" href="#/verlauf" aria-label="Level ${lvl.index + 1}: ${lvl.title} – zum Verlauf"><span class="chip chip--gold">🏹 <span>${lvl.title}</span></span></a>
         </div>
       </header>
 
+      ${remoteActiveBanner(state, now.getTime())}
       ${ndBanner}
       ${active ? '' : eqBanner}
       ${postCard}
@@ -699,8 +704,21 @@ export function render(root, { store, content }) {
   const hasDom = typeof document !== 'undefined' && typeof window !== 'undefined';
   if (hasDom) { document.addEventListener('visibilitychange', onVisible); window.addEventListener('focus', onVisible); }
   const unsub = store.subscribe(draw);
+  // v5.2: only the small sync dot follows the sync status (no full redraw)
+  const onSync = () => {
+    const host = root.querySelector('[data-sync-dot-host]');
+    if (host) host.innerHTML = String(syncDot(getSync()?.getStatus() ?? null));
+  };
+  const onSyncTap = (e) => {
+    if (!e.target.closest?.('[data-sync-reauth-quick]')) return;
+    getSync()?.syncNow({ interactive: true }).then((r) => { if (r?.ok) toast('Abgeglichen', { icon: '🔄' }); });
+  };
+  if (hasDom) window.addEventListener('pt-sync-status', onSync);
+  root.addEventListener('click', onSyncTap);
   return () => {
     unsub();
+    if (hasDom) window.removeEventListener('pt-sync-status', onSync);
+    root.removeEventListener('click', onSyncTap);
     if (hasDom) { document.removeEventListener('visibilitychange', onVisible); window.removeEventListener('focus', onVisible); }
     root.removeEventListener('click', onClick);
     root.removeEventListener('change', onChange);
