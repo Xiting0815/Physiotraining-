@@ -2,6 +2,7 @@
 import { html, raw, render as paint } from '../render.js';
 import { levelOf, phasePlanExerciseIds } from '../logic/progression.js';
 import { usesEquipment, missingEquipment, EQUIPMENT_INFO } from '../logic/equipment.js';
+import { shoulderOk, shoulderLimit } from '../logic/shoulder.js';
 import {
   ICON, figureThumb, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip, workoutItems,
   safeData,
@@ -12,7 +13,7 @@ export const title = 'Übungen';
 
 const BLOCKS = ['knee', 'archery', 'warmup', 'cooldown', 'cardio'];
 const BLOCK_ORDER = { warmup: 0, knee: 1, archery: 2, cooldown: 3, cardio: 4 };
-const EQUIP_ORDER = ['theraband', 'loop', 'mat', 'chair', 'step', 'wall', 'door', 'sling-trainer', 'door-anchor', 'band-handles', 'rowing-machine', 'none'];
+const EQUIP_ORDER = ['theraband', 'loop', 'mat', 'seat', 'chair-fixed', 'step', 'wall', 'door', 'bed-edge', 'massage-stick', 'sling-trainer', 'door-anchor', 'band-handles', 'rowing-machine', 'none'];
 
 /** Dose line for library cards: rowing shows the level label (e.g. „12 min gleichmäßig“). */
 export function cardDose(ex, lvl) {
@@ -106,6 +107,7 @@ export function render(root, { store, content, query }) {
               ${ex.side === 'left' ? html`<span class="chip chip--sm chip--outline">OP-Knie</span>` : ''}
               ${availabilityChip(av)}
               ${miss.length ? html`<span class="chip chip--sm chip--outline" title="Nicht in Meine Ausrüstung abgehakt">fehlt: ${miss.map((m) => EQUIPMENT_INFO[m]?.label ?? m).join(', ')}</span>` : ''}
+              ${!shoulderOk(ex, levelOf(state, ex.id, ex), settings) ? html`<span class="chip chip--sm chip--outline" data-shoulder-chip title="Schulter-Schutz: Armhebung über ${shoulderLimit(settings)}°">🛡️ über Schulter-Limit</span>` : ''}
             </span>
           </div>
           ${raw(ICON.chev)}

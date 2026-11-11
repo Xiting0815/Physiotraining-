@@ -72,7 +72,7 @@ test('voice cues in the browser: hold + tempo exercise, gaps ≥ 5 s, no console
     await page.waitForTimeout(400); // "Willkommen zurück" toast etc.
 
     // ---- hold exercise: tap Start (prep 5 s → holds with 5 s relax), rest, second set auto-starts
-    await page.click('pt-timer[data-role="work"] [data-action="toggle"]');
+    await page.click('[data-act="cta"]'); // v5.3: „Satz starten“
     await page.clock.runFor(1500);
     assert.equal(await page.$eval('pt-timer[data-role="work"] .pt-timer__cue', (e) => e.textContent), 'Bereit machen');
     await page.$eval('[data-slot="timer"]', (e) => e.scrollIntoView({ block: 'center' }));
@@ -116,7 +116,7 @@ test('voice cues in the browser: hold + tempo exercise, gaps ≥ 5 s, no console
 
     // ---- knee pain → next exercise (tempo coach 3-0-3 × 3)
     await page.click('[data-slot="pain"] pt-pain-scale button >> nth=0');
-    await page.click('[data-act="next"]');
+    await page.click('[data-act="cta"]'); // „Nächste Übung“
     await page.waitForSelector('[data-act="tempo"]');
     await page.evaluate(() => { window.__utter = []; });
     await page.click('[data-act="tempo"]');

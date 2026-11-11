@@ -82,7 +82,10 @@
               "exerciseId": "er-iso-door",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10.",
+              "override": {
+                "reps": 3
+              }
             }
           ]
         }
@@ -403,7 +406,10 @@
               "exerciseId": "er-iso-door",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10.",
+              "override": {
+                "reps": 3
+              }
             }
           ]
         }
@@ -623,7 +629,10 @@
               "exerciseId": "scapula-setting",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Schulterblatt-Kontrolle: Schultern tief."
+              "note": "Schulterblatt-Kontrolle: Schultern tief.",
+              "override": {
+                "reps": 5
+              }
             }
           ]
         }
@@ -729,7 +738,10 @@
               "exerciseId": "er-iso-door",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10.",
+              "override": {
+                "reps": 3
+              }
             }
           ]
         }
@@ -951,7 +963,10 @@
               "exerciseId": "scapula-setting",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Schulterblatt-Kontrolle: Schultern tief."
+              "note": "Schulterblatt-Kontrolle: Schultern tief.",
+              "override": {
+                "reps": 5
+              }
             }
           ]
         }
@@ -1029,13 +1044,10 @@
               "exerciseId": "er-iso-door",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
-            },
-            {
-              "exerciseId": "scapula-setting",
-              "shoulderOnly": true,
-              "maxSets": 1,
-              "note": "Schulterblatt-Kontrolle: Schultern tief."
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10.",
+              "override": {
+                "reps": 2
+              }
             }
           ]
         }
@@ -1097,13 +1109,10 @@
               "exerciseId": "er-iso-door",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
-            },
-            {
-              "exerciseId": "scapula-setting",
-              "shoulderOnly": true,
-              "maxSets": 1,
-              "note": "Schulterblatt-Kontrolle: Schultern tief."
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10.",
+              "override": {
+                "reps": 2
+              }
             }
           ]
         }
@@ -1164,13 +1173,10 @@
               "exerciseId": "er-iso-door",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
-            },
-            {
-              "exerciseId": "scapula-setting",
-              "shoulderOnly": true,
-              "maxSets": 1,
-              "note": "Schulterblatt-Kontrolle: Schultern tief."
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10.",
+              "override": {
+                "reps": 2
+              }
             }
           ]
         }
@@ -1254,7 +1260,10 @@
               "exerciseId": "er-iso-door",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10.",
+              "override": {
+                "reps": 3
+              }
             }
           ]
         }
@@ -1456,13 +1465,19 @@
               "exerciseId": "ir-iso-door",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10.",
+              "override": {
+                "reps": 3
+              }
             },
             {
               "exerciseId": "scapula-setting",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Schulterblatt-Kontrolle: Schultern tief."
+              "note": "Schulterblatt-Kontrolle: Schultern tief.",
+              "override": {
+                "reps": 5
+              }
             }
           ]
         }
@@ -1540,13 +1555,10 @@
               "exerciseId": "er-iso-door",
               "shoulderOnly": true,
               "maxSets": 1,
-              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
-            },
-            {
-              "exerciseId": "scapula-setting",
-              "shoulderOnly": true,
-              "maxSets": 1,
-              "note": "Schulterblatt-Kontrolle: Schultern tief."
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10.",
+              "override": {
+                "reps": 2
+              }
             }
           ]
         }

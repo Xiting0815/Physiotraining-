@@ -7,15 +7,16 @@
 // (cursor {index, set, step}); reloading #/session resumes it. Summary: #/session?summary=<id>.
 import { html, raw, render as paint } from '../render.js';
 import { nextWorkout, buildSessionPlan, getWorkout, workoutKind, canRowWarmup, finisherPlan, finisherEligible, appendFinisher } from '../logic/progression.js';
-import { instructionsFor, ownsRowingMachine } from '../logic/equipment.js';
+import { instructionsFor, ownsRowingMachine, officeChairOnly, OFFICE_CHAIR_NOTE } from '../logic/equipment.js';
+import { shoulderProtect, isShoulderExercise, SHOULDER_NOTE, DRAW_NOTE } from '../logic/shoulder.js';
 import { estimateWorkoutMinutes } from '../logic/duration.js';
-import { rowingPhases, validateRowing, INTENSITY_LABELS } from '../logic/cardio.js';
+import { rowingPhases, validateRowing } from '../logic/cardio.js';
 import { sameDayLoadHint } from '../logic/stats.js';
 import { taperActive, LIGHT_LABELS } from '../logic/traffic-light.js';
 import { sessionScore, LEVELS } from '../logic/motivation.js';
 import { todayISO, formatDuration } from '../util/date.js';
-import { unlock, beep, vibrate } from '../util/audio.js';
-import { say, cancel as voiceCancel, unlock as voiceUnlock, countdownWord, voiceActive, cueVibrate } from '../util/voice.js';
+import { unlock } from '../util/audio.js';
+import { say, cancel as voiceCancel, unlock as voiceUnlock, cueVibrate } from '../util/voice.js';
 import { targetFace, confetti } from '../components/celebrate.js';
 import { xpBar } from '../components/charts.js';
 import { cueWordsFor } from '../logic/cues.js';
@@ -233,7 +234,7 @@ export function render(root, ctx) {
         ${w?.description ? html`<p class="hero__meta ses-intro__desc">${w.description}</p>` : ''}
         <p class="hero__meta">
           <span>${raw(ICON.clock)}ca. <span class="num" data-min>${minutes}</span>&nbsp;Min</span>
-          <span>${raw(ICON.list)}${cardio ? `${rowingPhases(session, content).length} Abschnitte` : html`<span class="num" data-count>${vis.length}</span>&nbsp;Übungen`}</span>
+          <span>${raw(ICON.list)}${cardio ? `${rowingPhases(session, content).length} Teile` : html`<span class="num" data-count>${vis.length}</span>&nbsp;Übungen`}</span>
         </p>
         ${cardio ? '' : html`<div class="hero__split" aria-hidden="true">
           <span style="flex:${count('warmup') || 0.5}"></span><span class="is-knee" style="flex:${count('knee') || 0.01}"></span><span class="is-archery" style="flex:${count('archery') || 0.01}"></span><span style="flex:${count('cooldown') || 0.5}"></span>
@@ -408,26 +409,25 @@ export function render(root, ctx) {
     if (dose.type === 'hold') {
       const reps = (dose.reps ?? 1) * (dose.perSide ? 2 : 1);
       return html`<pt-timer mode="hold" block="${blk}" seconds="${dose.hold ?? 10}" reps="${reps}" rest-between="${dose.perSide && (dose.reps ?? 1) === 1 ? 5 : dose.restBetween}" data-role="work"></pt-timer>
-        <p class="ses-hint">${dose.perSide ? 'Seitenwechsel in der kurzen Pause. ' : ''}Der Satz wird nach dem Timer automatisch abgehakt.</p>`;
+        <p class="ses-hint">${dose.perSide ? 'Seitenwechsel in der kurzen Pause. ' : ''}Unten „Satz starten“ – der Satz wird nach dem Timer automatisch abgehakt.</p>`;
     }
     if (dose.type === 'timed') {
       if (dose.perSide) {
         return html`<pt-timer mode="hold" block="${blk}" seconds="${dose.seconds ?? 30}" reps="2" rest-between="5" data-role="work"></pt-timer>
-          <p class="ses-hint">Erst eine Seite, nach der kurzen Pause die andere. Satz wird danach automatisch abgehakt.</p>`;
+          <p class="ses-hint">Unten „Satz starten“: erst eine Seite, nach der kurzen Pause die andere. Satz wird danach automatisch abgehakt.</p>`;
       }
       return html`<pt-timer mode="set" block="${blk}" seconds="${dose.seconds ?? 30}" data-role="work"></pt-timer>
-        <p class="ses-hint">Der Satz wird nach dem Timer automatisch abgehakt.</p>`;
+        <p class="ses-hint">Unten „Satz starten“ – der Satz wird nach dem Timer automatisch abgehakt.</p>`;
     }
     if (tempoCoachOn(dose, entry)) {
       return html`<div data-slot="tempo"><pt-timer compact mode="set" block="${blk}" reps="${dose.reps ?? 10}" tempo="${dose.tempo}" data-role="work"></pt-timer>
-        <p class="ses-hint">Tempo-Coach ${dose.tempo}: einmal Start tippen, dann führt die Stimme. Der Satz wird danach abgehakt.</p>
+        <p class="ses-hint">Tempo-Coach ${dose.tempo}: unten „Satz starten“ tippen, dann führt die Stimme. Der Satz wird danach abgehakt.</p>
         <button type="button" class="ses-link" data-act="tempo-manual">Lieber selbst zählen</button></div>`;
     }
-    // plain reps (or manual tempo): one big target – readable and tappable from the mat
-    return html`<button type="button" class="btn btn--primary ses-bigdone" data-act="set-done">${raw(ICON.done)}<span>Satz fertig</span></button>
+    // plain reps (or manual tempo): v5.3 – the big bottom button reads „Satz fertig“ (SPEC §18.2)
+    return html`<p class="ses-hint ses-hint--big">Nach jedem Satz unten auf <strong>„Satz fertig“</strong> tippen – die Satzpause startet automatisch.</p>
       ${dose.tempo ? html`<button type="button" class="btn btn--soft btn--block btn--session mt-3" data-act="tempo">Tempo-Coach · ${dose.tempo}</button>
-        <p class="ses-hint">Gibt den Takt vor (Hoch–Halten–Runter) – mit 5 s „Bereit machen“ und Ansage.</p>`
-        : html`<p class="ses-hint">Nach jedem Satz einmal tippen – die Satzpause startet automatisch.</p>`}`;
+        <p class="ses-hint">Gibt den Takt vor (Hoch–Halten–Runter) – mit 5 s „Bereit machen“ und Ansage.</p>` : ''}`;
   }
 
   function renderExercise() {
@@ -454,6 +454,10 @@ export function render(root, ctx) {
     const sideShort = { left: 'Links', right: 'Rechts', perSide: 'je Seite', alternate: 'abwechselnd' }[dose.side];
     const timer = timerMarkup(dose, entry);
     const compactFig = dose.type === 'hold' || dose.type === 'timed' || tempoCoachOn(dose, entry);
+    const hasWorkTimer = compactFig;
+    const cta0 = H.ctaState({ allDone, hasNext: next >= 0, timerLed: hasWorkTimer, timerState: 'idle' });
+    const shoulderHint = shoulderProtect(settings()) && (isShoulderExercise(ex) || ex.archeryDraw) ? (ex.archeryDraw ? DRAW_NOTE : SHOULDER_NOTE) : '';
+    const chairHint = officeChairOnly(ex, settings()) ? OFFICE_CHAIR_NOTE : '';
     const samePain = knee ? H.prevKneePain(session, idx, content) : null;
     paint(root, html`
       ${topBar(`Übung ${pos.pos} von ${pos.total} · ${titleOf(session).title}`, '', { ex: { name: ex.name, side: sideShort } })}
@@ -480,6 +484,9 @@ export function render(root, ctx) {
           ${entry.upgradedFrom ? html`<span class="chip chip--accent" title="Mit deiner Ausrüstung statt ${content.exercises.find((e) => e.id === entry.upgradedFrom)?.name ?? ''}">${entry.newVariant ? 'Neu: ' : ''}${entry.upgradeChip || 'Variante'}</span>` : ''}
           ${entry.trimmed ? html`<span class="chip chip--outline" title="Sätze gekürzt, damit die Einheit ins Zeitbudget passt">⏱ gekürzt für ${w?.maxMinutes ?? 30} Min</span>` : ''}
         </div>
+        ${chairHint ? html`<p class="ses-note" data-chair-note>💺 ${chairHint}</p>` : ''}
+        ${shoulderHint ? html`<p class="ses-note" data-shoulder-note>🛡️ ${shoulderHint}</p>` : ''}
+        ${entry.fallbackFrom ? html`<p class="ses-note text-sm muted">Statt ${content.exercises.find((e) => e.id === entry.fallbackFrom)?.name ?? ''} (passend zu deiner Ausrüstung bzw. Schulter).</p>` : ''}
         ${session.postOp && ex.postOpNote ? html`<p class="ses-postop">🩺 ${/^nach der op/i.test(ex.postOpNote) ? '' : html`<strong>Nach der OP:</strong> `}${ex.postOpNote}</p>` : ''}
         <div class="ses-dose mt-4">
           ${doseItems(dose)}
@@ -490,7 +497,11 @@ export function render(root, ctx) {
         <div data-slot="done" class="mt-4" ${allDone ? '' : 'hidden'}><div class="ses-done"><span class="ses-done__icon">✓</span><span>Übung geschafft! ${archery ? 'Wie anstrengend war’s?' : knee ? 'Wie war das Knie?' : 'Weiter geht’s.'}</span></div></div>
       </section>
       <div data-slot="rest"></div>
-      ${timer ? html`<section class="card ses-timer" data-slot="timer" ${allDone ? 'hidden' : ''}><p class="ses-setno" data-setno>${allDone ? '' : `Satz ${Math.min(dose.sets, H.doneCount(entry) + 1)} von ${dose.sets}`}</p>${timer}</section>` : ''}
+      ${timer ? html`<section class="card ses-timer" data-slot="timer" ${allDone ? 'hidden' : ''}><p class="ses-setno" data-setno>${allDone ? '' : `Satz ${Math.min(dose.sets, H.doneCount(entry) + 1)} von ${dose.sets}`}</p>${timer}
+        ${hasWorkTimer ? html`<details class="ses-tctl"><summary>Timer anpassen</summary><div class="ses-tctl__row">
+          <button type="button" class="btn btn--outline btn--sm" data-act="t-minus" aria-label="15 Sekunden weniger">−15 s</button>
+          <button type="button" class="btn btn--outline btn--sm" data-act="t-plus" aria-label="15 Sekunden mehr">+15 s</button>
+          <button type="button" class="btn btn--ghost btn--sm" data-act="t-reset">Zurücksetzen</button></div></details>` : ''}</section>` : ''}
       ${knee ? html`<section class="card" data-slot="pain">
           ${samePain != null ? html`<div class="ses-pain-same" data-pain-same ${entry.painDuring != null ? 'hidden' : ''}><button type="button" class="btn btn--soft" data-act="pain-same" data-v="${samePain}">Wie eben (${samePain})</button><span>oder unten wählen</span></div>` : ''}
           <pt-pain-scale label="Schmerz während der Übung" data-f="painDuring" ${entry.painDuring != null ? html`value="${entry.painDuring}"` : ''}></pt-pain-scale>
@@ -510,16 +521,35 @@ export function render(root, ctx) {
           ${ex.kneeNote ? html`<p class="ses-consult mb-0">🦵 ${ex.kneeNote}</p>` : ''}
         </div>
       </details>
-      <button type="button" class="btn btn--ghost btn--block" data-act="skip">Übung überspringen</button>
+      <button type="button" class="ses-link ses-skip" data-act="skip">Übung überspringen</button>
       <div class="sticky-cta"><div class="ses-cta">
         <button type="button" class="btn btn--outline btn--prev" data-act="prev" aria-label="Vorherige Übung" ${prev < 0 ? 'disabled' : ''}>${raw(ICON.prev)}</button>
-        <button type="button" class="btn btn--primary ${allDone ? 'ses-pulse' : ''}" data-act="next">${next < 0 ? 'Zum Abschluss' : 'Nächste Übung'} ${raw(ICON.next)}</button>
+        <button type="button" class="btn btn--primary ses-cta__main ${allDone ? 'ses-pulse' : ''}" data-act="cta" data-cta="${cta0.key}">${cta0.label}</button>
       </div></div>
     `);
     setCta(true);
     armGuard();
     wireWorkTimer(entry, dose);
     wireLongPress(entry, dose);
+    // v5.3 (SPEC §18.2): the big button follows the set: Satz starten → Anhalten/Weiter → Pause überspringen → Nächste Übung
+    const ctaFacts = () => {
+      const work = root.querySelector('pt-timer[data-role="work"]');
+      return {
+        allDone: H.doneCount(entry) >= dose.sets,
+        hasNext: next >= 0,
+        resting: !!screen.resting,
+        timerLed: !!work && timerLed(dose),
+        timerState: work?.dataset?.state || 'idle',
+      };
+    };
+    screen.refreshCta = () => {
+      const b = root.querySelector('[data-act="cta"]');
+      if (!b) return;
+      const st = H.ctaState(ctaFacts());
+      if (b.dataset.cta !== st.key) { b.dataset.cta = st.key; b.textContent = st.label; }
+      b.classList.toggle('ses-pulse', st.key === 'next' || st.key === 'finish');
+    };
+    screen.refreshCta();
 
     const hidePainSame = () => { const el = root.querySelector('[data-pain-same]'); if (el) el.hidden = entry.painDuring != null; };
     onChange = (e) => {
@@ -529,10 +559,36 @@ export function render(root, ctx) {
       if (t.dataset.f === 'rpe') { entry.rpe = e.detail?.value ?? t.value; persist(); }
     };
 
+    const activeTimer = () => (screen.resting ? root.querySelector('pt-timer[data-role="rest"]') : root.querySelector('pt-timer[data-role="work"]'));
     actions = {
       menu: openMenu,
       overview: openOverview,
       adjust: () => openAdjust(entry, ex, null),
+      cta: () => {
+        // P1-1 double taps: the label changes under the finger – ignore a second tap for a moment
+        if (perfNow() - (screen.ctaAt ?? -1e9) < 700) return;
+        screen.ctaAt = perfNow();
+        unlock();
+        voiceUnlock();
+        const st = H.ctaState(ctaFacts());
+        const work = root.querySelector('pt-timer[data-role="work"]');
+        if (st.key === 'next' || st.key === 'finish') { actions.next(); return; }
+        if (st.key === 'skip-rest') { afterRest(); screen.refreshCta?.(); return; }
+        if (st.key === 'start' && work) {
+          applyWorkPlan(work, entry);
+          work.start();
+          toTimer(root.querySelector('[data-slot="timer"]'));
+        } else if (st.key === 'pause' && work) work.pause();
+        else if (st.key === 'resume' && work) work.start();
+        else if (st.key === 'set-done') {
+          const open = H.nextOpenSet(entry, dose.sets);
+          if (open >= 0) { armGuard(700); completeSet(entry, dose, open); }
+        }
+        screen.refreshCta?.();
+      },
+      't-minus': () => { activeTimer()?.adjust(-15); },
+      't-plus': () => { activeTimer()?.adjust(15); },
+      't-reset': () => { const t = activeTimer(); if (t && !screen.resting) { t.reset(); applyWorkPlan(t, entry); screen.refreshCta?.(); } },
       set: (b) => {
         if (screen.longPressed) { screen.longPressed = false; return; }
         const i = Number(b.dataset.set);
@@ -551,14 +607,6 @@ export function render(root, ctx) {
         }
         completeSet(entry, dose, i, b);
       },
-      'set-done': () => {
-        if (perfNow() - screen.lastDoneAt < 600) return; // double tap on the big button
-        const open = H.nextOpenSet(entry, dose.sets);
-        if (open < 0) return;
-        screen.lastDoneAt = perfNow();
-        armGuard(600); // the rest card appears where the finger is
-        completeSet(entry, dose, open);
-      },
       tempo: () => {
         voiceUnlock();
         if (knee) entry.manualTempo = false; else entry.tempoCoach = true;
@@ -567,6 +615,7 @@ export function render(root, ctx) {
         const card = root.querySelector('[data-slot="timer"]');
         root.querySelector('pt-timer[data-role="work"]')?.start();
         toTimer(card);
+        screen.refreshCta?.();
       },
       'tempo-manual': () => {
         entry.manualTempo = true;
@@ -723,6 +772,7 @@ export function render(root, ctx) {
     const work = root.querySelector('pt-timer[data-role="work"]');
     if (work && !work.running && !allDone) applyWorkPlan(work, entry); // „Satz n von m“ of the next open set
     bumpXp();
+    screen.refreshCta?.();
   }
 
   function floatXp(btn, amount) {
@@ -820,8 +870,9 @@ export function render(root, ctx) {
       t.plan = [{ phase: 'rest', seconds: dose.rest, say: H.restAnnouncement(dose), setIndex: nextSet - 1, repIndex: null, countdown: !timerLed(dose) }];
       t.start();
     }
-    t?.addEventListener('done', (e) => { if (e.target === t) afterRest(); });
+    t?.addEventListener('done', (e) => { if (e.target === t) { afterRest(); screen.refreshCta?.(); } });
     setTimeout(() => smooth(slot.firstElementChild), 120);
+    screen.refreshCta?.();
   }
 
   function stopRest() {
@@ -846,8 +897,9 @@ export function render(root, ctx) {
       toTimer(timerCard);
     } else {
       if (!allDone) say(H.nextSetAnnouncement(H.doneCount(entry) + 1, dose.sets), { priority: 'high', interrupt: true, cue: 'tense' });
-      smooth(root.querySelector('[data-slot="timer"]:not([hidden]) .ses-bigdone') || root.querySelector('.set-check.is-current') || root.querySelector('.ses-ex'));
+      smooth(root.querySelector('.set-check.is-current') || root.querySelector('.ses-ex'));
     }
+    screen.refreshCta?.();
   }
 
   /** Give the work timer the cue-plan steps of the next open set (prep → work → relax). */
@@ -874,6 +926,7 @@ export function render(root, ctx) {
       if (e.target !== t) return;
       const open = H.nextOpenSet(entry, dose.sets);
       if (open >= 0) completeSet(entry, dose, open);
+      screen.refreshCta?.();
     });
   }
 
@@ -911,275 +964,185 @@ export function render(root, ctx) {
     wrap.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
-  // ------------------------------------------------------------------ v2: guided rowing timer
-  const fmtRange = (r) => (Array.isArray(r) ? `${r[0]}–${r[1]}` : '');
-  const INT_CLASS = { easy: 'easy', moderate: 'moderate', vigorous: 'vigorous' };
-
-  async function acquireWake() {
-    try {
-      const wl = navigator.wakeLock;
-      if (!wl || screen.wake || document.visibilityState !== 'visible') return;
-      const lock = await wl.request('screen');
-      if (disposed || !screen.rowRunning) { lock.release().catch(() => {}); return; }
-      screen.wake = lock;
-      lock.addEventListener?.('release', () => { if (screen.wake === lock) screen.wake = null; });
-    } catch { /* unsupported / not allowed */ }
-  }
-  function releaseWake() {
-    const lock = screen.wake;
-    screen.wake = null;
-    if (lock) lock.release().catch(() => {});
-  }
+  // ------------------------------------------------------------------ v5.3: rowing without a timer (SPEC §18.5)
+  // Warm-up, finisher and separate rowing sessions show a card with goal + instructions. The user rows by the
+  // display of the machine, then ticks „Erledigt“, enters the minutes (pre-filled with the goal) and optionally the
+  // display values. Stored in the same fields as before (sets with seconds, warmupRowing / finisherRowing / rowing).
+  const ROW_FIELDS = [
+    ['distanceM', 'Distanz', 'm', 'numeric', 'z. B. 3200'],
+    ['kcalDisplay', 'Kalorien', 'kcal', 'numeric', 'z. B. 160'],
+    ['avgWatt', 'Ø Leistung', 'Watt', 'decimal', 'z. B. 85'],
+    ['avgSpm', 'Ø Schlagzahl', 'SPM', 'decimal', 'z. B. 21'],
+    ['avgHr', 'Ø Puls', 'bpm', 'numeric', 'optional'],
+  ];
 
   function renderRow() {
-    // v4: inside a strength session only the current rowing entry (warm-up or finisher) runs with this timer
     const seg = !isCardio();
     const segIdx = seg ? session.cursor.index : -1;
-    const segEntry = seg ? session.exercises[segIdx] : null;
-    const phases = seg
-      ? rowingPhases({ exercises: session.exercises.map((e, i) => (i === segIdx ? { ...e, skipped: false } : { skipped: true })) }, content)
-      : rowingPhases(session, content);
-    if (!phases.length) {
+    const idxs = seg ? [segIdx] : session.exercises.map((e, i) => i).filter((i) => !!exById(session.exercises[i].exerciseId));
+    const entries = idxs.map((i) => session.exercises[i]).filter(Boolean);
+    if (!entries.length) {
       if (seg) { goTo(H.nextIndex(session, segIdx), segIdx); return; }
-      session.cursor = { index: 0, set: 0, step: 'rowlog' }; persist(); return show();
+      session.cursor = { index: 0, set: 0, step: 'post' }; persist(); return show();
     }
-    if (seg && session.rowTimer?.entry !== segIdx) {
-      // a rowing part that was already rowed earlier (navigated back) shows as done; values stay untouched
-      const rowedBefore = H.doneCount(segEntry) > 0;
-      session.rowTimer = { ...H.newRowTimer(), entry: segIdx, ...(rowedBefore ? { done: true, restored: true } : {}) };
-    }
-    const t = session.rowTimer = session.rowTimer || H.newRowTimer();
-    const mainIdx = seg ? segIdx : H.mainCardioIndex(session);
-    const main = session.exercises[mainIdx] || null;
-    const mainEx = main && exById(main.exerciseId);
-    const techEx = mainEx || exById(session.exercises[0]?.exerciseId);
-    const title = titleOf(session).title;
-    const segName = segEntry?.finisher ? 'Ruder-Finisher' : 'Rudern zum Aufwärmen';
-    screen = { lastSec: null, phaseIdx: -1, loop: 0, wake: null, rowRunning: false };
+    const mainIdx = seg ? segIdx : Math.max(0, H.mainCardioIndex(session));
+    const main = session.exercises[mainIdx];
+    const mainEx = exById(main.exerciseId);
+    const briefs = entries.map((e) => ({ e, ex: exById(e.exerciseId), b: H.rowingBrief(e, exById(e.exerciseId)) }));
+    const mainBrief = H.rowingBrief(main, mainEx);
+    const plannedSec = briefs.reduce((a, x) => a + (x.b.seconds || 0), 0);
+    const key = seg ? (main.finisher ? 'finisherRowing' : 'warmupRowing') : 'rowing';
+    const stored = session[key] || {};
+    const done = entries.some((e) => H.doneCount(e) > 0);
+    const segName = !seg ? 'Rudern' : main.finisher ? 'Ruder-Finisher' : 'Rudern zum Aufwärmen';
+    const next = seg ? H.nextIndex(session, segIdx) : -1;
+    const draft = screen.rowDraft = screen.rowDraft || {
+      minutes: String(Math.max(1, Math.round((stored.durationSec ?? plannedSec) / 60))),
+      ...Object.fromEntries(ROW_FIELDS.map(([k]) => [k, stored[k] != null ? String(stored[k]).replace('.', ',') : ''])),
+    };
+    const field = (k, label, unit, mode, ph) => html`<label class="field">
+        <span class="field__label">${label} <span class="muted">(${unit})</span></span>
+        <input class="input" type="text" inputmode="${mode}" autocomplete="off" data-row="${k}" value="${draft[k]}" placeholder="${ph}">
+        <span class="ses-err" data-err="${k}" hidden></span></label>`;
+    const cta0 = H.ctaState({ rowEntry: true, rowDone: done, hasNext: seg ? next >= 0 : true });
     paint(root, html`
-      ${topBar(title, seg ? segName : 'Rudern', { xp: false })}
+      ${topBar(titleOf(session).title, segName, { xp: false })}
       ${seg ? progressBar(segIdx, 'exercise') : ''}
-      ${seg ? html`<div class="row row--between"><div class="block-header block-header--cardio" style="margin:0"><span class="block-header__dot"></span>${segEntry.finisher ? 'Finisher · Rudern' : 'Aufwärmen · Rudern'}</div>
+      ${seg ? html`<div class="row row--between"><div class="block-header block-header--cardio" style="margin:0"><span class="block-header__dot"></span>${main.finisher ? 'Finisher · Rudern' : 'Aufwärmen · Rudern'}</div>
         <button type="button" class="btn btn--ghost btn--sm ses-ovw" data-act="overview">${raw(ICON.list)}Übersicht</button></div>` : ''}
-      <section class="card row-timer ${seg ? 'mt-4' : ''}" data-slot="rt" aria-live="off">
-        <p class="eyebrow" data-r="eyebrow"></p>
-        <h1 class="row-phase" data-r="big"></h1>
-        <p class="row-sub" data-r="sub"></p>
-        <div class="row-targets" data-r="targets"></div>
-        <div class="row-clock" data-r="clock" role="timer" aria-label="Restzeit des Abschnitts">0:00</div>
-        <div class="row-bar" aria-hidden="true"><span data-r="bar"></span></div>
-        <p class="row-total"><span>Gesamt noch <strong class="num" data-r="total">0:00</strong></span><span><strong class="num" data-r="rowed">0:00</strong> gerudert</span></p>
-        <p class="row-next" data-r="next"></p>
-        <div class="row-ctrl">
-          <button type="button" class="btn btn--primary row-play btn--session" data-act="row-toggle" data-r="toggle">▶ Start</button>
-          <button type="button" class="btn btn--outline" data-act="row-skip" data-r="skip">Abschnitt ⏭</button>
-        </div>
-        <p class="sr-only" aria-live="assertive" data-r="announce"></p>
+      <section class="card row-card ${seg ? 'mt-4' : ''}" data-slot="rowcard">
+        <p class="eyebrow">Ziel · ohne Timer – rudere nach dem Display</p>
+        <h1 class="row-card__title">${seg || briefs.length === 1 ? mainBrief.title : `${Math.round(plannedSec / 60)} Min. rudern`}</h1>
+        ${seg ? html`<ul class="row-card__detail">${mainBrief.detail.map((d) => html`<li>${d}</li>`)}</ul>`
+          : html`<ol class="row-card__detail">${briefs.map((x) => html`<li><strong>${x.ex.name}:</strong> ${x.b.title}${x.b.detail.length ? html`<br><span class="muted">${x.b.detail.join(' · ')}</span>` : ''}</li>`)}</ol>`}
+        <div class="chip-row">${mainBrief.spm ? html`<span class="chip chip--outline">${mainBrief.spm}</span>` : ''}${mainBrief.rpe ? html`<span class="chip chip--outline">${mainBrief.rpe}</span>` : ''}</div>
+        <button type="button" class="btn btn--outline row-done-toggle mt-4" data-act="row-tick" aria-pressed="${String(done)}">${done ? '✓ Erledigt' : '☐ Erledigt'}</button>
+        <div class="field mt-3"><span class="field__label">Gerudert <span class="muted">(Minuten)</span></span>
+          <div class="row-min">
+            <button type="button" class="btn btn--outline" data-act="row-minus" aria-label="1 Minute weniger">−</button>
+            <input class="input" type="text" inputmode="numeric" autocomplete="off" data-row="minutes" value="${draft.minutes}" aria-label="Minuten gerudert">
+            <button type="button" class="btn btn--outline" data-act="row-plus" aria-label="1 Minute mehr">+</button>
+          </div>
+          <span class="ses-err" data-err="durationSec" hidden></span></div>
+        <details class="disclosure mt-3"><summary>Werte vom Display (optional)</summary>
+          <div class="row-form grid-2 mt-2">${ROW_FIELDS.map((f) => field(...f))}</div>
+          <p class="text-xs muted mb-0">Mit Kalorien vom Display wird die Schätzung genauer.</p>
+        </details>
       </section>
       <p class="row-stopline mt-4"><span aria-hidden="true">✋</span><span>Stopp bei Schmerz &gt; 5/10, stechendem Schmerz, Blockieren oder Wegknicken.</span></p>
-      ${main ? html`<section class="card mt-4" data-slot="pain">
+      <section class="card mt-4" data-slot="pain">
         <pt-pain-scale label="Knieschmerz beim Rudern" data-f="painDuring" ${main.painDuring != null ? html`value="${main.painDuring}"` : ''}></pt-pain-scale>
         <button type="button" class="btn btn--danger btn--block ses-sharp" data-act="sharp" aria-pressed="${String(!!main.sharpPain)}">⚡ Stechender Schmerz</button>
-      </section>` : ''}
+      </section>
       <div data-slot="redwarn"></div>
       <details class="disclosure">
         <summary>Technik: Beine – Körper – Arme</summary>
         <div class="stack stack--sm">
-          <ol class="steps">${(techEx?.instructions || []).map((x) => html`<li>${x}</li>`)}</ol>
-          ${techEx?.cues?.length ? html`<div class="chip-row">${techEx.cues.map((c) => html`<span class="chip chip--knee">${c}</span>`)}</div>` : ''}
-          ${techEx?.mistakes?.length ? html`<p class="field__label mb-0 mt-2">Typische Fehler</p><ul class="ses-reasons">${techEx.mistakes.map((m) => html`<li>${m}</li>`)}</ul>` : ''}
-          ${techEx?.kneeNote ? html`<p class="ses-consult mb-0">🦵 ${techEx.kneeNote}</p>` : ''}
+          <ol class="steps">${(mainEx?.instructions || []).map((x) => html`<li>${x}</li>`)}</ol>
+          ${mainEx?.kneeNote ? html`<p class="ses-consult mb-0">🦵 ${mainEx.kneeNote}</p>` : ''}
         </div>
       </details>
-      ${seg && !t.done ? html`<button type="button" class="btn btn--ghost btn--block" data-act="row-omit">${segEntry.finisher ? 'Finisher auslassen' : 'Rudern heute auslassen'}</button>` : ''}
-      <div class="sticky-cta"><button type="button" class="btn btn--primary btn--block btn--session" data-act="row-end" data-r="end">Rudern beenden</button></div>
+      <button type="button" class="ses-link ses-skip" data-act="row-omit">${seg ? (main.finisher ? 'Finisher überspringen' : 'Heute nicht gerudert – überspringen') : 'Heute nicht gerudert'}</button>
+      <div class="sticky-cta"><div class="ses-cta">
+        ${seg ? html`<button type="button" class="btn btn--outline btn--prev" data-act="prev" aria-label="Vorherige Übung" ${H.prevIndex(session, segIdx) < 0 ? 'disabled' : ''}>${raw(ICON.prev)}</button>` : ''}
+        <button type="button" class="btn btn--accent ses-cta__main" data-act="cta" data-cta="${cta0.key}">${cta0.label}</button>
+      </div></div>
     `);
     setCta(true);
-    const $ = (k) => root.querySelector(`[data-r="${k}"]`);
-
-    function paintPhase(animate) {
-      const card = root.querySelector('[data-slot="rt"]');
-      if (!card) return;
-      if (t.done) {
-        card.className = 'card row-timer row-timer--done';
-        $('eyebrow').textContent = 'Alle Abschnitte geschafft';
-        $('big').textContent = 'Geschafft! 🎉';
-        $('sub').textContent = seg ? 'Stark gerudert. Werte vom Display kannst du gleich kurz eintragen (optional).' : 'Stark gerudert. Jetzt noch die Werte vom Display eintragen.';
-        $('targets').innerHTML = '';
-        $('next').hidden = true;
-        $('toggle').hidden = true;
-        $('skip').hidden = true;
-        $('end').textContent = seg ? 'Weiter' : 'Werte eintragen';
-        $('end').classList.add('ses-pulse');
-        return;
-      }
-      const ph = phases[t.idx];
-      const lab = H.rowPhaseLabel(ph, content, session);
-      card.className = `card row-timer row-timer--${INT_CLASS[lab.intensity] || 'moderate'}`;
-      $('eyebrow').textContent = `Abschnitt ${t.idx + 1} von ${phases.length}`;
-      const big = $('big');
-      big.textContent = lab.big;
-      if (animate) { big.classList.remove('is-new'); void big.offsetWidth; big.classList.add('is-new'); }
-      $('sub').textContent = lab.sub;
-      paint($('targets'), html`
-        ${lab.intensityLabel ? html`<span class="chip row-int">${lab.intensityLabel}</span>` : ''}
-        ${ph.targetSpm ? html`<span class="chip chip--outline">SPM ${fmtRange(ph.targetSpm)}</span>` : ''}
-        ${ph.targetRpe ? html`<span class="chip chip--outline">RPE ${fmtRange(ph.targetRpe)}</span>` : ''}`);
-      const nx = phases[t.idx + 1];
-      const nl = nx && H.rowPhaseLabel(nx, content, session);
-      paint($('next'), nx ? html`<i class="is-${nl.intensity}"></i><span>Danach: ${nl.big} · ${H.formatClock(nx.seconds)}</span>` : html`<span>Danach: Ziel! 🏁</span>`);
-      $('next').hidden = false;
+    if (session.rowAnnounced !== (seg ? segIdx : 'all')) {
+      session.rowAnnounced = seg ? segIdx : 'all';
+      say(`Rudern: ${(seg ? mainBrief.title : `${Math.round(plannedSec / 60)} Minuten`).replace(/Min\./g, 'Minuten').replace(/–/g, ' bis ')}. Tippe auf Erledigt, wenn du fertig bist.`, { priority: 'normal', interrupt: true });
     }
 
-    function announceRowPhase(ph) {
-      say(H.rowPhaseSay(ph, content, session), { priority: 'high', interrupt: true, cue: H.rowPhaseCue(ph) });
-    }
-
-    function tick() {
-      const now = Date.now();
-      const crossed = H.rowingTick(t, phases, now);
-      if (crossed.length) {
-        if (t.done) { finishTimer(); return; }
-        const ph = phases[t.idx];
-        if (crossed.length > 1 && now - (screen.lastTick || now) > 1500) {
-          // came back from the background: re-sync instead of replaying every missed phase
-          say(`Weiter: ${H.rowPhaseSay(ph, content, session)}`, { priority: 'high', interrupt: true, cue: H.rowPhaseCue(ph) });
-        } else announceRowPhase(ph);
-        vibrate([80, 60, 80]);
-        const lab = H.rowPhaseLabel(ph, content, session);
-        $('announce').textContent = `${lab.big}, ${H.formatClock(ph.seconds)}`;
-        screen.lastSec = null;
-        paintPhase(true);
-        persist();
-      }
-      screen.lastTick = now;
-      paintClock(now);
-    }
-
-    function paintClock(now = Date.now()) {
-      const tm = H.rowingTimes(t, phases, now);
-      const sec = Math.ceil(tm.phaseRemaining);
-      $('clock').textContent = H.formatClock(sec);
-      $('total').textContent = H.formatClock(Math.ceil(tm.totalRemaining));
-      $('rowed').textContent = H.formatClock(Math.floor(tm.rowed));
-      const ph = phases[t.idx];
-      $('bar').style.width = ph ? `${Math.min(100, (1 - tm.phaseRemaining / ph.seconds) * 100)}%` : '100%';
-      if (screen.rowRunning && sec !== screen.lastSec && screen.lastSec != null && ph) {
-        if (sec > 0 && sec <= 3) {
-          if (voiceActive()) say(countdownWord(sec), { priority: 'high', cue: 'count', maxAgeMs: 700, fallbackOnDrop: true, tick: false });
-          else beep('tick');
-        } else if (sec === 60 && ph.seconds >= 150) say('Noch eine Minute', { priority: 'normal', maxAgeMs: 2000 });
-      }
-      screen.lastSec = sec;
-    }
-
-    function setRunning(on) {
-      const now = Date.now();
-      const fresh = on && !t.done && t.idx === 0 && !(t.accMs > 0) && t.runAt == null;
-      if (on) { unlock(); voiceUnlock(); H.rowingStart(t, now); } else { H.rowingPause(t, now); voiceCancel(); }
-      if (fresh && phases[0]) announceRowPhase(phases[0]);
-      else if (on && !t.done && phases[t.idx]) say(`Weiter. ${H.rowPhaseSay(phases[t.idx], content, session)}`, { priority: 'high', interrupt: true, cue: H.rowPhaseCue(phases[t.idx]) });
-      screen.lastTick = now;
-      screen.rowRunning = on && !t.done;
-      clearInterval(screen.loop);
-      if (screen.rowRunning) { screen.loop = setInterval(tick, 250); acquireWake(); } else releaseWake();
-      const btn = $('toggle');
-      if (btn) btn.textContent = screen.rowRunning ? '⏸ Pause' : (H.rowingTimes(t, phases, now).rowed > 0 ? '▶ Weiter' : '▶ Start');
-      persist();
-      paintClock(now);
-    }
-
-    function finishTimer() {
-      clearInterval(screen.loop);
-      screen.rowRunning = false;
-      releaseWake();
-      vibrate([200, 100, 200]);
-      say(seg ? (segEntry.finisher ? 'Finisher geschafft. Stark! Gleich geht es zum Dehnen.' : 'Aufwärmen geschafft. Gleich geht es weiter.') : 'Rudern geschafft. Stark! Jetzt noch die Werte vom Display eintragen.', { priority: 'high', interrupt: true, cue: 'exercise-done' });
-      persist();
-      paintPhase(true);
-      paintClock();
-      if (main && main.painDuring == null) setTimeout(() => smooth(root.querySelector('[data-slot="pain"]')), 400);
-    }
-
-    function paintRedWarn() {
+    const paintRedWarn = () => {
       const slot = root.querySelector('[data-slot="redwarn"]');
       if (!slot) return;
-      const light = H.rowingPainLight(main, settings());
-      if (light !== 'red') { slot.innerHTML = ''; return; }
-      const inCool = t.done || session.exercises[phases[t.idx]?.entryIndex]?.section === 'cooldown';
-      const hasCool = phases.some((p, i) => i > t.idx && session.exercises[p.entryIndex]?.section === 'cooldown');
+      if (H.rowingPainLight(main, settings()) !== 'red') { slot.innerHTML = ''; return; }
       paint(slot, html`<section class="card stop-card" role="alert">
         <span class="traffic traffic--red">${LIGHT_LABELS.red}</span>
         <h2 class="card__title mt-2">Das Knie meldet sich deutlich</h2>
-        <p class="mb-0">${main.sharpPain ? 'Stechender Schmerz' : `Schmerz ${main.painDuring}/10`} – bitte nicht weiter zügig rudern. Kluges Aufhören ist Training, kein Aufgeben.</p>
-        <div class="ses-choices">
-          ${!inCool && hasCool ? html`<button type="button" class="btn btn--primary btn--block" data-act="row-cool"><span aria-hidden="true">🌊</span><span>Abbrechen &amp; locker auslaufen<small>Direkt zum Ausrudern – ganz locker</small></span></button>` : ''}
-          <button type="button" class="btn btn--outline btn--block" data-act="row-stop"><span aria-hidden="true">✋</span><span>Rudern jetzt beenden</span></button>
-        </div>
+        <p class="mb-0">${main.sharpPain ? 'Stechender Schmerz' : `Schmerz ${main.painDuring}/10`} – bitte jetzt aufhören oder nur noch ganz locker ausrudern. Kluges Aufhören ist Training, kein Aufgeben.</p>
       </section>`);
-    }
-
-    function goLog() {
-      clearInterval(screen.loop);
-      H.rowingPause(t, Date.now());
-      screen.rowRunning = false;
-      releaseWake();
-      const log = t.log.slice();
-      if (!t.done) log[t.idx] = Math.min(phases[t.idx].seconds, Math.round(H.rowPhaseElapsed(t, Date.now()) / 1000));
-      if (!t.restored) H.applyRowingLog(session, phases, log, content);
-      const rowedMain = main && !main.skipped;
-      if (rowedMain && main.painDuring == null) {
-        nudge(root.querySelector('[data-slot="pain"]'), 'Kurz eintragen: Knieschmerz beim Rudern.');
-        return;
+    };
+    paintRedWarn();
+    const isDone = () => entries.some((e) => H.doneCount(e) > 0);
+    const refresh = () => {
+      const d = isDone();
+      const t = root.querySelector('[data-act="row-tick"]');
+      if (t) { t.setAttribute('aria-pressed', String(d)); t.textContent = d ? '✓ Erledigt' : '☐ Erledigt'; }
+      const st = H.ctaState({ rowEntry: true, rowDone: d, hasNext: seg ? next >= 0 : true });
+      const b = root.querySelector('[data-act="cta"]');
+      if (b) { b.dataset.cta = st.key; b.textContent = st.label; b.classList.toggle('ses-pulse', d); }
+    };
+    /** validate + store the minutes and display values; returns false (with a nudge) when something is missing */
+    const save = () => {
+      const minutes = Number(String(draft.minutes).replace(',', '.'));
+      const inp = { durationSec: Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes * 60) : 'x', ...Object.fromEntries(ROW_FIELDS.map(([k]) => [k, draft[k]])) };
+      const res = validateRowing(inp);
+      root.querySelectorAll('[data-err]').forEach((x) => { x.hidden = true; });
+      if (!res.ok) {
+        let first = null;
+        for (const [k, msg] of Object.entries(res.errors)) {
+          const el = root.querySelector(`[data-err="${k}"]`);
+          if (el) { el.textContent = k === 'durationSec' ? 'Bitte die Minuten eintragen (mind. 1).' : msg; el.hidden = false; first = first || el; }
+          if (el && k !== 'durationSec') el.closest('details')?.setAttribute('open', '');
+        }
+        nudge(first?.closest('.field'), 'Bitte die markierten Werte prüfen.');
+        return false;
       }
-      if (seg && main?.skipped) { persist(); goTo(H.nextIndex(session, segIdx), segIdx); return; }
-      session.cursor = { index: Math.max(0, mainIdx), set: 0, step: 'rowlog' };
+      H.applyRowedDuration(session, idxs, res.value.durationSec, content);
+      session[key] = res.value; // never session.rowing on strength sessions (SPEC §15.3)
+      persist();
+      return true;
+    };
+    const painOk = () => {
+      if (main.painDuring != null) return true;
+      nudge(root.querySelector('[data-slot="pain"]'), 'Kurz eintragen: Knieschmerz beim Rudern.');
+      return false;
+    };
+    const leave = () => {
+      screen.rowDraft = null;
+      if (seg) { go(next, segIdx); return; }
+      session.cursor = { ...session.cursor, step: 'post' };
       persist();
       show();
       scrollTop();
-    }
-
-    screen.pauseRow = () => { if (screen.rowRunning) { setRunning(false); return true; } return false; };
-    screen.cleanupRow = () => { clearInterval(screen.loop); if (screen.rowRunning) H.rowingPause(t, Date.now()); screen.rowRunning = false; releaseWake(); };
-    screen.onVis = () => { if (document.visibilityState === 'visible' && screen.rowRunning) { acquireWake(); tick(); } };
-    document.addEventListener('visibilitychange', screen.onVis);
-
-    paintPhase(false);
-    paintClock();
-    paintRedWarn();
-    if (t.done) paintPhase(false);
-    else $('toggle').textContent = H.rowingTimes(t, phases, Date.now()).rowed > 0 ? '▶ Weiter' : '▶ Start';
-
+    };
     onChange = (e) => {
       const el = /** @type {any} */ (e.target);
-      if (el.tagName !== 'PT-PAIN-SCALE' || e.type !== 'change' || !main) return;
-      main.painDuring = e.detail?.value ?? el.value;
-      persist();
-      paintRedWarn();
-      if (H.rowingPainLight(main, settings()) === 'red') smooth(root.querySelector('[data-slot="redwarn"]'));
+      if (el.tagName === 'PT-PAIN-SCALE') {
+        if (e.type !== 'change') return;
+        main.painDuring = e.detail?.value ?? el.value;
+        persist();
+        paintRedWarn();
+        if (H.rowingPainLight(main, settings()) === 'red') smooth(root.querySelector('[data-slot="redwarn"]'));
+        return;
+      }
+      const k = el.dataset?.row;
+      if (!k) return;
+      draft[k] = el.value;
+      const err = root.querySelector(`[data-err="${k === 'minutes' ? 'durationSec' : k}"]`);
+      if (err) err.hidden = true;
+    };
+    const step = (d) => {
+      const cur = Number(String(draft.minutes).replace(',', '.'));
+      draft.minutes = String(Math.max(1, Math.min(240, Math.round((Number.isFinite(cur) ? cur : plannedSec / 60) + d))));
+      const inp = root.querySelector('[data-row="minutes"]');
+      if (inp) inp.value = draft.minutes;
     };
     actions = {
-      menu: () => { if (screen.rowRunning) setRunning(false); openMenu(); },
-      overview: () => { if (screen.rowRunning) setRunning(false); openOverview(); },
-      'row-omit': () => {
-        screen.cleanupRow?.();
-        voiceCancel();
-        if (H.rowingTimes(t, phases, Date.now()).rowed > 0) { goLog(); return; }
-        segEntry.skipped = true;
-        session.rowTimer = null;
-        H.toast(segEntry.finisher ? 'Finisher ausgelassen' : 'Rudern ausgelassen', { icon: '↷', kind: '' });
-        goTo(H.nextIndex(session, segIdx), segIdx);
-      },
-      'row-toggle': () => setRunning(!screen.rowRunning),
-      'row-skip': () => {
-        if (t.done) return;
-        H.rowingSkip(t, phases, Date.now());
-        if (t.done) { finishTimer(); return; }
-        announceRowPhase(phases[t.idx]);
-        screen.lastSec = null;
-        paintPhase(true);
-        paintClock();
-        persist();
+      menu: openMenu,
+      overview: openOverview,
+      prev: () => { const p = H.prevIndex(session, segIdx); if (p >= 0) { screen.rowDraft = null; go(p, segIdx); } },
+      'row-minus': () => step(-1),
+      'row-plus': () => step(1),
+      'row-tick': () => {
+        if (isDone()) {
+          for (const e of entries) { e.sets = []; e.skipped = false; }
+          delete session[key];
+          persist();
+        } else if (!save()) return;
+        refresh();
       },
       sharp: (b) => {
         main.sharpPain = !main.sharpPain;
@@ -1188,194 +1151,23 @@ export function render(root, ctx) {
         paintRedWarn();
         if (main.sharpPain) smooth(root.querySelector('[data-slot="redwarn"]'));
       },
-      'row-cool': () => {
-        H.rowingJumpToCooldown(t, phases, session, Date.now());
-        if (t.done) { finishTimer(); paintRedWarn(); return; }
-        if (!screen.rowRunning) setRunning(true);
-        announceRowPhase(phases[t.idx]);
-        paintPhase(true);
-        paintClock();
-        paintRedWarn();
-        persist();
-        smooth(root.querySelector('[data-slot="rt"]'));
-        H.toast('Ganz locker ausrudern – gut auf dich gehört.', { icon: '🌊', kind: '' });
+      'row-omit': () => {
+        voiceCancel();
+        for (const e of entries) { e.sets = []; e.skipped = true; }
+        delete session[key];
+        H.toast(seg ? (main.finisher ? 'Finisher übersprungen' : 'Rudern übersprungen') : 'Heute nicht gerudert', { icon: '↷', kind: '' });
+        if (!seg) session.rowing = null;
+        leave();
       },
-      'row-stop': () => goLog(),
-      'row-end': async () => {
-        if (!t.done) {
-          const was = screen.rowRunning;
-          if (was) setRunning(false);
-          const ok = await H.openDialog(String(html`
-            <h2 class="modal__title">Rudern beenden?</h2>
-            <p class="muted">Noch ${H.formatClock(Math.ceil(H.rowingTimes(t, phases, Date.now()).totalRemaining))} geplant. Was du gerudert hast, zählt natürlich.</p>
-            <div class="modal__actions">
-              <button type="button" class="btn btn--primary btn--block btn--session" data-value="yes">Ja, Werte eintragen</button>
-              <button type="button" class="btn btn--outline btn--block btn--session" data-value="no">Weiter rudern</button>
-            </div>`), { className: 'modal modal--center ses-dlg' });
-          if (disposed) return;
-          if (ok !== 'yes') { if (was) setRunning(true); return; }
-        }
-        goLog();
-      },
-    };
-  }
-
-  // ------------------------------------------------------------------ v2: rowing display values
-  const ROW_FIELDS = [
-    ['distanceM', 'Distanz', 'm', 'numeric', 'z. B. 3200'],
-    ['avgSpm', 'Ø Schlagzahl', 'SPM', 'decimal', 'z. B. 21'],
-    ['avgWatt', 'Ø Leistung', 'Watt', 'decimal', 'z. B. 85'],
-    ['kcalDisplay', 'Kalorien', 'kcal', 'numeric', 'z. B. 160'],
-    ['avgHr', 'Ø Puls', 'bpm', 'numeric', 'optional'],
-    ['maxHr', 'Max. Puls', 'bpm', 'numeric', 'optional'],
-  ];
-
-  /** v4: quick display values (time, distance, kcal) of the rowing warm-up / finisher → warmupRowing / finisherRowing. */
-  function renderSegRowLog() {
-    const idx = session.cursor.index;
-    const entry = session.exercises[idx];
-    if (!entry) { goTo(-1, idx); return; }
-    const key = entry.finisher ? 'finisherRowing' : 'warmupRowing';
-    const fromTimer = session.rowTimer?.entry === idx && !session.rowTimer?.restored ? H.rowedSecondsFromLog(session.rowTimer.log) : 0;
-    const rowed = fromTimer || (entry.sets || []).reduce((a, x) => a + (x?.done && typeof x.seconds === 'number' ? x.seconds : 0), 0);
-    const r = session[key] || {};
-    const draft = screen.rowDraft = screen.rowDraft || {
-      duration: r.durationSec != null ? H.formatClock(r.durationSec) : rowed >= 60 ? H.formatClock(rowed) : '',
-      distanceM: r.distanceM != null ? String(r.distanceM) : '',
-      kcalDisplay: r.kcalDisplay != null ? String(r.kcalDisplay) : '',
-    };
-    const field = (k, label, unit, mode, ph) => html`<label class="field">
-        <span class="field__label">${label} <span class="muted">(${unit})</span></span>
-        <input class="input" type="text" inputmode="${mode}" autocomplete="off" data-row="${k}" value="${draft[k]}" placeholder="${ph}">
-        <span class="ses-err" data-err="${k}" hidden></span></label>`;
-    paint(root, html`
-      ${topBar(titleOf(session).title, entry.finisher ? 'Finisher · Werte' : 'Aufwärmen · Werte')}
-      <h1 class="ses-big-q">Kurz die Werte vom Display? 📟</h1>
-      <p class="muted">Optional – ohne Eingabe zählt die Zeit vom Timer. Mit Kalorien vom Display wird die Schätzung genauer.</p>
-      <section class="card row-form stack">
-        <label class="field">
-          <span class="field__label">Zeit <span class="muted">(Min:Sek)</span></span>
-          <input class="input" type="text" inputmode="numeric" autocomplete="off" data-row="duration" value="${draft.duration}" placeholder="z. B. 10:00">
-          <span class="field__hint">${rowed > 0 ? `Vom Timer: ${H.formatClock(rowed)} gerudert` : 'Leer lassen = Zeit vom Timer'}</span>
-          <span class="ses-err" data-err="durationSec" hidden></span>
-        </label>
-        <div class="grid-2">${field('distanceM', 'Distanz', 'm', 'numeric', 'z. B. 2100')}${field('kcalDisplay', 'Kalorien', 'kcal', 'numeric', 'z. B. 80')}</div>
-      </section>
-      <div class="sticky-cta"><div class="ses-cta">
-        <button type="button" class="btn btn--outline btn--prev" data-act="prev" aria-label="Zurück zum Timer">${raw(ICON.prev)}</button>
-        <button type="button" class="btn btn--primary" data-act="rowlog-save">Speichern &amp; weiter</button>
-      </div></div>
-    `);
-    setCta(true);
-    onChange = (e) => {
-      const el = /** @type {any} */ (e.target);
-      const k = el.dataset?.row;
-      if (!k) return;
-      draft[k] = el.value;
-      const err = root.querySelector(`[data-err="${k === 'duration' ? 'durationSec' : k}"]`);
-      if (err) err.hidden = true;
-    };
-    actions = {
-      menu: openMenu,
-      prev: () => { session.cursor = { index: idx, set: 0, step: 'exercise' }; persist(); show(); scrollTop(); },
-      'rowlog-save': () => {
-        const durationSec = H.parseClock(draft.duration);
-        const inp = { durationSec: Number.isNaN(durationSec) ? 'x' : durationSec, distanceM: draft.distanceM, kcalDisplay: draft.kcalDisplay };
-        const res = validateRowing(inp);
-        root.querySelectorAll('[data-err]').forEach((x) => { x.hidden = true; });
-        if (!res.ok) {
-          let first = null;
-          for (const [k, msg] of Object.entries(res.errors)) {
-            const el = root.querySelector(`[data-err="${k}"]`);
-            if (el) { el.textContent = k === 'durationSec' && Number.isNaN(durationSec) ? 'Bitte als Min:Sek eingeben, z. B. 10:00.' : msg; el.hidden = false; first = first || el; }
-          }
-          nudge(first?.closest('.field'), 'Bitte die markierten Werte prüfen.');
-          return;
-        }
-        const value = { ...res.value };
-        if (value.durationSec == null && rowed > 0) value.durationSec = rowed; // incl. active rest of intervals
-        session[key] = value; // never session.rowing on strength sessions (SPEC §15.3)
-        session.rowTimer = null;
-        go(H.nextIndex(session, idx), idx);
-      },
-    };
-  }
-
-  function renderRowLog() {
-    if (!isCardio()) { renderSegRowLog(); return; }
-    const title = titleOf(session).title;
-    const rowed = H.rowedSecondsFromLog(session.rowTimer?.log);
-    const r = session.rowing || {};
-    const draft = screen.rowDraft = screen.rowDraft || {
-      duration: r.durationSec != null ? H.formatClock(r.durationSec) : rowed >= 60 ? H.formatClock(rowed) : '',
-      ...Object.fromEntries(ROW_FIELDS.map(([k]) => [k, r[k] != null ? String(r[k]).replace('.', ',') : ''])),
-    };
-    const field = (k, label, unit, mode, ph) => html`<label class="field">
-        <span class="field__label">${label} <span class="muted">(${unit})</span></span>
-        <input class="input" type="text" inputmode="${mode}" autocomplete="off" data-row="${k}" value="${draft[k]}" placeholder="${ph}">
-        <span class="ses-err" data-err="${k}" hidden></span></label>`;
-    paint(root, html`
-      ${topBar(title, 'Werte vom Display', { xp: false })}
-      <h1 class="ses-big-q">Was zeigt dein Rudergerät? 📟</h1>
-      <p class="muted">Alles optional – je mehr du einträgst, desto genauer werden Kalorien, Pace und Rekorde.</p>
-      <section class="card row-form stack">
-        <label class="field">
-          <span class="field__label">Dauer <span class="muted">(Min:Sek)</span></span>
-          <input class="input" type="text" inputmode="numeric" autocomplete="off" data-row="duration" value="${draft.duration}" placeholder="z. B. 18:30">
-          <span class="field__hint">${rowed > 0 ? `Vom Timer: ${H.formatClock(rowed)} gerudert${rowed < 60 ? ' – unter 1 Minute, Feld darf leer bleiben' : ''}` : 'Leer lassen = Trainingszeit der App'}</span>
-          <span class="ses-err" data-err="durationSec" hidden></span>
-        </label>
-        <div class="grid-2">${ROW_FIELDS.slice(0, 4).map((f) => field(...f))}</div>
-        <div class="row-pace" data-slot="pace"><span>Pace</span><strong data-pace>–</strong></div>
-        <div class="grid-2">${ROW_FIELDS.slice(4).map((f) => field(...f))}</div>
-      </section>
-      <p class="text-xs muted">Ohne Kalorien vom Display schätzt die App aus Watt bzw. Dauer und Intensität (Schätzung).</p>
-      <div class="sticky-cta"><div class="ses-cta">
-        <button type="button" class="btn btn--outline btn--prev" data-act="prev" aria-label="Zurück zum Timer">${raw(ICON.prev)}</button>
-        <button type="button" class="btn btn--primary" data-act="rowlog-save">Speichern &amp; weiter</button>
-      </div></div>
-    `);
-    setCta(true);
-    const input = () => ({
-      durationSec: H.parseClock(draft.duration),
-      ...Object.fromEntries(ROW_FIELDS.map(([k]) => [k, draft[k]])),
-    });
-    const paintPace = () => {
-      const v = validateRowing({ ...input(), durationSec: Number.isNaN(input().durationSec) ? null : input().durationSec }).value;
-      const pace = H.paceLabel({ durationSec: v.durationSec ?? (rowed >= 60 ? rowed : null), distanceM: v.distanceM });
-      root.querySelector('[data-pace]').textContent = pace ?? '–';
-    };
-    paintPace();
-    onChange = (e) => {
-      const el = /** @type {any} */ (e.target);
-      const k = el.dataset?.row;
-      if (!k) return;
-      draft[k] = el.value;
-      const err = root.querySelector(`[data-err="${k === 'duration' ? 'durationSec' : k}"]`);
-      if (err) err.hidden = true;
-      paintPace();
-    };
-    actions = {
-      menu: openMenu,
-      prev: () => { session.cursor = { ...session.cursor, step: 'row' }; persist(); show(); scrollTop(); },
-      'rowlog-save': () => {
-        const inp = input();
-        const res = validateRowing(Number.isNaN(inp.durationSec) ? { ...inp, durationSec: 'x' } : inp);
-        root.querySelectorAll('[data-err]').forEach((x) => { x.hidden = true; });
-        if (!res.ok) {
-          let first = null;
-          for (const [k, msg] of Object.entries(res.errors)) {
-            const el = root.querySelector(`[data-err="${k}"]`);
-            if (el) { el.textContent = k === 'durationSec' && Number.isNaN(inp.durationSec) ? 'Bitte als Min:Sek eingeben, z. B. 18:30.' : msg; el.hidden = false; first = first || el; }
-          }
-          nudge(first?.closest('.field'), 'Bitte die markierten Werte prüfen.');
-          return;
-        }
-        session.rowing = res.value;
-        session.cursor = { ...session.cursor, step: 'post' };
-        persist();
-        show();
-        scrollTop();
+      cta: () => {
+        if (perfNow() - (screen.ctaAt ?? -1e9) < 700) return;
+        screen.ctaAt = perfNow();
+        unlock();
+        voiceUnlock();
+        if (!painOk()) return;
+        if (!save()) return;
+        refresh();
+        leave();
       },
     };
   }
@@ -1735,8 +1527,6 @@ export function render(root, ctx) {
 
   // ------------------------------------------------------------------ dispatcher
   function leaveScreen() {
-    screen.cleanupRow?.();
-    if (screen.onVis) document.removeEventListener('visibilitychange', screen.onVis);
     (screen.observers || []).forEach((o) => o.disconnect());
   }
 
@@ -1745,7 +1535,7 @@ export function render(root, ctx) {
     screen = {};
     const step = session.cursor?.step || 'pre';
     if (step === 'row') renderRow();
-    else if (step === 'rowlog') renderRowLog();
+    else if (step === 'rowlog') renderRow(); // v5.3: no separate display-value step any more (old resumes)
     else if (step === 'finisher') renderFinisherOffer();
     else if (step === 'exercise') { if (isRowEntry(session.exercises[session.cursor.index])) renderRow(); else renderExercise(); }
     else if (step === 'post') renderPost();
@@ -1760,17 +1550,12 @@ export function render(root, ctx) {
   const markStopped = () => {
     if (!session || !saved || leaving || disposed) return;
     if (!session.pausedAt) session.pausedAt = new Date().toISOString();
-    if (screen.pauseRow?.()) screen.rowPausedByHide = true; // setRunning(false) also persists
     persist();
   };
   const markResumed = () => {
     if (!session || !saved || leaving || disposed || !session.pausedAt) return;
     H.applyResume(session);
     persist();
-    if (screen.rowPausedByHide) {
-      screen.rowPausedByHide = false;
-      H.toast('Rudern pausiert – tippe „▶ Weiter“, wenn du wieder sitzt.', { icon: '⏸', kind: 'accent', ms: 3600 });
-    }
   };
   const onLifeVis = () => { if (document.visibilityState === 'hidden') markStopped(); else markResumed(); };
   const onPageHide = () => markStopped();
@@ -1813,7 +1598,7 @@ export function render(root, ctx) {
     } catch { return new Date(ms).toISOString(); }
   };
 
-  /** Rowed seconds of a rowing timer that was still open when a stale session is finished („Jetzt abschließen“). */
+  /** Legacy (≤ v5.2 rowing timer): rowed seconds of a timer that was still open when a stale session is finished. */
   function flushRowTimer(atMs) {
     const t = session?.rowTimer;
     if (!t || t.restored) return;

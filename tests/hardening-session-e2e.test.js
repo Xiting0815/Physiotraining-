@@ -108,12 +108,13 @@ test('session hardening in the browser (dark, 412×915)', { skip: !process.env.P
       assert.equal(a.cursor.step, 'exercise');
       assert.equal(a.exercises[a.cursor.index].skipped, false, 'exercise 1 not skipped by the 2nd tap');
       assert.ok(await page.locator('.ses-top__ex').isVisible());
-      // a single tap on „Nächste Übung“ right after opening does not skip either (< 1 s)
+      // v5.3: the big button never skips an unfinished exercise – a double tap on it only starts the set
       const first = a.cursor.index;
-      await page.waitForTimeout(500);
-      // double tap on „Nächste Übung“ after > 1 s: skips exercise 1 (intended), never exercise 2
-      await page.waitForTimeout(700);
-      await tapTwice(page, '[data-act="next"]');
+      await page.waitForTimeout(1200);
+      // double tap on the small „Übung überspringen“ link: skips exercise 1 (intended), never exercise 2
+      await page.$eval('[data-act="skip"]', (e) => e.scrollIntoView({ block: 'center' }));
+      await page.waitForTimeout(300);
+      await tapTwice(page, '[data-act="skip"]');
       await page.waitForTimeout(400);
       d = await stored(page);
       const b = d.state.activeSession;
@@ -135,9 +136,9 @@ test('session hardening in the browser (dark, 412×915)', { skip: !process.env.P
       await page.click('.ses-toast-action');
       await page.waitForTimeout(150);
       assert.equal(await page.getAttribute('.set-check[data-set="0"]', 'aria-pressed'), 'false');
-      // big „Satz fertig“ button (plain reps), double tap = one set
-      await page.$eval('[data-act="set-done"]', (e) => e.scrollIntoView({ block: 'center' }));
-      await tapTwice(page, '[data-act="set-done"]', 150);
+      // v5.3: big bottom button reads „Satz fertig“ (plain reps), double tap = one set
+      assert.match(await page.textContent('[data-act="cta"]'), /Satz fertig/);
+      await tapTwice(page, '[data-act="cta"]', 150);
       await page.waitForTimeout(300);
       const e0 = (await stored(page)).state.activeSession.exercises[0];
       assert.equal(e0.sets.filter((s) => s?.done).length, 1, 'double tap on „Satz fertig“ completes one set');
@@ -252,7 +253,7 @@ test('session hardening in the browser (dark, 412×915)', { skip: !process.env.P
       assert.ok(await page.locator('.ses-top__ex').evaluate((e) => parseFloat(getComputedStyle(e).fontSize) >= 20));
       assert.ok(await page.locator('.ses-setno').evaluate((e) => parseFloat(getComputedStyle(e).fontSize) >= 20));
       await page.$eval('[data-slot="timer"]', (e) => e.scrollIntoView({ block: 'end' }));
-      await page.click('pt-timer[data-role="work"] [data-action="toggle"]');
+      await page.click('[data-act="cta"]');
       await page.waitForTimeout(6000);
       await fitCheck('hold');
       // finish the hold sets by ticking, check the rest card
@@ -266,13 +267,13 @@ test('session hardening in the browser (dark, 412×915)', { skip: !process.env.P
       await page.waitForSelector('[data-slot="pain"]');
       await page.click('[data-slot="pain"] pt-pain-scale button >> nth=1');
       await page.waitForTimeout(1100);
-      await page.click('[data-act="next"]');
+      await page.click('[data-act="cta"]'); // „Nächste Übung“
       await page.waitForSelector('[data-act="tempo-manual"]'); // knee reps: Tempo-Coach is the default
       await page.waitForSelector('[data-act="pain-same"]');
       assert.match(await page.textContent('[data-act="pain-same"]'), /Wie eben \(1\)/);
       await page.waitForTimeout(600);
       await page.$eval('[data-slot="timer"]', (e) => e.scrollIntoView({ block: 'end' }));
-      await page.click('pt-timer[data-role="work"] [data-action="toggle"]');
+      await page.click('[data-act="cta"]');
       await page.waitForTimeout(7000);
       await fitCheck('tempo');
       await page.click('[data-act="pain-same"]');
@@ -280,11 +281,11 @@ test('session hardening in the browser (dark, 412×915)', { skip: !process.env.P
       assert.equal(e1.painDuring, 1);
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.waitForTimeout(1100);
-      await page.click('[data-act="next"]');
+      await page.click('[data-act="skip"]'); // tempo set still running → leave it via the small skip link
       await page.waitForSelector('.ses-top__ex');
       await page.waitForTimeout(600);
       await page.$eval('[data-slot="timer"]', (e) => e.scrollIntoView({ block: 'end' }));
-      await page.click('pt-timer[data-role="work"] [data-action="toggle"]');
+      await page.click('[data-act="cta"]');
       await page.waitForTimeout(7000);
       await fitCheck('breathing');
       await ctx.close();

@@ -55,6 +55,7 @@ export function render(root, { content, store }) {
   let lastChange = null;
 
   if (store.getState().equipmentNotice === 'pending') store.update((d) => { d.state.equipmentNotice = 'seen'; });
+  if (store.getState().seatNotice === 'pending') store.update((d) => { d.state.seatNotice = 'seen'; }); // v5.3
 
   const draw = () => {
     const settings = store.getSettings();

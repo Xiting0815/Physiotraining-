@@ -69,6 +69,20 @@ export function render(root, { store }) {
         </div>
       </section>
 
+      <h2 class="section-title">Schulter</h2>
+      <section class="card" aria-label="Schulter-Schutz" data-shoulder-card>
+        <label class="switch-row"><span>Schulter-Impingement (keine Überkopf-Übungen)<span class="pv-setting-row__hint">Übungen mit Armhebung über ${s.shoulderMaxElevationDeg ?? 65}° werden ersetzt (z. B. Wall Slide → Wand-Liegestütz mit Plus, Face Pull → Low Face Pull). Der Bogenauszug auf Schulterhöhe bleibt. Dazu in jedem Krafttraining Rotatorenmanschette und Schulterblatt-Kontrolle.</span></span><input type="checkbox" class="switch" name="shoulderImpingement" ${s.shoulderImpingement ? 'checked' : ''}></label>
+        ${s.shoulderImpingement ? html`<div class="pv-setting-row mt-2">
+          <span class="pv-setting-row__label">Schmerzarm bis<span class="pv-setting-row__hint">Armhebung nach vorn oder seitlich</span></span>
+          <div class="stepper">
+            <button class="stepper__btn" data-shoulder-delta="-5" aria-label="Limit verringern" ${(s.shoulderMaxElevationDeg ?? 65) <= 40 ? 'disabled' : ''}>${raw(ICON.minus)}</button>
+            <output class="stepper__value" aria-live="polite">${s.shoulderMaxElevationDeg ?? 65}<span class="stepper__unit">°</span></output>
+            <button class="stepper__btn" data-shoulder-delta="5" aria-label="Limit erhöhen" ${(s.shoulderMaxElevationDeg ?? 65) >= 120 ? 'disabled' : ''}>${raw(ICON.plus)}</button>
+          </div>
+        </div>
+        <p class="field__hint mt-2 mb-0">Schmerzarm arbeiten: maximal leichter Schmerz (≤ 3/10), der nicht anhält. Schulter tief, kein Hochziehen. Ersetzt keine ärztliche Beratung.</p>` : ''}
+      </section>
+
       <h2 class="section-title">Kalorien pro Einheit</h2>
       <section class="card" aria-label="Körpergewicht">
         <div class="field mb-0">
@@ -88,6 +102,12 @@ export function render(root, { store }) {
 
   const onChange = (e) => {
     const t = e.target;
+    if (t.name === 'shoulderImpingement') {
+      // v5.3: store.update stamps settings._updatedAt (sync last-write-wins)
+      store.update((d) => { d.settings.shoulderImpingement = t.checked; if (!Number.isFinite(d.settings.shoulderMaxElevationDeg)) d.settings.shoulderMaxElevationDeg = 65; });
+      toast(t.checked ? 'Schulter-Schutz an – Überkopf-Übungen werden ersetzt' : 'Schulter-Schutz aus', { icon: '🛡️' });
+      return;
+    }
     if (t.name !== 'weightKg') return;
     const v = validateWeight(t.value);
     weightErr = v.error;
@@ -99,6 +119,11 @@ export function render(root, { store }) {
   };
 
   const onClick = (e) => {
+    const sd = e.target.closest('[data-shoulder-delta]');
+    if (sd) {
+      store.update((d) => { d.settings.shoulderMaxElevationDeg = Math.max(40, Math.min(120, (d.settings.shoulderMaxElevationDeg ?? 65) + Number(sd.dataset.shoulderDelta))); });
+      return;
+    }
     const cd = e.target.closest('[data-cardio-delta]');
     if (cd) {
       store.update((d) => { d.settings.cardioGoalPerWeek = Math.max(0, Math.min(7, (d.settings.cardioGoalPerWeek ?? 3) + Number(cd.dataset.cardioDelta))); });

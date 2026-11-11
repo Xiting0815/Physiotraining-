@@ -15,7 +15,7 @@ import {
 } from './ui.js';
 
 export const title = 'Mehr';
-export const APP_VERSION = '5.2.0';
+export const APP_VERSION = '5.3.0';
 
 const REST_OPTIONS = [null, 30, 45, 60, 90, 120];
 const FONT_SCALES = [{ v: 1, l: 'Normal' }, { v: 1.125, l: 'Groß' }, { v: 1.25, l: 'Sehr groß' }];
@@ -164,7 +164,7 @@ export function render(root, { store, content, query }) {
           ${raw(ICON.chev)}</a></li>
         <li><a class="list-item" href="#/profil">
           <span class="list-item__icon">${raw(ICON.user)}</span>
-          <span class="list-item__body"><span class="list-item__title">Trainingsziele</span><span class="list-item__sub">${typeof kg === 'number' ? `Rudern pro Woche · ${String(kg).replace('.', ',')} kg für die Kalorienschätzung` : 'Rudern pro Woche, Körpergewicht für die Kalorienschätzung'}</span></span>
+          <span class="list-item__body"><span class="list-item__title">Trainingsziele</span><span class="list-item__sub">${typeof kg === 'number' ? `Rudern pro Woche · ${String(kg).replace('.', ',')} kg für die Kalorienschätzung` : 'Rudern pro Woche, Körpergewicht für die Kalorienschätzung'}${s.shoulderImpingement ? ` · Schulter-Schutz bis ${s.shoulderMaxElevationDeg ?? 65}°` : ' · Schulter-Schutz'}</span></span>
           ${raw(ICON.chev)}</a></li>
         <li><a class="list-item" href="#/eigene">
           <span class="list-item__icon list-item__icon--accent">${raw(ICON.puzzle)}</span>

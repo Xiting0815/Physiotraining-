@@ -116,7 +116,7 @@ export function render(root, { store, content, navigate }) {
         <span class="pv-ex-row__body">
           <span class="pv-ex-row__name">${ex.name}</span>
           ${it.upgradedFrom ? html`<span class="pv-ex-row__meta"><span class="chip chip--sm chip--accent">${it.newVariant ? 'Neu: ' : ''}${it.upgradeChip || 'Variante'}</span><span class="text-xs muted">statt ${exName(it.upgradedFrom)}</span></span>` : ''}
-          ${it.fallbackFrom ? html`<span class="pv-ex-row__meta"><span class="text-xs muted">statt ${exName(it.fallbackFrom)} (Gerät fehlt)</span></span>` : ''}
+          ${it.fallbackFrom ? html`<span class="pv-ex-row__meta"><span class="text-xs muted">statt ${exName(it.fallbackFrom)} (${missingEquipment(content.exercises.find((e) => e.id === it.fallbackFrom), settings).length ? 'Gerät fehlt' : 'Schulter-Schutz'})</span></span>` : ''}
           ${missing.length ? html`<span class="pv-ex-row__meta"><span class="chip chip--sm chip--outline">fehlt: ${missing.map((m) => EQUIPMENT_INFO[m]?.label ?? m).join(', ')}</span></span>` : ''}
           <span class="pv-ex-row__meta">${off ? html`<span class="chip chip--sm chip--outline">deaktiviert</span>` : ''}<span class="num">${doseText(ex, lvl)}</span>${ex.levels.length > 1 ? html`<span class="chip chip--sm ${sec === 'archery' ? 'chip--archery' : 'chip--knee'}">Stufe <span class="num">${li + 1}/${ex.levels.length}</span></span>` : ''}${lvl.band ? bandChip(settings, lvl.band) : ''}</span>
           ${it.note ? html`<span class="pv-ex-row__meta">${it.note}</span>` : ''}
@@ -138,6 +138,7 @@ export function render(root, { store, content, navigate }) {
       const lbl = kind === 'cardio' ? cardioMainLabel(w, content, state) : '';
       const sub = kind === 'cardio'
         ? `ca. ${fmtMinutes(minutes(w))}${lbl ? ` · ${lbl}` : ''}`
+        : kind === 'relief' ? `ca. ${fmtMinutes(minutes(w))} · sanft, jederzeit`
         : `ca. ${fmtMinutes(minutes(w))}${withRow(w) ? ' inkl. 10 min Rudern' : ''} · ${split.knee} Knie · ${split.archery} Bogen`;
       return html`<details class="card pv-workout" data-wid="${w.id}" ${open.has(w.id) ? 'open' : ''}>
         <summary class="pv-workout__head" style="margin:0;list-style:none">
@@ -155,7 +156,7 @@ export function render(root, { store, content, navigate }) {
             ${g.items.map(exRow)}`)}
           <div class="btn-row mt-4" style="flex-wrap:wrap">
             ${kind === 'strength' && !isNext ? html`<button class="btn btn--outline btn--sm" data-pick="${w.id}">Als nächstes setzen</button>` : ''}
-            ${kind !== 'cardio' ? html`<button class="btn btn--ghost btn--sm" data-copy="${w.id}">${raw(ICON.copy)} Als eigenes Workout kopieren</button>` : ''}
+            ${kind !== 'cardio' && kind !== 'relief' ? html`<button class="btn btn--ghost btn--sm" data-copy="${w.id}">${raw(ICON.copy)} Als eigenes Workout kopieren</button>` : ''}
             <a class="btn ${kind === 'cardio' ? 'btn--accent' : 'btn--primary'} btn--sm" href="#/session?workout=${encodeURIComponent(w.id)}">${raw(ICON.play)} Jetzt starten</a>
           </div>
         </div>
@@ -279,6 +280,10 @@ export function render(root, { store, content, navigate }) {
       })}
 
       ${pw.short ? html`<h2 class="section-title">Kurztraining <span class="chip chip--sm chip--outline">~15 min</span></h2>${workoutCard(pw.short, KIND_ICON.short)}` : ''}
+
+      ${pw.relief ? html`<h2 class="section-title">Knie-Entlastung <span class="chip chip--sm chip--outline">3–5 min</span></h2>
+        <p class="pv-count mt-0">Jederzeit, auch an trainingsfreien Tagen – zählt nicht fürs Wochenziel. Ersetzt keine Behandlung; bei stärkerem Schmerz oder Schwellung Physio fragen.</p>
+        ${workoutCard(pw.relief, KIND_ICON.relief)}` : ''}
 
       ${pw.cardio.length ? html`<h2 class="section-title">Rudern</h2>
         <p class="pv-count mt-0">Separate Ausdauer-Einheiten, 3× pro Woche. Die Schmerz-Ampel gilt auch beim Rudern. „Grundlage lang“ (25–29 Min) hilft beim Abnehmen – die Kalorien kommen vor allem aus dem Wochenumfang, der größte Hebel bleibt die Ernährung.</p>

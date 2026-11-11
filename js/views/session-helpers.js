@@ -6,7 +6,7 @@ import { evaluateSession, finalizeWithNextDay, recommendLevels, thresholds, LIGH
 import { rotationAfter, applyRecommendation, getWorkout, workoutKind } from '../logic/progression.js';
 import { xpFor, levelFor, evaluateBadges, sessionScore, XP } from '../logic/motivation.js';
 import { doneSessions, sessionLight, personalRecords, newRecords, dayOf, isCardioSession, inSessionRowingParts } from '../logic/stats.js';
-import { rowingRecords, pacePer500, INTENSITY_LABELS } from '../logic/cardio.js';
+import { rowingRecords, pacePer500, INTENSITY_LABELS, rowingPhases as rowingPhasesOf } from '../logic/cardio.js';
 import { sessionKcal, bodyWeightKg } from '../logic/energy.js';
 import { exerciseCuePlan } from '../logic/cues.js';
 import { nextDayDueAt, pendingNextDay } from '../logic/next-day.js';
@@ -603,6 +603,85 @@ export function rowPhaseSay(phase, content, session) {
   return lab.big;
 }
 
+/* ------------------------------------------------------------------ v5.3: context-aware big CTA (pure) */
+
+/**
+ * State of the big bottom button of an exercise screen (SPEC §18.2). Pure – the session view feeds the facts.
+ * Order: rowing part → done/finish → rest → timer (start/pause/resume) → manual „Satz fertig“.
+ * The button never skips an unfinished exercise (that is the small „Übung überspringen“ link).
+ * @param {{allDone?: boolean, hasNext?: boolean, resting?: boolean, timerLed?: boolean,
+ *   timerState?: 'idle'|'running'|'paused'|'done'|null, rowEntry?: boolean, rowDone?: boolean}} f
+ * @returns {{key: 'row-done'|'next'|'finish'|'skip-rest'|'start'|'pause'|'resume'|'set-done', label: string}}
+ */
+export function ctaState(f = {}) {
+  if (f.rowEntry) {
+    if (!f.rowDone) return { key: 'row-done', label: 'Gerudert ✓' };
+    return f.hasNext ? { key: 'next', label: 'Weiter' } : { key: 'finish', label: 'Zum Abschluss' };
+  }
+  if (f.allDone) return f.hasNext ? { key: 'next', label: 'Nächste Übung' } : { key: 'finish', label: 'Zum Abschluss' };
+  if (f.resting) return { key: 'skip-rest', label: 'Pause überspringen' };
+  if (f.timerLed) {
+    if (f.timerState === 'running') return { key: 'pause', label: 'Anhalten' };
+    if (f.timerState === 'paused') return { key: 'resume', label: 'Weiter' };
+    return { key: 'start', label: 'Satz starten' };
+  }
+  return { key: 'set-done', label: 'Satz fertig' };
+}
+
+/* ------------------------------------------------------------------ v5.3: rowing without a timer (pure) */
+
+const ROW_WORD = { easy: 'locker', moderate: 'gleichmäßig', vigorous: 'zügig' };
+const fmtPart = (sec) => (sec % 60 === 0 ? `${sec / 60} Min.` : sec >= 60 ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')} Min.` : `${sec} s`);
+const range = (r, unit) => (Array.isArray(r) ? `${unit} ${r[0]}–${r[1]}` : '');
+
+/**
+ * Goal + instruction text of one rowing entry (no timer, SPEC §18.5): `{title, detail[], seconds, spm, rpe}`.
+ * „10 Min. locker rudern, Schlagzahl 18–22“; intervals as „6 × (1 Min. zügig / 1 Min. locker)“ with targets.
+ */
+export function rowingBrief(entry, exercise) {
+  const lvl = exercise?.levels?.[entry?.level ?? 0] ?? exercise?.levels?.[0] ?? {};
+  const spm = Array.isArray(lvl.targetSpm) ? `, Schlagzahl ${lvl.targetSpm[0]}–${lvl.targetSpm[1]}` : '';
+  const rpe = Array.isArray(lvl.targetRpe) ? `RPE ${lvl.targetRpe[0]}–${lvl.targetRpe[1]}` : '';
+  const word = ROW_WORD[lvl.intensity] ?? 'locker';
+  if (Array.isArray(lvl.phases) && lvl.phases.length) {
+    const sec = lvl.phases.reduce((a, x) => a + (x.seconds || 0), 0);
+    const last = lvl.phases.at(-1);
+    const tech = lvl.phases.slice(0, -1);
+    const techSec = tech.reduce((a, x) => a + (x.seconds || 0), 0);
+    const detail = tech.length
+      ? [`${fmtPart(techSec)} Technik: ${tech.map((x) => x.label).join(' → ')}`, `dann ${fmtPart(last.seconds)} ${word} rudern${spm}`]
+      : lvl.phases.map((x) => `${x.label} – ${fmtPart(x.seconds)}`);
+    return { title: `${fmtPart(sec)} ${word} rudern${spm}`, detail, seconds: sec, spm: range(lvl.targetSpm, 'SPM'), rpe };
+  }
+  const sets = Math.max(1, entry?.plannedSets ?? lvl.sets ?? 1);
+  const secs = entry?.override?.seconds ?? lvl.seconds ?? 60;
+  if (sets > 1) {
+    const rest = lvl.rest ?? 0;
+    const total = sets * secs + (sets - 1) * rest;
+    const restTxt = rest > 0 ? ` / ${fmtPart(rest)} ${lvl.restActive ? 'locker' : 'Pause'}` : '';
+    return {
+      title: `${sets} × (${fmtPart(secs)} ${word}${restTxt})${spm}`,
+      detail: [`Zusammen ca. ${fmtPart(Math.round(total / 60) * 60)}${rpe ? ` · ${rpe}` : ''}`, rest > 0 && lvl.restActive ? 'In den Erholungsphasen ganz locker weiterrudern.' : ''].filter(Boolean),
+      seconds: total, spm: range(lvl.targetSpm, 'SPM'), rpe,
+    };
+  }
+  return { title: `${fmtPart(secs)} ${word} rudern${spm}`, detail: rpe ? [`Anstrengung ${rpe}`] : [], seconds: secs, spm: range(lvl.targetSpm, 'SPM'), rpe };
+}
+
+/**
+ * Write the rowed minutes into the rowing entries (no timer): the planned phases are scaled to `durationSec` and
+ * logged via applyRowingLog (sets with seconds, skipped when 0). Mutates + returns the session.
+ * @param {any} session @param {number[]} indexes entry indexes of the rowing part @param {number} durationSec
+ */
+export function applyRowedDuration(session, indexes, durationSec, content, at = new Date().toISOString()) {
+  const keep = new Set(indexes);
+  const masked = { exercises: (session.exercises || []).map((e, i) => (keep.has(i) ? { ...e, skipped: false } : { skipped: true })) };
+  const phases = rowingPhasesOf(masked, content);
+  const planned = phases.reduce((a, p) => a + p.seconds, 0);
+  const f = planned > 0 ? Math.max(0, durationSec) / planned : 0;
+  return applyRowingLog(session, phases, phases.map((p) => Math.round(p.seconds * f)), content, at);
+}
+
 /** Cue (tone/vibration group) for a rowing phase. */
 export const rowPhaseCue = (phase) => (phase?.kind === 'rest' || phase?.intensity === 'easy' ? 'relax' : 'tense');
 
@@ -1105,6 +1184,21 @@ pt-timer[data-ses-onerep] .pt-timer__meta{display:none}
 .ses-postop{border-left:4px solid var(--stop);padding:var(--s-2) var(--s-3);background:var(--stop-soft);border-radius:var(--radius-sm);font-size:15px;margin:var(--s-3) 0 var(--s-2)}
 .ses-doctor .card__title{font-size:var(--fs-xl)}
 .ses-doctor .ses-doctor__icon{font-size:40px;line-height:1}
+/* v5.3: context-aware CTA, secondary timer controls, rowing card */
+.ses-cta>.ses-cta__main{flex:1 1 0;min-height:72px;font-size:clamp(20px,5.6vw,24px);font-weight:var(--fw-black,800);touch-action:manipulation}
+.ses-timer pt-timer .pt-timer__controls,.ses-timer pt-timer .pt-timer__secondary,.ses-rest pt-timer .pt-timer__controls,.ses-rest pt-timer .pt-timer__secondary{display:none}
+.ses-tctl{margin-top:var(--s-2)}
+.ses-tctl summary{min-height:44px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:15px;font-weight:var(--fw-semibold);cursor:pointer}
+.ses-tctl__row{display:flex;gap:var(--s-2);justify-content:center}
+.ses-tctl__row .btn{min-height:44px;flex:1 1 0}
+.ses-skip{display:block;margin:var(--s-2) auto 0;min-height:44px}
+.row-card__title{font-size:clamp(24px,6.6vw,30px);line-height:1.2;margin:var(--s-1) 0 var(--s-2)}
+.row-card__detail{margin:0 0 var(--s-2);padding-left:1.2em;font-size:16px}
+.row-done-toggle{display:flex;align-items:center;gap:var(--s-3);width:100%;min-height:60px;font-size:20px;font-weight:var(--fw-bold);justify-content:center}
+.row-done-toggle[aria-pressed="true"]{background:var(--green-soft,#E3F4E8);color:var(--green-ink,#1D6B35);border-color:currentColor}
+.row-min{display:flex;align-items:center;gap:var(--s-2)}
+.row-min .btn{min-width:56px;min-height:52px;font-size:22px}
+.row-min .input{text-align:center;font-size:var(--fs-xl);font-variant-numeric:tabular-nums;max-width:110px}
 @media (prefers-reduced-motion: reduce){.ses-float,.ses-pulse,.ses-shake,.row-phase.is-new{animation:none}}
 `;
 

@@ -407,7 +407,9 @@ export function render(root, { store, content }) {
     /* ---------------- Kurztraining + Rudern ---------------- */
     const short = pw.short;
     const shortMin = short ? estimateWorkoutMinutes(short, content, state, settings) : 0;
-    const shortCard = !active && showHero && (short || customs.length) ? html`<section class="card pv-quickstart" aria-labelledby="qs-title">
+    const relief = pw.relief || phaseWorkouts(phase, content.workouts).relief;
+    const reliefMin = relief ? plannedWorkoutMinutes(relief, state, content, settings).minutes : 0;
+    const shortCard = !active && showHero && (short || customs.length || relief) ? html`<section class="card pv-quickstart" aria-labelledby="qs-title">
         <div class="card__header mb-0">
           <div><h3 class="card__title" id="qs-title">Schnellstart</h3>
           <p class="card__sub">${short ? 'Wenig Zeit? Zählt trotzdem fürs Wochenziel.' : 'Deine eigenen Workouts'}</p></div>
@@ -419,6 +421,12 @@ export function render(root, { store, content }) {
             <span class="pv-start__body"><span class="pv-start__name">Kurztraining</span>
             <span class="pv-start__meta">ca. ${fmtMinutes(shortMin)} · das Wichtigste der Phase</span></span>
             <a class="btn btn--soft btn--sm" href="#/session?workout=${encodeURIComponent(short.id)}" aria-label="Kurztraining starten">${raw(ICON.play)} Start</a>
+          </li>` : ''}
+          ${relief ? html`<li class="pv-start" data-relief-start>
+            <span class="pv-icon-badge pv-icon-badge--green pv-icon-badge--sm" aria-hidden="true">🌿</span>
+            <span class="pv-start__body"><span class="pv-start__name">${relief.name}</span>
+            <span class="pv-start__meta">ca. ${fmtMinutes(reliefMin || 5)} · bei Druck über der Kniescheibe · zählt nicht fürs Wochenziel</span></span>
+            <a class="btn btn--soft btn--sm" href="#/session?workout=${encodeURIComponent(relief.id)}" aria-label="Knie-Entlastung starten">${raw(ICON.play)} Start</a>
           </li>` : ''}
           ${customs.map((cw) => {
             const wo = getWorkout(cw.id, content, state);
@@ -462,6 +470,16 @@ export function render(root, { store, content }) {
           <span class="grow"><span class="pv-quick__title">Rudern ausgeblendet</span>
           <span class="pv-quick__sub">Rudergerät in Ausrüstung abhaken, dann gibt es Rudereinheiten, Aufwärmen und Finisher.</span></span>
           ${raw(ICON.chev)}</a>` : '';
+
+    /* ---------------- v5.3: one-time notice „Sitzgelegenheit angeben“ (chair split, SPEC §18.1) ---------------- */
+    const owned = new Set(settings.ownedEquipment || []);
+    const noSeat = !owned.has('chair-fixed') && !owned.has('office-chair');
+    const seatBanner = !firstRun && state.seatNotice !== 'seen' && (state.seatNotice === 'pending' || noSeat) ? html`<div class="banner banner--primary pv-eq-banner pv-seat-banner" role="note">
+        <span class="banner__icon" aria-hidden="true">🪑</span>
+        <a class="banner__body" href="#/ausruestung" data-seat-notice><span class="banner__title">Neu: Sitzgelegenheit angeben – fester Stuhl oder PC-Stuhl mit Rollen?</span>
+        <span class="banner__text">Übungen wie Aufstehen oder Stütz-Dips brauchen einen festen Stuhl. Mit PC-Stuhl gibt es sichere Varianten.</span></a>
+        <button class="btn btn--ghost btn--sm pv-eq-banner__x" data-seat-dismiss aria-label="Hinweis ausblenden">✕</button>
+      </div>` : '';
 
     /* ---------------- v5: one-time notice „Ausrüstung steuert den Plan“ ---------------- */
     const eqBanner = state.equipmentNotice === 'pending' && !firstRun ? html`<div class="banner banner--primary pv-eq-banner" role="note">
@@ -584,7 +602,7 @@ export function render(root, { store, content }) {
 
       ${remoteActiveBanner(state, now.getTime())}
       ${ndBanner}
-      ${active ? '' : eqBanner}
+      ${active ? '' : seatBanner || eqBanner}
       ${postCard}
       ${welcome}
       ${showHero || active ? hero : ''}
@@ -623,6 +641,10 @@ export function render(root, { store, content }) {
   };
 
   const onClick = async (e) => {
+    if (e.target.closest('[data-seat-dismiss]') || e.target.closest('[data-seat-notice]')) {
+      store.update((d) => { d.state.seatNotice = 'seen'; });
+      return; // the link itself navigates to #/ausruestung
+    }
     if (e.target.closest('[data-eq-dismiss]') || e.target.closest('[data-eq-notice]')) {
       store.update((d) => { d.state.equipmentNotice = 'seen'; });
       return; // the link itself navigates to #/ausruestung

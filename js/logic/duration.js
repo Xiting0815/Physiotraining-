@@ -188,7 +188,8 @@ export function cappedSets(levelSets, item, workout) {
 /**
  * Trim a session plan in place until its estimate ≤ maxMinutes: repeatedly removes one set from the
  * entry with the most planned sets (> 1; knee/archery/custom main blocks before warmup/cooldown; rowing (`cardio`) never;
- * ties → the longest entry). Trimmed entries get `trimmed: true`. Never removes exercises.
+ * ties → the longest entry). v5.3: if all entries are down to one set, repetitions are shortened (override.reps,
+ * warm-up/cool-down first, ≥ 3 left). Trimmed entries get `trimmed: true`. Never removes exercises.
  * @param {import('../types.js').Session} plan
  * @param {import('../types.js').Content} content
  * @param {import('../types.js').Settings} [settings]
@@ -214,6 +215,25 @@ export function fitPlanToMinutes(plan, content, settings, maxMinutes = MAX_SESSI
     }
     if (!best) break;
     best.plannedSets -= 1;
+    best.trimmed = true;
+  }
+  // v5.3: still over budget with every entry at one set (very high levels + extra shoulder items) → shorten the
+  // repetitions (holds/reps, ≥ 3 left) of the longest entry, warm-up/cool-down first. Never removes exercises.
+  guard = 200;
+  while (secs() > limit && guard-- > 0) {
+    let best = null;
+    let bestKey = null;
+    for (const e of plan.exercises || []) {
+      const ex = exById.get(e.exerciseId);
+      if (e.skipped || e.section === 'cardio' || !ex || (ex.type !== 'reps' && ex.type !== 'hold')) continue;
+      const reps = effectiveDose(e, ex).reps ?? 0;
+      if (reps <= 3) continue;
+      const key = [e.section === 'warmup' || e.section === 'cooldown' ? 1 : 0, estimateExerciseSeconds(e, ex, settings)];
+      if (!bestKey || key[0] > bestKey[0] || (key[0] === bestKey[0] && key[1] > bestKey[1])) { best = e; bestKey = key; }
+    }
+    if (!best) break;
+    const reps = effectiveDose(best, exById.get(best.exerciseId)).reps;
+    best.override = { ...(best.override || {}), reps: Math.max(3, Math.floor(reps * 0.75)) };
     best.trimmed = true;
   }
   return plan;
