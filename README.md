@@ -65,6 +65,36 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
 - **Vorbereitung auf die Krücken** – Stütz-Dips, Trizeps, Abstützen im Sitz und Einbeinstand bereits vor der OP.
 - **Offline** – nach dem ersten Laden komplett offline nutzbar, installierbar als App.
 
+### Neu in Version 5.3 – sicher sitzen, Knie entlasten, Schulter schonen
+
+- **Fester Stuhl oder PC-Stuhl mit Rollen?** Unter **Meine Ausrüstung** gibt es jetzt „Fester Stuhl / Hocker ohne Rollen“,
+  „PC-Stuhl mit Rollen“, „Bett- oder Sofakante“ und „Massagestab (z. B. Blackroll)“. Ruhige Übungen im Sitzen gehen auch
+  auf dem PC-Stuhl (Hinweis: Lehne an die Wand, Rollen feststellen, nicht drehen). Alles, was vom Sitz hochdrückt,
+  aufsteht oder den Stuhl waagerecht belastet, braucht einen festen Stuhl – sonst kommt automatisch ein Ersatz:
+  Stütz-Dips/Abstützen im Sitz → Dips bzw. Trizepsdrücken am Schlingentrainer oder Trizeps mit Band, Aufstehen vom Stuhl →
+  assistierte Mini-Kniebeuge (ab Phase 2), Hinsetzen auf die Bettkante oder Mini-Kniebeuge an der Wand, Fersen-Brücke auf
+  dem Stuhl → am Schlingentrainer bzw. auf der Stufe, Brustwirbel-Streckung → auf dem Boden über die Handtuchrolle,
+  Rudern im Sitzen → am Schlingentrainer bzw. im Langsitz. Zum Festhalten (Wadenheben, Einbeinstand …) dient die Wand.
+  Beim Update wird der PC-Stuhl übernommen, wenn du schon trainiert hast; Heute fragt einmal nach der Sitzgelegenheit.
+- **Knie-Entlastung (3–5 Min.)** – bei Druck direkt oberhalb der Kniescheibe: Kniependel, Kniescheiben-Mobilisation
+  (sanft nach unten gleiten, Variante wie beim Physio), Oberschenkel-Massage mit dem Massagestab (nie auf der Kniescheibe)
+  und sanftes Verlängern in Bauchlage (Knie nur bis ca. 60–70°). Jederzeit über Heute → Schnellstart oder den Plan,
+  zählt nicht fürs Wochenziel. Ehrlich: ersetzt keine Behandlung – bei stärkerem Schmerz oder Schwellung Physio fragen.
+  Jedes Krafttraining in Phase 1–3 beginnt mit einer kurzen Kniescheiben-Mobilisation.
+- **Schulter-Schutz bei Impingement** (Mehr → Trainingsziele): keine Übungen mit Armhebung über 65° (einstellbar). Wall
+  Slide, Y-Heben, Latzug, Band-Dislocates, Arme-über-Kopf-Dehnungen usw. werden ersetzt – z. B. durch Wand-Liegestütz mit
+  Plus, Low Row, Pull-Apart tief, Low Face Pull auf Brusthöhe, Schulterblätter setzen. Jedes Krafttraining enthält
+  Rotatorenmanschetten-Training (isometrisch am Türrahmen, Außenrotation mit Handtuchrolle, Seitlage, Innenrotation).
+  Der Bogenauszug auf Schulterhöhe bleibt („Schulter tief, bei Schmerz über 3/10 abbrechen“). Schmerzarm arbeiten:
+  höchstens leichter Schmerz (≤ 3/10), der nicht anhält.
+- **Ein großer Button, der mitdenkt** – im Training zeigt der Knopf unten immer den nächsten Schritt: „Satz starten“ →
+  „Anhalten“/„Weiter“ → „Pause überspringen“ → „Nächste Übung“ → „Zum Abschluss“; bei Wiederholungen ohne Timer
+  „Satz fertig“. Er überspringt nie eine Übung – dafür gibt es den kleinen Link „Übung überspringen“. ±15 s und
+  Zurücksetzen stecken unter „Timer anpassen“.
+- **Rudern ohne Timer** – Aufwärmen, Finisher und Rudereinheiten zeigen nur noch Ziel und Anleitung
+  („10 Min. locker rudern, Schlagzahl 18–22“). Danach „Erledigt“ und die Minuten eintragen (optional Werte vom Display);
+  der Knieschmerz beim Rudern bleibt Pflicht.
+
 ### Neu in Version 5.2 – Handy und Tablet synchron
 
 - **Synchronisierung über Google Drive** (Mehr → Synchronisierung) – Einheiten, Stufen, XP, Abzeichen, eigene
@@ -92,7 +122,7 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
 ### Neu in Version 5 – Deine Ausrüstung steuert den Plan
 
 - **Meine Ausrüstung** (Mehr → Meine Ausrüstung) – oben die Schalter mit Symbol für alles, was über die
-  Grundausstattung (TheraBänder, Loops, Matte, Stuhl, Stufe, Wand, Tür) hinausgeht: Rudergerät, Schlingentrainer,
+  Grundausstattung (TheraBänder, Loops, Matte, Stufe, Wand, Tür; ab 5.3 ist der Stuhl abhakbar) hinausgeht: Rudergerät, Schlingentrainer,
   Türanker, Bandgriffe, Gewichtsmanschetten, Balance-Pad, Kurzhanteln, Pedaltrainer, Release-Trainer, Kühlpack,
   Maßband. Darunter Einkaufsideen nur noch für das, was fehlt. Nach jedem Umschalten sagt die App, was sich ändert:
   „Neu in deinem Plan: Rudern am Schlingentrainer, Stütz-Dips am Schlingentrainer …“ bzw. „Entfernt: …“.
@@ -218,6 +248,7 @@ python3 -m http.server 8000
 ```bash
 node --test
 PW_E2E=1 node --test tests/sync-e2e.test.js   # Browser-Smoke-Test der Synchronisierung (Playwright + python3)
+PW_E2E=1 node --test tests/hardening-session-e2e.test.js tests/voice-e2e.test.js tests/v53-e2e.test.js  # Training im Browser
 ```
 
 ## Deployment (GitHub Pages)

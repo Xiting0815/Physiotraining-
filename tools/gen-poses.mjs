@@ -352,8 +352,8 @@ function bridgeUp(down, opts = {}) {
 }
 
 // ---------------------------------------------------------------- side-lying (front view, lying on the right side, head left)
-// v5.3 (shoulder impingement): the bottom (right) arm lies in front of the body (≈ 45°) instead of overhead – head on a cushion
-const sideLying = (o) => front('lying', { root: { x: 112, y: 100 }, trunk: -90, shoulderR: 225, elbowR: 0, shoulderL: 90, elbowL: 0, ...o });
+// v5.3 (shoulder impingement): the bottom (right) arm lies along the body (≈ 10°) instead of overhead – head on a cushion
+const sideLying = (o) => front('lying', { root: { x: 112, y: 100 }, trunk: -90, shoulderR: 258, elbowR: 0, shoulderL: 90, elbowL: 0, ...o });
 function legsBent(p, open = 0) {
   const P = pts(p);
   const kneeB = { x: P.hipJR.x + 30, y: MAT - 4.25 };
@@ -1343,14 +1343,14 @@ add('band-dislocate-high', ground(front('standing', { shoulderL: 158, shoulderR:
   }
   // thoracic extension on the floor over a towel roll (arms crossed on the chest)
   {
-    const a = lie(supine({ hipL: 140, hipR: 140, kneeL: 100, kneeR: 100, shoulderL: 150, shoulderR: 150, elbowL: 150, elbowR: 150 }));
+    const a = lie(supine({ hipL: 140, hipR: 140, kneeL: 100, kneeR: 100, shoulderL: 100, shoulderR: 100, elbowL: 0, elbowR: 0 }));
     ground(a, MAT, ['legL', 'legR', 'trunk']);
     flat(a);
     const P = pts(a);
     const towel = { type: 'towel', x: r1(P.hip.x + (P.neck.x - P.hip.x) * 0.7), y: r1(MAT - 5), r: 5 };
     a.props = ['mat', towel];
     add('supine-towel-tspine-a', a);
-    const b = clone(a); b.headTilt = -6; b.shoulderL = b.shoulderR = 158; ground(b, MAT, ['trunk', 'head', 'legL', 'legR']);
+    const b = clone(a); b.headTilt = -6; ground(b, MAT, ['trunk', 'head', 'legL', 'legR']);
     add('supine-towel-tspine-b', b);
   }
   // long-sit row with a band anchored low at the door (arms below shoulder height)

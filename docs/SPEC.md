@@ -1480,7 +1480,8 @@ tests: `tests/logic-v5.test.js`.
 
 ### 16.1 Equipment model — `js/logic/equipment.js`
 
-- **Base** (always available): `theraband, loop, mat, chair, step, wall, door, none` (`BASE_EQUIPMENT`).
+- **Base** (always available): `theraband, loop, mat, chair, step, wall, door, none` (`BASE_EQUIPMENT`). v5.3: `chair` is no
+  longer base – see §18.1 (`chair-fixed`, `office-chair`, virtual `seat`).
 - **Optional** (`OPTIONAL_EQUIPMENT`, `{id, label, icon, hint}`, in toggle order): `rowing-machine`, `sling-trainer`,
   `door-anchor`, `band-handles`, `ankle-weights`, `balance-pad`, `dumbbells`, `pedal-trainer`, `release-trainer`,
   `ice-pack`, `measuring-tape`. `EQUIPMENT_INFO[id] = {label, icon}` for all ids (`ui.EQUIPMENT_LABEL` derives from it).
@@ -1641,3 +1642,110 @@ mode (newer schema). Without a token: status `needsAuth`, GIS is preloaded so th
 - Heute: status dot in the header (links to the card); without token a chip „Abgleichen“ (one-tap re-auth + sync);
   info banner „Training läuft gerade auf <Gerät>“ from `state.remoteActiveSession`.
 - `sw.js` never handles Google hosts (and no cross-origin request at all).
+
+## 18. v5.3 – Sitz ohne Rollen, Knie-Entlastung, Schulter-Schutz, mitdenkender Button, Rudern ohne Timer
+
+Feedback of the user (right-handed compound archer, left meniscus tear + cartilage damage, microfracture 2027-01-05):
+owns TheraBands, loops, mat, step, rowing machine, door anchor, band handles, sling trainer and a massage stick, but
+**no fixed chair – only an office chair with wheels that swivels**; pain directly above the patella (the physio's
+inferior patellar glide + long-axis traction relieved it); **impingement of both shoulders** (pain-free only up to
+≈ 60–70° arm elevation; the bow draw at shoulder height is fine; orthopaedist recommends rotator cuff training).
+`APP_VERSION` 5.3.0, `SCHEMA_VERSION` stays 1, `EQUIPMENT_MODEL` 3. Tests: `tests/logic-v53.test.js`,
+`PW_E2E=1 node --test tests/v53-e2e.test.js` (browser QA with this user's equipment + shoulder protection).
+
+### 18.1 Seat split — `js/logic/equipment.js`
+
+- `BASE_EQUIPMENT` = `theraband, loop, mat, step, wall, door, none` (the old base `chair` is gone). New optional ids (toggle
+  order first): `chair-fixed` „Fester Stuhl / Hocker ohne Rollen“, `office-chair` „PC-Stuhl mit Rollen“, `bed-edge`
+  „Bett- oder Sofakante“, `massage-stick` „Massagestab (z. B. Blackroll)“.
+- **anyOf groups:** `ANY_OF = {seat: ['chair-fixed', 'office-chair']}` – the virtual id `seat` is available when any id of
+  the group is owned (`availableEquipment` adds it). Exercises list `seat` (quiet seated work) or `chair-fixed`.
+- Classification: **seat** (safe on a braked office chair): knee pendulum, seated knee extension, seated hamstring curl,
+  lat pulldown, seated rotation / spine wave / ankle circles, seated stretches and flows, hamstring stretch seated.
+  **chair-fixed** (pushing/standing up from the seat or loading it horizontally): sit-to-stand, right-leg sit-to-stand,
+  chair dip, seated press-up, heel bridge on the chair, thoracic extension over the backrest, **seated row** (the band
+  pulls a chair on wheels away from the wall). **Support → wall** (holding on to a rolling chair is a fall risk): calf
+  raise, single-leg stance (+ reach), mini squat, standing hip abduction/extension, leg swing sideways, hip flexor stretch
+  standing, side plank (wall only). Their figures show a wall at the hands.
+- `instructionsFor`: with `office-chair` but no `chair-fixed`, `seat` exercises start with `OFFICE_CHAIR_NOTE` „PC-Stuhl
+  mit der Lehne an die Wand stellen, Rollen feststellen falls möglich, nicht drehen.“ (also shown as 💺 note in the session).
+- **Fallback chains** (`exercise.fallback`: id or ordered list; `resolveExercise` tries the chain, then the derived base of an
+  upgrade rule; a candidate must have its equipment, be `usable` (phaseMin, post-op block, toggle, **shoulder limit**) and not
+  be `taken` (already in the same section)). Unsafe chair exercises: chair-dip → sling-dip-assisted (upgrade) /
+  band-triceps-extension; seated-press-up → sling-triceps-press / band-triceps-extension; sit-to-stand →
+  sling-assisted-mini-squat (p2+) / **box-squat-bed-edge** (new, `bed-edge`) / mini-squat (wall); right-leg-sit-to-stand →
+  box-squat-bed-edge / right-leg-band-press; hamstring-bridge-chair → sling-heel-bridge (upgrade) / **hamstring-bridge-step**
+  (new) / glute-bridge; thoracic-extension-chair → **thoracic-extension-floor** (new, towel roll); seated-row → sling-row
+  (upgrade) / **long-sit-row** (new, long sitting on the mat, band low at the door).
+- **Migration** (`migrateEquipment`, model < 3): the old base chair is NOT taken over as `chair-fixed`; users with sessions
+  get `office-chair` ticked (unless `_equipmentAt['office-chair']` shows they toggled it), existing users get
+  `state.seatNotice = "pending"` → Heute banner „Neu: Sitzgelegenheit angeben – fester Stuhl oder PC-Stuhl mit Rollen?“
+  (link to Meine Ausrüstung, ✕ or visiting the page → `"seen"`; also shown while no seat is owned). Users with sessions get
+  `shoulderImpingement: true`, `shoulderMaxElevationDeg: 65`. Migrated values carry `MIGRATION_STAMP`
+  (`2026-11-01T00:00:00Z`) in `_equipmentAt` / `_updatedAt`, so every real change on any device wins in the sync merge.
+  `seatNotice` is a tracked state key (last write wins), the shoulder settings are tracked settings keys.
+
+### 18.2 Context-aware big button (session) — `session-helpers.ctaState` (pure)
+
+`ctaState({allDone, hasNext, resting, timerLed, timerState, rowEntry, rowDone}) → {key, label}`:
+
+| situation | label | action |
+|---|---|---|
+| timer-led set (hold/timed/tempo coach), idle | Satz starten | starts prep + cue plan of the open set (voice unlock in the tap) |
+| timer running / paused | Anhalten / Weiter | `pause()` / `start()` |
+| set rest running | Pause überspringen | `afterRest()` (next timer-led set starts with its prep) |
+| reps without timer | Satz fertig | ticks the open set → rest |
+| all sets done | Nächste Übung / Zum Abschluss | old „next“ (pain / RPE nudges, finisher offer) |
+| rowing part | Gerudert ✓ / Weiter | see 18.5 |
+
+The button never skips an unfinished exercise (that is the small link „Übung überspringen“); taps within 700 ms after a CTA
+action are ignored (double-tap guard, plus the existing re-render guard). The timer's own toggle/±15/reset are hidden; ±15 s and
+„Zurücksetzen“ live in the disclosure „Timer anpassen“ under the timer (they act on the rest timer during a rest).
+
+### 18.3 Knee relief & shoulder protection — content, `js/logic/shoulder.js`
+
+- **Knee relief:** `patella-mobilization` (p1+, p4 note kept) now with inferior glide first, 10× per direction and the
+  physio variation (glide held down + gentle quad set / small lift); `quad-massage-stick` (massage stick on the quads up to
+  just above the patella, never on it; fallback `quad-self-massage`); `prone-quad-lengthening-band` (prone, band, knee only
+  to ≈ 60–70°, pain ≤ 2); `knee-pendulum` (sit high, e.g. office chair raised). All texts: „ersetzt keine Behandlung; bei
+  stärkerem Schmerz/Schwellung Physio fragen; nach Freigabe durch deinen Physio“. Voice cue words for each.
+  Workouts `p1-relief` … `p4-relief` (kind **"relief"**, „Knie-Entlastung (3–5 Min.)“, `maxMinutes` 6, phase field
+  `relief`; p4 without the stick massage/prone stretch). Heute „Schnellstart“ and Plan show it any day; it does **not** count
+  for the weekly strength goal or streak (`stats.countsAsStrength`), gives `XP.relief` = 8, no recommendations, no next-day
+  check. Strength warm-ups p1–p3 start with 35 s patella mobilisation (`item.override`, replaces one leg drill; budgets kept).
+  Workout items may carry `override` (copied to the plan entry, used by the duration estimate).
+- **Shoulder:** settings `shoulderImpingement` (default false, switch „Schulter-Impingement (keine Überkopf-Übungen)“ under
+  Mehr → Trainingsziele) and `shoulderMaxElevationDeg` (default 65, stepper 40–120). Every exercise has
+  `shoulderElevationDeg` (level value `levels[i].shoulderElevationDeg` wins), `shoulderFocus: ["rc"|"scapula"]`, and the five
+  draw drills + bow-arm push carry `archeryDraw: true` (exception, hint „Schulter tief, bei Schmerz > 3 abbrechen“); rowing
+  is exempt. `shoulderOk(ex, level, settings)` is part of `usable` in `buildSessionPlan`, so over-limit exercises take
+  their fallback: wall-slide / sling-y → wall-push-up-plus; band-pull-apart / sling-t → pull-apart-low; prone-ytw /
+  sling-rear-delt → prone-low-row; face-pull / sling-face-pull → low-face-pull; serratus-punch → serratus-punch-low;
+  er-90-90 → er-towel / sidelying-er / er-iso-door; lat-pulldown / straight-arm-pulldown / high rows → low-row-band;
+  dead-bug / side plank / sling plank / rollout → pallof-press; band-dislocate / shoulder-circles → scapula-setting;
+  lat-side / seated-pec / doorway / cross-body / neck stretches → side-bend-low / pec-stretch-low / neck-stretch-low;
+  stretch/mobility flows → `*-low` flows; sling-triceps-press → band-triceps-extension; single-leg-stance-reach →
+  single-leg-stance. Items with `shoulderOnly: true` (rotator cuff in every strength/short workout, scapula setting in the
+  C workouts) are only planned while the protection is on. `fitPlanToMinutes` additionally shortens repetitions
+  (warm-up/cool-down first, ≥ 3 left) when every entry is already at one set. Library: chip „über Schulter-Limit“; custom
+  workouts: warning with the replacement. Session: 🛡️ hint on shoulder exercises. Figures: no pose of an allowed exercise
+  shows more than limit + 20° (tested via `computePoints`); side-lying poses no longer put the bottom arm overhead.
+
+### 18.4 Figures
+
+New poses (tools/gen-poses.mjs): box-sit*, bridge-heel-step-*, supine-towel-tspine-*, long-sit-row-*, long-sit-thigh-*
+(+ new prop **`stick`**, a massage roller following the hands along the thigh), prone-quad-band-*, stand-scap-*,
+stand-punch-low-*, wall-push-up-plus-*, stand-low-row-*, front-arms-*-low, low-face-pull-*, front-rc-iso,
+stand-hands-behind-*, front-sit-side-bend-low, front-sit-neck-low; support poses carry a wall at the hands.
+
+### 18.5 Rowing without a timer (warm-up, finisher, rowing sessions)
+
+The guided rowing timer is gone (`rowingPhases` stays as pure logic for texts and logging). A card shows goal and
+instructions (`session-helpers.rowingBrief`: „10 Min. locker rudern, Schlagzahl 18–22“, intervals „6 × (1 Min. zügig /
+1 Min. locker), Schlagzahl 22–26“, technique steps as text), „Erledigt“ toggle, minutes (pre-filled with the goal, ±1 and
+direct input), optional display values (distance, kcal, Ø watt, SPM, Ø pulse), mandatory knee pain + sharp-pain button with
+red warning, „Heute nicht gerudert“ / „Überspringen“. Big button „Gerudert ✓“ (needs the pain value, saves, continues) /
+„Weiter“. `applyRowedDuration` scales the planned phases to the minutes and logs them via `applyRowingLog`; values go to the
+same fields as before (`warmupRowing`, `finisherRowing`, `rowing.durationSec` …) so statistics, kcal and sync are unchanged.
+No phase announcements – only „Rudern: … Tippe auf Erledigt, wenn du fertig bist.“ when the card opens. Old resumes with
+step `rowlog` open the card; a stale `rowTimer` of ≤ 5.2 is still flushed on „Jetzt abschließen“.

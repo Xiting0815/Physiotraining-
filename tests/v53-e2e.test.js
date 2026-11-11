@@ -241,6 +241,27 @@ test('v5.3 QA in the browser (dark, 412×915, user equipment + shoulder protecti
       await page.screenshot({ path: join(SHOTS, 'v53-relief.png') });
       await ctx.close();
     }
+    // ---- 5. separate rowing session: one card for all parts, then post-check; values in session.rowing
+    {
+      const { page, ctx } = await open(legacyUser(), '#/session?workout=p1-row');
+      await page.waitForSelector('[data-act="pre-go"]');
+      await page.click('pt-pain-scale button >> nth=0');
+      await page.click('[data-act="pre-go"]');
+      await page.waitForSelector('.row-card');
+      assert.equal(await page.locator('.row-card__detail li').count(), 3, 'technique warm-up, main part, cool-down');
+      await page.fill('[data-row="minutes"]', '18');
+      await page.click('.row-card details summary');
+      await page.fill('[data-row="distanceM"]', '3600');
+      await page.click('[data-slot="pain"] pt-pain-scale button >> nth=0');
+      await page.waitForTimeout(800);
+      await cta(page).click();
+      await page.waitForSelector('[data-act="finish"]');
+      const a = (await stored(page)).state.activeSession;
+      assert.equal(a.rowing.durationSec, 1080);
+      assert.equal(a.rowing.distanceM, 3600);
+      assert.equal(a.exercises.flatMap((e) => e.sets).reduce((x, y) => x + (y.seconds || 0), 0) > 900, true);
+      await ctx.close();
+    }
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();
