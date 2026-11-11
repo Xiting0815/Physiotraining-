@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "v5.3 figure audit (SPEC §18.6): merged over exercises[].figure by js/content.js and figureSpecForExercise. Keys: poses, view, props, band, arrows, labels, mirror, tempo, loop, highlight. Pose ids live in data/poses.json (tools/gen-poses.mjs).",
+  "note": "v5.3 figure audit: merged over exercises[].figure by js/content.js and figureSpecForExercise. Keys: poses, view, props, band, arrows, labels, mirror, tempo, loop, highlight. Pose ids live in data/poses.json (tools/gen-poses.mjs).",
   "overrides": {
     "tke": {
       "arrows": [

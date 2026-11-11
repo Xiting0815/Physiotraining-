@@ -93,7 +93,7 @@ function buildSliders() {
     <div class="opts">
       <select id="view">${['side', 'front'].map((v) => `<option ${p.view === v ? 'selected' : ''}>${v}</option>`).join('')}</select>
       <select id="ground">${['standing', 'sitting', 'lying'].map((v) => `<option ${p.ground === v ? 'selected' : ''}>${v}</option>`).join('')}</select>
-      <select id="camera"><option value="">camera: normal</option><option value="top" ${p.camera === 'top' ? 'selected' : ''}>camera: top</option></select>
+      <select id="camera"><option value="">camera: normal</option><option value="top" ${p.camera === 'top' ? 'selected' : ''}>camera: top</option><option value="above" ${p.camera === 'above' ? 'selected' : ''}>camera: above (stehend von oben)</option></select>
     </div></fieldset>`;
   h += `<fieldset><legend>Wurzel (Hüfte)</legend>${slider('root.x', p.root.x, 0, 200, 0.5)}${slider('root.y', p.root.y, 0, 200, 0.5)}</fieldset>`;
   h += '<fieldset><legend>Gelenke (°)</legend>';
@@ -170,7 +170,7 @@ $('copyAll').addEventListener('click', (e) => { poses[$('pose').value] = clean(c
 function renderGallery() {
   $('gallery').innerHTML = ids.map((id) => `<figure data-id="${id}"><pt-figure static aria-label="${id}"></pt-figure><figcaption>${id}</figcaption></figure>`).join('');
   for (const f of $('gallery').querySelectorAll('figure')) {
-    f.querySelector('pt-figure').innerHTML = figureSvg({ poses: [poses[f.dataset.id]], segments: file.segments, props: poses[f.dataset.id].ground === 'lying' && poses[f.dataset.id].camera !== 'top' ? ['mat'] : [] }, { label: f.dataset.id });
+    f.querySelector('pt-figure').innerHTML = figureSvg({ poses: [poses[f.dataset.id]], segments: file.segments, props: poses[f.dataset.id].ground === 'lying' && !poses[f.dataset.id].camera ? ['mat'] : [] }, { label: f.dataset.id });
   }
 }
 function showGallery(on) {

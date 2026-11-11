@@ -1453,7 +1453,7 @@ add('band-dislocate-high', ground(front('standing', { shoulderL: 158, shoulderR:
 }
 
 // ================================================================ v5.3 figure audit: views, walls, top view, close-ups
-// (used via data/figure-overrides.json; SPEC §18.6)
+// (used via data/figure-overrides.json – merged over exercise.figure, see js/components/pt-figure.js header)
 {
   const withP = (p, props) => { p.props = props; return p; };
   const wallAt = (x, extra = {}) => ({ type: 'wall', x: r1(x), facing: -1, ...extra });
@@ -1598,9 +1598,7 @@ add('band-dislocate-high', ground(front('standing', { shoulderL: 158, shoulderR:
   }
   // ---- breathing: supine, hands on the belly
   {
-    const p = lie(supine({}));
-    const P = pts(p);
-    aim(p, 'armR', { x: P.hip.x - 12, y: P.hip.y - 8 }, (j2) => j2 >= 0); sameArms(p);
+    const p = lie(supine({ shoulderL: 90, shoulderR: 90, upperArmLenL: 0.7, upperArmLenR: 0.7, elbowL: 24, elbowR: 24 }));
     p.props = ['mat'];
     add('supine-hands-belly', p);
   }
