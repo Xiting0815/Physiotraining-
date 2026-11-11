@@ -3,10 +3,21 @@
 // „Meine Ausrüstung“ (`settings.ownedEquipment`).
 
 /** Always available (the user's basic home setup). */
-export const BASE_EQUIPMENT = ['theraband', 'loop', 'mat', 'chair', 'step', 'wall', 'door', 'none'];
+// v5.3 (SPEC §18.1): the former base item "chair" is split into the optional ids `chair-fixed` (fester Stuhl / Hocker
+// ohne Rollen) and `office-chair` (PC-Stuhl mit Rollen). Exercises that only need *some* seat use the virtual id
+// `seat` (satisfied by either, see ANY_OF); exercises that push/stand up from the seat or load it horizontally need
+// `chair-fixed`.
+export const BASE_EQUIPMENT = ['theraband', 'loop', 'mat', 'step', 'wall', 'door', 'none'];
+
+/** v5.3: virtual equipment ids satisfied by ANY of the listed ids (anyOf groups). */
+export const ANY_OF = { seat: ['chair-fixed', 'office-chair'] };
 
 /** Optional equipment, in the order of the „Meine Ausrüstung“ toggles. */
 export const OPTIONAL_EQUIPMENT = [
+  { id: 'chair-fixed', label: 'Fester Stuhl / Hocker ohne Rollen', icon: '🪑', hint: 'Aufstehen, Stütz-Dips, Abstützen im Sitz, Fersen-Brücke auf dem Stuhl' },
+  { id: 'office-chair', label: 'PC-Stuhl mit Rollen', icon: '💺', hint: 'Nur für ruhige Übungen im Sitzen – Lehne an die Wand, nicht drehen' },
+  { id: 'bed-edge', label: 'Bett- oder Sofakante', icon: '🛏️', hint: 'Hinsetzen auf die Bettkante statt Aufstehen vom Stuhl' },
+  { id: 'massage-stick', label: 'Massagestab (z. B. Blackroll)', icon: '🦯', hint: 'Oberschenkel-Massage zur Knie-Entlastung' },
   { id: 'rowing-machine', label: 'Rudergerät', icon: '🚣', hint: 'Rudern als Aufwärmen, Finisher und eigene Rudereinheiten' },
   { id: 'sling-trainer', label: 'Schlingentrainer', icon: '🪢', hint: 'Sling-Varianten für Rücken, Rumpf und Stütz (an der Tür befestigt)' },
   { id: 'door-anchor', label: 'Türanker', icon: '⚓', hint: 'Band sauber auf Knöchel-, Brust- oder Kopfhöhe befestigen' },
@@ -25,7 +36,7 @@ export const EQUIPMENT_INFO = {
   theraband: { label: 'TheraBand', icon: '🎗️' },
   loop: { label: 'Loop-Band', icon: '⭕' },
   mat: { label: 'Matte', icon: '🧘' },
-  chair: { label: 'Stuhl', icon: '🪑' },
+  seat: { label: 'Sitz (Stuhl oder PC-Stuhl)', icon: '🪑' },
   step: { label: 'Stufe', icon: '🪜' },
   wall: { label: 'Wand', icon: '🧱' },
   door: { label: 'Tür', icon: '🚪' },
@@ -51,7 +62,13 @@ export const LEGACY_EQUIPMENT_IDS = {
 };
 
 /** Version of the equipment model stored in `settings.equipmentModel` (missing = legacy v1–v4 ids). */
-export const EQUIPMENT_MODEL = 2;
+export const EQUIPMENT_MODEL = 3;
+
+/** v5.3: setup step inserted for `seat` exercises when only the office chair (with wheels) is owned. */
+export const OFFICE_CHAIR_NOTE = 'PC-Stuhl mit der Lehne an die Wand stellen, Rollen feststellen falls möglich, nicht drehen.';
+
+/** v5.3: fixed (old) timestamp for values set by the migration – any real change of the user wins in the sync merge. */
+export const MIGRATION_STAMP = '2026-11-01T00:00:00.000Z';
 
 /**
  * Normalise a stored owned list: legacy ids mapped, unknown and base ids dropped, de-duplicated,
@@ -79,14 +96,20 @@ export const ownedEquipment = (settings) => normalizeOwned(settings?.ownedEquipm
  */
 export function availableEquipment(settings) {
   if (!settings || !Array.isArray(settings.ownedEquipment)) return null;
-  return new Set([...BASE_EQUIPMENT, ...ownedEquipment(settings)]);
+  return withVirtual(new Set([...BASE_EQUIPMENT, ...ownedEquipment(settings)]));
+}
+
+/** Add the virtual anyOf ids (`seat`) whose group is satisfied. */
+function withVirtual(set) {
+  for (const [v, ids] of Object.entries(ANY_OF)) if (ids.some((id) => set.has(id))) set.add(v);
+  return set;
 }
 
 /** Accept a Set, settings object, or null (= everything available). */
 function toAvail(availOrSettings) {
   if (availOrSettings == null) return null;
   if (availOrSettings instanceof Set) return availOrSettings;
-  if (Array.isArray(availOrSettings)) return new Set([...BASE_EQUIPMENT, ...normalizeOwned(availOrSettings)]);
+  if (Array.isArray(availOrSettings)) return withVirtual(new Set([...BASE_EQUIPMENT, ...normalizeOwned(availOrSettings)]));
   return availableEquipment(availOrSettings);
 }
 
@@ -151,23 +174,29 @@ export function upgradeChip(variant, rule) {
   return `${EQUIPMENT_INFO[eq]?.label ?? 'Neue'}-Variante`;
 }
 
+/** v5.3: explicit fallback chain of an exercise (`exercise.fallback`: id or ordered id list). */
+export const fallbackList = (ex) => (Array.isArray(ex?.fallback) ? ex.fallback : ex?.fallback ? [ex.fallback] : []).filter((x) => typeof x === 'string');
+
 /**
- * Resolve one workout item against the available equipment.
+ * Resolve one workout item against the available equipment (and, v5.3, everything `usable` checks: phaseMin,
+ * post-op block, user toggle, shoulder limit).
  * - `allowUpgrade` and an upgrade rule whose equipment is available and whose variant passes `usable` → the variant
  *   (`{exerciseId: variant, upgradedFrom: base, chip}`);
- * - exercise equipment available → itself;
- * - else a fallback (the base of an upgrade rule, or `exercise.fallback`) that is available → `{exerciseId: base,
- *   fallbackFrom: variant}`;
+ * - exercise equipment available and `usable` → itself;
+ * - else the first fallback that is available, usable and not `taken` → `{exerciseId, fallbackFrom}`: the explicit
+ *   chain (`exercise.fallback`, id or list, tried in order) first, then the base of an upgrade rule;
  * - else `null` (drop it).
+ * Without `usable` (legacy callers) only the equipment decides, as in v5.
  * @param {string} exerciseId
  * @param {{exercises: import('../types.js').Exercise[], avail: Set<string>|null, usable?: (ex: any) => boolean,
- *   allowUpgrade?: boolean, rules?: Map<string, any[]>, fallbacks?: Map<string, string>}} ctx
+ *   allowUpgrade?: boolean, rules?: Map<string, any[]>, fallbacks?: Map<string, string>, taken?: (id: string) => boolean}} ctx
  * @returns {{exerciseId: string, upgradedFrom?: string, fallbackFrom?: string, chip?: string}|null}
  */
 export function resolveExercise(exerciseId, ctx) {
   const exercises = ctx.exercises || [];
   const byId = (id) => exercises.find((e) => e.id === id);
   const usable = ctx.usable || (() => true);
+  const taken = ctx.taken || (() => false);
   const avail = ctx.avail ?? null;
   const ex = byId(exerciseId);
   if (!ex) return null;
@@ -175,14 +204,17 @@ export function resolveExercise(exerciseId, ctx) {
     const rules = (ctx.rules || upgradeRules(exercises)).get(exerciseId) || [];
     for (const r of rules) {
       const v = byId(r.exerciseId);
-      if (!v || !r.equipment.every((id) => avail.has(id)) || !hasEquipment(v, avail) || !usable(v)) continue;
+      if (!v || !r.equipment.every((id) => avail.has(id)) || !hasEquipment(v, avail) || !usable(v) || taken(v.id)) continue;
       return { exerciseId: v.id, upgradedFrom: ex.id, chip: upgradeChip(v, r) };
     }
   }
-  if (hasEquipment(ex, avail)) return { exerciseId: ex.id };
-  const fbId = ex.fallback || (ctx.fallbacks || fallbackRules(exercises)).get(ex.id);
-  const fb = fbId && byId(fbId);
-  if (fb && hasEquipment(fb, avail) && usable(fb)) return { exerciseId: fb.id, fallbackFrom: ex.id };
+  if (hasEquipment(ex, avail) && usable(ex)) return { exerciseId: ex.id };
+  const derived = (ctx.fallbacks || fallbackRules(exercises)).get(ex.id);
+  const chain = [...fallbackList(ex), ...(derived ? [derived] : [])];
+  for (const id of chain) {
+    const fb = byId(id);
+    if (fb && fb.id !== ex.id && hasEquipment(fb, avail) && usable(fb) && !taken(fb.id)) return { exerciseId: fb.id, fallbackFrom: ex.id };
+  }
   return null;
 }
 
@@ -198,11 +230,18 @@ export function instructionsFor(exercise, availOrSettings) {
   const list = [...(exercise?.instructions || [])];
   const setup = exercise?.setupByEquipment;
   const a = toAvail(availOrSettings);
-  if (!setup || !a) return list;
+  const chairNote = officeChairOnly(exercise, a);
+  if (!setup || !a) return chairNote ? [OFFICE_CHAIR_NOTE, ...list] : list;
   const at = Math.max(0, Math.min(list.length - 1, exercise.setupStep ?? 0));
   if (setup['door-anchor'] && a.has('door-anchor')) list[at] = setup['door-anchor'];
   if (setup['band-handles'] && a.has('band-handles')) list.splice(at + 1, 0, setup['band-handles']);
-  return list;
+  return chairNote ? [OFFICE_CHAIR_NOTE, ...list] : list;
+}
+
+/** v5.3: true when the exercise needs a `seat` and only the office chair with wheels is available. */
+export function officeChairOnly(exercise, availOrSettings) {
+  const a = toAvail(availOrSettings);
+  return !!a && (exercise?.equipment || []).includes('seat') && a.has('office-chair') && !a.has('chair-fixed');
 }
 
 /**
@@ -239,24 +278,48 @@ export function sessionUsedRowing(s) {
 }
 
 /**
- * v5 migration of stored settings (pure; returns a new data object or the input unchanged):
- * runs once when `settings.equipmentModel` is missing — maps legacy ids (`tueranker-griffe` → door-anchor +
- * band-handles …), pre-ticks the rowing machine when nothing is owned yet but sessions with rowing exist (so the
- * update never removes rowing the user does), sets `equipmentModel` and flags the Heute banner
- * (`state.equipmentNotice = "pending"`) for existing users. Never ticks anything else.
+ * Equipment / v5.3 migration of stored settings (pure; returns a new data object or the input unchanged). Runs while
+ * `settings.equipmentModel < EQUIPMENT_MODEL`:
+ * - model < 2 (v5): maps legacy ids (`tueranker-griffe` → door-anchor + band-handles …), pre-ticks the rowing machine
+ *   when nothing is owned yet but sessions with rowing exist, flags `state.equipmentNotice = "pending"` for existing
+ *   users. Never ticks anything else.
+ * - model < 3 (v5.3, SPEC §18.1/§18.4): the former base „Stuhl“ is NOT carried over as `chair-fixed`; users who already
+ *   trained (sessions) had some chair → `office-chair` is ticked (unless the user already toggled it, `_equipmentAt`),
+ *   existing users get the one-time Heute notice `state.seatNotice = "pending"`, and the shoulder protection
+ *   (`settings.shoulderImpingement: true`, `shoulderMaxElevationDeg: 65`) is switched on for users with sessions.
+ *   Migrated values get the fixed old stamp MIGRATION_STAMP so any real change of the user wins in the sync merge.
  * @param {any} data
  */
 export function migrateEquipment(data) {
   if (!data || typeof data !== 'object' || !data.settings || typeof data.settings !== 'object') return data;
-  if (data.settings.equipmentModel >= EQUIPMENT_MODEL) return data;
+  const model = Number.isFinite(data.settings.equipmentModel) ? data.settings.equipmentModel : 0;
+  if (model >= EQUIPMENT_MODEL) return data;
   const stored = Array.isArray(data.settings.ownedEquipment) ? data.settings.ownedEquipment : [];
   let owned = normalizeOwned(stored);
   const sessions = Array.isArray(data.sessions) ? data.sessions : [];
-  if (!stored.length && sessions.some(sessionUsedRowing)) owned = normalizeOwned(['rowing-machine']);
   const existingUser = sessions.length > 0 || stored.length > 0 || !!data.state?.welcomeDone;
   const state = { ...(data.state && typeof data.state === 'object' ? data.state : {}) };
-  if (existingUser && state.equipmentNotice == null) state.equipmentNotice = 'pending';
-  return { ...data, settings: { ...data.settings, ownedEquipment: owned, equipmentModel: EQUIPMENT_MODEL }, state };
+  const settings = { ...data.settings };
+  if (model < 2) {
+    if (!stored.length && sessions.some(sessionUsedRowing)) owned = normalizeOwned(['rowing-machine']);
+    if (existingUser && state.equipmentNotice == null) state.equipmentNotice = 'pending';
+  }
+  const eqAt = { ...(settings._equipmentAt && typeof settings._equipmentAt === 'object' ? settings._equipmentAt : {}) };
+  const upAt = { ...(settings._updatedAt && typeof settings._updatedAt === 'object' ? settings._updatedAt : {}) };
+  if (sessions.length > 0 && !eqAt['office-chair'] && !owned.includes('office-chair')) {
+    owned = normalizeOwned([...owned, 'office-chair']);
+    eqAt['office-chair'] = MIGRATION_STAMP;
+  }
+  if (existingUser && state.seatNotice == null) state.seatNotice = 'pending';
+  if (sessions.length > 0 && typeof settings.shoulderImpingement !== 'boolean') {
+    settings.shoulderImpingement = true;
+    if (!upAt.shoulderImpingement) upAt.shoulderImpingement = MIGRATION_STAMP;
+    if (!Number.isFinite(settings.shoulderMaxElevationDeg)) {
+      settings.shoulderMaxElevationDeg = 65;
+      if (!upAt.shoulderMaxElevationDeg) upAt.shoulderMaxElevationDeg = MIGRATION_STAMP;
+    }
+  }
+  return { ...data, settings: { ...settings, ownedEquipment: owned, equipmentModel: EQUIPMENT_MODEL, _equipmentAt: eqAt, _updatedAt: upAt }, state };
 }
 
 /**
