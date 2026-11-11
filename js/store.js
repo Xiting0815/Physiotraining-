@@ -52,6 +52,9 @@ export function defaults() {
       voiceRate: 1.05,
       voiceVolume: 1,
       beepsWithVoice: true,
+      // v5.3 (SPEC §18.3): shoulder impingement – no exercises above this arm elevation (archery draw excepted)
+      shoulderImpingement: false,
+      shoulderMaxElevationDeg: 65,
       // v5.2 (SPEC §17): Google-Drive sync. Device-local – never merged, never uploaded.
       sync: { enabled: false, clientId: '', deviceId: '', deviceName: '', lastSyncAt: null, lastError: null },
       // v5.2: last-write-wins bookkeeping (written by update(), read by js/sync/merge.js)
@@ -77,6 +80,7 @@ export function defaults() {
       exerciseToggles: {},                 // exerciseId → false (disabled) | true (enabled despite postOpAllowed=false)
       postOpClearance: null,               // { confirmedAt, note } – unlocks phase p4 after the surgery date
       postOpEndClearance: null,            // { confirmedAt, note } – doctor's release ends p4 early
+      seatNotice: null,                    // v5.3: "pending" → Heute asks once „fester Stuhl oder PC-Stuhl mit Rollen?“; "seen" afterwards
       equipmentNotice: null,               // v5: "pending" → Heute shows „Neu: Deine Ausrüstung steuert jetzt den Plan“ once; "seen" afterwards
       droppedActiveSession: false,         // v5.1: true = a broken stored activeSession was discarded on load (UI notice, then reset to false)
       // v5.2 (SPEC §17): sync bookkeeping

@@ -25,7 +25,8 @@
         "p1-row",
         "p1-row-long"
       ],
-      "rowFinisher": "row-finisher-short"
+      "rowFinisher": "row-finisher-short",
+      "relief": "p1-relief"
     },
     {
       "id": "p2-aufbau",
@@ -53,7 +54,8 @@
         "p2-row-intervals",
         "p2-row-long"
       ],
-      "rowFinisher": "row-finisher-intervals"
+      "rowFinisher": "row-finisher-intervals",
+      "relief": "p2-relief"
     },
     {
       "id": "p3-op-vorbereitung",
@@ -80,7 +82,8 @@
         "p3-row-endurance",
         "p3-row-long"
       ],
-      "rowFinisher": "row-finisher-intervals"
+      "rowFinisher": "row-finisher-intervals",
+      "relief": "p3-relief"
     },
     {
       "id": "p4-entlastung",
@@ -105,7 +108,8 @@
         "C": "p4-c"
       },
       "short": "p4-short",
-      "cardio": []
+      "cardio": [],
+      "relief": "p4-relief"
     }
   ]
 }

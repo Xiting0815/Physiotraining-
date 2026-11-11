@@ -1,7 +1,8 @@
 // User-built custom workouts (state.customWorkouts). PURE. See docs/SPEC.md §12.5.
 import { estimateWorkoutMinutes, MAX_SESSION_MIN } from './duration.js';
-import { exerciseAvailable, getWorkout } from './progression.js';
-import { missingEquipment, fallbackRules, EQUIPMENT_INFO } from './equipment.js';
+import { exerciseAvailable, getWorkout, levelOf } from './progression.js';
+import { missingEquipment, availableEquipment, resolveExercise, EQUIPMENT_INFO } from './equipment.js';
+import { shoulderOk, shoulderLimit } from './shoulder.js';
 
 export { getWorkout };
 export const CUSTOM_BLOCKS = [
@@ -94,10 +95,18 @@ export function validateCustomWorkout(custom, content, state, settings) {
     }
     if (!exerciseAvailable(ex, phase, state)) warnings.push(`${ex.name} ist in der aktuellen Phase gesperrt oder deaktiviert und wird beim Training übersprungen.`);
     const miss = missingEquipment(ex, settings);
-    if (miss.length) {
-      const fb = fallbackRules(content?.exercises).get(ex.id);
-      const label = miss.map((m) => EQUIPMENT_INFO[m]?.label ?? m).join(', ');
-      warnings.push(fb ? `${ex.name} braucht: ${label} – ohne wird ${exById.get(fb)?.name ?? fb} trainiert.` : `${ex.name} braucht: ${label} (nicht in Meine Ausrüstung abgehakt) und wird beim Training übersprungen.`);
+    const shoulder = !shoulderOk(ex, levelOf(state, ex.id, ex), settings);
+    if (miss.length || shoulder) {
+      // v5.3: the same resolution as the session plan (fallback chain, shoulder limit)
+      const r = resolveExercise(ex.id, { exercises: content?.exercises, avail: availableEquipment(settings), allowUpgrade: false,
+        usable: (e) => exerciseAvailable(e, phase, state) && shoulderOk(e, levelOf(state, e.id, e), settings) });
+      const fb = r && r.exerciseId !== ex.id ? exById.get(r.exerciseId)?.name ?? r.exerciseId : null;
+      if (miss.length) {
+        const label = miss.map((m) => EQUIPMENT_INFO[m]?.label ?? m).join(', ');
+        warnings.push(fb ? `${ex.name} braucht: ${label} – ohne wird ${fb} trainiert.` : `${ex.name} braucht: ${label} (nicht in Meine Ausrüstung abgehakt) und wird beim Training übersprungen.`);
+      } else {
+        warnings.push(`${ex.name} hebt die Arme über ${shoulderLimit(settings)}° (Schulter-Schutz) – ${fb ? `stattdessen wird ${fb} trainiert` : 'wird beim Training übersprungen'}.`);
+      }
     }
   }
   let estimatedMin = 0;

@@ -157,10 +157,11 @@ export function estimateWorkoutSeconds(workoutOrPlan, content, state, settings, 
   for (const it of workoutItems(w, opts)) {
     const ex = exById.get(it.exerciseId);
     if (!ex) continue;
+    if (it.shoulderOnly && settings?.shoulderImpingement !== true) continue; // v5.3
     const min = order(ex.phaseMin);
     if (cur != null && min != null && cur < min && w?.kind !== 'custom') continue;
     const level = levelOf(state, it.exerciseId, ex);
-    sum += estimateExerciseSeconds({ level, plannedSets: cappedSets(ex.levels[level]?.sets ?? 1, it, w) }, ex, settings);
+    sum += estimateExerciseSeconds({ level, plannedSets: cappedSets(ex.levels[level]?.sets ?? 1, it, w), ...(it.override ? { override: it.override } : {}) }, ex, settings);
   }
   return sum;
 }

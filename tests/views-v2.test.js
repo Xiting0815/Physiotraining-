@@ -65,7 +65,7 @@ test('history: kind filters, titles, rowing line, new badge hints', () => {
     { id: 'c', status: 'done', workoutId: 'cw-x', kind: 'custom', endedAt: '2026-11-03T18:00:00Z' },
     { id: 'd', status: 'done', workoutId: 'p1-short', kind: 'short', endedAt: '2026-11-04T18:00:00Z' },
   ];
-  assert.equal(KIND_FILTERS.length, 5);
+  assert.equal(KIND_FILTERS.length, 6); // v5.3: + Entlastung
   assert.deepEqual(filterSessions(sessions, 'cardio').map((s) => s.id), ['b']);
   assert.deepEqual(filterSessions(sessions, 'strength').map((s) => s.id), ['a']);
   assert.equal(filterSessions(sessions, 'all').length, 4);

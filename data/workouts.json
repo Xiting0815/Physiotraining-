@@ -7,7 +7,7 @@
       "phaseId": "p1-basis",
       "kind": "strength",
       "durationMin": 31,
-      "durationMinWithRow": 39,
+      "durationMinWithRow": 40,
       "maxSets": 2,
       "maxMinutes": 32,
       "maxMinutesWithRow": 42,
@@ -15,11 +15,16 @@
       "description": "Quadrizeps anschalten, rechtes Bein für die Krückenzeit kräftigen, Rückenspannung und SPT.",
       "warmup": [
         {
-          "exerciseId": "leg-swing-front",
-          "maxSets": 1
+          "exerciseId": "patella-mobilization",
+          "maxSets": 1,
+          "keepWithRow": true,
+          "override": {
+            "seconds": 35
+          },
+          "note": "Knie-Entlastung vorab – sanft, ≤ 2/10."
         },
         {
-          "exerciseId": "hip-circles-standing",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
         },
         {
@@ -72,6 +77,12 @@
             {
               "exerciseId": "band-draw-hold",
               "note": "Band nie schnappen lassen"
+            },
+            {
+              "exerciseId": "er-iso-door",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
             }
           ]
         }
@@ -105,7 +116,7 @@
       "phaseId": "p1-basis",
       "kind": "strength",
       "durationMin": 32,
-      "durationMinWithRow": 41,
+      "durationMinWithRow": 42,
       "maxSets": 2,
       "maxMinutes": 32,
       "maxMinutesWithRow": 42,
@@ -113,8 +124,13 @@
       "description": "Hüfte und Beinachse stabilisieren, Stütz für die Krücken, Schulterschutz.",
       "warmup": [
         {
-          "exerciseId": "leg-swing-side",
-          "maxSets": 1
+          "exerciseId": "patella-mobilization",
+          "maxSets": 1,
+          "keepWithRow": true,
+          "override": {
+            "seconds": 35
+          },
+          "note": "Knie-Entlastung vorab – sanft, ≤ 2/10."
         },
         {
           "exerciseId": "ankle-circles-seated",
@@ -169,6 +185,12 @@
             {
               "exerciseId": "bow-arm-push",
               "note": "Bogenarm links zuerst"
+            },
+            {
+              "exerciseId": "er-towel",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
             }
           ]
         }
@@ -202,7 +224,7 @@
       "phaseId": "p1-basis",
       "kind": "strength",
       "durationMin": 32,
-      "durationMinWithRow": 41,
+      "durationMinWithRow": 42,
       "maxSets": 2,
       "maxMinutes": 32,
       "maxMinutesWithRow": 42,
@@ -210,11 +232,16 @@
       "description": "Streckung sichern, Alltagskraft, Lat und Trizeps für die Krücken, SPT.",
       "warmup": [
         {
-          "exerciseId": "leg-swing-front",
-          "maxSets": 1
+          "exerciseId": "patella-mobilization",
+          "maxSets": 1,
+          "keepWithRow": true,
+          "override": {
+            "seconds": 35
+          },
+          "note": "Knie-Entlastung vorab – sanft, ≤ 2/10."
         },
         {
-          "exerciseId": "leg-swing-side",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
         },
         {
@@ -265,6 +292,12 @@
             },
             {
               "exerciseId": "band-draw-hold"
+            },
+            {
+              "exerciseId": "sidelying-er",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
             }
           ]
         }
@@ -306,11 +339,16 @@
       "description": "Step-ups und rechtes Bein, Zugkraft, Dips für den Krückenstütz, SPT.",
       "warmup": [
         {
-          "exerciseId": "leg-swing-front",
-          "maxSets": 1
+          "exerciseId": "patella-mobilization",
+          "maxSets": 1,
+          "keepWithRow": true,
+          "override": {
+            "seconds": 35
+          },
+          "note": "Knie-Entlastung vorab – sanft, ≤ 2/10."
         },
         {
-          "exerciseId": "hip-circles-standing",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
         },
         {
@@ -360,6 +398,12 @@
             },
             {
               "exerciseId": "band-draw-hold"
+            },
+            {
+              "exerciseId": "er-iso-door",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
             }
           ]
         }
@@ -393,7 +437,7 @@
       "phaseId": "p2-aufbau",
       "kind": "strength",
       "durationMin": 30,
-      "durationMinWithRow": 39,
+      "durationMinWithRow": 40,
       "maxSets": 2,
       "maxMinutes": 32,
       "maxMinutesWithRow": 42,
@@ -401,8 +445,13 @@
       "description": "Hüftstabilität, Beinkontrolle links, Rotatoren und Rumpf, Abstützen.",
       "warmup": [
         {
-          "exerciseId": "leg-swing-side",
-          "maxSets": 1
+          "exerciseId": "patella-mobilization",
+          "maxSets": 1,
+          "keepWithRow": true,
+          "override": {
+            "seconds": 35
+          },
+          "note": "Knie-Entlastung vorab – sanft, ≤ 2/10."
         },
         {
           "exerciseId": "ankle-circles-seated",
@@ -455,6 +504,12 @@
             },
             {
               "exerciseId": "wall-slide"
+            },
+            {
+              "exerciseId": "ir-band",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
             }
           ]
         }
@@ -488,7 +543,7 @@
       "phaseId": "p2-aufbau",
       "kind": "strength",
       "durationMin": 32,
-      "durationMinWithRow": 41,
+      "durationMinWithRow": 42,
       "maxSets": 2,
       "maxMinutes": 32,
       "maxMinutesWithRow": 42,
@@ -496,11 +551,16 @@
       "description": "Funktionelle Beinkraft, Kontrolle links, Auszug und Schussablauf.",
       "warmup": [
         {
-          "exerciseId": "leg-swing-front",
-          "maxSets": 1
+          "exerciseId": "patella-mobilization",
+          "maxSets": 1,
+          "keepWithRow": true,
+          "override": {
+            "seconds": 35
+          },
+          "note": "Knie-Entlastung vorab – sanft, ≤ 2/10."
         },
         {
-          "exerciseId": "leg-swing-side",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
         },
         {
@@ -552,6 +612,18 @@
             {
               "exerciseId": "mirror-draw",
               "note": "Ca. 50–60 % des Umfangs"
+            },
+            {
+              "exerciseId": "er-towel",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+            },
+            {
+              "exerciseId": "scapula-setting",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Schulterblatt-Kontrolle: Schultern tief."
             }
           ]
         }
@@ -585,7 +657,7 @@
       "phaseId": "p3-op-vorbereitung",
       "kind": "strength",
       "durationMin": 32,
-      "durationMinWithRow": 41,
+      "durationMinWithRow": 42,
       "maxSets": 2,
       "maxMinutes": 32,
       "maxMinutesWithRow": 42,
@@ -593,11 +665,16 @@
       "description": "Bremskraft (Step-down), Post-OP-Übungen, rechtes Bein und Stütz für die Krückenzeit.",
       "warmup": [
         {
-          "exerciseId": "leg-swing-front",
-          "maxSets": 1
+          "exerciseId": "patella-mobilization",
+          "maxSets": 1,
+          "keepWithRow": true,
+          "override": {
+            "seconds": 35
+          },
+          "note": "Knie-Entlastung vorab – sanft, ≤ 2/10."
         },
         {
-          "exerciseId": "hip-circles-standing",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
         },
         {
@@ -647,6 +724,12 @@
             },
             {
               "exerciseId": "band-draw-hold"
+            },
+            {
+              "exerciseId": "er-iso-door",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
             }
           ]
         }
@@ -680,7 +763,7 @@
       "phaseId": "p3-op-vorbereitung",
       "kind": "strength",
       "durationMin": 31,
-      "durationMinWithRow": 39,
+      "durationMinWithRow": 40,
       "maxSets": 2,
       "maxMinutes": 32,
       "maxMinutesWithRow": 42,
@@ -688,8 +771,13 @@
       "description": "Streckung und Hüfte sichern, Rumpf und Stütz – ausgeruht in die OP.",
       "warmup": [
         {
-          "exerciseId": "leg-swing-side",
-          "maxSets": 1
+          "exerciseId": "patella-mobilization",
+          "maxSets": 1,
+          "keepWithRow": true,
+          "override": {
+            "seconds": 35
+          },
+          "note": "Knie-Entlastung vorab – sanft, ≤ 2/10."
         },
         {
           "exerciseId": "ankle-circles-seated",
@@ -744,6 +832,12 @@
             },
             {
               "exerciseId": "bow-arm-push"
+            },
+            {
+              "exerciseId": "er-towel",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
             }
           ]
         }
@@ -777,7 +871,7 @@
       "phaseId": "p3-op-vorbereitung",
       "kind": "strength",
       "durationMin": 31,
-      "durationMinWithRow": 40,
+      "durationMinWithRow": 41,
       "maxSets": 2,
       "maxMinutes": 32,
       "maxMinutesWithRow": 42,
@@ -785,11 +879,16 @@
       "description": "Streckkraft, Alltagskraft, Trizeps für die Krücken und Halte-Ausdauer am Bogen.",
       "warmup": [
         {
-          "exerciseId": "leg-swing-front",
-          "maxSets": 1
+          "exerciseId": "patella-mobilization",
+          "maxSets": 1,
+          "keepWithRow": true,
+          "override": {
+            "seconds": 35
+          },
+          "note": "Knie-Entlastung vorab – sanft, ≤ 2/10."
         },
         {
-          "exerciseId": "leg-swing-side",
+          "exerciseId": "leg-swing-front",
           "maxSets": 1
         },
         {
@@ -841,6 +940,18 @@
               "exerciseId": "endurance-series",
               "note": "1 Serie – 20 s Pause zwischen den Pfeilen",
               "maxSets": 1
+            },
+            {
+              "exerciseId": "sidelying-er",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+            },
+            {
+              "exerciseId": "scapula-setting",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Schulterblatt-Kontrolle: Schultern tief."
             }
           ]
         }
@@ -913,6 +1024,18 @@
             {
               "exerciseId": "band-draw-hold",
               "maxSets": 2
+            },
+            {
+              "exerciseId": "er-iso-door",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+            },
+            {
+              "exerciseId": "scapula-setting",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Schulterblatt-Kontrolle: Schultern tief."
             }
           ]
         }
@@ -969,6 +1092,18 @@
             {
               "exerciseId": "band-draw-hold",
               "maxSets": 2
+            },
+            {
+              "exerciseId": "er-iso-door",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+            },
+            {
+              "exerciseId": "scapula-setting",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Schulterblatt-Kontrolle: Schultern tief."
             }
           ]
         }
@@ -1024,6 +1159,18 @@
             {
               "exerciseId": "band-draw-hold",
               "maxSets": 2
+            },
+            {
+              "exerciseId": "er-iso-door",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+            },
+            {
+              "exerciseId": "scapula-setting",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Schulterblatt-Kontrolle: Schultern tief."
             }
           ]
         }
@@ -1102,6 +1249,12 @@
             {
               "exerciseId": "band-draw-hold",
               "note": "Im Sitzen."
+            },
+            {
+              "exerciseId": "er-iso-door",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
             }
           ]
         }
@@ -1197,6 +1350,12 @@
             {
               "exerciseId": "dead-bug",
               "note": "Linkes Bein bleibt lang liegen."
+            },
+            {
+              "exerciseId": "sidelying-er",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
             }
           ]
         }
@@ -1292,6 +1451,18 @@
             {
               "exerciseId": "mirror-draw",
               "note": "Im Sitzen."
+            },
+            {
+              "exerciseId": "ir-iso-door",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+            },
+            {
+              "exerciseId": "scapula-setting",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Schulterblatt-Kontrolle: Schultern tief."
             }
           ]
         }
@@ -1364,6 +1535,18 @@
               "exerciseId": "band-draw-hold",
               "note": "Im Sitzen.",
               "maxSets": 2
+            },
+            {
+              "exerciseId": "er-iso-door",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Rotatorenmanschette (Orthopäde): schmerzarm, ≤ 3/10."
+            },
+            {
+              "exerciseId": "scapula-setting",
+              "shoulderOnly": true,
+              "maxSets": 1,
+              "note": "Schulterblatt-Kontrolle: Schultern tief."
             }
           ]
         }
@@ -1644,6 +1827,184 @@
           "exerciseId": "row-cooldown"
         }
       ]
+    },
+    {
+      "id": "p1-relief",
+      "name": "Knie-Entlastung (3–5 Min.)",
+      "phaseId": "p1-basis",
+      "kind": "relief",
+      "durationMin": 5,
+      "maxMinutes": 6,
+      "maxSets": 1,
+      "description": "Kurze Selbsthilfe bei Druck oberhalb der Kniescheibe: Kniependel, Kniescheiben-Mobilisation, Oberschenkel-Massage und sanftes Verlängern. Ersetzt keine Behandlung; bei stärkerem Schmerz oder Schwellung Physio fragen – nach Freigabe durch deinen Physio.",
+      "warmup": [],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie-Entlastung",
+          "items": [
+            {
+              "exerciseId": "knee-pendulum",
+              "maxSets": 1,
+              "override": {
+                "seconds": 30
+              }
+            },
+            {
+              "exerciseId": "patella-mobilization",
+              "maxSets": 1,
+              "override": {
+                "seconds": 75
+              }
+            },
+            {
+              "exerciseId": "quad-massage-stick",
+              "maxSets": 1,
+              "override": {
+                "seconds": 50
+              }
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "prone-quad-lengthening-band",
+          "maxSets": 1
+        }
+      ]
+    },
+    {
+      "id": "p2-relief",
+      "name": "Knie-Entlastung (3–5 Min.)",
+      "phaseId": "p2-aufbau",
+      "kind": "relief",
+      "durationMin": 5,
+      "maxMinutes": 6,
+      "maxSets": 1,
+      "description": "Kurze Selbsthilfe bei Druck oberhalb der Kniescheibe: Kniependel, Kniescheiben-Mobilisation, Oberschenkel-Massage und sanftes Verlängern. Ersetzt keine Behandlung; bei stärkerem Schmerz oder Schwellung Physio fragen – nach Freigabe durch deinen Physio.",
+      "warmup": [],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie-Entlastung",
+          "items": [
+            {
+              "exerciseId": "knee-pendulum",
+              "maxSets": 1,
+              "override": {
+                "seconds": 30
+              }
+            },
+            {
+              "exerciseId": "patella-mobilization",
+              "maxSets": 1,
+              "override": {
+                "seconds": 75
+              }
+            },
+            {
+              "exerciseId": "quad-massage-stick",
+              "maxSets": 1,
+              "override": {
+                "seconds": 50
+              }
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "prone-quad-lengthening-band",
+          "maxSets": 1
+        }
+      ]
+    },
+    {
+      "id": "p3-relief",
+      "name": "Knie-Entlastung (3–5 Min.)",
+      "phaseId": "p3-op-vorbereitung",
+      "kind": "relief",
+      "durationMin": 5,
+      "maxMinutes": 6,
+      "maxSets": 1,
+      "description": "Kurze Selbsthilfe bei Druck oberhalb der Kniescheibe: Kniependel, Kniescheiben-Mobilisation, Oberschenkel-Massage und sanftes Verlängern. Ersetzt keine Behandlung; bei stärkerem Schmerz oder Schwellung Physio fragen – nach Freigabe durch deinen Physio.",
+      "warmup": [],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie-Entlastung",
+          "items": [
+            {
+              "exerciseId": "knee-pendulum",
+              "maxSets": 1,
+              "override": {
+                "seconds": 30
+              }
+            },
+            {
+              "exerciseId": "patella-mobilization",
+              "maxSets": 1,
+              "override": {
+                "seconds": 75
+              }
+            },
+            {
+              "exerciseId": "quad-massage-stick",
+              "maxSets": 1,
+              "override": {
+                "seconds": 50
+              }
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "prone-quad-lengthening-band",
+          "maxSets": 1
+        }
+      ]
+    },
+    {
+      "id": "p4-relief",
+      "name": "Knie-Entlastung (3–5 Min.)",
+      "phaseId": "p4-entlastung",
+      "kind": "relief",
+      "durationMin": 4,
+      "maxMinutes": 6,
+      "maxSets": 1,
+      "description": "Kurze Selbsthilfe bei Druck oberhalb der Kniescheibe: Kniependel, Kniescheiben-Mobilisation, Oberschenkel-Massage und sanftes Verlängern. Ersetzt keine Behandlung; bei stärkerem Schmerz oder Schwellung Physio fragen – nach Freigabe durch deinen Physio.",
+      "warmup": [],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Knie-Entlastung",
+          "items": [
+            {
+              "exerciseId": "ankle-pumps",
+              "maxSets": 1
+            },
+            {
+              "exerciseId": "patella-mobilization",
+              "maxSets": 1,
+              "override": {
+                "seconds": 75
+              },
+              "note": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang."
+            },
+            {
+              "exerciseId": "quad-self-massage",
+              "maxSets": 1,
+              "override": {
+                "seconds": 50
+              },
+              "note": "Nach der OP nur nach Freigabe – nicht über Narbe oder Schwellung."
+            }
+          ]
+        }
+      ],
+      "cooldown": []
     }
   ]
 }

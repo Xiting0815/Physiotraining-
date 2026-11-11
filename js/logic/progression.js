@@ -3,9 +3,12 @@ import { addDays, daysBetween, startOfIsoWeek, todayISO } from '../util/date.js'
 import { dayOf, doneSessions, sessionLight, sessionsPerWeek, streak } from './stats.js';
 import { cappedSets, estimateWorkoutMinutes, fitPlanToMinutes, workoutItems, MAX_SESSION_MIN, MAX_SESSION_WITH_ROW_MIN } from './duration.js';
 import { availableEquipment, diffNames, fallbackRules, hasEquipment, ownsRowingMachine, resolveExercise, upgradeRules } from './equipment.js';
+import { shoulderOk, shoulderProtect } from './shoulder.js';
 
 /** Workout kinds (v2). Missing `kind` = "strength". */
-export const WORKOUT_KINDS = ['strength', 'short', 'cardio', 'custom'];
+export const WORKOUT_KINDS = ['strength', 'short', 'cardio', 'custom', 'relief'];
+/** v5.3: short knee relief routine – startable any day, not counted for the weekly strength goal. */
+export const isReliefKind = (w) => w?.kind === 'relief';
 /** @param {{kind?: string}|null|undefined} w */
 export const workoutKind = (w) => w?.kind ?? 'strength';
 
@@ -31,13 +34,14 @@ export function currentPhase(state, phases) {
   return (phases || []).find((p) => p.id === state?.phaseId) ?? (phases || [])[0];
 }
 
-/** Workouts of a phase by kind: `{ rotation: [A,B,C], short: Workout|null, cardio: Workout[] }`. */
+/** Workouts of a phase by kind: `{ rotation: [A,B,C], short: Workout|null, cardio: Workout[], relief: Workout|null }`. */
 export function phaseWorkouts(phase, workouts) {
   const find = (id) => (workouts || []).find((w) => w.id === id);
   return {
     rotation: phase ? ['A', 'B', 'C'].map((k) => find(phase.workouts?.[k])).filter(Boolean) : [],
     short: phase?.short ? find(phase.short) ?? null : null,
     cardio: (phase?.cardio || []).map(find).filter(Boolean),
+    relief: phase?.relief ? find(phase.relief) ?? null : null,
   };
 }
 
@@ -266,7 +270,8 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
   const avail = availableEquipment(settings);
   const rules = upgradeRules(content?.exercises);
   const fallbacks = fallbackRules(content?.exercises);
-  const items = workoutItems(workout, { rowWarmup: withRow });
+  // v5.3: items marked `shoulderOnly` (rotator cuff / scapula work) only while the shoulder protection is on
+  const items = workoutItems(workout, { rowWarmup: withRow }).filter((it) => !it.shoulderOnly || shoulderProtect(settings));
   const curOrder = phaseOrder(content, state?.phaseId ?? workout.phaseId) ?? phaseOrder(content, workout.phaseId);
   const done = doneSessions(history);
   const performedBefore = new Set();
@@ -282,13 +287,15 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
     const minOrder = phaseOrder(content, ex.phaseMin);
     return kind === 'custom' || curOrder == null || minOrder == null || curOrder >= minOrder;
   };
-  const usable = (ex) => phaseOk(ex) && exerciseAvailable(ex, phase, state);
+  // v5.3: the shoulder limit (settings.shoulderImpingement) is part of „usable“ → over-limit exercises use their fallback
+  const usable = (ex) => phaseOk(ex) && exerciseAvailable(ex, phase, state) && shoulderOk(ex, levelOf(state, ex.id, ex), settings);
   for (const it of items) {
     if (!byId(it.exerciseId)) continue;
+    const taken = (id) => exercises.some((e) => e.exerciseId === id && e.section === it.section);
     // v5 (SPEC §16): owned equipment → upgrade to the better variant, fallback to the base exercise, or drop.
     // Upgrades never apply to custom workouts (the user picked the exercise) or to the rowing block.
     let r = it.section === 'cardio' ? (hasEquipment(byId(it.exerciseId), avail) ? { exerciseId: it.exerciseId } : null)
-      : resolveExercise(it.exerciseId, { exercises: content?.exercises, avail, usable, allowUpgrade: kind !== 'custom', rules, fallbacks });
+      : resolveExercise(it.exerciseId, { exercises: content?.exercises, avail, usable, allowUpgrade: kind !== 'custom', rules, fallbacks, taken });
     if (!r) continue;
     // taper week: no new exercises – keep the known base exercise instead of a never-done variant
     if (r.upgradedFrom && taper && done.length && !performedBefore.has(r.exerciseId)) r = { exerciseId: r.upgradedFrom };
@@ -310,6 +317,7 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
       skipped: false,
       sets: [],
       ...(it.note && !r.upgradedFrom && !r.fallbackFrom ? { note: it.note } : {}),
+      ...(it.override && r.exerciseId === it.exerciseId ? { override: { ...it.override } } : {}),
       ...(r.upgradedFrom ? { upgradedFrom: r.upgradedFrom, upgradeChip: r.chip } : {}),
       ...(isNew ? { newVariant: true } : {}),
       ...(r.fallbackFrom ? { fallbackFrom: r.fallbackFrom } : {}),
@@ -483,7 +491,7 @@ export function phasePlanExerciseIds(state, content, settings) {
   const ids = new Set();
   if (!phase) return ids;
   const pw = phaseWorkouts(phase, content.workouts);
-  for (const w of [...pw.rotation, ...(pw.short ? [pw.short] : [])]) {
+  for (const w of [...pw.rotation, ...(pw.short ? [pw.short] : []), ...(pw.relief ? [pw.relief] : [])]) {
     const plan = buildSessionPlan(w, state, content, { settings, rowFinisher: false, fit: false });
     for (const e of plan.exercises) ids.add(e.exerciseId);
     const f = finisherPlan(w, state, content, { settings });

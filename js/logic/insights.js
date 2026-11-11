@@ -167,7 +167,7 @@ export function opReadiness(data, content, today) {
   // regularity
   const from = addDays(today, -27);
   const last4 = sessions.filter((s) => dayOf(s) >= from && dayOf(s) <= today);
-  const sDone = last4.filter((s) => !isCardioSession(s)).length;
+  const sDone = last4.filter((s) => !isCardioSession(s) && s?.kind !== 'relief').length;
   const cDone = last4.filter(isCardioSession).length;
   const goal = Math.max(1, settings.weeklyGoal ?? 3) * 4;
   const cGoal = Math.max(1, settings.cardioGoalPerWeek ?? 3) * 4;

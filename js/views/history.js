@@ -58,7 +58,7 @@ export function deleteSession(d, id) {
 const RANGE = { '6w': 42, '3m': 91 };
 
 /** Filter chips of the session list/calendar. */
-export const KIND_FILTERS = [['all', 'Alle'], ['strength', 'Kraft'], ['cardio', 'Rudern'], ['short', 'Kurz'], ['custom', 'Eigene']];
+export const KIND_FILTERS = [['all', 'Alle'], ['strength', 'Kraft'], ['cardio', 'Rudern'], ['short', 'Kurz'], ['custom', 'Eigene'], ['relief', 'Entlastung']];
 
 /** Sessions matching a kind filter ('all' | 'strength' | 'cardio' | 'short' | 'custom'). */
 export function filterSessions(sessions, kind = 'all') {

@@ -41,6 +41,10 @@ function worstOf(lights) {
  * @param {Session} s
  */
 export const isCardioSession = (s) => s?.kind === 'cardio' || (s?.kind == null && s?.rowing != null && typeof s.rowing === 'object');
+/** v5.3: short knee relief routine (kind "relief") – neither strength goal nor rowing goal. */
+export const isReliefSession = (s) => s?.kind === 'relief';
+/** v5.3: counts for the weekly strength goal (strength, short, custom – not rowing, not relief). */
+export const countsAsStrength = (s) => !isCardioSession(s) && !isReliefSession(s);
 
 const posNum = (v) => typeof v === 'number' && Number.isFinite(v) && v > 0;
 /** Σ seconds of done sets of performed cardio entries (finisher or not). */
@@ -80,7 +84,7 @@ export function inSessionRowingParts(s) {
 /** Alias of inSessionRowingSec (name of the first v4 draft). */
 export const warmupRowingSec = inSessionRowingSec;
 /** Done strength-type sessions (strength, short, custom – everything except cardio). @param {Session[]} sessions */
-export const strengthSessions = (sessions) => doneSessions(sessions).filter((s) => !isCardioSession(s));
+export const strengthSessions = (sessions) => doneSessions(sessions).filter(countsAsStrength);
 /** Done cardio (rowing) sessions. @param {Session[]} sessions */
 export const cardioSessions = (sessions) => doneSessions(sessions).filter(isCardioSession);
 
@@ -117,7 +121,7 @@ function defaultToday(sessions) {
  */
 export function streak(sessions, weeklyGoal, today, { cardio = false } = {}) {
   const goal = Math.max(1, Math.floor(weeklyGoal || 0) || 1);
-  const perWeek = sessionsPerWeek(sessions, cardio ? isCardioSession : (s) => !isCardioSession(s));
+  const perWeek = sessionsPerWeek(sessions, cardio ? isCardioSession : countsAsStrength);
   const cur = startOfIsoWeek(today);
   const currentWeekCount = perWeek.get(cur) ?? 0;
   let weeks = 0;
@@ -138,7 +142,7 @@ export function streak(sessions, weeklyGoal, today, { cardio = false } = {}) {
  */
 export function weeklyProgress(sessions, weeklyGoal, today) {
   // v2: the strength goal counts strength/short/custom sessions; rowing has its own goal (cardioProgress).
-  const done = sessionsPerWeek(sessions, (s) => !isCardioSession(s)).get(startOfIsoWeek(today)) ?? 0;
+  const done = sessionsPerWeek(sessions, countsAsStrength).get(startOfIsoWeek(today)) ?? 0;
   return { done, goal: weeklyGoal, ratio: weeklyGoal > 0 ? Math.min(1, done / weeklyGoal) : 0 };
 }
 
@@ -171,7 +175,7 @@ export function cardioProgress(sessions, cardioGoal, today) {
 export function sameDayLoadHint(sessions, today, starting) {
   const todays = doneSessions(sessions).filter((s) => dayOf(s) === today);
   const hasCardio = todays.some(isCardioSession) || starting === 'cardio';
-  const hasStrength = todays.some((s) => !isCardioSession(s)) || (starting != null && starting !== 'cardio');
+  const hasStrength = todays.some(countsAsStrength) || (starting != null && starting !== 'cardio' && starting !== 'relief');
   if (!(hasCardio && hasStrength)) return null;
   return 'Rudern und Krafttraining am selben Tag: Gönn dem Knie danach genug Erholung – am nächsten Tag besser Pause oder nur Oberkörper. Bei Schmerz über 5/10 oder Schwellung: Ampel beachten.';
 }
@@ -215,7 +219,7 @@ export function trends(sessions, { days = 42, today } = {}) {
   post.push(...all.post.filter((p) => inWin(p.x)));
   nextDay.push(...all.nextDay.filter((p) => inWin(p.x)));
 
-  const counts = sessionsPerWeek(sessions, (s) => !isCardioSession(s));
+  const counts = sessionsPerWeek(sessions, countsAsStrength);
   const cardioCounts = sessionsPerWeek(sessions, isCardioSession);
   const perWeek = [];
   for (let wk = startOfIsoWeek(from); wk <= t; wk = addDays(wk, 7)) {

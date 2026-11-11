@@ -29,11 +29,12 @@ test('v4 content: every strength workout has a mobility warm-up (3–4 min) and 
   for (const w of strength) {
     const warm = w.warmup.map((i) => ex(i.exerciseId));
     const cool = w.cooldown.map((i) => ex(i.exerciseId));
-    assert.ok(warm.length >= 4 && warm.every((e) => e.block === 'warmup' && e.category === 'mobilitaet' || e.id === 'ankle-pumps'), `${w.id} warm-up`);
+    // v5.3: p1–p3 warm-ups start with a short knee relief (patella mobilisation, SPEC §18.3)
+    assert.ok(warm.length >= 4 && warm.every((e) => e.block === 'warmup' && e.category === 'mobilitaet' || e.id === 'ankle-pumps' || e.id === 'patella-mobilization'), `${w.id} warm-up`);
     assert.equal(cool.at(-1).id, 'breathing-reset', `${w.id} ends with 4-7-8 breathing`);
     const holds = cool.slice(0, -1);
     assert.ok(holds.length >= 4 && holds.every((e) => e.block === 'cooldown' && e.category === 'dehnung' && e.type === 'hold'), `${w.id} cool-down = holds`);
-    const sec = (items) => items.reduce((a, i) => a + estimateExerciseSeconds({ level: 0, plannedSets: 1 }, ex(i.exerciseId), {}), 0);
+    const sec = (items) => items.reduce((a, i) => a + estimateExerciseSeconds({ level: 0, plannedSets: 1, override: i.override }, ex(i.exerciseId), {}), 0);
     assert.ok(sec(w.warmup) >= 170 && sec(w.warmup) <= 240, `${w.id} warm-up ${sec(w.warmup)} s`);
     assert.ok(sec(w.cooldown) >= 240 && sec(w.cooldown) <= 320, `${w.id} cool-down ${sec(w.cooldown)} s`);
     if (postop(w)) {

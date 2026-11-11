@@ -23,6 +23,8 @@
 //   (default: above and beyond the first target point), straps run to the named points (default both hands;
 //   e.g. footL/footR for heel cradles) with a handle/cradle every frame; `door: false` hides the door edge,
 //   `behind: true` draws the straps behind the body (anchor behind the figure).
+//   stick — v5.3 massage stick (z. B. Blackroll): a short roller follows the hands every frame, lying on the thigh
+//   (`along`: limb the stick rests on, default thighL).
 // Figure option `loop: true`: keyframes play as a cycle (k0 → … → kn-1 → k0) instead of ping-pong; the first
 //   half of the segments uses the concentric time, the rest the eccentric time (e.g. rowing drive/recovery).
 import { getExercise, getContent, loadContent } from '../content.js';
@@ -305,6 +307,7 @@ export function layoutProps(props, pose0, P, band) {
         break;
       }
       case 'bow': break; // follows the hands every frame
+      case 'stick': break; // v5.3: follows the hands every frame
       case 'sling': {
         p.to = Array.isArray(p.to) && p.to.length ? p.to : ['handL', 'handR'];
         if (p.x === undefined || p.y === undefined) {
@@ -606,6 +609,21 @@ function slingSvg(p, P) {
   return `<g class="fig-sling">${s}</g>`;
 }
 
+/** v5.3: massage stick between/at the hands, parallel to the thigh it rests on. */
+function stickSvg(P, p) {
+  const s = (p.along || 'thighL').slice(-1);
+  const a = P['hipJ' + s] || P.hip;
+  const b = P['knee' + s];
+  const len = Math.max(1, dist(a, b));
+  const u = { x: (b.x - a.x) / len, y: (b.y - a.y) / len };
+  const c = add(mid(P.handL, P.handR), { x: 0, y: 3 });
+  const h = 13;
+  const p1 = add(c, mul(u, -h));
+  const p2 = add(c, mul(u, h));
+  const seg = [-0.5, 0, 0.5].map((k) => add(c, mul(u, k * h)));
+  return `<g class="fig-stick"><path class="fig-stick-rod" d="M${f(p1.x)} ${f(p1.y)}L${f(p2.x)} ${f(p2.y)}"/>${seg.map((q) => `<circle class="fig-stick-roll" cx="${f(q.x)}" cy="${f(q.y)}" r="3.4"/>`).join('')}</g>`;
+}
+
 function bowSvg(P) {
   const { h, top, bot } = bowGeom(P);
   const limb = `M${f(top.x)} ${f(top.y)}Q${f(h.x + 18)} ${f(h.y - 22)} ${f(h.x + 2)} ${f(h.y)}Q${f(h.x + 18)} ${f(h.y + 22)} ${f(bot.x)} ${f(bot.y)}`;
@@ -675,7 +693,7 @@ export function buildScene(spec) {
   const groundSvg = top ? '' : `<rect class="fig-ground" x="${f(frame.x)}" y="${FLOOR}" width="${f(frame.w)}" height="${f(Math.max(0, frame.y + frame.h - FLOOR))}"/>
     <path class="fig-floor" d="M${f(frame.x)} ${FLOOR}H${f(frame.x + frame.w)}"/>`;
   const wallSvg = props.filter((p) => p.type === 'wall').map((p) => propSvg(p, frame, front)).join('');
-  const otherSvg = props.filter((p) => !['wall', 'mat', 'bow'].includes(p.type)).map((p) => propSvg(p, frame, front)).join('');
+  const otherSvg = props.filter((p) => !['wall', 'mat', 'bow', 'stick'].includes(p.type)).map((p) => propSvg(p, frame, front)).join('');
   const staticBack = `${groundSvg}${wallSvg}${hasMat ? matSvg(frame, bodyBox, top) : ''}${otherSvg}`;
   const opts = { highlightLeftKnee: !!spec.highlightLeftKnee, highlight: spec.highlight || [], mirror };
 
@@ -695,6 +713,8 @@ export function buildScene(spec) {
     if (rower) s += rowerHandleSvg(P);
     if (sling && !sling.behind) s += slingSvg(sling, P);
     if (props.some((p) => p.type === 'bow')) s += bowSvg(P);
+    const stick = props.find((p) => p.type === 'stick');
+    if (stick) s += stickSvg(P, stick);
     if (band) {
       const a = resolvePoint(P, band.from, props);
       const b = resolvePoint(P, band.to, props);
@@ -771,6 +791,8 @@ export const FIGURE_CSS = `
   pt-figure .fig-band-out{fill:none;stroke:var(--fig-bg);stroke-width:6;stroke-linecap:round;opacity:.9}
   pt-figure .fig-band-line{fill:none;stroke:var(--band);stroke-width:3.4;stroke-linecap:round}
   pt-figure .fig-band-end{fill:var(--band)}
+  pt-figure .fig-stick-rod{fill:none;stroke:var(--fig-bow,var(--muted,#5B6573));stroke-width:3;stroke-linecap:round}
+  pt-figure .fig-stick-roll{fill:var(--accent,#E07A1F);opacity:.85}
   pt-figure .fig-bow-limb{fill:none;stroke:var(--fig-bow,var(--muted,#5B6573));stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
   pt-figure .fig-bow-string{fill:none;stroke:var(--fig-bow,var(--muted,#5B6573));stroke-width:1;opacity:.85}
   pt-figure .fig-arrow{fill:none;stroke:var(--fig-arrow,var(--accent,#E07A1F));stroke-width:1.8;stroke-linecap:round}

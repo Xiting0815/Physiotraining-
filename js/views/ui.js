@@ -16,7 +16,7 @@ export const BLOCK_LONG = { warmup: 'Aufwärmen', knee: 'Knie-Block', archery: '
 export const EQUIPMENT_LABEL = Object.fromEntries(Object.entries(EQUIPMENT_INFO).map(([id, v]) => [id, v.label]));
 /** v2 workout/session kinds (SPEC §12.2). Missing kind = strength. */
 export const KIND_LABEL = { strength: 'Krafttraining', short: 'Kurztraining', cardio: 'Rudern', custom: 'Eigenes Workout' };
-export const KIND_ICON = { strength: '🦵', short: '⚡', cardio: '🚣', custom: '🧩' };
+export const KIND_ICON = { strength: '🦵', short: '⚡', cardio: '🚣', custom: '🧩', relief: '🌿' };
 /** Rowing intensity labels (capitalised for chips; logic/cardio.js INTENSITY_LABELS are lower-case). */
 export const INTENSITY_LABEL = { easy: 'Locker', moderate: 'Gleichmäßig', vigorous: 'Zügig' };
 /** @param {{kind?: string}|null|undefined} x workout or session */

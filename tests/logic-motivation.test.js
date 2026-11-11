@@ -19,7 +19,7 @@ const S = (day, { light = 'green', final = null, exercises = [], status = 'done'
 const data = (sessions, state = {}) => ({ schemaVersion: 1, settings, state: { badges: {}, phaseHistory: [{ phaseId: 'p1-basis' }], ...state }, sessions });
 
 test('XP constants and xpFor', () => {
-  assert.deepEqual(XP, { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15, cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20 });
+  assert.deepEqual(XP, { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15, cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20, relief: 8 });
   assert.equal('healthLog' in XP, false, 'v3.1: no diary XP');
   const s = { status: 'done', exercises: [
     { painDuring: 1, sets: [{ done: true }, { done: true }, { done: false }] }, // 2 × 3

@@ -14,7 +14,7 @@ const BLOCKS = ['knee', 'archery', 'warmup', 'cooldown', 'cardio'];
 const TYPES = ['reps', 'hold', 'timed'];
 const SIDES = ['both', 'left', 'right', 'alternate', 'perSide'];
 const BANDS = [null, 'yellow', 'red', 'green', 'blue', 'loop-orange', 'loop-blue'];
-const PROPS = ['chair', 'wall', 'door', 'mat', 'step', 'sling'];
+const PROPS = ['chair', 'wall', 'door', 'mat', 'step', 'sling', 'stick'];
 const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 // Strict by default: every pose referenced by an exercise must exist in poses.json.
@@ -72,7 +72,7 @@ test('workouts reference existing exercises', () => {
     assert.ok(phases.some((p) => p.id === w.phaseId), `${w.id}.phaseId`);
     const items = [...w.warmup, ...w.blocks.flatMap((b) => b.items), ...w.cooldown];
     for (const b of w.blocks) assert.ok(['knee', 'archery', 'cardio'].includes(b.id), `${w.id} block ${b.id}`);
-    assert.ok(['strength', 'short', 'cardio'].includes(w.kind ?? 'strength'), `${w.id} kind`);
+    assert.ok(['strength', 'short', 'cardio', 'relief'].includes(w.kind ?? 'strength'), `${w.id} kind`);
     for (const it of items) assert.ok(ids.has(it.exerciseId), `${w.id} → ${it.exerciseId}`);
   }
 });
@@ -119,8 +119,12 @@ test('content: workout structure, phaseMin and knee notes', () => {
   for (const w of workouts) {
     const kind = w.kind ?? 'strength';
     // v2: strength 30 min (≥ 3 per block), short ~15 min (≥ 2 per block, no cool-down needed), cardio = rowing
-    assert.ok(w.warmup.length > 0 && (kind === 'short' || w.cooldown.length > 0), `${w.id} warmup/cooldown`);
-    if (kind === 'cardio') {
+    // v5.3: the knee relief routine (kind "relief") is one knee block of 3–4 gentle items, no warm-up
+    if (kind === 'relief') {
+      assert.deepEqual(w.blocks.map((b) => b.id), ['knee'], `${w.id} blocks`);
+      assert.ok(w.blocks[0].items.length >= 3 && w.maxMinutes <= 6, `${w.id} relief`);
+    } else assert.ok(w.warmup.length > 0 && (kind === 'short' || w.cooldown.length > 0), `${w.id} warmup/cooldown`);
+    if (kind === 'relief') { /* checked above */ } else if (kind === 'cardio') {
       assert.deepEqual(w.blocks.map((b) => b.id), ['cardio'], `${w.id} blocks`);
       for (const it of [...w.warmup, ...w.blocks.flatMap((b) => b.items), ...w.cooldown]) assert.equal(byId.get(it.exerciseId).block, 'cardio', `${w.id} → ${it.exerciseId}`);
     } else {

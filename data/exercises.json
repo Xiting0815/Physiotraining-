@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "exercises": [
     {
       "id": "knee-pendulum",
@@ -8,12 +8,12 @@
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "timed",
       "side": "perSide",
       "instructions": [
-        "Auf eine hohe Kante setzen (Tisch, Stuhl mit Kissen), sodass die Füße frei hängen.",
+        "Hoch auf eine Kante setzen (Tisch, Bettkante, PC-Stuhl ganz hochgefahren oder Stuhl mit Kissen), sodass die Füße frei hängen.",
         "Oberschenkel liegt ganz auf, Hände stützen seitlich.",
         "Unterschenkel locker vor und zurück pendeln lassen – ohne Kraft, wie ein Uhrpendel.",
         "Erst links, dann rechts."
@@ -61,7 +61,8 @@
       "tags": [
         "knorpel",
         "gelenkschmiere",
-        "aufwaermen"
+        "aufwaermen",
+        "entlastung"
       ],
       "figure": {
         "poses": [
@@ -78,7 +79,8 @@
       "setupSec": 5,
       "cueWords": {
         "work": "Locker pendeln"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "ankle-pumps",
@@ -146,7 +148,8 @@
       "setupSec": 5,
       "cueWords": {
         "work": "Fuß auf und ab"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "shoulder-circles",
@@ -222,7 +225,11 @@
       "setupSec": 5,
       "cueWords": {
         "work": "Schultern kreisen"
-      }
+      },
+      "fallback": [
+        "scapula-setting"
+      ],
+      "shoulderElevationDeg": 170
     },
     {
       "id": "seated-spine-wave",
@@ -231,7 +238,7 @@
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "reps",
       "side": "both",
@@ -293,7 +300,8 @@
       "cueWords": {
         "up": "Rund machen",
         "down": "Aufrichten"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "seated-thoracic-rotation",
@@ -302,7 +310,7 @@
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "reps",
       "side": "alternate",
@@ -372,7 +380,8 @@
         "up": "Drehen",
         "hold": "Halten",
         "down": "Zurück zur Mitte"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "quad-set",
@@ -450,7 +459,8 @@
         ],
         "band": null,
         "mirror": false
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "heel-slides",
@@ -529,7 +539,8 @@
       "cueWords": {
         "up": "Ferse heranziehen",
         "down": "Bein lang"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "straight-leg-raise",
@@ -626,7 +637,8 @@
         "up": "Bein heben",
         "hold": "Halten",
         "down": "Ablegen"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "tke",
@@ -722,7 +734,8 @@
       },
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Kniehöhe befestigen (Scharnierseite), Tür zu dir hin schließen."
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "wall-sit",
@@ -813,7 +826,8 @@
       "cueWords": {
         "hold": "Halten",
         "release": "Aufrichten"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "sit-to-stand",
@@ -822,12 +836,12 @@
       "category": "kraft",
       "block": "knee",
       "equipment": [
-        "chair"
+        "chair-fixed"
       ],
       "type": "reps",
       "side": "both",
       "instructions": [
-        "Stuhl an die Wand stellen. Am Anfang Kissen auf die Sitzfläche (erhöhter Sitz).",
+        "Festen Stuhl ohne Rollen mit der Lehne an die Wand stellen. Am Anfang Kissen auf die Sitzfläche (erhöhter Sitz).",
         "Vorne auf den Sitz, Füße hüftbreit, Arme vor der Brust gekreuzt oder nach vorn.",
         "Oberkörper nach vorn neigen, über die Füße kommen und aufstehen.",
         "Langsam (3 s) wieder hinsetzen, kurz absitzen ohne zusammenzusacken."
@@ -911,7 +925,13 @@
         "up": "Aufstehen",
         "hold": "Stehen",
         "down": "Hinsetzen"
-      }
+      },
+      "fallback": [
+        "sling-assisted-mini-squat",
+        "box-squat-bed-edge",
+        "mini-squat"
+      ],
+      "shoulderElevationDeg": 60
     },
     {
       "id": "mini-squat",
@@ -921,12 +941,12 @@
       "block": "knee",
       "equipment": [
         "loop",
-        "chair"
+        "wall"
       ],
       "type": "reps",
       "side": "both",
       "instructions": [
-        "Loop knapp oberhalb der Knie, Füße hüftbreit, Stuhllehne zum Festhalten vor dir.",
+        "Loop knapp oberhalb der Knie, Füße hüftbreit, Fingerspitzen zur Balance leicht an der Wand (kein Stuhl mit Rollen).",
         "Gesäß nach hinten schieben, als wolltest du dich auf eine hohe Kante setzen.",
         "Nur bis zur Stufen-Tiefe beugen (30°, 45° oder höchstens 60°), Knie drücken leicht gegen den Loop nach außen.",
         "Über die Fersen wieder aufrichten, oben Gesäß anspannen."
@@ -941,7 +961,7 @@
         "Knie wandern nach innen",
         "Fersen heben ab"
       ],
-      "kneeNote": "Höchstens 60° Beugung unter Last. Kein Drehen, kein Federn. Ein Stuhl hinter dir als Tiefen-Begrenzer hilft.",
+      "kneeNote": "Höchstens 60° Beugung unter Last. Kein Drehen, kein Federn. Ein fester Hocker hinter dir als Tiefen-Begrenzer hilft – nie ein PC-Stuhl mit Rollen.",
       "levels": [
         {
           "label": "0–30° ohne Band · 2 × 10",
@@ -990,7 +1010,7 @@
           "quarter-squat-45"
         ],
         "props": [
-          "chair"
+          "wall"
         ],
         "band": {
           "from": "kneeL",
@@ -1012,7 +1032,8 @@
           "exerciseId": "sling-assisted-mini-squat",
           "chip": "Sling-Variante"
         }
-      ]
+      ],
+      "shoulderElevationDeg": 60
     },
     {
       "id": "step-up",
@@ -1110,7 +1131,8 @@
         "up": "Hochsteigen",
         "hold": "Halten",
         "down": "Runter"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "seated-knee-extension",
@@ -1120,7 +1142,7 @@
       "block": "knee",
       "equipment": [
         "theraband",
-        "chair"
+        "seat"
       ],
       "type": "reps",
       "side": "perSide",
@@ -1202,7 +1224,8 @@
         "up": "Strecken",
         "hold": "Halten",
         "down": "Absenken"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "lateral-step-down",
@@ -1291,7 +1314,8 @@
         "up": "Absenken",
         "hold": "Halten",
         "down": "Hoch"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "glute-bridge",
@@ -1391,7 +1415,8 @@
         "up": "Becken hoch",
         "hold": "Halten",
         "down": "Ablegen"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "clamshell",
@@ -1482,7 +1507,8 @@
         "up": "Knie öffnen",
         "hold": "Halten",
         "down": "Schließen"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "side-lying-hip-abduction",
@@ -1570,7 +1596,8 @@
         "up": "Bein heben",
         "hold": "Halten",
         "down": "Senken"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "lateral-band-walk",
@@ -1658,7 +1685,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Seitlich gehen"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "standing-hip-abduction",
@@ -1669,13 +1697,13 @@
       "equipment": [
         "theraband",
         "door",
-        "chair"
+        "wall"
       ],
       "type": "reps",
       "side": "perSide",
       "instructions": [
         "Band mit Knoten unten hinter die Tür (Scharnierseite) klemmen, Schlaufe ums rechte Fußgelenk.",
-        "Seitlich zur Tür stellen, linkes Bein ist Standbein (Knie weich, nicht durchgedrückt), Hand an der Stuhllehne.",
+        "Seitlich zur Tür stellen, linkes Bein ist Standbein (Knie weich, nicht durchgedrückt), Hand an der Wand oder am Türrahmen.",
         "Rechtes Bein gestreckt ca. 20–30° zur Seite führen, kurz halten.",
         "Langsam zurück. Danach Seiten tauschen (rechts Standbein)."
       ],
@@ -1739,7 +1767,7 @@
           "hip-abd-standing-end"
         ],
         "props": [
-          "chair",
+          "wall",
           "door"
         ],
         "band": {
@@ -1756,7 +1784,8 @@
       },
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Knöchelhöhe befestigen, Fußschlaufe ums rechte Fußgelenk."
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "standing-hip-extension",
@@ -1767,13 +1796,13 @@
       "equipment": [
         "theraband",
         "door",
-        "chair"
+        "wall"
       ],
       "type": "reps",
       "side": "perSide",
       "instructions": [
         "Band mit Knoten unten hinter die Tür (Scharnierseite) klemmen, Schlaufe ums rechte Fußgelenk.",
-        "Gesicht zur Tür, Hände an der Stuhllehne, linkes Bein ist Standbein mit weichem Knie.",
+        "Gesicht zur Tür, Hände an der Wand oder am Türrahmen, linkes Bein ist Standbein mit weichem Knie.",
         "Rechtes Bein gestreckt ca. 20° nach hinten führen, Gesäß anspannen.",
         "Langsam zurück. Danach Seiten tauschen."
       ],
@@ -1836,7 +1865,7 @@
           "hip-ext-standing-end"
         ],
         "props": [
-          "chair",
+          "wall",
           "door"
         ],
         "band": {
@@ -1853,7 +1882,8 @@
       },
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Knöchelhöhe befestigen, Fußschlaufe ums rechte Fußgelenk."
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "seated-hamstring-curl",
@@ -1864,7 +1894,7 @@
       "equipment": [
         "theraband",
         "door",
-        "chair"
+        "seat"
       ],
       "type": "reps",
       "side": "perSide",
@@ -1949,7 +1979,8 @@
       },
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Knöchelhöhe befestigen, Stuhl mit Blick zur Tür davor."
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "hamstring-bridge-chair",
@@ -1959,7 +1990,7 @@
       "block": "knee",
       "equipment": [
         "mat",
-        "chair"
+        "chair-fixed"
       ],
       "type": "reps",
       "side": "both",
@@ -2048,7 +2079,12 @@
           "exerciseId": "sling-heel-bridge",
           "chip": "Sling-Variante"
         }
-      ]
+      ],
+      "fallback": [
+        "hamstring-bridge-step",
+        "glute-bridge"
+      ],
+      "shoulderElevationDeg": 20
     },
     {
       "id": "calf-raise",
@@ -2057,12 +2093,12 @@
       "category": "kraft",
       "block": "knee",
       "equipment": [
-        "chair"
+        "wall"
       ],
       "type": "reps",
       "side": "both",
       "instructions": [
-        "Hüftbreit hinter die Stuhllehne stellen, Hände leicht aufgelegt.",
+        "Hüftbreit vor eine Wand stellen, Hände leicht auf Brusthöhe an die Wand legen.",
         "Knie gestreckt, aber nicht durchgedrückt.",
         "Gleichmäßig auf die Zehenspitzen hochdrücken, oben kurz halten.",
         "Langsam (3 s) absenken."
@@ -2133,7 +2169,7 @@
           "calf-raise-up"
         ],
         "props": [
-          "chair"
+          "wall"
         ],
         "band": null,
         "mirror": false
@@ -2143,7 +2179,8 @@
         "up": "Auf die Zehen",
         "hold": "Halten",
         "down": "Absenken"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "single-leg-stance",
@@ -2152,14 +2189,14 @@
       "category": "stabilitaet",
       "block": "knee",
       "equipment": [
-        "chair",
+        "wall",
         "theraband",
         "door"
       ],
       "type": "hold",
       "side": "left",
       "instructions": [
-        "Neben einer Stuhllehne oder Wand stehen, Hand in Reichweite.",
+        "Neben einer Wand stehen, Hand in Reichweite.",
         "Auf das linke Bein verlagern, Knie leicht entriegelt, rechten Fuß lösen.",
         "Becken waagerecht, Blick auf einen festen Punkt.",
         "Halten. Rechts zum Ausgleich gerne auch kurz."
@@ -2236,7 +2273,7 @@
           "star-tap-front"
         ],
         "props": [
-          "chair"
+          "wall"
         ],
         "band": null,
         "mirror": false
@@ -2245,7 +2282,8 @@
       "cueWords": {
         "hold": "Halten",
         "release": "Absetzen"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "band-pull-apart",
@@ -2343,6 +2381,13 @@
           "exerciseId": "sling-t-raise",
           "chip": "Sling-Variante"
         }
+      ],
+      "fallback": [
+        "pull-apart-low"
+      ],
+      "shoulderElevationDeg": 90,
+      "shoulderFocus": [
+        "scapula"
       ]
     },
     {
@@ -2354,7 +2399,7 @@
       "equipment": [
         "theraband",
         "door",
-        "chair"
+        "chair-fixed"
       ],
       "type": "reps",
       "side": "both",
@@ -2450,7 +2495,14 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Brusthöhe (im Sitzen) befestigen, Tür zu dir hin schließen.",
         "band-handles": "Griffe an die Bandenden einhängen und mit neutralem Handgelenk greifen."
-      }
+      },
+      "fallback": [
+        "long-sit-row"
+      ],
+      "shoulderElevationDeg": 65,
+      "shoulderFocus": [
+        "scapula"
+      ]
     },
     {
       "id": "prone-ytw",
@@ -2547,6 +2599,13 @@
           "exerciseId": "sling-rear-delt-fly",
           "chip": "Sling-Variante"
         }
+      ],
+      "fallback": [
+        "prone-low-row"
+      ],
+      "shoulderElevationDeg": 150,
+      "shoulderFocus": [
+        "scapula"
       ]
     },
     {
@@ -2648,6 +2707,14 @@
           "exerciseId": "sling-y-raise",
           "chip": "Sling-Variante"
         }
+      ],
+      "fallback": [
+        "wall-push-up-plus",
+        "scapula-setting"
+      ],
+      "shoulderElevationDeg": 160,
+      "shoulderFocus": [
+        "scapula"
       ]
     },
     {
@@ -2756,7 +2823,14 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Brusthöhe befestigen, Rücken zur Tür, Schrittstellung mit weichen Knien.",
         "band-handles": "Griffe an die Bandenden einhängen."
-      }
+      },
+      "fallback": [
+        "serratus-punch-low"
+      ],
+      "shoulderElevationDeg": 90,
+      "shoulderFocus": [
+        "scapula"
+      ]
     },
     {
       "id": "er-towel",
@@ -2852,7 +2926,11 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Ellbogenhöhe befestigen, seitlich zur Tür stellen.",
         "band-handles": "Einen Griff ans Bandende einhängen."
-      }
+      },
+      "shoulderElevationDeg": 10,
+      "shoulderFocus": [
+        "rc"
+      ]
     },
     {
       "id": "er-90-90",
@@ -2948,7 +3026,16 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Schulterhöhe befestigen, Gesicht zur Tür.",
         "band-handles": "Einen Griff ans Bandende einhängen."
-      }
+      },
+      "fallback": [
+        "er-towel",
+        "sidelying-er",
+        "er-iso-door"
+      ],
+      "shoulderElevationDeg": 90,
+      "shoulderFocus": [
+        "rc"
+      ]
     },
     {
       "id": "sidelying-er",
@@ -3034,7 +3121,11 @@
         "up": "Nach oben drehen",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "shoulderElevationDeg": 10,
+      "shoulderFocus": [
+        "rc"
+      ]
     },
     {
       "id": "face-pull",
@@ -3139,7 +3230,14 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Kopfhöhe befestigen, Gesicht zur Tür, Füße hüftbreit.",
         "band-handles": "Griffe einhängen – oder die Bandenden direkt greifen, wenn sich die Außenrotation so besser anfühlt."
-      }
+      },
+      "fallback": [
+        "low-face-pull"
+      ],
+      "shoulderElevationDeg": 100,
+      "shoulderFocus": [
+        "rc"
+      ]
     },
     {
       "id": "lat-pulldown",
@@ -3150,7 +3248,7 @@
       "equipment": [
         "theraband",
         "door",
-        "chair"
+        "seat"
       ],
       "type": "reps",
       "side": "both",
@@ -3237,7 +3335,12 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker oben in der Tür befestigen (über Kopfhöhe), Tür zu dir hin schließen.",
         "band-handles": "Griffe an die Bandenden einhängen."
-      }
+      },
+      "fallback": [
+        "low-row-band",
+        "long-sit-row"
+      ],
+      "shoulderElevationDeg": 160
     },
     {
       "id": "straight-arm-pulldown",
@@ -3333,7 +3436,11 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker oben in der Tür befestigen, Gesicht zur Tür, einen Schritt zurück.",
         "band-handles": "Griffe an die Bandenden einhängen."
-      }
+      },
+      "fallback": [
+        "low-row-band"
+      ],
+      "shoulderElevationDeg": 120
     },
     {
       "id": "single-arm-high-row",
@@ -3438,7 +3545,11 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Schulterhöhe befestigen, im Schießstand seitlich zur Tür stellen (Bogenarm-Seite zur Tür).",
         "band-handles": "Einen Griff ans Bandende einhängen."
-      }
+      },
+      "fallback": [
+        "low-row-band"
+      ],
+      "shoulderElevationDeg": 90
     },
     {
       "id": "band-draw-hold",
@@ -3540,7 +3651,9 @@
       "cueWords": {
         "hold": "Ausziehen und halten",
         "release": "Kontrolliert ablassen"
-      }
+      },
+      "archeryDraw": true,
+      "shoulderElevationDeg": 90
     },
     {
       "id": "bow-arm-push",
@@ -3630,7 +3743,9 @@
       "cueWords": {
         "hold": "Drücken",
         "release": "Lösen"
-      }
+      },
+      "archeryDraw": true,
+      "shoulderElevationDeg": 90
     },
     {
       "id": "mirror-draw",
@@ -3722,7 +3837,9 @@
       "cueWords": {
         "hold": "Ausziehen und halten",
         "release": "Kontrolliert ablassen"
-      }
+      },
+      "archeryDraw": true,
+      "shoulderElevationDeg": 90
     },
     {
       "id": "pallof-press",
@@ -3827,7 +3944,8 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Brusthöhe befestigen, seitlich zur Tür stellen, Füße hüftbreit.",
         "band-handles": "Griffe einhängen und beide zusammen vor dem Brustbein greifen."
-      }
+      },
+      "shoulderElevationDeg": 30
     },
     {
       "id": "dead-bug",
@@ -3925,23 +4043,26 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker knapp über dem Boden befestigen, Rückenlage mit dem Kopf zur Tür.",
         "band-handles": "Griffe an die Bandenden einhängen."
-      }
+      },
+      "fallback": [
+        "pallof-press"
+      ],
+      "shoulderElevationDeg": 160
     },
     {
       "id": "side-plank-elevated",
-      "name": "Seitstütz erhöht (Wand/Stuhl)",
+      "name": "Seitstütz erhöht an der Wand",
       "description": "Seitstütz mit erhöhtem Unterarm und gestreckten Beinen – seitliche Rumpfkraft ohne Knien.",
       "category": "stabilitaet",
       "block": "archery",
       "equipment": [
-        "wall",
-        "chair"
+        "wall"
       ],
       "type": "hold",
       "side": "perSide",
       "instructions": [
         "Stufe Wand: seitlich zur Wand, Unterarm auf Schulterhöhe an die Wand, Füße einen Schritt weg.",
-        "Stufe Stuhl: Unterarm auf die stabile Sitzfläche (Stuhl an der Wand), Beine gestreckt übereinander.",
+        "Später: Füße weiter weg von der Wand, Beine gestreckt übereinander (nie auf einem Stuhl mit Rollen abstützen).",
         "Becken anheben bzw. halten, bis der Körper eine gerade Linie bildet.",
         "Halten, ablegen, Seite wechseln."
       ],
@@ -4017,7 +4138,11 @@
       "cueWords": {
         "hold": "Becken hoch und halten",
         "release": "Ablegen"
-      }
+      },
+      "fallback": [
+        "pallof-press"
+      ],
+      "shoulderElevationDeg": 90
     },
     {
       "id": "thoracic-extension-chair",
@@ -4026,7 +4151,7 @@
       "category": "mobilitaet",
       "block": "archery",
       "equipment": [
-        "chair"
+        "chair-fixed"
       ],
       "type": "reps",
       "side": "both",
@@ -4095,7 +4220,11 @@
         "up": "Nach hinten strecken",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "fallback": [
+        "thoracic-extension-floor"
+      ],
+      "shoulderElevationDeg": 130
     },
     {
       "id": "expansion-drill",
@@ -4185,7 +4314,9 @@
         "up": "Expandieren",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "archeryDraw": true,
+      "shoulderElevationDeg": 90
     },
     {
       "id": "push-pull-iso",
@@ -4285,7 +4416,9 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker auf Schulterhöhe befestigen; im Schießstand so stellen, dass die Bogenhand eine Wand oder den Türrahmen erreicht.",
         "band-handles": "Einen Griff ans Bandende einhängen."
-      }
+      },
+      "archeryDraw": true,
+      "shoulderElevationDeg": 90
     },
     {
       "id": "endurance-series",
@@ -4392,7 +4525,9 @@
       "cueWords": {
         "hold": "Ausziehen und halten",
         "release": "Kontrolliert ablassen"
-      }
+      },
+      "archeryDraw": true,
+      "shoulderElevationDeg": 90
     },
     {
       "id": "doorway-pec-stretch",
@@ -4470,7 +4605,11 @@
         "mirror": false
       },
       "postOpAllowed": false,
-      "setupSec": 5
+      "setupSec": 5,
+      "fallback": [
+        "pec-stretch-low"
+      ],
+      "shoulderElevationDeg": 90
     },
     {
       "id": "hamstring-stretch-seated",
@@ -4479,7 +4618,7 @@
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "hold",
       "side": "perSide",
@@ -4537,7 +4676,8 @@
         "band": null,
         "mirror": false
       },
-      "setupSec": 5
+      "setupSec": 5,
+      "shoulderElevationDeg": 20
     },
     {
       "id": "calf-stretch-wall",
@@ -4603,7 +4743,8 @@
         "mirror": false
       },
       "postOpAllowed": false,
-      "setupSec": 5
+      "setupSec": 5,
+      "shoulderElevationDeg": 65
     },
     {
       "id": "breathing-reset",
@@ -4689,7 +4830,8 @@
         "inhale": "Einatmen",
         "breathHold": "Halten",
         "exhale": "Ausatmen"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "row-technique-warmup",
@@ -4788,7 +4930,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
-      }
+      },
+      "shoulderElevationDeg": 70
     },
     {
       "id": "row-steady",
@@ -4916,7 +5059,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
-      }
+      },
+      "shoulderElevationDeg": 70
     },
     {
       "id": "row-intervals",
@@ -5050,7 +5194,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
-      }
+      },
+      "shoulderElevationDeg": 70
     },
     {
       "id": "row-endurance",
@@ -5161,7 +5306,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
-      }
+      },
+      "shoulderElevationDeg": 70
     },
     {
       "id": "row-cooldown",
@@ -5237,7 +5383,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
-      }
+      },
+      "shoulderElevationDeg": 70
     },
     {
       "id": "chair-dip",
@@ -5246,7 +5393,7 @@
       "category": "kraft",
       "block": "archery",
       "equipment": [
-        "chair"
+        "chair-fixed"
       ],
       "type": "reps",
       "side": "both",
@@ -5266,7 +5413,7 @@
         "Schultern hochziehen",
         "Mit den Beinen Schwung holen"
       ],
-      "kneeNote": "Füße flach, Knie ca. 90° ohne Druck. Linkes Bein darf entlastet nach vorn gestellt werden. Bei Knieschmerz Füße näher heranziehen.",
+      "kneeNote": "Füße flach, Knie ca. 90° ohne Druck. Linkes Bein darf entlastet nach vorn gestellt werden. Bei Knieschmerz Füße näher heranziehen. Nur mit einem festen Stuhl ohne Rollen, Lehne an der Wand.",
       "levels": [
         {
           "label": "Beine tragen mit · 2 × 8",
@@ -5335,7 +5482,11 @@
           "exerciseId": "sling-dip-assisted",
           "chip": "Sling-Variante"
         }
-      ]
+      ],
+      "fallback": [
+        "band-triceps-extension"
+      ],
+      "shoulderElevationDeg": 0
     },
     {
       "id": "band-triceps-extension",
@@ -5440,7 +5591,8 @@
       "setupByEquipment": {
         "door-anchor": "Band mit dem Türanker oben in der Tür befestigen, Enden in beiden Händen, mit Blick zur Tür stehen oder sitzen.",
         "band-handles": "Griffe an die Bandenden einhängen."
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "seated-press-up",
@@ -5449,12 +5601,12 @@
       "category": "kraft",
       "block": "archery",
       "equipment": [
-        "chair"
+        "chair-fixed"
       ],
       "type": "hold",
       "side": "both",
       "instructions": [
-        "Auf einen stabilen Stuhl mit Armlehnen setzen (alternativ zwei stabile Bücherstapel neben dem Gesäß).",
+        "Auf einen festen, stabilen Stuhl mit Armlehnen setzen (nie auf einen Stuhl mit Rollen; alternativ zwei stabile Bücherstapel neben dem Gesäß).",
         "Hände auf die Armlehnen, Ellbogen leicht gebeugt.",
         "Schultern aktiv nach unten drücken und die Arme so weit strecken, dass das Gesäß wenige Zentimeter von der Sitzfläche abhebt.",
         "Halten, ruhig atmen, langsam wieder absetzen."
@@ -5532,7 +5684,12 @@
       "cueWords": {
         "hold": "Hochdrücken",
         "release": "Absetzen"
-      }
+      },
+      "fallback": [
+        "sling-triceps-press",
+        "band-triceps-extension"
+      ],
+      "shoulderElevationDeg": 0
     },
     {
       "id": "right-leg-sit-to-stand",
@@ -5541,7 +5698,7 @@
       "category": "kraft",
       "block": "knee",
       "equipment": [
-        "chair"
+        "chair-fixed"
       ],
       "type": "reps",
       "side": "right",
@@ -5622,7 +5779,12 @@
         "up": "Aufstehen",
         "hold": "Stehen",
         "down": "Hinsetzen"
-      }
+      },
+      "fallback": [
+        "box-squat-bed-edge",
+        "right-leg-band-press"
+      ],
+      "shoulderElevationDeg": 60
     },
     {
       "id": "single-leg-stance-reach",
@@ -5636,7 +5798,7 @@
       "type": "hold",
       "side": "left",
       "instructions": [
-        "Neben eine Stuhllehne oder Wand stellen (Hand in Reichweite).",
+        "Neben eine Wand stellen (Hand in Reichweite).",
         "Auf das linke Bein stellen, Knie ganz leicht gebeugt, nicht durchgedrückt.",
         "Mit dem rechten Arm langsam nach vorn, zur Seite und nach oben reichen, ohne dass das Knie nach innen fällt.",
         "Halten, dann Arm wechseln."
@@ -5713,12 +5875,16 @@
       "cueWords": {
         "hold": "Halten",
         "release": "Absetzen"
-      }
+      },
+      "fallback": [
+        "single-leg-stance"
+      ],
+      "shoulderElevationDeg": 160
     },
     {
       "id": "patella-mobilization",
-      "name": "Kniescheiben-Mobilisation",
-      "description": "Kniescheibe sanft nach oben, unten und zur Seite schieben – hält das Gleitlager beweglich.",
+      "name": "Kniescheiben-Mobilisation (Selbsthilfe)",
+      "description": "Kniescheibe sanft nach unten, oben, innen und außen gleiten lassen – entlastet bei Druck direkt oberhalb der Kniescheibe. Ersetzt keine Behandlung.",
       "category": "mobilitaet",
       "block": "knee",
       "equipment": [
@@ -5727,14 +5893,15 @@
       "type": "timed",
       "side": "left",
       "instructions": [
-        "Rückenlage oder Langsitz, linkes Bein entspannt lang, Oberschenkel locker.",
-        "Kniescheibe mit Daumen und Zeigefinger fassen.",
-        "Langsam nach oben und unten schieben, dann nach innen und außen – jeweils kurz halten.",
-        "Sanft bleiben, nicht drücken."
+        "Langsitz auf der Matte (Rücken an der Wand oder abgestützt), linkes Bein gestreckt und ganz entspannt, Oberschenkel locker.",
+        "Kniescheibe mit Daumen und Zeigefinger von oben fassen.",
+        "Langsam nach unten (Richtung Fuß) schieben, kurz halten, zurück – 10 ×. Dann nach oben, innen und außen, je 10 ×.",
+        "Variante wie beim Physio: Kniescheibe sanft nach unten halten und dabei den Oberschenkel leicht anspannen bzw. das Bein ein kleines Stück anheben.",
+        "Sanft bleiben, nicht drücken – angenehm, höchstens leichter Schmerz (≤ 2/10)."
       ],
       "cues": [
         "Oberschenkel ganz locker",
-        "Kleine, ruhige Bewegungen",
+        "Langsam nach unten gleiten",
         "Alle vier Richtungen"
       ],
       "mistakes": [
@@ -5742,7 +5909,7 @@
         "Zu kräftig schieben",
         "Über Schmerz hinaus arbeiten"
       ],
-      "kneeNote": "Schmerzfrei bis leicht (≤ 2/10). Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+      "kneeNote": "Selbsthilfe nach Freigabe durch deinen Physio – ersetzt keine Behandlung. Bei stärkerem Schmerz oder Schwellung Physio fragen. Nach der OP nur nach Freigabe durch Arzt/Physio.",
       "levels": [
         {
           "label": "2 min",
@@ -5767,7 +5934,8 @@
       "tags": [
         "post-op",
         "mobilitaet",
-        "kniescheibe"
+        "kniescheibe",
+        "entlastung"
       ],
       "figure": {
         "poses": [
@@ -5782,8 +5950,10 @@
       },
       "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
       "cueWords": {
-        "work": "Kniescheibe sanft bewegen"
-      }
+        "work": "Kniescheibe sanft nach unten"
+      },
+      "setupSec": 5,
+      "shoulderElevationDeg": 30
     },
     {
       "id": "glute-set",
@@ -5861,7 +6031,8 @@
         "band": null,
         "mirror": false
       },
-      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang."
+      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+      "shoulderElevationDeg": 20
     },
     {
       "id": "right-leg-band-press",
@@ -5953,7 +6124,8 @@
         "up": "Wegdrücken",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "leg-swing-front",
@@ -6032,21 +6204,22 @@
       "setupSec": 5,
       "cueWords": {
         "work": "Locker pendeln"
-      }
+      },
+      "shoulderElevationDeg": 65
     },
     {
       "id": "leg-swing-side",
-      "name": "Beinpendel seitlich (Hände am Stuhl)",
+      "name": "Beinpendel seitlich (Hände an der Wand)",
       "description": "Bein vor dem Körper seitlich hin und her pendeln – macht die Hüfte (Abduktoren/Adduktoren) warm. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
-        "chair"
+        "wall"
       ],
       "type": "timed",
       "side": "perSide",
       "instructions": [
-        "Frontal vor eine Stuhllehne oder Wand stellen, beide Hände abstützen.",
+        "Frontal vor eine Wand stellen, beide Hände abstützen.",
         "Standbein leicht gebeugt.",
         "Das freie Bein gestreckt vor dem Körper seitlich nach außen und wieder etwas nach innen pendeln.",
         "Seite wechseln."
@@ -6100,7 +6273,7 @@
           "leg-swing-side-in"
         ],
         "props": [
-          "chair"
+          "wall"
         ],
         "band": null,
         "mirror": false
@@ -6109,7 +6282,8 @@
       "setupSec": 5,
       "cueWords": {
         "work": "Seitlich pendeln"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "hip-circles-standing",
@@ -6175,7 +6349,8 @@
       "setupSec": 5,
       "cueWords": {
         "work": "Becken kreisen"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "ankle-circles-seated",
@@ -6184,7 +6359,7 @@
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "timed",
       "side": "perSide",
@@ -6250,7 +6425,8 @@
       "setupSec": 5,
       "cueWords": {
         "work": "Fuß kreisen"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "band-dislocate",
@@ -6323,7 +6499,12 @@
       "cueWords": {
         "up": "Über den Kopf nach hinten",
         "down": "Zurück nach vorn"
-      }
+      },
+      "fallback": [
+        "scapula-setting",
+        "pull-apart-low"
+      ],
+      "shoulderElevationDeg": 180
     },
     {
       "id": "mobility-flow-short",
@@ -6406,7 +6587,11 @@
         "mirror": false
       },
       "postOpAllowed": false,
-      "setupSec": 5
+      "setupSec": 5,
+      "fallback": [
+        "mobility-flow-short-low"
+      ],
+      "shoulderElevationDeg": 170
     },
     {
       "id": "mobility-flow-seated",
@@ -6415,7 +6600,7 @@
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "timed",
       "side": "both",
@@ -6485,7 +6670,8 @@
         "mirror": false
       },
       "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
-      "setupSec": 5
+      "setupSec": 5,
+      "shoulderElevationDeg": 30
     },
     {
       "id": "stretch-flow-short",
@@ -6579,7 +6765,11 @@
         "mirror": false
       },
       "postOpAllowed": false,
-      "setupSec": 5
+      "setupSec": 5,
+      "fallback": [
+        "stretch-flow-short-low"
+      ],
+      "shoulderElevationDeg": 90
     },
     {
       "id": "stretch-flow-seated",
@@ -6588,7 +6778,7 @@
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "timed",
       "side": "both",
@@ -6674,7 +6864,11 @@
         "mirror": false
       },
       "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
-      "setupSec": 5
+      "setupSec": 5,
+      "fallback": [
+        "stretch-flow-seated-low"
+      ],
+      "shoulderElevationDeg": 160
     },
     {
       "id": "hip-flexor-stretch-standing",
@@ -6683,12 +6877,12 @@
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
-        "chair"
+        "wall"
       ],
       "type": "hold",
       "side": "perSide",
       "instructions": [
-        "Kurze Schrittstellung (etwa eine Fußlänge), eine Hand an Stuhllehne oder Wand.",
+        "Kurze Schrittstellung (etwa eine Fußlänge), eine Hand an der Wand.",
         "Vorderes Knie nur leicht beugen (höchstens ca. 30°), hinteres Knie fast gestreckt, Ferse darf abheben.",
         "Po anspannen und das Becken unten nach vorn „einrollen“ (Steißbein nach unten), bis vorne an der Hüfte des hinteren Beins ein Ziehen entsteht.",
         "Oberkörper aufrecht, halten, ruhig atmen – dann Seite wechseln."
@@ -6737,13 +6931,14 @@
           "stand-hip-flexor-stretch"
         ],
         "props": [
-          "chair"
+          "wall"
         ],
         "band": null,
         "mirror": false
       },
       "postOpAllowed": false,
-      "setupSec": 5
+      "setupSec": 5,
+      "shoulderElevationDeg": 20
     },
     {
       "id": "hip-flexor-stretch-supine",
@@ -6819,7 +7014,8 @@
         "mirror": false
       },
       "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang. Linkes Bein bleibt lang liegen (ggf. mit Schiene).",
-      "setupSec": 5
+      "setupSec": 5,
+      "shoulderElevationDeg": 60
     },
     {
       "id": "hamstring-stretch-band",
@@ -6891,7 +7087,8 @@
         "mirror": false
       },
       "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang. Links nur, wenn gestrecktes Beinheben erlaubt ist; ganz sanft, Knie gestreckt (ggf. mit Schiene).",
-      "setupSec": 5
+      "setupSec": 5,
+      "shoulderElevationDeg": 60
     },
     {
       "id": "figure-4-stretch-supine",
@@ -6958,7 +7155,8 @@
         "mirror": false
       },
       "postOpAllowed": false,
-      "setupSec": 5
+      "setupSec": 5,
+      "shoulderElevationDeg": 20
     },
     {
       "id": "seated-pec-stretch",
@@ -6967,7 +7165,7 @@
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "hold",
       "side": "both",
@@ -7026,7 +7224,11 @@
         "mirror": false
       },
       "postOpNote": "Im Sitzen, linkes Bein lang und entlastet.",
-      "setupSec": 5
+      "setupSec": 5,
+      "fallback": [
+        "pec-stretch-low"
+      ],
+      "shoulderElevationDeg": 120
     },
     {
       "id": "lat-side-stretch",
@@ -7035,7 +7237,7 @@
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "hold",
       "side": "perSide",
@@ -7095,7 +7297,11 @@
         "mirror": false
       },
       "postOpNote": "Im Sitzen, linkes Bein lang und entlastet.",
-      "setupSec": 5
+      "setupSec": 5,
+      "fallback": [
+        "side-bend-low"
+      ],
+      "shoulderElevationDeg": 160
     },
     {
       "id": "cross-body-shoulder-stretch",
@@ -7104,7 +7310,7 @@
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "hold",
       "side": "perSide",
@@ -7164,7 +7370,12 @@
         "mirror": false
       },
       "postOpNote": "Im Sitzen, linkes Bein lang und entlastet.",
-      "setupSec": 5
+      "setupSec": 5,
+      "fallback": [
+        "pec-stretch-low",
+        "neck-stretch-low"
+      ],
+      "shoulderElevationDeg": 90
     },
     {
       "id": "forearm-flexor-stretch",
@@ -7173,7 +7384,7 @@
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "hold",
       "side": "perSide",
@@ -7233,7 +7444,8 @@
         "mirror": false
       },
       "postOpNote": "Im Sitzen, linkes Bein lang und entlastet.",
-      "setupSec": 5
+      "setupSec": 5,
+      "shoulderElevationDeg": 60
     },
     {
       "id": "neck-side-stretch",
@@ -7242,7 +7454,7 @@
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
-        "chair"
+        "seat"
       ],
       "type": "hold",
       "side": "perSide",
@@ -7304,7 +7516,11 @@
       "setupSec": 5,
       "cueWords": {
         "hold": "Sanft dehnen"
-      }
+      },
+      "fallback": [
+        "neck-stretch-low"
+      ],
+      "shoulderElevationDeg": 110
     },
     {
       "id": "row-warmup-10",
@@ -7408,7 +7624,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
-      }
+      },
+      "shoulderElevationDeg": 70
     },
     {
       "id": "row-finisher-short",
@@ -7481,7 +7698,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
-      }
+      },
+      "shoulderElevationDeg": 70
     },
     {
       "id": "row-finisher-intervals",
@@ -7572,7 +7790,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
-      }
+      },
+      "shoulderElevationDeg": 70
     },
     {
       "id": "row-long",
@@ -7678,7 +7897,8 @@
       "postOpAllowed": false,
       "cueWords": {
         "work": "Rudern"
-      }
+      },
+      "shoulderElevationDeg": 70
     },
     {
       "id": "sling-row",
@@ -7770,7 +7990,11 @@
         "up": "Ziehen",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "shoulderElevationDeg": 65,
+      "shoulderFocus": [
+        "scapula"
+      ]
     },
     {
       "id": "sling-face-pull",
@@ -7860,7 +8084,14 @@
         "up": "Zum Gesicht ziehen",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "fallback": [
+        "low-face-pull"
+      ],
+      "shoulderElevationDeg": 100,
+      "shoulderFocus": [
+        "rc"
+      ]
     },
     {
       "id": "sling-y-raise",
@@ -7950,7 +8181,14 @@
         "up": "Hoch ins Y",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "fallback": [
+        "wall-push-up-plus"
+      ],
+      "shoulderElevationDeg": 150,
+      "shoulderFocus": [
+        "scapula"
+      ]
     },
     {
       "id": "sling-t-raise",
@@ -8040,7 +8278,14 @@
         "up": "Öffnen",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "fallback": [
+        "pull-apart-low"
+      ],
+      "shoulderElevationDeg": 90,
+      "shoulderFocus": [
+        "scapula"
+      ]
     },
     {
       "id": "sling-rear-delt-fly",
@@ -8130,7 +8375,14 @@
         "up": "Öffnen",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "fallback": [
+        "prone-low-row"
+      ],
+      "shoulderElevationDeg": 90,
+      "shoulderFocus": [
+        "scapula"
+      ]
     },
     {
       "id": "sling-single-arm-row",
@@ -8222,7 +8474,12 @@
         "up": "In den Anker ziehen",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "fallback": [
+        "sling-row",
+        "low-row-band"
+      ],
+      "shoulderElevationDeg": 90
     },
     {
       "id": "sling-plank-forearms",
@@ -8315,7 +8572,11 @@
       "cueWords": {
         "hold": "Halten",
         "release": "Aufrichten"
-      }
+      },
+      "fallback": [
+        "pallof-press"
+      ],
+      "shoulderElevationDeg": 90
     },
     {
       "id": "sling-pallof-press",
@@ -8405,7 +8666,8 @@
         "up": "Drücken",
         "hold": "Halten",
         "down": "Zurück"
-      }
+      },
+      "shoulderElevationDeg": 30
     },
     {
       "id": "sling-standing-rollout",
@@ -8494,7 +8756,11 @@
         "up": "Nach vorn",
         "hold": "Halten",
         "down": "Zurückziehen"
-      }
+      },
+      "fallback": [
+        "pallof-press"
+      ],
+      "shoulderElevationDeg": 150
     },
     {
       "id": "sling-assisted-mini-squat",
@@ -8584,7 +8850,11 @@
         "up": "Beugen",
         "hold": "Halten",
         "down": "Strecken"
-      }
+      },
+      "fallback": [
+        "mini-squat"
+      ],
+      "shoulderElevationDeg": 90
     },
     {
       "id": "sling-heel-bridge",
@@ -8676,7 +8946,8 @@
         "up": "Becken hoch",
         "hold": "Halten",
         "down": "Absenken"
-      }
+      },
+      "shoulderElevationDeg": 20
     },
     {
       "id": "sling-triceps-press",
@@ -8767,7 +9038,11 @@
         "up": "Strecken",
         "hold": "Halten",
         "down": "Beugen"
-      }
+      },
+      "fallback": [
+        "band-triceps-extension"
+      ],
+      "shoulderElevationDeg": 170
     },
     {
       "id": "sling-dip-assisted",
@@ -8859,7 +9134,8 @@
         "up": "Absenken",
         "hold": "Halten",
         "down": "Hochdrücken"
-      }
+      },
+      "shoulderElevationDeg": 0
     },
     {
       "id": "sling-push-up-incline",
@@ -8950,6 +9226,1899 @@
         "up": "Absenken",
         "hold": "Halten",
         "down": "Drücken"
+      },
+      "fallback": [
+        "wall-push-up-plus"
+      ],
+      "shoulderElevationDeg": 85
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Plumpsen lassen",
+        "Knie fallen nach innen"
+      ],
+      "cues": [
+        "Knie über den Zehen",
+        "Langsam absitzen",
+        "Gewicht auf beiden Beinen"
+      ],
+      "tags": [
+        "alltag",
+        "quadrizeps",
+        "gesaess"
+      ],
+      "id": "box-squat-bed-edge",
+      "name": "Hinsetzen auf die Bettkante (Box Squat)",
+      "description": "Kontrolliert zur Bett- oder Sofakante absitzen und wieder aufstehen – wie Aufstehen vom Stuhl, ohne Rollen.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "bed-edge"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Vor eine feste Bett- oder Sofakante stellen, Füße hüftbreit, Kante hinter den Waden.",
+        "Gesäß nach hinten schieben und langsam (3 s) zur Kante absitzen, kurz antippen ohne zusammenzusacken.",
+        "Über die Fersen wieder aufstehen, oben Gesäß anspannen.",
+        "Arme vor der Brust gekreuzt oder locker nach vorn-unten."
+      ],
+      "kneeNote": "Zu weiche oder sehr niedrige Kanten meiden: Kniebeugung im Sitzen höchstens ca. 70–90°, Kissen erhöht die Kante. Schmerz ≤ 3/10.",
+      "levels": [
+        {
+          "label": "Hohe Kante (mit Kissen) · 2 × 8",
+          "sets": 2,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45,
+          "reps": 8
+        },
+        {
+          "label": "Hohe Kante · 3 × 10",
+          "sets": 3,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60,
+          "reps": 10
+        },
+        {
+          "label": "Normale Kante · 3 × 10",
+          "sets": 3,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 60,
+          "reps": 10
+        },
+        {
+          "label": "Normale Kante · 3 × 12, 2 s halten",
+          "sets": 3,
+          "tempo": "3-2-2",
+          "band": null,
+          "rest": 60,
+          "reps": 12
+        }
+      ],
+      "postOpAllowed": false,
+      "shoulderElevationDeg": 45,
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "box-sit",
+          "box-sit-mid",
+          "box-sit-end"
+        ],
+        "props": []
+      },
+      "cueWords": {
+        "up": "Aufstehen",
+        "hold": "Stehen",
+        "down": "Absitzen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "mistakes": [
+        "Hohlkreuz",
+        "Knie zu stark gebeugt"
+      ],
+      "cues": [
+        "Fersen drücken",
+        "Becken gerade"
+      ],
+      "tags": [
+        "beinbeuger",
+        "gesaess"
+      ],
+      "id": "hamstring-bridge-step",
+      "name": "Fersen-Brücke auf der Stufe",
+      "description": "Fersen auf der Stufe, Becken heben – Beinbeuger und Gesäß bei fast gestrecktem Knie.",
+      "category": "kraft",
+      "block": "knee",
+      "equipment": [
+        "mat",
+        "step"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Rückenlage vor der Stufe, beide Fersen auf die Stufe, Knie leicht gebeugt (ca. 20–30°).",
+        "Arme neben dem Körper, Fersen in die Stufe drücken.",
+        "Becken heben, bis Schultern, Hüfte und Fersen eine Linie bilden.",
+        "Langsam absenken."
+      ],
+      "kneeNote": "Knie fast gestreckt, daher wenig Druck auf Meniskus und Knorpel. Ziehen hinten im Knie → Stufe kürzer halten.",
+      "levels": [
+        {
+          "label": "Beidbeinig · 2 × 10",
+          "sets": 2,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45,
+          "reps": 10
+        },
+        {
+          "label": "Beidbeinig · 3 × 12",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60,
+          "reps": 12
+        },
+        {
+          "label": "Links betont · 3 × 10",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 60,
+          "reps": 10
+        },
+        {
+          "label": "Einbeinig links · 3 × 8",
+          "sets": 3,
+          "tempo": "2-2-3",
+          "band": null,
+          "rest": 60,
+          "reps": 8
+        }
+      ],
+      "postOpAllowed": false,
+      "shoulderElevationDeg": 0,
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "bridge-heel-step-down",
+          "bridge-heel-step-up"
+        ],
+        "props": [
+          "mat",
+          "step"
+        ]
+      },
+      "cueWords": {
+        "up": "Becken hoch",
+        "hold": "Halten",
+        "down": "Ablegen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Hohlkreuz im Lendenbereich",
+        "Arme über den Kopf"
+      ],
+      "cues": [
+        "Arme bleiben unten",
+        "Ausatmen beim Strecken"
+      ],
+      "tags": [
+        "brustwirbelsaeule",
+        "haltung",
+        "bogen"
+      ],
+      "id": "thoracic-extension-floor",
+      "name": "Brustwirbel-Streckung über die Handtuchrolle",
+      "description": "Oberen Rücken auf dem Boden über eine Handtuchrolle strecken – ohne Stuhl, ohne Rollen, Arme bleiben unten.",
+      "category": "mobilitaet",
+      "block": "archery",
+      "equipment": [
+        "mat"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Großes Handtuch fest rollen und quer unter die Brustwirbelsäule (Höhe Schulterblätter) legen.",
+        "Rückenlage, Knie angestellt, Arme vor der Brust gekreuzt, Kopf ggf. auf einem Kissen.",
+        "Oberen Rücken ruhig über die Rolle sinken lassen, ausatmen, Blick schräg nach hinten.",
+        "Kurz halten, zurück. Rolle eine Handbreit weiter nach oben legen und wiederholen."
+      ],
+      "kneeNote": "Knie angestellt, ohne Last – das Knie hat Pause.",
+      "setupSec": 15,
+      "levels": [
+        {
+          "label": "8 Wdh.",
+          "sets": 1,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 0,
+          "reps": 8
+        },
+        {
+          "label": "10 Wdh., 2 Positionen",
+          "sets": 1,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 0,
+          "reps": 10
+        },
+        {
+          "label": "2 × 10",
+          "sets": 2,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 20,
+          "reps": 10
+        }
+      ],
+      "shoulderElevationDeg": 20,
+      "shoulderFocus": [],
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "supine-towel-tspine-a",
+          "supine-towel-tspine-b"
+        ],
+        "props": [
+          "mat"
+        ]
+      },
+      "cueWords": {
+        "up": "Strecken",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Schultern zu den Ohren",
+        "Zurücklehnen mit Schwung"
+      ],
+      "cues": [
+        "Schulterblätter starten",
+        "Ellbogen am Körper",
+        "Brustbein hoch"
+      ],
+      "tags": [
+        "rueckenspannung",
+        "zug",
+        "schulterblatt"
+      ],
+      "id": "long-sit-row",
+      "name": "Rudern im Langsitz mit Band",
+      "description": "Auf der Matte sitzend das Band zum Bauch ziehen – Rücken und Schulterblätter, ohne Stuhl und unter Schulterhöhe.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door",
+        "mat"
+      ],
+      "type": "reps",
+      "side": "both",
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker unten (Knöchelhöhe) befestigen, Tür zu dir hin schließen.",
+        "band-handles": "Griffe an die Bandenden einhängen."
+      },
+      "instructions": [
+        "Band mit dickem Knoten unten hinter die Tür (Scharnierseite) klemmen, Tür zieht zu.",
+        "Mit Blick zur Tür im Langsitz auf die Matte setzen, Beine lang und locker, Rücken aufrecht.",
+        "Arme gestreckt nach vorn-unten, erst Schulterblätter nach hinten-unten ziehen, dann Ellbogen eng am Körper zurück.",
+        "Kurz halten, langsam zurück."
+      ],
+      "kneeNote": "Beine liegen lang und entspannt – keine Last auf dem Knie. Rundet der Rücken stark: Kissen unter das Gesäß.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12",
+          "sets": 2,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 45,
+          "reps": 12
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45,
+          "reps": 12
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": "green",
+          "rest": 60,
+          "reps": 12
+        },
+        {
+          "label": "Blau · 3 × 12",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": "blue",
+          "rest": 60,
+          "reps": 12
+        }
+      ],
+      "shoulderElevationDeg": 55,
+      "shoulderFocus": [
+        "scapula"
+      ],
+      "postOpNote": "Nach der OP: linkes Bein liegt lang und entlastet.",
+      "figure": {
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false,
+        "poses": [
+          "long-sit-row-start",
+          "long-sit-row-end"
+        ],
+        "props": [
+          "mat",
+          "door"
+        ]
+      },
+      "cueWords": {
+        "up": "Ziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Über die Kniescheibe rollen",
+        "Zu fest drücken"
+      ],
+      "cues": [
+        "Langsam rollen",
+        "Sanfter Druck",
+        "Kniescheibe auslassen"
+      ],
+      "tags": [
+        "entlastung",
+        "quadrizeps",
+        "kniescheibe"
+      ],
+      "id": "quad-massage-stick",
+      "name": "Oberschenkel-Massage mit dem Massagestab",
+      "description": "Vorderen Oberschenkel mit dem Massagestab lockern – auch knapp oberhalb der Kniescheibe, nie direkt auf der Kniescheibe.",
+      "category": "mobilitaet",
+      "block": "knee",
+      "equipment": [
+        "massage-stick",
+        "mat"
+      ],
+      "type": "timed",
+      "side": "left",
+      "instructions": [
+        "Langsitz auf der Matte oder aufrecht sitzen, linkes Bein entspannt lang.",
+        "Massagestab mit beiden Händen quer auf den vorderen Oberschenkel legen.",
+        "Langsam von der Oberschenkelmitte bis knapp oberhalb der Kniescheibe rollen und zurück – sanfter Druck.",
+        "Oberhalb der Kniescheibe nur ganz leicht, NIE direkt über die Kniescheibe rollen."
+      ],
+      "kneeNote": "Angenehmer Druck, höchstens leichter Schmerz (≤ 2/10). Ersetzt keine Behandlung – bei stärkerem Schmerz oder Schwellung Physio fragen.",
+      "setupSec": 10,
+      "levels": [
+        {
+          "label": "60 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 60
+        },
+        {
+          "label": "90 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 90
+        }
+      ],
+      "postOpAllowed": false,
+      "shoulderElevationDeg": 30,
+      "postOpNote": "Nach der OP nur nach Freigabe durch Arzt/Physio – nicht über Narbe oder Schwellung rollen.",
+      "figure": {
+        "band": null,
+        "mirror": true,
+        "poses": [
+          "long-sit-thigh-a",
+          "long-sit-thigh-b"
+        ],
+        "props": [
+          "mat",
+          "stick"
+        ]
+      },
+      "cueWords": {
+        "work": "Oberschenkel sanft ausrollen"
+      },
+      "fallback": [
+        "quad-self-massage"
+      ]
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Zu fest drücken",
+        "Auf die Kniescheibe drücken"
+      ],
+      "cues": [
+        "Oberschenkel locker",
+        "Sanft ausstreichen"
+      ],
+      "tags": [
+        "entlastung",
+        "quadrizeps"
+      ],
+      "id": "quad-self-massage",
+      "name": "Oberschenkel-Massage mit den Händen",
+      "description": "Vorderen Oberschenkel mit beiden Händen ausstreichen und kneten – oberhalb der Kniescheibe ganz sanft.",
+      "category": "mobilitaet",
+      "block": "knee",
+      "equipment": [
+        "mat"
+      ],
+      "type": "timed",
+      "side": "left",
+      "instructions": [
+        "Langsitz auf der Matte, linkes Bein entspannt lang.",
+        "Mit beiden Händen den vorderen Oberschenkel von der Mitte Richtung Knie ausstreichen und sanft kneten.",
+        "Knapp oberhalb der Kniescheibe nur ganz leicht – nicht auf die Kniescheibe drücken.",
+        "Ruhig atmen, Oberschenkel bleibt locker."
+      ],
+      "kneeNote": "Angenehm, höchstens leichter Schmerz (≤ 2/10). Ersetzt keine Behandlung.",
+      "setupSec": 10,
+      "levels": [
+        {
+          "label": "60 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 60
+        },
+        {
+          "label": "90 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 90
+        }
+      ],
+      "shoulderElevationDeg": 30,
+      "postOpNote": "Nach der OP nicht über Narbe oder Schwellung – nur nach Freigabe durch Arzt/Physio.",
+      "figure": {
+        "band": null,
+        "mirror": true,
+        "poses": [
+          "long-sit-thigh-a",
+          "long-sit-thigh-b"
+        ],
+        "props": [
+          "mat"
+        ]
+      },
+      "cueWords": {
+        "work": "Oberschenkel sanft ausstreichen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Ferse zum Po ziehen",
+        "Ins Hohlkreuz gehen"
+      ],
+      "cues": [
+        "Becken bleibt auf der Matte",
+        "Nur leichtes Ziehen"
+      ],
+      "tags": [
+        "entlastung",
+        "quadrizeps",
+        "dehnung"
+      ],
+      "id": "prone-quad-lengthening-band",
+      "name": "Vorderen Oberschenkel sanft verlängern (Bauchlage mit Band)",
+      "description": "In Bauchlage den linken Unterschenkel mit dem Band nur bis ca. 60–70° Kniebeugung heranziehen – ohne tiefe Beugung, ohne Knien. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "mat",
+        "theraband"
+      ],
+      "type": "hold",
+      "side": "left",
+      "instructions": [
+        "Bauchlage auf der Matte, Kissen unter dem Bauch, Stirn auf den Händen oder einem Handtuch.",
+        "Band als Schlaufe um den linken Fußknöchel, Bandenden in der rechten Hand neben dem Körper.",
+        "Linken Unterschenkel mit dem Band nur so weit heranziehen, bis vorn am Oberschenkel ein leichtes Ziehen kommt – höchstens ca. 60–70° Kniebeugung.",
+        "Halten, ruhig atmen, langsam ablegen."
+      ],
+      "kneeNote": "Bewusst keine Ferse-zum-Po-Dehnung: Kniebeugung nur bis ca. 60–70°, Schmerz ≤ 2/10. Druck im Knie → weniger weit ziehen.",
+      "setupSec": 15,
+      "levels": [
+        {
+          "label": "2 × 20 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 2,
+          "hold": 20,
+          "restBetween": 5
+        },
+        {
+          "label": "2 × 30 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 2,
+          "hold": 30,
+          "restBetween": 5
+        }
+      ],
+      "postOpAllowed": false,
+      "shoulderElevationDeg": 20,
+      "figure": {
+        "band": {
+          "from": "footL",
+          "to": "handR"
+        },
+        "mirror": false,
+        "poses": [
+          "prone-quad-band-a",
+          "prone-quad-band-b"
+        ],
+        "props": [
+          "mat"
+        ]
+      },
+      "cueWords": {
+        "hold": "Sanft verlängern",
+        "release": "Ablegen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Hohlkreuz",
+        "Schultern hochziehen"
+      ],
+      "cues": [
+        "Schultern tief",
+        "Nacken lang"
+      ],
+      "tags": [
+        "schulterblatt",
+        "haltung",
+        "schulterschutz"
+      ],
+      "id": "scapula-setting",
+      "name": "Schulterblätter setzen (Scapula-Setting)",
+      "description": "Schulterblätter sanft nach hinten-unten ziehen und halten – im Stehen oder Sitzen, Arme bleiben unten.",
+      "category": "haltung",
+      "block": "archery",
+      "equipment": [
+        "none"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Aufrecht stehen oder sitzen, Arme hängen locker.",
+        "Schulterblätter sanft nach hinten-unten Richtung Gesäßtasche ziehen, Brustbein leicht anheben.",
+        "Halten, ruhig atmen – Nacken bleibt lang, Schultern nicht hochziehen.",
+        "Locker lassen, wiederholen."
+      ],
+      "kneeNote": "Im Sitzen oder Stehen – das Knie hat Pause.",
+      "setupSec": 5,
+      "levels": [
+        {
+          "label": "5 × 10 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 5,
+          "hold": 10,
+          "restBetween": 5
+        },
+        {
+          "label": "8 × 10 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 8,
+          "hold": 10,
+          "restBetween": 5
+        }
+      ],
+      "shoulderElevationDeg": 0,
+      "shoulderFocus": [
+        "scapula"
+      ],
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "stand-scap-relaxed",
+          "stand-scap-set"
+        ],
+        "props": []
+      },
+      "cueWords": {
+        "hold": "Schulterblätter nach hinten-unten",
+        "release": "Locker lassen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Kopf heben",
+        "Arme über Schulterhöhe"
+      ],
+      "cues": [
+        "Schulterblätter zur Gesäßtasche",
+        "Nacken lang"
+      ],
+      "tags": [
+        "schulterblatt",
+        "trapezius-unten",
+        "schulterschutz"
+      ],
+      "id": "prone-low-row",
+      "name": "Bauchlage „W“ & Arme an der Seite",
+      "description": "In Bauchlage die Arme in „W“-Position bzw. an der Seite (Daumen außen) leicht abheben – Schulterblätter nach hinten-unten.",
+      "category": "haltung",
+      "block": "archery",
+      "equipment": [
+        "mat"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Bauchlage, Kissen unter dem Becken, Stirn auf einem kleinen Handtuch.",
+        "W: Ellbogen gebeugt neben dem Körper (unter Schulterhöhe) – oder Arme lang an der Seite, Daumen zeigen nach außen.",
+        "Schulterblätter nach hinten-unten ziehen, Arme wenige Zentimeter abheben.",
+        "Kurz halten, langsam ablegen."
+      ],
+      "kneeNote": "Beine liegen lang – das Knie hat Pause.",
+      "levels": [
+        {
+          "label": "2 × 10",
+          "sets": 2,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 30,
+          "reps": 10
+        },
+        {
+          "label": "3 × 10",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 45,
+          "reps": 10
+        },
+        {
+          "label": "3 × 12, 3 s halten",
+          "sets": 3,
+          "tempo": "2-3-2",
+          "band": null,
+          "rest": 45,
+          "reps": 12
+        }
+      ],
+      "shoulderElevationDeg": 55,
+      "shoulderFocus": [
+        "scapula"
+      ],
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "prone-arms-down",
+          "prone-w"
+        ],
+        "props": [
+          "mat"
+        ]
+      },
+      "cueWords": {
+        "up": "Abheben",
+        "hold": "Halten",
+        "down": "Ablegen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Arm zu hoch",
+        "Schulter zum Ohr"
+      ],
+      "cues": [
+        "Unter Schulterhöhe",
+        "Schulter tief"
+      ],
+      "tags": [
+        "serratus",
+        "schulterblatt",
+        "schulterschutz"
+      ],
+      "id": "serratus-punch-low",
+      "name": "Serratus-Punch tief (bis ca. 60°)",
+      "description": "Arm gegen das Band nach vorn-unten schieben und die Schulter ein Stück nachschieben – unter Schulterhöhe.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Bauchhöhe befestigen, Rücken zur Tür.",
+        "band-handles": "Griff an das Bandende einhängen."
+      },
+      "instructions": [
+        "Band auf Bauchhöhe hinter die Tür (Scharnierseite) klemmen, Rücken zur Tür, Schrittstellung.",
+        "Bandende in einer Hand, Arm schräg nach vorn-unten (ca. 45–60°, unter Schulterhöhe).",
+        "Arm strecken und die Schulter ein Stück nach vorn schieben („boxen“), Schulter bleibt tief.",
+        "Langsam zurück. Links (Bogenarm) zuerst."
+      ],
+      "kneeNote": "Schrittstellung mit weichen Knien, Gewicht auf beiden Beinen.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12 je Seite",
+          "sets": 2,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 30,
+          "reps": 12
+        },
+        {
+          "label": "Rot · 2 × 12 je Seite",
+          "sets": 2,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45,
+          "reps": 12
+        },
+        {
+          "label": "Rot · 3 × 12 je Seite",
+          "sets": 3,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45,
+          "reps": 12
+        },
+        {
+          "label": "Grün · 3 × 12 je Seite",
+          "sets": 3,
+          "tempo": "2-1-2",
+          "band": "green",
+          "rest": 45,
+          "reps": 12
+        }
+      ],
+      "postOpAllowed": true,
+      "shoulderElevationDeg": 60,
+      "shoulderFocus": [
+        "scapula"
+      ],
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "figure": {
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false,
+        "poses": [
+          "stand-punch-low-bent",
+          "stand-punch-low-reach"
+        ],
+        "props": [
+          "door"
+        ]
+      },
+      "cueWords": {
+        "up": "Nach vorn schieben",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Hohlkreuz",
+        "Schultern zu den Ohren"
+      ],
+      "cues": [
+        "Hände unter Schulterhöhe",
+        "Plus am Ende"
+      ],
+      "tags": [
+        "serratus",
+        "schulterblatt",
+        "schulterschutz",
+        "kruecken"
+      ],
+      "id": "wall-push-up-plus",
+      "name": "Wand-Liegestütz mit Plus",
+      "description": "Liegestütz an der Wand, oben die Schulterblätter auseinanderschieben („Plus“) – Hände unter Schulterhöhe.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "wall"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Eine große Schrittlänge vor der Wand stehen, Hände etwa auf Höhe der unteren Brust an die Wand.",
+        "Körper gerade, Ellbogen beugen und die Brust Richtung Wand senken (Ellbogen ca. 45° vom Körper).",
+        "Zurückdrücken und am Ende die Schulterblätter auseinanderschieben – der Rücken wird oben leicht rund.",
+        "Langsam zurück."
+      ],
+      "kneeNote": "Beide Füße am Boden, Knie gestreckt – keine Last aufs Knie.",
+      "levels": [
+        {
+          "label": "2 × 10",
+          "sets": 2,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 30,
+          "reps": 10
+        },
+        {
+          "label": "3 × 10",
+          "sets": 3,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45,
+          "reps": 10
+        },
+        {
+          "label": "3 × 12, Plus 2 s halten",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": null,
+          "rest": 45,
+          "reps": 12
+        }
+      ],
+      "postOpAllowed": false,
+      "shoulderElevationDeg": 60,
+      "shoulderFocus": [
+        "scapula"
+      ],
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "wall-push-up-plus-a",
+          "wall-push-up-plus-b"
+        ],
+        "props": [
+          "wall"
+        ]
+      },
+      "cueWords": {
+        "up": "Wegdrücken und Plus",
+        "hold": "Halten",
+        "down": "Zur Wand"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Schultern hochziehen",
+        "Hohlkreuz"
+      ],
+      "cues": [
+        "Arme bleiben tief",
+        "Schulterblätter zuerst"
+      ],
+      "tags": [
+        "schulterblatt",
+        "zug",
+        "schulterschutz"
+      ],
+      "id": "low-row-band",
+      "name": "Low Row mit Band",
+      "description": "Gestreckte Arme gegen das Band nach hinten neben die Hüfte ziehen – Schulterblätter nach hinten-unten, Arme bleiben tief.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Hüfthöhe befestigen, Tür zu dir hin schließen.",
+        "band-handles": "Griffe an die Bandenden einhängen."
+      },
+      "instructions": [
+        "Band auf Hüfthöhe hinter die Tür (Scharnierseite) klemmen, Gesicht zur Tür.",
+        "Bandenden greifen, Arme gestreckt schräg nach vorn-unten.",
+        "Erst Schulterblätter nach hinten-unten, dann die gestreckten Arme bis neben die Hüfte ziehen, Daumen zeigen nach außen.",
+        "Kurz halten, langsam zurück."
+      ],
+      "kneeNote": "Weiche Knie, Gewicht auf beiden Beinen. Nach der OP im Sitzen.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12",
+          "sets": 2,
+          "tempo": "2-2-2",
+          "band": "yellow",
+          "rest": 30,
+          "reps": 12
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": "red",
+          "rest": 45,
+          "reps": 12
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": "green",
+          "rest": 45,
+          "reps": 12
+        },
+        {
+          "label": "Blau · 3 × 12",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": "blue",
+          "rest": 60,
+          "reps": 12
+        }
+      ],
+      "shoulderElevationDeg": 40,
+      "shoulderFocus": [
+        "scapula"
+      ],
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "figure": {
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false,
+        "poses": [
+          "stand-low-row-start",
+          "stand-low-row-end"
+        ],
+        "props": [
+          "door"
+        ]
+      },
+      "cueWords": {
+        "up": "Nach hinten ziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Arme zu hoch",
+        "Schultern hochziehen"
+      ],
+      "cues": [
+        "Leichtes Band",
+        "Unter Schulterhöhe",
+        "Schultern tief"
+      ],
+      "tags": [
+        "schulterblatt",
+        "haltung",
+        "schulterschutz"
+      ],
+      "id": "pull-apart-low",
+      "name": "Pull-Apart tief (Brust- bis Bauchhöhe)",
+      "description": "Leichtes Band auf Brust- bis Bauchhöhe auseinanderziehen – Schulterblätter zusammen, Arme unter Schulterhöhe.",
+      "category": "haltung",
+      "block": "archery",
+      "equipment": [
+        "theraband"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Aufrecht stehen oder sitzen, leichtes Band schulterbreit greifen.",
+        "Arme gestreckt auf Brust- bis Bauchhöhe (deutlich unter Schulterhöhe).",
+        "Band auseinanderziehen, Schulterblätter zusammen und nach unten.",
+        "Kontrolliert zurück."
+      ],
+      "kneeNote": "Im Stehen oder Sitzen – das Knie hat Pause.",
+      "setupSec": 10,
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12",
+          "sets": 2,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 30,
+          "reps": 12
+        },
+        {
+          "label": "Gelb · 3 × 15",
+          "sets": 3,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 45,
+          "reps": 15
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45,
+          "reps": 12
+        }
+      ],
+      "shoulderElevationDeg": 55,
+      "shoulderFocus": [
+        "scapula"
+      ],
+      "figure": {
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": false,
+        "poses": [
+          "front-arms-forward-low",
+          "front-arms-apart-low"
+        ],
+        "props": []
+      },
+      "cueWords": {
+        "up": "Auseinanderziehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Ellbogen zu hoch",
+        "Schultern hochziehen"
+      ],
+      "cues": [
+        "Ellbogen unter Schulterhöhe",
+        "Am Ende nach außen drehen"
+      ],
+      "tags": [
+        "rotatorenmanschette",
+        "hintere-schulter",
+        "schulterschutz"
+      ],
+      "id": "low-face-pull",
+      "name": "Low Face Pull mit Außenrotation (Brusthöhe)",
+      "description": "Band auf Brusthöhe zurückziehen und am Ende die Unterarme nach oben drehen – Ellbogen bleiben unter Schulterhöhe.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "both",
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Brusthöhe befestigen, Tür zu dir hin schließen.",
+        "band-handles": "Griffe an die Bandenden einhängen."
+      },
+      "instructions": [
+        "Band auf Brusthöhe hinter die Tür (Scharnierseite) klemmen, Gesicht zur Tür.",
+        "Bandenden greifen, Arme schräg nach vorn-unten gestreckt.",
+        "Ellbogen nach hinten-außen ziehen (unter Schulterhöhe), am Ende die Unterarme nach oben drehen (Außenrotation).",
+        "Kurz halten, langsam zurück."
+      ],
+      "kneeNote": "Weiche Knie, Gewicht auf beiden Beinen. Nach der OP im Sitzen.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12",
+          "sets": 2,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 30,
+          "reps": 12
+        },
+        {
+          "label": "Rot · 2 × 12",
+          "sets": 2,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45,
+          "reps": 12
+        },
+        {
+          "label": "Rot · 3 × 12",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": "red",
+          "rest": 45,
+          "reps": 12
+        },
+        {
+          "label": "Grün · 3 × 12",
+          "sets": 3,
+          "tempo": "2-2-2",
+          "band": "green",
+          "rest": 60,
+          "reps": 12
+        }
+      ],
+      "shoulderElevationDeg": 60,
+      "shoulderFocus": [
+        "rc",
+        "scapula"
+      ],
+      "postOpNote": "Nach der OP im Sitzen ausführen, linkes Bein entlastet.",
+      "figure": {
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false,
+        "poses": [
+          "low-face-pull-start",
+          "low-face-pull-end"
+        ],
+        "props": [
+          "door"
+        ]
+      },
+      "cueWords": {
+        "up": "Zurückziehen und aufdrehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Schulter hochziehen",
+        "Zu fest drücken"
+      ],
+      "cues": [
+        "Ellbogen bleibt am Körper",
+        "Nur mittlere Kraft"
+      ],
+      "tags": [
+        "rotatorenmanschette",
+        "isometrisch",
+        "schulterschutz"
+      ],
+      "id": "er-iso-door",
+      "name": "Außenrotation isometrisch am Türrahmen",
+      "description": "Handrücken gegen den Türrahmen drücken, ohne Bewegung – kräftigt die Rotatorenmanschette schmerzarm.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "door"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Seitlich in den Türrahmen stellen, Ellbogen 90° gebeugt am Körper (kleine Handtuchrolle darunter).",
+        "Handrücken an den Türrahmen legen.",
+        "Mit ca. 30–50 % Kraft nach außen gegen den Rahmen drücken – keine Bewegung.",
+        "Halten, ruhig atmen, lösen. Seite wechseln."
+      ],
+      "kneeNote": "Im Stehen oder Sitzen – das Knie hat Pause.",
+      "setupSec": 10,
+      "levels": [
+        {
+          "label": "3 × 10 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 3,
+          "hold": 10,
+          "restBetween": 5
+        },
+        {
+          "label": "5 × 10 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 5,
+          "hold": 10,
+          "restBetween": 5
+        }
+      ],
+      "shoulderElevationDeg": 10,
+      "shoulderFocus": [
+        "rc"
+      ],
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "front-rc-iso"
+        ],
+        "props": [
+          "door"
+        ]
+      },
+      "cueWords": {
+        "hold": "Nach außen drücken",
+        "release": "Lösen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Schulter nach vorn kippen",
+        "Zu fest drücken"
+      ],
+      "cues": [
+        "Ellbogen bleibt am Körper",
+        "Nur mittlere Kraft"
+      ],
+      "tags": [
+        "rotatorenmanschette",
+        "isometrisch",
+        "schulterschutz"
+      ],
+      "id": "ir-iso-door",
+      "name": "Innenrotation isometrisch am Türrahmen",
+      "description": "Handfläche gegen den Türrahmen nach innen drücken, ohne Bewegung – Rotatorenmanschette vorne.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "door"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "In den Türrahmen stellen, Ellbogen 90° gebeugt am Körper (kleine Handtuchrolle darunter).",
+        "Handfläche an den Türrahmen legen.",
+        "Mit ca. 30–50 % Kraft nach innen gegen den Rahmen drücken – keine Bewegung.",
+        "Halten, lösen, Seite wechseln."
+      ],
+      "kneeNote": "Im Stehen oder Sitzen – das Knie hat Pause.",
+      "setupSec": 10,
+      "levels": [
+        {
+          "label": "3 × 10 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 3,
+          "hold": 10,
+          "restBetween": 5
+        },
+        {
+          "label": "5 × 10 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 5,
+          "hold": 10,
+          "restBetween": 5
+        }
+      ],
+      "shoulderElevationDeg": 10,
+      "shoulderFocus": [
+        "rc"
+      ],
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "front-rc-iso"
+        ],
+        "props": [
+          "door"
+        ]
+      },
+      "cueWords": {
+        "hold": "Nach innen drücken",
+        "release": "Lösen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Oberkörper mitdrehen",
+        "Schulter nach vorn kippen"
+      ],
+      "cues": [
+        "Leichtes Band",
+        "Ellbogen am Handtuch"
+      ],
+      "tags": [
+        "rotatorenmanschette",
+        "schulterschutz"
+      ],
+      "id": "ir-band",
+      "name": "Innenrotation mit Band (leicht)",
+      "description": "Unterarm gegen ein leichtes Band zum Bauch drehen, Ellbogen am Körper – 0° Armhebung.",
+      "category": "kraft",
+      "block": "archery",
+      "equipment": [
+        "theraband",
+        "door"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "setupByEquipment": {
+        "door-anchor": "Band mit dem Türanker auf Ellbogenhöhe befestigen, seitlich zur Tür stellen.",
+        "band-handles": "Griff an das Bandende einhängen."
+      },
+      "instructions": [
+        "Leichtes Band auf Ellbogenhöhe hinter die Tür (Scharnierseite) klemmen, seitlich zur Tür stellen.",
+        "Kleine Handtuchrolle zwischen Ellbogen und Rumpf, Ellbogen 90° gebeugt.",
+        "Unterarm langsam zum Bauch drehen, Ellbogen bleibt am Handtuch.",
+        "Langsam zurück. Beide Seiten."
+      ],
+      "kneeNote": "Im Stehen oder Sitzen – das Knie hat Pause.",
+      "levels": [
+        {
+          "label": "Gelb · 2 × 12 je Seite",
+          "sets": 2,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 30,
+          "reps": 12
+        },
+        {
+          "label": "Gelb · 3 × 15 je Seite",
+          "sets": 3,
+          "tempo": "2-1-2",
+          "band": "yellow",
+          "rest": 30,
+          "reps": 15
+        },
+        {
+          "label": "Rot · 3 × 12 je Seite",
+          "sets": 3,
+          "tempo": "2-1-2",
+          "band": "red",
+          "rest": 45,
+          "reps": 12
+        }
+      ],
+      "shoulderElevationDeg": 10,
+      "shoulderFocus": [
+        "rc"
+      ],
+      "figure": {
+        "band": {
+          "from": "handR",
+          "to": "door"
+        },
+        "mirror": false,
+        "poses": [
+          "er0-end",
+          "er0-start"
+        ],
+        "props": [
+          "door"
+        ]
+      },
+      "cueWords": {
+        "up": "Nach innen drehen",
+        "hold": "Halten",
+        "down": "Zurück"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Arme hochreißen",
+        "Hohlkreuz"
+      ],
+      "cues": [
+        "Schultern tief",
+        "Nur sanft"
+      ],
+      "tags": [
+        "brust",
+        "dehnung",
+        "schulterschutz",
+        "post-op"
+      ],
+      "id": "pec-stretch-low",
+      "name": "Brust öffnen tief (Hände hinter dem Rücken)",
+      "description": "Hände hinter dem Rücken, Schulterblätter sanft zusammen – öffnet die Brust ohne Armheben. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "none"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Aufrecht stehen oder sitzen.",
+        "Hände hinter dem Rücken locker verschränken (oder ein Handtuch greifen).",
+        "Schulterblätter sanft zusammen und nach unten, Brustbein leicht heben – Arme nur wenig nach hinten.",
+        "Halten, ruhig atmen."
+      ],
+      "kneeNote": "Im Stehen oder Sitzen – das Knie hat Pause.",
+      "setupSec": 5,
+      "levels": [
+        {
+          "label": "2 × 20 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 2,
+          "hold": 20
+        },
+        {
+          "label": "2 × 30 s",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 2,
+          "hold": 30
+        }
+      ],
+      "shoulderElevationDeg": 0,
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "stand-hands-behind-a",
+          "stand-hands-behind-b"
+        ],
+        "props": []
+      },
+      "cueWords": {
+        "hold": "Brust öffnen",
+        "release": "Lösen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Nach vorn kippen"
+      ],
+      "cues": [
+        "Arme bleiben unten",
+        "In die Flanke atmen"
+      ],
+      "tags": [
+        "flanke",
+        "dehnung",
+        "schulterschutz",
+        "post-op"
+      ],
+      "id": "side-bend-low",
+      "name": "Seitneigung tief (Hand gleitet am Bein)",
+      "description": "Sanfte Seitneigung, die Hand gleitet am Oberschenkel entlang – Flanke dehnen ohne Arm über dem Kopf. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "none"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Aufrecht sitzen oder stehen, Arme hängen locker.",
+        "Oberkörper sanft zur Seite neigen, die Hand gleitet am Bein nach unten.",
+        "Nicht nach vorn kippen – in die Flanke atmen.",
+        "Halten, Seite wechseln."
+      ],
+      "kneeNote": "Im Sitzen oder Stehen – das Knie hat Pause.",
+      "setupSec": 5,
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        }
+      ],
+      "shoulderElevationDeg": 30,
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "front-sit-tall",
+          "front-sit-side-bend-low"
+        ],
+        "props": []
+      },
+      "cueWords": {
+        "hold": "Zur Seite neigen",
+        "release": "Lösen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [
+        "Am Kopf ziehen"
+      ],
+      "cues": [
+        "Schulter sinkt",
+        "Ohne Zug am Kopf"
+      ],
+      "tags": [
+        "nacken",
+        "dehnung",
+        "schulterschutz",
+        "post-op"
+      ],
+      "id": "neck-stretch-low",
+      "name": "Nacken sanft dehnen (Arme unten)",
+      "description": "Ohr Richtung Schulter, die Gegenseite hängt locker nach unten – ohne Hand am Kopf. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "none"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Aufrecht sitzen oder stehen, beide Arme hängen locker.",
+        "Kopf sanft zur Seite neigen (Ohr Richtung Schulter), Blick nach vorn.",
+        "Gegenüberliegende Schulter sanft Richtung Boden sinken lassen – nicht am Kopf ziehen.",
+        "Halten, langsam zurück, Seite wechseln."
+      ],
+      "kneeNote": "Im Sitzen oder Stehen – das Knie hat Pause.",
+      "setupSec": 5,
+      "levels": [
+        {
+          "label": "20 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 20
+        },
+        {
+          "label": "30 s je Seite",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "reps": 1,
+          "hold": 30
+        }
+      ],
+      "shoulderElevationDeg": 10,
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "front-sit-tall",
+          "front-sit-neck-low"
+        ],
+        "props": []
+      },
+      "cueWords": {
+        "hold": "Sanft dehnen",
+        "release": "Lösen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [],
+      "cues": [
+        "Arme unter Schulterhöhe"
+      ],
+      "tags": [
+        "dehnung",
+        "post-op",
+        "schulterschutz"
+      ],
+      "id": "stretch-flow-seated-low",
+      "name": "Dehnen im Sitzen kompakt – schulterfreundlich (2 Min)",
+      "description": "Kompakte Runde ohne Armheben über Schulterhöhe – jeder Abschnitt wird angesagt. Passend zur Entlastungsphase und bei Schulter-Impingement. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "seat"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Brust tief: Hände hinter dem Rücken, Schulterblätter sanft zusammen (20 s).",
+        "Seitneigung tief: Hand gleitet am Bein – 15 s je Seite.",
+        "Unterarm-Beuger: Arm vorn-unten, Finger sanft zurück (15 s).",
+        "Nacken: Ohr Richtung Schulter, ohne Zug am Kopf (25 s)."
+      ],
+      "kneeNote": "Im Sitzen mit lang ausgestrecktem linken Bein – keine Last, keine tiefe Beugung.",
+      "setupSec": 5,
+      "levels": [
+        {
+          "label": "ca. 1:30 min",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 90,
+          "phases": [
+            {
+              "label": "Brust tief",
+              "seconds": 20
+            },
+            {
+              "label": "Seitneigung rechts",
+              "seconds": 15
+            },
+            {
+              "label": "Seitneigung links",
+              "seconds": 15
+            },
+            {
+              "label": "Unterarme",
+              "seconds": 15
+            },
+            {
+              "label": "Nacken",
+              "seconds": 25
+            }
+          ]
+        }
+      ],
+      "shoulderElevationDeg": 60,
+      "postOpNote": "Nur nach Freigabe durch Arzt/Physio – deren Protokoll hat Vorrang.",
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "front-sit-tall",
+          "front-sit-side-bend-low"
+        ],
+        "props": []
+      },
+      "cueWords": {
+        "work": "Sanft dehnen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [],
+      "cues": [
+        "Arme unter Schulterhöhe"
+      ],
+      "tags": [
+        "dehnung",
+        "schulterschutz"
+      ],
+      "id": "stretch-flow-short-low",
+      "name": "Dehnen kompakt – schulterfreundlich (2 Min)",
+      "description": "Hüftbeuger, Waden, Brust tief und Unterarme – ohne Arme über Schulterhöhe. Jeder Abschnitt wird angesagt. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "category": "dehnung",
+      "block": "cooldown",
+      "equipment": [
+        "wall"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Hüftbeuger im Stand (kurze Schrittstellung, Becken aufrichten): 20 s rechts, 20 s links.",
+        "Wade an der Wand (Hände auf Brusthöhe): 15 s je Seite.",
+        "Brust tief: Hände hinter dem Rücken (20 s).",
+        "Unterarm-Beuger, Arm vorn-unten (15 s)."
+      ],
+      "kneeNote": "Keine Quadrizeps-Dehnung mit Ferse zum Po – der Hüftbeuger wird mit fast gestrecktem hinteren Knie gedehnt.",
+      "setupSec": 5,
+      "levels": [
+        {
+          "label": "ca. 2 min",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 105,
+          "phases": [
+            {
+              "label": "Hüftbeuger rechts",
+              "seconds": 20
+            },
+            {
+              "label": "Hüftbeuger links",
+              "seconds": 20
+            },
+            {
+              "label": "Wade rechts",
+              "seconds": 15
+            },
+            {
+              "label": "Wade links",
+              "seconds": 15
+            },
+            {
+              "label": "Brust tief",
+              "seconds": 20
+            },
+            {
+              "label": "Unterarme",
+              "seconds": 15
+            }
+          ]
+        }
+      ],
+      "postOpAllowed": false,
+      "shoulderElevationDeg": 60,
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "stand-hip-flexor-stagger",
+          "stand-hip-flexor-stretch"
+        ],
+        "props": []
+      },
+      "cueWords": {
+        "work": "Sanft dehnen"
+      }
+    },
+    {
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "mistakes": [],
+      "cues": [
+        "Arme bleiben unten"
+      ],
+      "tags": [
+        "aufwaermen",
+        "schulterschutz"
+      ],
+      "id": "mobility-flow-short-low",
+      "name": "Mobilisation kompakt – schulterfreundlich (2 Min)",
+      "description": "Beinpendel, Becken kreisen, Schulterblätter setzen und Rumpfdrehung – ohne Armheben über Schulterhöhe.",
+      "category": "mobilitaet",
+      "block": "warmup",
+      "equipment": [
+        "wall"
+      ],
+      "type": "timed",
+      "side": "both",
+      "instructions": [
+        "Beinpendel vor & zurück an der Wand: 15 s rechts, 15 s links, kleiner Bogen.",
+        "Becken kreisen, beide Füße am Boden (30 s).",
+        "Schulterblätter setzen: nach hinten-unten ziehen und lösen (30 s).",
+        "Rumpfdrehung im Stand, Arme vor der Brust gekreuzt (30 s)."
+      ],
+      "kneeNote": "Keine tiefe Kniebeugung, kein Knien – Knie weich, keine Drehung im Knie.",
+      "setupSec": 5,
+      "levels": [
+        {
+          "label": "2 min",
+          "sets": 1,
+          "tempo": null,
+          "band": null,
+          "rest": 0,
+          "seconds": 120,
+          "phases": [
+            {
+              "label": "Beinpendel rechts",
+              "seconds": 15
+            },
+            {
+              "label": "Beinpendel links",
+              "seconds": 15
+            },
+            {
+              "label": "Becken kreisen",
+              "seconds": 30
+            },
+            {
+              "label": "Schulterblätter setzen",
+              "seconds": 30
+            },
+            {
+              "label": "Rumpfdrehung",
+              "seconds": 30
+            }
+          ]
+        }
+      ],
+      "postOpAllowed": false,
+      "shoulderElevationDeg": 65,
+      "figure": {
+        "band": null,
+        "mirror": false,
+        "poses": [
+          "leg-swing-front-a",
+          "leg-swing-front-b"
+        ],
+        "props": [
+          "wall"
+        ]
+      },
+      "cueWords": {
+        "work": "Locker bewegen"
       }
     }
   ]

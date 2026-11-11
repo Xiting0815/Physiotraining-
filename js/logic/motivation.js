@@ -9,7 +9,7 @@ import { rowingTotals } from './cardio.js';
 // 3 strength + 3 rowing (+ check-ins) per week ≈ 420–450 XP → Robin Hood ≈ 6–7 months.
 // v3.1 (SPEC §14): the health-log XP (+5/day) was removed together with the diary.
 export const XP = { perSet: 2, cleanSetBonus: 1, sessionBonus: 20, nextDayCheckIn: 10, badge: 15,
-  cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20 };
+  cardioBase: 20, cardioPerMin: 2, cardioMaxMin: 20, relief: 8 };
 
 export const LEVELS = [
   { title: 'Novize', min: 0 },
@@ -31,6 +31,8 @@ export const LEVELS = [
  */
 export function xpFor(session, settings) {
   if (isCardioSession(session)) return cardioXp(session);
+  // v5.3: knee relief routine – small fixed XP (no set XP, it is not training volume)
+  if (session?.kind === 'relief') return session?.status === 'done' ? XP.relief : 0;
   const greenMax = settings?.painThresholds?.greenMax ?? 2;
   let xp = session?.status === 'done' ? XP.sessionBonus : 0;
   for (const e of session?.exercises || []) {

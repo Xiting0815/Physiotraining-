@@ -196,6 +196,8 @@
  * @property {number} voiceRate           v4 speech rate (default 1.05)
  * @property {number} voiceVolume         v4 speech volume 0–1 (default 1)
  * @property {boolean} beepsWithVoice     v4 soft tick under the voice on phase changes (default true)
+ * @property {boolean} [shoulderImpingement] v5.3 shoulder protection on: no exercises above shoulderMaxElevationDeg (archery draw excepted)
+ * @property {number} [shoulderMaxElevationDeg] v5.3 max. arm elevation in degrees (default 65)
  * @property {{enabled: boolean, clientId: string, deviceId: string, deviceName: string, lastSyncAt: string|null, lastError: string|null}} [sync]
  *   v5.2 Google-Drive sync connection (device-local, never merged/uploaded; SPEC §17)
  * @property {Record<string, string>} [_updatedAt]   v5.2 settings key → ISO time of the last change (sync LWW)
@@ -325,6 +327,7 @@
  * @property {boolean} bandsConfirmed   band order confirmed in the welcome card
  * @property {CustomWorkout[]} customWorkouts v2
  * @property {"pending"|"seen"|null} [equipmentNotice] v5: one-time Heute banner „Ausrüstung steuert den Plan“
+ * @property {"pending"|"seen"|null} [seatNotice] v5.3: one-time Heute notice „fester Stuhl oder PC-Stuhl mit Rollen?“
  * @property {{id: string, at: string}[]} [deletedSessionIds]       v5.2 tombstones (90 days) of deleted sessions
  * @property {{id: string, at: string}[]} [deletedCustomWorkoutIds] v5.2 tombstones of deleted custom workouts
  * @property {Record<string, string>} [levelsUpdatedAt] v5.2 exerciseId → ISO time of the last level change

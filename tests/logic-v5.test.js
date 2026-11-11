@@ -21,16 +21,17 @@ const content = { exercises: load('exercises').exercises, workouts: load('workou
 const poses = load('poses').poses;
 const equipmentFile = load('equipment');
 const ex = (id) => content.exercises.find((e) => e.id === id);
-const ALL = ['rowing-machine', 'sling-trainer', 'door-anchor', 'band-handles'];
+// v5.3: the former base „Stuhl“ is the optional `chair-fixed` – „base only“ = basic home setup with a fixed chair
+const ALL = ['rowing-machine', 'sling-trainer', 'door-anchor', 'band-handles', 'chair-fixed', 'office-chair', 'massage-stick', 'bed-edge'];
 const settingsWith = (owned) => ({ ...store.defaults().settings, ownedEquipment: owned });
-const BASE = settingsWith([]);
+const BASE = settingsWith(['chair-fixed']);
 const FULL = settingsWith(ALL);
 const stateIn = (phaseId, extra = {}) => ({ ...store.defaults().state, phaseId, ...extra });
 const ids = (plan) => plan.exercises.map((e) => e.exerciseId);
 const SLING = content.exercises.filter((e) => e.equipment.includes('sling-trainer'));
 
 test('equipment model: base always available, optional only when owned, no settings = no filter', () => {
-  assert.deepEqual(BASE_EQUIPMENT, ['theraband', 'loop', 'mat', 'chair', 'step', 'wall', 'door', 'none']);
+  assert.deepEqual(BASE_EQUIPMENT, ['theraband', 'loop', 'mat', 'step', 'wall', 'door', 'none']);
   for (const id of ['rowing-machine', 'door-anchor', 'band-handles', 'sling-trainer', 'ankle-weights', 'balance-pad', 'dumbbells', 'pedal-trainer', 'ice-pack', 'measuring-tape', 'release-trainer']) {
     assert.ok(OPTIONAL_EQUIPMENT.some((e) => e.id === id && e.label && e.icon), id);
   }
@@ -41,12 +42,12 @@ test('equipment model: base always available, optional only when owned, no setti
   assert.ok(!base.has('sling-trainer') && !base.has('rowing-machine'));
   assert.equal(hasEquipment(ex('sling-row'), BASE), false);
   assert.deepEqual(missingEquipment(ex('sling-row'), BASE), ['sling-trainer']);
-  assert.equal(hasEquipment(ex('sling-row'), settingsWith(['sling-trainer'])), true);
+  assert.equal(hasEquipment(ex('sling-row'), settingsWith(['chair-fixed', 'sling-trainer'])), true);
   assert.equal(hasEquipment(ex('seated-row'), BASE), true);
   assert.equal(hasEquipment(ex('row-steady'), BASE), false);
   assert.equal(hasEquipment(ex('row-steady'), null), true);
   // every exercise uses known equipment ids
-  const known = new Set([...BASE_EQUIPMENT, ...OPTIONAL_EQUIPMENT.map((e) => e.id)]);
+  const known = new Set([...BASE_EQUIPMENT, ...OPTIONAL_EQUIPMENT.map((e) => e.id), 'seat']);
   for (const e of content.exercises) for (const id of e.equipment) assert.ok(known.has(id), `${e.id}: unknown equipment ${id}`);
 });
 
@@ -63,12 +64,12 @@ test('normalizeOwned / migrateEquipment: old ids mapped, rowing kept for rowers,
   assert.equal(migrateEquipment(m), m, 'second run is a no-op');
   // empty list + rowing sessions → rowing machine pre-ticked (never anything else)
   const rowed = { settings: { ownedEquipment: [] }, state: {}, sessions: [{ kind: 'cardio', status: 'done', exercises: [] }] };
-  assert.deepEqual(migrateEquipment(rowed).settings.ownedEquipment, ['rowing-machine']);
+  assert.deepEqual(migrateEquipment(rowed).settings.ownedEquipment, ['office-chair', 'rowing-machine'], 'v5.3: trained before → office chair');
   const warm = { settings: {}, state: {}, sessions: [{ kind: 'strength', exercises: [{ exerciseId: 'row-warmup-10', section: 'cardio', sets: [{ done: true, seconds: 600 }] }] }] };
   assert.ok(sessionUsedRowing(warm.sessions[0]));
-  assert.deepEqual(migrateEquipment(warm).settings.ownedEquipment, ['rowing-machine']);
+  assert.deepEqual(migrateEquipment(warm).settings.ownedEquipment, ['office-chair', 'rowing-machine']);
   const noRow = { settings: { ownedEquipment: [] }, state: {}, sessions: [{ kind: 'strength', exercises: [{ exerciseId: 'quad-set', section: 'knee', sets: [{ done: true }] }] }] };
-  assert.deepEqual(migrateEquipment(noRow).settings.ownedEquipment, []);
+  assert.deepEqual(migrateEquipment(noRow).settings.ownedEquipment, ['office-chair']);
   // fresh installs get no banner; an already migrated user who unticked rowing keeps it unticked
   assert.equal(migrateEquipment({ settings: {}, state: {}, sessions: [] }).state.equipmentNotice, undefined);
   const unticked = { settings: { ownedEquipment: [], equipmentModel: EQUIPMENT_MODEL }, state: {}, sessions: rowed.sessions };
@@ -100,7 +101,7 @@ test('upgrades: sling variants replace the band versions when the sling trainer 
   const w = getWorkout('p1-a', content, st);
   const base = buildSessionPlan(w, st, content, { settings: BASE, rowWarmup: false });
   assert.ok(ids(base).includes('seated-row') && !ids(base).some((id) => id.startsWith('sling-')));
-  const up = buildSessionPlan(w, st, content, { settings: settingsWith(['sling-trainer']), rowWarmup: false });
+  const up = buildSessionPlan(w, st, content, { settings: settingsWith(['chair-fixed', 'sling-trainer']), rowWarmup: false });
   const row = up.exercises.find((e) => e.exerciseId === 'sling-row');
   assert.ok(row, 'sling-row planned');
   assert.equal(row.upgradedFrom, 'seated-row');
@@ -112,7 +113,7 @@ test('upgrades: sling variants replace the band versions when the sling trainer 
   assert.equal(up.exercises.length, base.exercises.length, 'same number of exercises');
   // known variant keeps its own level, no "Neu" chip
   const st2 = { ...st, exerciseLevels: { ...st.exerciseLevels, 'sling-row': 2 } };
-  const up2 = buildSessionPlan(w, st2, content, { settings: settingsWith(['sling-trainer']), rowWarmup: false });
+  const up2 = buildSessionPlan(w, st2, content, { settings: settingsWith(['chair-fixed', 'sling-trainer']), rowWarmup: false });
   const row2 = up2.exercises.find((e) => e.exerciseId === 'sling-row');
   assert.equal(row2.level, 2);
   assert.equal(row2.newVariant, undefined);
@@ -143,15 +144,19 @@ test('fallback and drop: variant without its equipment falls back to the base, o
     { id: 'knee', items: [{ exerciseId: 'quad-set' }] },
     { id: 'archery', items: [{ exerciseId: 'sling-row' }, { exerciseId: 'sling-plank-forearms' }] }], cooldown: [] }] });
   const plan = buildSessionPlan(getWorkout('cw-s', content, st), st, content, { settings: BASE });
-  assert.deepEqual(ids(plan), ['quad-set', 'seated-row']);
+  // v5.3: the plank now has an explicit fallback chain (Pallof Press)
+  assert.deepEqual(ids(plan), ['quad-set', 'seated-row', 'pallof-press']);
   assert.equal(plan.exercises[1].fallbackFrom, 'sling-row');
-  const r = resolveExercise('sling-plank-forearms', { exercises: content.exercises, avail: availableEquipment(BASE) });
-  assert.equal(r, null);
+  assert.equal(plan.exercises[2].fallbackFrom, 'sling-plank-forearms');
   const v = validateCustomWorkout(st.customWorkouts[0], content, st, BASE);
   assert.ok(v.warnings.some((x) => /Rudern im Sitzen/.test(x)), 'warns about the fallback');
-  assert.ok(v.warnings.some((x) => /Unterarmstütz.*übersprungen/.test(x)), 'warns about the dropped exercise');
-  // a dropped item is not refilled by the duration fitter
-  const fitted = buildSessionPlan(getWorkout('cw-s', content, st), st, content, { settings: BASE });
+  assert.ok(v.warnings.some((x) => /Unterarmstütz.*Pallof/.test(x)), 'warns about the explicit fallback');
+  // without any fallback the exercise is dropped (and not refilled by the duration fitter)
+  const noFb = content.exercises.map((e) => (e.id === 'sling-plank-forearms' ? { ...e, fallback: undefined } : e));
+  assert.equal(resolveExercise('sling-plank-forearms', { exercises: noFb, avail: availableEquipment(BASE) }), null);
+  const v2 = validateCustomWorkout(st.customWorkouts[0], { ...content, exercises: noFb }, st, BASE);
+  assert.ok(v2.warnings.some((x) => /Unterarmstütz.*übersprungen/.test(x)), 'warns about the dropped exercise');
+  const fitted = buildSessionPlan(getWorkout('cw-s', content, st), st, { ...content, exercises: noFb }, { settings: BASE });
   assert.equal(fitted.exercises.length, 2);
 });
 
@@ -159,28 +164,28 @@ test('rowing needs the rowing machine: no warm-up toggle, no finisher, no rowing
   const st = stateIn('p1-basis');
   const w = getWorkout('p1-a', content, st);
   assert.equal(canRowWarmup(w, st, content, BASE), false);
-  assert.equal(canRowWarmup(w, st, content, settingsWith(['rowing-machine'])), true);
+  assert.equal(canRowWarmup(w, st, content, settingsWith(['chair-fixed', 'rowing-machine'])), true);
   assert.equal(canRowWarmup(w, st, content), true, 'no settings → legacy behaviour');
   assert.equal(finisherPlan(w, st, content, { settings: BASE }), null);
-  assert.ok(finisherPlan(w, st, content, { settings: settingsWith(['rowing-machine']) }));
+  assert.ok(finisherPlan(w, st, content, { settings: settingsWith(['chair-fixed', 'rowing-machine']) }));
   const plan = buildSessionPlan(w, st, content, { settings: { ...BASE, rowWarmupDefault: true, rowFinisherDefault: true } });
   assert.equal(plan.rowWarmup, false);
   assert.ok(!plan.exercises.some((e) => e.section === 'cardio'));
   const phase = content.phases.find((p) => p.id === 'p1-basis');
   assert.deepEqual(cardioWorkoutsFor(phase, content.workouts, BASE), []);
-  assert.ok(cardioWorkoutsFor(phase, content.workouts, settingsWith(['rowing-machine'])).length >= 2);
+  assert.ok(cardioWorkoutsFor(phase, content.workouts, settingsWith(['chair-fixed', 'rowing-machine'])).length >= 2);
   assert.equal(buildSessionPlan(getWorkout('p1-row', content, st), st, content, { settings: BASE }).exercises.length, 0);
   assert.ok(![...phasePlanExerciseIds(st, content, BASE)].some((id) => id.startsWith('row-')));
-  assert.ok([...phasePlanExerciseIds(st, content, settingsWith(['rowing-machine']))].includes('row-warmup-10'));
+  assert.ok([...phasePlanExerciseIds(st, content, settingsWith(['chair-fixed', 'rowing-machine']))].includes('row-warmup-10'));
 });
 
 test('toggle diff: sling trainer on lists the new sling exercises, rowing off removes rowing', () => {
   const st = stateIn('p1-basis');
-  const on = equipmentPlanChanges(st, content, BASE, settingsWith(['sling-trainer']));
+  const on = equipmentPlanChanges(st, content, BASE, settingsWith(['chair-fixed', 'sling-trainer']));
   assert.ok(on.added.includes(ex('sling-row').name), on.added.join());
   assert.ok(on.added.includes(ex('sling-dip-assisted').name));
   assert.ok(on.removed.includes(ex('seated-row').name));
-  const off = equipmentPlanChanges(st, content, settingsWith(['rowing-machine']), BASE);
+  const off = equipmentPlanChanges(st, content, settingsWith(['chair-fixed', 'rowing-machine']), BASE);
   assert.ok(off.removed.includes(ex('row-warmup-10').name));
   assert.ok(off.added.includes(ex('leg-swing-front').name), 'the full mobility warm-up comes back instead of rowing');
   assert.match(changeText(on), /^Neu in deinem Plan: .+/);
@@ -232,7 +237,7 @@ test('setup text variants: door anchor replaces the knot step, handles add a ste
     assert.ok(e.equipment.includes('door'), e.id);
     assert.ok(usesEquipment(e, 'door-anchor'));
   }
-  const needs = equipmentNeeds(ex('sling-row'), settingsWith(['sling-trainer']));
+  const needs = equipmentNeeds(ex('sling-row'), settingsWith(['chair-fixed', 'sling-trainer']));
   assert.deepEqual(needs.map((n) => [n.id, n.owned]), [['sling-trainer', true], ['door', true]]);
   const needsBand = equipmentNeeds(sr, BASE);
   assert.ok(needsBand.some((n) => n.id === 'door-anchor' && n.optional && !n.owned));

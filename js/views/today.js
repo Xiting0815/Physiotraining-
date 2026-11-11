@@ -152,7 +152,7 @@ export function render(root, { store, content }) {
     const recentBadgeAt = badgeEntries[0]?.[1];
     const goalMet = wk.goal > 0 && wk.done >= wk.goal;
     const todays = done.filter((s) => dayOf(s) === today);
-    const trainedToday = todays.some((s) => !isCardioSession(s));
+    const trainedToday = todays.some((s) => !isCardioSession(s) && s?.kind !== 'relief');
     const rowedToday = todays.some(isCardioSession);
     const letter = w ? workoutLetter(w, content.phases) : '–';
     const opOver = op.stage === 'today' || op.stage === 'after';

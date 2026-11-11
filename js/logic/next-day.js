@@ -21,7 +21,8 @@ export function nextDayDueAt(endedAt) {
  * @returns {{session: Session, sessions: Session[], due: boolean, dueAt: string}|null}
  */
 export function pendingNextDay(sessions, now = new Date(), { maxDays = 4 } = {}) {
-  const done = doneSessions(sessions).filter((s) => s.endedAt && Number.isFinite(Date.parse(s.endedAt)))
+  // v5.3: the short knee relief routine never asks for a next-day check
+  const done = doneSessions(sessions).filter((s) => s.kind !== 'relief' && s.endedAt && Number.isFinite(Date.parse(s.endedAt)))
     .sort((a, b) => Date.parse(a.endedAt) - Date.parse(b.endedAt));
   const last = done.at(-1);
   if (!last) return null;

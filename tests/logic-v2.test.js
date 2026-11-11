@@ -77,8 +77,9 @@ test('workouts: Kurztraining (~15 min) per phase with knee + archery incl. SPT',
     assert.equal(w.durationMin, m0, `${w.id}.durationMin`);
     const plan = buildSessionPlan(w, fresh(w, maxLevels), content, { settings });
     assert.ok(estimateWorkoutMinutes(plan, content, null, settings) <= 16, `${w.id} max`);
+    // v5.3: items marked shoulderOnly (rotator cuff / scapula while the shoulder protection is on) are extra
     const knee = w.blocks.find((b) => b.id === 'knee').items;
-    const arch = w.blocks.find((b) => b.id === 'archery').items.map((i) => i.exerciseId);
+    const arch = w.blocks.find((b) => b.id === 'archery').items.filter((i) => !i.shoulderOnly).map((i) => i.exerciseId);
     assert.ok(knee.length >= 2 && knee.length <= 3 && arch.length >= 2 && arch.length <= 3);
     assert.ok(arch.includes('band-draw-hold'), `${w.id} has SPT`);
     assert.equal(w.warmup.length, 1);
