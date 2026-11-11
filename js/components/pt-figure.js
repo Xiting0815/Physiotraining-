@@ -7,6 +7,12 @@
 //   highlight="legL,armR"    parts drawn in the highlight colour: legL legR legs armL armR arms trunk kneeL none
 //   highlight-color="accent" "primary" | "accent" | any CSS colour (default primary)
 //   aspect="1.333"           frame aspect ratio w/h (default 4:3)
+//   arrows="off"             hide the v5.3 motion arrows / prop labels ("on" forces them; default: shown unless
+//                            `static` or size < 120 px). Reduced motion: start/end pair, arrows on the end pose.
+//
+// v5.3 figure keys: arrows ([…] explicit | false), labels ([{text, at, dx, dy}]) – see "motion arrows" below.
+// data/figure-overrides.json ({overrides: {exerciseId: {poses, view, props, band, arrows, labels, mirror, tempo}}})
+// is merged over exercise.figure by content.js (load) and figureSpecForExercise (applyFigureOverride).
 //
 // Extra (optional) pose keys, all interpolated:
 //   ankleL/ankleR (plantar flexion °), headTilt (° rel. to trunk, + = chin forward),
@@ -634,6 +640,190 @@ function bowSvg(P) {
   return `<g class="fig-bow"><path class="fig-bow-string" d="${str}"/>${arrow}<path class="fig-bow-limb" d="${limb}"/></g>`;
 }
 
+// ---------------------------------------------------------------- motion arrows & labels (v5.3)
+//
+// Arrow spec (figure.arrows / data/figure-overrides.json):
+//   {kind: "move"|"rotate"|"push"|"pull", from, to, around?, r?, a0?, a1?, bend?, label?}
+//   Points: a named point ("handR", "kneeL", …), a prop type ("wall", "door"), {x, y}, or {at, dx, dy}.
+//   move   — curved arrow from `from` (start pose) to `to` (end pose), `bend` = bulge (fraction of the length,
+//            sign = side; default 0.18).
+//   rotate — arc around `around` (pivot) from the direction of `from` (start pose) to `to` (end pose), radius `r`
+//            (default 70 % of the pivot distance); or explicit screen angles a0 → a1 (°, 0 = +x, clockwise).
+//   push   — straight arrow from → to on the end pose with a contact bar at the tip (pressing against something).
+//   pull   — straight arrow from → to on the end pose with a grip ring at the tail.
+// `arrows: false` switches the automatic arrow off; an explicit list replaces it.
+// Automatic arrow (figures with ≥ 2 keyframes, not looped): the end point that travels furthest (hands, feet, hip,
+// knees, head; highlighted limbs preferred) gets an arrow along its real path (sampled through the interpolation),
+// offset to the outside of the curve; a symmetric partner (other hand/foot) gets one too.
+// Labels: [{text, at, dx?, dy?, anchor?: "start"|"middle"|"end"}] — small captions on props („Wand“, „Tür“).
+
+const AUTO_POINTS = [['handL', 1], ['handR', 1], ['footL', 1], ['footR', 1], ['hip', 0.95], ['kneeL', 0.7], ['kneeR', 0.7], ['head', 0.6]];
+const PART_OF = { handL: 'armL', handR: 'armR', footL: 'legL', footR: 'legR', kneeL: 'legL', kneeR: 'legR', hip: 'trunk', head: 'trunk' };
+const PARTNER = { handL: 'handR', handR: 'handL', footL: 'footR', footR: 'footL', kneeL: 'kneeR', kneeR: 'kneeL' };
+const AUTO_MIN = 7; // px travel below which no automatic arrow is drawn
+
+/** Resolve a point reference against computed points / laid-out props. */
+export function refPoint(P, ref, props = []) {
+  if (!ref) return null;
+  if (typeof ref === 'object' && ref.at !== undefined) {
+    const b = refPoint(P, ref.at, props);
+    return b ? { x: b.x + num(ref.dx), y: b.y + num(ref.dy) } : null;
+  }
+  if (typeof ref === 'object' && Number.isFinite(ref.x)) return { x: ref.x + num(ref.dx), y: ref.y + num(ref.dy) };
+  return resolvePoint(P, ref, props);
+}
+
+/** Sampled path of a named point through the keyframes (start → end). */
+function trajectory(keyframes, segments, name, steps = 10) {
+  const out = [];
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    for (let j = 0; j <= steps; j++) {
+      if (i > 0 && j === 0) continue;
+      const P = computePoints(interpolatePose(keyframes[i], keyframes[i + 1], ease(j / steps)), segments);
+      out.push(P[POINT_ALIASES[name] || name]);
+    }
+  }
+  return out;
+}
+
+/**
+ * Automatic motion arrows (pure): which named points get an arrow.
+ * @returns {{point: string, path: {x:number,y:number}[]}[]}
+ */
+export function autoArrowPoints(keyframes, segments = DEFAULT_SEGMENTS, highlight = []) {
+  if (!keyframes || keyframes.length < 2) return [];
+  const hl = normalizeHighlight(highlight);
+  const scored = AUTO_POINTS.map(([name, w]) => {
+    const path = trajectory(keyframes, segments, name);
+    const travel = Math.max(...path.map((q) => dist(q, path[0])));
+    const boost = hl.has(PART_OF[name]) || (name.startsWith('knee') && hl.has('kneeL')) ? 1.25 : 1;
+    return { point: name, path, travel, score: travel * w * boost };
+  }).filter((c) => c.travel >= AUTO_MIN).sort((a, b) => b.score - a.score);
+  if (!scored.length) return [];
+  const best = scored[0];
+  const out = [best];
+  const mate = scored.find((c) => c.point === PARTNER[best.point]);
+  if (mate && mate.score >= best.score * 0.75 && dist(mate.path.at(-1), best.path.at(-1)) > 18) out.push(mate);
+  return out.map(({ point, path }) => ({ point, path }));
+}
+
+function unit(v) { const l = Math.hypot(v.x, v.y) || 1; return { x: v.x / l, y: v.y / l }; }
+
+/** Arrowhead triangle at `tip` pointing along `dir`. */
+function headSvg(tip, dir, size = 5.2) {
+  const u = unit(dir);
+  const n = { x: -u.y, y: u.x };
+  const b = { x: tip.x - u.x * size, y: tip.y - u.y * size };
+  return `<path class="fig-motion-head" d="M${f(tip.x)} ${f(tip.y)}L${f(b.x + n.x * size * 0.62)} ${f(b.y + n.y * size * 0.62)}L${f(b.x - n.x * size * 0.62)} ${f(b.y - n.y * size * 0.62)}Z"/>`;
+}
+
+/** Polyline path (offset, trimmed) → arrow markup. */
+function pathArrowSvg(pts, cls = '', sink = null) {
+  if (pts.length < 2) return '';
+  if (sink) sink.push(...pts);
+  const d = 'M' + pts.map((q) => `${f(q.x)} ${f(q.y)}`).join('L');
+  const tip = pts.at(-1);
+  let k = pts.length - 2;
+  while (k > 0 && dist(pts[k], tip) < 3) k--;
+  const dir = { x: tip.x - pts[k].x, y: tip.y - pts[k].y };
+  // the line stops short of the tip so the head stays sharp
+  const u = unit(dir);
+  const shortD = 'M' + pts.slice(0, -1).map((q) => `${f(q.x)} ${f(q.y)}`).join('L') + `L${f(tip.x - u.x * 3.5)} ${f(tip.y - u.y * 3.5)}`;
+  return `<g class="fig-motion${cls}"><path class="fig-motion-halo" d="${d}"/><path class="fig-motion-line" d="${shortD}"/>${headSvg(tip, dir)}</g>`;
+}
+
+/** Offset a sampled path to the outside of its curve (or away from the body) and trim both ends. */
+function shapePath(path, bodyC, off = 6.5) {
+  const a = path[0];
+  const b = path.at(-1);
+  const chord = { x: b.x - a.x, y: b.y - a.y };
+  const cm = mid(a, b);
+  // point of the path farthest from the chord → bulge direction
+  let far = cm; let fd = 0;
+  const cu = unit(chord);
+  for (const q of path) {
+    const t = { x: q.x - a.x, y: q.y - a.y };
+    const dd = Math.abs(t.x * cu.y - t.y * cu.x);
+    if (dd > fd) { fd = dd; far = q; }
+  }
+  let n = { x: -cu.y, y: cu.x };
+  const ref = fd > 2.5 ? { x: far.x - cm.x, y: far.y - cm.y } : { x: cm.x - bodyC.x, y: cm.y - bodyC.y };
+  if (n.x * ref.x + n.y * ref.y < 0) n = { x: -n.x, y: -n.y };
+  let pts = path.map((q) => ({ x: q.x + n.x * off, y: q.y + n.y * off }));
+  // drop near-duplicates, trim the start a little
+  const out = [pts[0]];
+  for (const q of pts.slice(1)) if (dist(q, out.at(-1)) > 0.6) out.push(q);
+  pts = out;
+  let acc = 0; let i = 1;
+  while (i < pts.length - 2 && acc < 3) { acc += dist(pts[i], pts[i - 1]); i++; }
+  return pts.slice(i - 1);
+}
+
+function arcPoints(c, r, a0, a1, n = 18) {
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const a = (a0 + (a1 - a0) * (i / n)) * RAD;
+    out.push({ x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r });
+  }
+  return out;
+}
+const angOf = (c, p) => Math.atan2(p.y - c.y, p.x - c.x) / RAD;
+
+/** One explicit arrow → markup. */
+function explicitArrowSvg(a, P0, P1, props, sink = null) {
+  const kind = a.kind || 'move';
+  if (kind === 'rotate') {
+    const c = refPoint(P1, a.around, props) || refPoint(P0, a.around, props);
+    if (!c) return '';
+    let a0 = a.a0; let a1 = a.a1;
+    const p0 = refPoint(P0, a.from, props);
+    const p1 = refPoint(P1, a.to ?? a.from, props);
+    if (!Number.isFinite(a0) && p0) a0 = angOf(c, p0);
+    if (!Number.isFinite(a1) && p1) a1 = angOf(c, p1);
+    if (!Number.isFinite(a0) || !Number.isFinite(a1)) return '';
+    let d = a1 - a0;
+    if (!Number.isFinite(a.a1)) d = ((d + 540) % 360) - 180; // shortest way between two directions
+    const r = a.r ?? (p0 ? Math.max(8, dist(c, p0) * 0.7) : 14);
+    const trim = Math.sign(d) * Math.min(Math.abs(d) * 0.12, 10);
+    return pathArrowSvg(arcPoints(c, r, a0 + trim, a0 + d - trim * 0.3), ' fig-motion--rotate', sink);
+  }
+  const pose = kind === 'move' ? P0 : P1;
+  const s = refPoint(pose, a.from, props);
+  const e = refPoint(P1, a.to, props);
+  if (!s || !e || dist(s, e) < 2) return '';
+  if (kind === 'move') {
+    const bend = a.bend ?? 0.18;
+    const m = mid(s, e);
+    const n = unit({ x: -(e.y - s.y), y: e.x - s.x });
+    const L = dist(s, e);
+    const c = { x: m.x + n.x * L * bend, y: m.y + n.y * L * bend };
+    const pts = [];
+    for (let i = 0; i <= 16; i++) {
+      const t = i / 16;
+      pts.push({ x: (1 - t) * (1 - t) * s.x + 2 * (1 - t) * t * c.x + t * t * e.x, y: (1 - t) * (1 - t) * s.y + 2 * (1 - t) * t * c.y + t * t * e.y });
+    }
+    return pathArrowSvg(pts, '', sink);
+  }
+  const u = unit({ x: e.x - s.x, y: e.y - s.y });
+  const n = { x: -u.y, y: u.x };
+  let extra = '';
+  if (kind === 'push') extra = `<path class="fig-motion-line" d="M${f(e.x + u.x * 1.5 + n.x * 5)} ${f(e.y + u.y * 1.5 + n.y * 5)}L${f(e.x + u.x * 1.5 - n.x * 5)} ${f(e.y + u.y * 1.5 - n.y * 5)}"/>`;
+  if (kind === 'pull') extra = `<circle class="fig-motion-ring" cx="${f(s.x)}" cy="${f(s.y)}" r="2.6"/>`;
+  return pathArrowSvg([s, e], ` fig-motion--${kind}`, sink).replace(/<\/g>$/, `${extra}</g>`);
+}
+
+/** Text label positions (unmirrored frame coordinates). */
+function labelItems(labels, P0, props) {
+  const out = [];
+  for (const l of labels || []) {
+    if (!l || !l.text) continue;
+    const at = refPoint(P0, l.at, props);
+    if (!at) continue;
+    out.push({ text: String(l.text), x: at.x + num(l.dx), y: at.y + num(l.dy), anchor: l.anchor || 'middle' });
+  }
+  return out;
+}
+
 /**
  * Build a reusable scene (pure): framing + static props for a set of keyframes.
  * @param {{poses: object[], segments?: object, props?: any[], band?: any, bandColor?: string,
@@ -666,6 +856,28 @@ export function buildScene(spec) {
   if (band && typeof band.to === 'object' && Number.isFinite(band.to?.x)) grow({ minX: band.to.x - 4, minY: band.to.y - 4, maxX: band.to.x + 4, maxY: band.to.y + 4 });
   const wall = props.find((p) => p.type === 'wall');
   if (wall && !front) grow({ minX: wall.x - 8, maxX: wall.x + 8, minY: bb.minY, maxY: bb.maxY });
+
+  // v5.3 motion arrows (static overlay along the path start → end) and prop labels
+  const loop = !!spec.loop && poses.length >= 3;
+  const endPose = poses[loop ? Math.ceil(poses.length / 2) : poses.length - 1];
+  const P1 = computePoints(endPose, segments);
+  const arrowPts = [];
+  let arrowSvg = '';
+  if (Array.isArray(spec.arrows)) {
+    arrowSvg = spec.arrows.map((a) => explicitArrowSvg(a, P0, P1, props, arrowPts)).join('');
+  } else if (spec.arrows !== false && !loop && poses.length >= 2) {
+    const bodyC = mid(P0.hip, P0.neck);
+    arrowSvg = autoArrowPoints(poses, segments, spec.highlight)
+      .map(({ path: tr }) => pathArrowSvg(shapePath(tr, bodyC), '', arrowPts)).join('');
+  }
+  for (const q of arrowPts) grow({ minX: q.x - 4, minY: q.y - 4, maxX: q.x + 4, maxY: q.y + 4 });
+  const labels = labelItems(spec.labels, P0, props);
+  const fs = 7.5;
+  for (const l of labels) {
+    const w = l.text.length * fs * 0.56;
+    const x0 = l.anchor === 'start' ? l.x : l.anchor === 'end' ? l.x - w : l.x - w / 2;
+    grow({ minX: x0 - 2, maxX: x0 + w + 2, minY: l.y - fs, maxY: l.y + 2 });
+  }
   if (!top) bb.maxY = Math.max(bb.maxY, FLOOR + 2);
 
   // frame with fixed aspect, centred on content
@@ -696,6 +908,15 @@ export function buildScene(spec) {
   const otherSvg = props.filter((p) => !['wall', 'mat', 'bow', 'stick'].includes(p.type)).map((p) => propSvg(p, frame, front)).join('');
   const staticBack = `${groundSvg}${wallSvg}${hasMat ? matSvg(frame, bodyBox, top) : ''}${otherSvg}`;
   const opts = { highlightLeftKnee: !!spec.highlightLeftKnee, highlight: spec.highlight || [], mirror };
+  const altArrow = spec.highlightColor === 'accent' ? ' fig-motion-layer--alt' : '';
+  const arrowsLayer = arrowSvg ? `<g class="fig-motion-layer${altArrow}" aria-hidden="true">${arrowSvg}</g>` : '';
+  const cxm = frame.x + frame.w / 2;
+  const labelsLayer = labels.length
+    ? `<g class="fig-labels" aria-hidden="true">${labels.map((l) => {
+      const x = mirror ? 2 * cxm - l.x : l.x;
+      const anchor = mirror && l.anchor !== 'middle' ? (l.anchor === 'start' ? 'end' : 'start') : l.anchor;
+      return `<text class="fig-label" x="${f(x)}" y="${f(l.y)}" text-anchor="${anchor}" font-size="${fs}">${esc(l.text)}</text>`;
+    }).join('')}</g>` : '';
 
   function figure(pose) {
     if (rower) pose = lockFeet(pose, rower.foot, segments);
@@ -724,11 +945,14 @@ export function buildScene(spec) {
   }
 
   return {
-    frame, props, mirror, keyframes: poses, loop: !!spec.loop && poses.length >= 3,
-    /** full frame markup (in viewBox coordinates of `frame`) for a pose */
-    render(pose = pose0) {
-      return `<g class="fig-frame"${mirrorT}>${staticBack}<g class="fig-body">${figure(pose)}</g></g>`;
+    frame, props, mirror, keyframes: poses, loop,
+    /** full frame markup (in viewBox coordinates of `frame`) for a pose; `overlay` adds arrows + labels */
+    render(pose = pose0, { overlay = false } = {}) {
+      return `<g class="fig-frame"${mirrorT}>${staticBack}<g class="fig-body">${figure(pose)}</g>${overlay ? arrowsLayer : ''}</g>${overlay ? labelsLayer : ''}`;
     },
+    arrowsLayer,
+    labelsLayer,
+    hasArrows: !!arrowSvg,
     renderBody: (pose) => figure(pose),
     staticBack,
     mirrorT,
@@ -738,7 +962,7 @@ export function buildScene(spec) {
 const viewBoxOf = (fr) => `${f(fr.x)} ${f(fr.y)} ${f(fr.w)} ${f(fr.h)}`;
 
 /** Full standalone SVG string (pure). `pair` → first and last pose side by side with an arrow. */
-export function figureSvg(spec, { pair = false, label = 'Übungsabbildung', pose } = {}) {
+export function figureSvg(spec, { pair = false, label = 'Übungsabbildung', pose, overlay = true } = {}) {
   const scene = buildScene(spec);
   const fr = scene.frame;
   const K = scene.keyframes;
@@ -750,9 +974,9 @@ export function figureSvg(spec, { pair = false, label = 'Übungsabbildung', pose
     return `<svg class="fig-svg fig-svg--pair" viewBox="${viewBoxOf(vb)}" role="img" aria-label="${esc(label)}: Start- und Endposition">
       ${scene.render(K[0])}
       <path class="fig-pair-arrow" d="M${f(ax - gap * 0.3)} ${f(ay)}H${f(ax + gap * 0.3)}M${f(ax + gap * 0.3 - 6)} ${f(ay - 6)}L${f(ax + gap * 0.3)} ${f(ay)}L${f(ax + gap * 0.3 - 6)} ${f(ay + 6)}"/>
-      <g transform="translate(${f(fr.w + gap)} 0)">${scene.render(K[scene.loop ? Math.ceil(K.length / 2) : K.length - 1])}</g></svg>`;
+      <g transform="translate(${f(fr.w + gap)} 0)">${scene.render(K[scene.loop ? Math.ceil(K.length / 2) : K.length - 1], { overlay })}</g></svg>`;
   }
-  return `<svg class="fig-svg" viewBox="${viewBoxOf(fr)}" role="img" aria-label="${esc(label)}">${scene.render(pose || K[0])}</svg>`;
+  return `<svg class="fig-svg" viewBox="${viewBoxOf(fr)}" role="img" aria-label="${esc(label)}">${scene.render(pose || K[0], { overlay })}</svg>`;
 }
 
 export const FIGURE_CSS = `
@@ -797,6 +1021,13 @@ export const FIGURE_CSS = `
   pt-figure .fig-bow-string{fill:none;stroke:var(--fig-bow,var(--muted,#5B6573));stroke-width:1;opacity:.85}
   pt-figure .fig-arrow{fill:none;stroke:var(--fig-arrow,var(--accent,#E07A1F));stroke-width:1.8;stroke-linecap:round}
   pt-figure .fig-pair-arrow{fill:none;stroke:var(--muted,#5B6573);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+  pt-figure .fig-motion-halo{fill:none;stroke:var(--fig-bg);stroke-width:4.6;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+  pt-figure .fig-motion-line{fill:none;stroke:var(--fig-arrow,var(--accent,#E07A1F));stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  pt-figure .fig-motion-head{fill:var(--fig-arrow,var(--accent,#E07A1F));stroke:var(--fig-arrow,var(--accent,#E07A1F));stroke-width:.8;stroke-linejoin:round}
+  pt-figure .fig-motion-ring{fill:var(--fig-bg);stroke:var(--fig-arrow,var(--accent,#E07A1F));stroke-width:1.6}
+  pt-figure .fig-motion-layer{opacity:.9}
+  pt-figure .fig-motion-layer--alt{--fig-arrow:var(--primary,#0E7C86)}
+  pt-figure .fig-label{fill:var(--muted,#5B6573);font-family:var(--font,system-ui,sans-serif);font-weight:600;letter-spacing:.02em;paint-order:stroke;stroke:var(--fig-bg);stroke-width:2.4px;stroke-linejoin:round}
   pt-figure .fig-placeholder{color:var(--muted,#5B6573);text-align:center;padding:1rem}
 `;
 
@@ -810,14 +1041,32 @@ function injectStyle(doc) {
   styleInjected = true;
 }
 
+/** Keys a figure override (data/figure-overrides.json) may set. */
+export const OVERRIDE_KEYS = ['poses', 'view', 'props', 'band', 'arrows', 'labels', 'mirror', 'tempo', 'loop', 'highlight'];
+
+/**
+ * Merge a figure override over an exercise figure (pure, shallow: each given key replaces the original).
+ * `view` is informational (the poses carry their view) and kept for the gallery / tests.
+ */
+export function applyFigureOverride(figure, ov) {
+  if (!ov || typeof ov !== 'object') return figure;
+  const out = { ...(figure || {}) };
+  for (const k of OVERRIDE_KEYS) if (ov[k] !== undefined) out[k] = ov[k];
+  return out;
+}
+
 /**
  * Figure spec for an exercise (pure): figure block + highlight + band/tempo of the given level.
  * Knee block: operated (left) leg in --primary, ring on the left knee when side === "left".
  * Archery block: arms in --accent. Others: no highlight.
  */
-export function figureSpecForExercise(ex, level = 0) {
+export function figureSpecForExercise(ex, level = 0, overrides) {
   const knee = ex.block === 'knee';
   const lv = ex.levels?.[level] ?? ex.levels?.[0];
+  let ov = overrides;
+  if (ov === undefined) { try { ov = getContent()?.figureOverrides; } catch { ov = null; } }
+  const figure = applyFigureOverride(ex.figure, ov?.[ex.id]);
+  ex = { ...ex, figure };
   return {
     ...ex.figure,
     highlight: ex.figure?.highlight ?? (knee ? (ex.side === 'both' ? 'legs' : ex.side === 'right' ? 'legR' : 'legL') : ex.block === 'archery' ? 'arms' : ''),
@@ -833,7 +1082,7 @@ const HL_COLORS = { primary: 'var(--primary,#0E7C86)', accent: 'var(--accent,#E0
 
 export class PtFigure extends Base {
   static get observedAttributes() {
-    return ['exercise-id', 'poses', 'props', 'band', 'band-id', 'level', 'tempo', 'mirror', 'static', 'size', 'highlight', 'highlight-color', 'aspect', 'loop'];
+    return ['exercise-id', 'poses', 'props', 'band', 'band-id', 'level', 'tempo', 'mirror', 'static', 'size', 'highlight', 'highlight-color', 'aspect', 'loop', 'arrows'];
   }
 
   connectedCallback() {
@@ -909,13 +1158,21 @@ export class PtFigure extends Base {
     };
     const label = this.getAttribute('aria-label') || 'Übungsabbildung';
     const reduced = !!this._mq?.matches;
-    if (keyframes.length >= 2 && (reduced || this.hasAttribute('static'))) {
-      this.innerHTML = figureSvg(sceneSpec, { pair: true, label });
+    const isStatic = this.hasAttribute('static');
+    // motion arrows + labels: off for static thumbnails, small sizes and arrows="off"
+    const arrowsAttr = this.getAttribute('arrows');
+    const overlay = arrowsAttr === 'on' || (!isStatic && arrowsAttr !== 'off' && arrowsAttr !== 'none' && !(size > 0 && size < 120) && this.getAttribute('size') !== 'sm');
+    sceneSpec.arrows = spec.arrows;
+    sceneSpec.labels = spec.labels;
+    sceneSpec.highlightColor = spec.highlightColor;
+    if (keyframes.length >= 2 && (reduced || isStatic)) {
+      this.innerHTML = figureSvg(sceneSpec, { pair: true, label, overlay });
       return;
     }
     const scene = buildScene(sceneSpec);
     const fr = scene.frame;
-    this.innerHTML = `<svg class="fig-svg" viewBox="${viewBoxOf(fr)}" role="img" aria-label="${esc(label)}"><g class="fig-frame"${scene.mirrorT}>${scene.staticBack}<g class="fig-body">${scene.renderBody(keyframes[0])}</g></g></svg>`;
+    const ov = overlay ? { a: scene.arrowsLayer, l: scene.labelsLayer } : { a: '', l: '' };
+    this.innerHTML = `<svg class="fig-svg" viewBox="${viewBoxOf(fr)}" role="img" aria-label="${esc(label)}"><g class="fig-frame"${scene.mirrorT}>${scene.staticBack}<g class="fig-body">${scene.renderBody(keyframes[0])}</g>${ov.a}</g>${ov.l}</svg>`;
     if (keyframes.length < 2) return;
     this._anim = { scene, keyframes, tempo: parseTempo(spec.tempo), body: this.querySelector('.fig-body'), t0: null };
     if (this._visible !== false) this._play();

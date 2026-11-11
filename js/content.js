@@ -26,15 +26,26 @@ function unwrap(json, key) {
   return [];
 }
 
+/** v5.3: data/figure-overrides.json (optional) – each given key replaces the exercise's figure key. */
+const FIGURE_OVERRIDE_KEYS = ['poses', 'view', 'props', 'band', 'arrows', 'labels', 'mirror', 'tempo', 'loop', 'highlight'];
+function withFigureOverride(ex, ov) {
+  if (!ex || !ov || typeof ov !== 'object') return ex;
+  const figure = { ...(ex.figure || {}) };
+  for (const k of FIGURE_OVERRIDE_KEYS) if (ov[k] !== undefined) figure[k] = ov[k];
+  return { ...ex, figure };
+}
+
 /** @param {{force?: boolean}} [opts] @returns {Promise<import('./types.js').Content>} */
 export function loadContent({ force = false } = {}) {
   if (content && !force) return Promise.resolve(content);
   if (pending && !force) return pending;
   pending = (async () => {
     const [exercises, workouts, phases, poses, badges] = await Promise.all(FILES.map(fetchJson));
-    const [equipment, quotes] = await Promise.all([fetchOptional('equipment'), fetchOptional('quotes')]);
+    const [equipment, quotes, figOv] = await Promise.all([fetchOptional('equipment'), fetchOptional('quotes'), fetchOptional('figure-overrides')]);
+    const figureOverrides = (figOv && typeof figOv.overrides === 'object' && figOv.overrides) || {};
     content = {
-      exercises: unwrap(exercises, 'exercises'),
+      exercises: unwrap(exercises, 'exercises').map((e) => withFigureOverride(e, figureOverrides[e?.id])),
+      figureOverrides,
       workouts: unwrap(workouts, 'workouts'),
       phases: unwrap(phases, 'phases').slice().sort((a, b) => a.order - b.order),
       poses: poses && typeof poses === 'object' ? poses : { segments: {}, poses: {} },

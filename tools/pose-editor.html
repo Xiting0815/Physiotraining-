@@ -30,6 +30,9 @@
   .gallery figure { margin: 0; background: var(--surface, #fff); border: 1px solid var(--border, #E1E5EA); border-radius: 12px; padding: 6px; }
   .gallery figcaption { font: 12px ui-monospace, monospace; color: var(--muted, #5B6573); text-align: center; overflow-wrap: anywhere; }
   .gallery figure.sel { outline: 2px solid var(--primary, #0E7C86); }
+  .gallery--ex { grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); }
+  .gallery--ex figcaption { font: 12px/1.35 var(--font, system-ui, sans-serif); text-align: left; padding: 4px 6px; }
+  .gallery--ex figcaption small { color: var(--muted, #5B6573); }
   @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -59,7 +62,7 @@
 <section class="gallery" id="gallery" hidden></section>
 <script type="module">
 import '../js/components/pt-figure.js';
-import { figureSvg, OPTIONAL_KEYS } from '../js/components/pt-figure.js';
+import { figureSvg, figureSpecForExercise, OPTIONAL_KEYS } from '../js/components/pt-figure.js';
 
 const file = await (await fetch(new URL('../data/poses.json', import.meta.url))).json();
 const poses = file.poses;
@@ -181,9 +184,36 @@ $('gallery').addEventListener('click', (e) => {
   if (f) { showGallery(false); load(f.dataset.id); }
 });
 
+// exercise gallery (?exercises=1[&ids=a,b][&text=1]): every exercise figure as start/end pair with the
+// v5.3 overrides (data/figure-overrides.json), motion arrows and labels — for auditing views against the texts
+async function renderExercises(params) {
+  const exFile = await (await fetch(new URL('../data/exercises.json', import.meta.url))).json();
+  let overrides = {};
+  try { overrides = (await (await fetch(new URL('../data/figure-overrides.json', import.meta.url))).json()).overrides || {}; } catch { /* optional */ }
+  const only = params.get('ids') ? new Set(params.get('ids').split(',')) : null;
+  const list = exFile.exercises.filter((e) => !only || only.has(e.id));
+  $('gallery').classList.add('gallery--ex');
+  const svgs = [];
+  $('gallery').innerHTML = list.map((e) => {
+    const spec = figureSpecForExercise(e, 0, overrides);
+    const keyframes = (spec.poses || []).map((k) => (typeof k === 'string' ? poses[k] : k)).filter(Boolean);
+    let svg = '<p>Keine Abbildung</p>';
+    try {
+      if (keyframes.length) svg = figureSvg({ ...spec, poses: keyframes, segments: file.segments, bandColor: '#D9443B' }, { pair: keyframes.length > 1, label: e.name });
+    } catch (err) { svg = `<p>${err.message}</p>`; }
+    const changed = overrides[e.id] ? ' ✎' : '';
+    const text = params.has('text') ? `<small>${(e.instructions || []).slice(0, 3).join(' · ')}</small>` : '';
+    svgs.push(svg);
+    return `<figure data-ex="${e.id}"><pt-figure static style="--fig-hl:${spec.highlightColor === 'accent' ? 'var(--accent)' : 'var(--primary)'}"></pt-figure><figcaption><b>${e.name}</b>${changed}<br>${e.id} · ${(spec.poses || []).join(' → ')}${text ? '<br>' + text : ''}</figcaption></figure>`;
+  }).join('');
+  // the element renders its own placeholder on connect – put the pre-rendered figures in afterwards
+  $('gallery').querySelectorAll('pt-figure').forEach((el, i) => { el.innerHTML = svgs[i]; });
+}
+
 const params = new URLSearchParams(location.search);
+if (params.get('theme')) document.documentElement.dataset.theme = params.get('theme');
 load(params.get('pose') && poses[params.get('pose')] ? params.get('pose') : ids[0]);
-if (params.has('gallery')) showGallery(true);
+if (params.has('exercises')) { $('gallery').hidden = false; $('editor').hidden = true; await renderExercises(params); } else if (params.has('gallery')) showGallery(true);
 document.body.dataset.ready = '1';
 </script>
 </body>
