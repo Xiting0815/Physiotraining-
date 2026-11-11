@@ -5,6 +5,15 @@
       "id": "knee-pendulum",
       "name": "Kniependel im Sitzen",
       "description": "Lockeres Pendeln des Unterschenkels – schmiert das Gelenk und nährt den Knorpel.",
+      "short": "Lockeres Beinpendeln im Sitzen – ölt das Kniegelenk und nährt den Knorpel.",
+      "setup": "Setz dich hoch auf eine feste Kante (Tisch, Bettkante oder ganz hochgefahrener PC-Stuhl), sodass die Füße frei hängen. Die Oberschenkel liegen ganz auf, die Hände stützen seitlich.",
+      "steps": [
+        "Setz dich hoch hin, die Füße hängen frei.",
+        "Lass den linken Unterschenkel locker vor und zurück pendeln.",
+        "Kleiner, ruhiger Bogen – Schwung statt Kraft.",
+        "Nach der Zeit das rechte Bein pendeln."
+      ],
+      "feel": "Du spürst ein lockeres, warmes Gefühl im Knie – ohne Anstrengung.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -86,6 +95,15 @@
       "id": "ankle-pumps",
       "name": "Fußwippe (Sprunggelenk pumpen)",
       "description": "Füße kräftig anziehen und strecken – bringt den Kreislauf im Bein in Schwung.",
+      "short": "Füße kräftig anziehen und strecken – bringt den Kreislauf in den Beinen in Schwung.",
+      "setup": "Leg dich auf den Rücken auf die Matte (oder setz dich im Langsitz hin). Beide Beine liegen lang.",
+      "steps": [
+        "Leg dich auf den Rücken, beide Beine lang.",
+        "Zieh beide Fußspitzen kräftig zur Nase.",
+        "Streck die Füße danach weit nach unten.",
+        "Wechsle zügig und gleichmäßig hin und her."
+      ],
+      "feel": "Du spürst Waden und Schienbeine arbeiten, die Beine werden warm.",
       "category": "kardio",
       "block": "warmup",
       "equipment": [
@@ -155,6 +173,15 @@
       "id": "shoulder-circles",
       "name": "Schulterkreisen & Armheben",
       "description": "Schultern rollen und Arme kontrolliert heben – macht Schultergelenk und Schulterblätter warm.",
+      "short": "Schultern kreisen und Arme heben – macht Schultergelenk und Schulterblätter warm.",
+      "setup": "Stell dich aufrecht hin, Füße hüftbreit, Knie locker. Ist das Knie gereizt, setz dich auf den Stuhl. Mit Schulterschutz ersetzt die App diese Übung durch „Schulterblätter setzen“.",
+      "steps": [
+        "Kreise die Schultern langsam nach hinten, etwa 30 s.",
+        "Heb dann die gestreckten Arme langsam nach vorn hoch.",
+        "Senk die Arme langsam wieder ab.",
+        "Bleib fließend, ohne Schwung."
+      ],
+      "feel": "Du spürst Schultern und oberen Rücken warm und locker werden.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -235,6 +262,15 @@
       "id": "seated-spine-wave",
       "name": "Wirbelsäulen-Welle im Sitzen",
       "description": "Rücken abwechselnd rund machen und aufrichten – die kniefreundliche Katze-Kuh.",
+      "short": "Rücken abwechselnd rund machen und aufrichten – die kniefreundliche Katze-Kuh im Sitzen.",
+      "setup": "Setz dich aufrecht auf die vordere Hälfte des Stuhls. Füße hüftbreit flach am Boden, Hände auf den Oberschenkeln.",
+      "steps": [
+        "Setz dich vorne auf den Stuhl, Hände auf die Oberschenkel.",
+        "Ausatmen: Becken nach hinten kippen, Rücken rund, Kinn zur Brust.",
+        "Einatmen: Becken nach vorn, Brustbein hoch, Blick nach vorn.",
+        "Wechsle langsam im Atemrhythmus."
+      ],
+      "feel": "Du spürst, wie sich der ganze Rücken Wirbel für Wirbel bewegt.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -307,6 +343,15 @@
       "id": "seated-thoracic-rotation",
       "name": "Brustwirbel-Rotation im Sitzen",
       "description": "Oberkörper im Sitzen drehen – mobilisiert die Brustwirbelsäule für eine freie Auszugslinie.",
+      "short": "Oberkörper im Sitzen drehen – macht die Brustwirbelsäule frei für den Auszug.",
+      "setup": "Setz dich aufrecht auf den Stuhl, Knie und Füße zeigen nach vorn. Verschränk die Arme vor der Brust.",
+      "steps": [
+        "Setz dich aufrecht hin, Arme vor der Brust verschränkt.",
+        "Dreh den Oberkörper langsam nach rechts, der Blick folgt.",
+        "Kurz halten, zurück zur Mitte, dann nach links.",
+        "Knie und Becken bleiben ruhig nach vorn gerichtet."
+      ],
+      "feel": "Du spürst eine angenehme Drehung zwischen den Schulterblättern.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -387,6 +432,15 @@
       "id": "quad-set",
       "name": "Quadrizeps anspannen (Quad Set)",
       "description": "Oberschenkel fest anspannen und die Kniekehle in eine Handtuchrolle drücken – Übung Nr. 1 nach der OP.",
+      "short": "Oberschenkel fest anspannen – Übung Nr. 1 nach der OP, jetzt schon üben.",
+      "setup": "Leg dich auf den Rücken auf die Matte oder setz dich im Langsitz hin, Beine lang. Leg eine kleine Handtuchrolle unter das linke Knie.",
+      "steps": [
+        "Leg dich hin, Handtuchrolle unter das linke Knie.",
+        "Drück die Kniekehle fest ins Handtuch, Zehen zu dir.",
+        "Spann den Oberschenkel an und halte die Spannung.",
+        "Lass danach ganz locker."
+      ],
+      "feel": "Du spürst den vorderen Oberschenkel hart werden, die Kniescheibe zieht leicht nach oben.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -466,6 +520,15 @@
       "id": "heel-slides",
       "name": "Fersengleiten",
       "description": "Ferse auf der Matte zum Gesäß gleiten lassen – sanfte Beugung ohne Last.",
+      "short": "Ferse zum Gesäß gleiten lassen – sanfte Kniebeugung ganz ohne Last.",
+      "setup": "Leg dich auf den Rücken auf die Matte, Beine lang. Unter die linke Ferse ein Handtuch oder eine Socke, damit sie gut gleitet.",
+      "steps": [
+        "Leg dich auf den Rücken, beide Beine lang.",
+        "Lass die linke Ferse langsam Richtung Gesäß gleiten.",
+        "Nur so weit, wie es angenehm ist – kurz halten.",
+        "Streck das Bein wieder ganz und spann kurz an."
+      ],
+      "feel": "Du spürst ein leichtes Ziehen vorn am Knie – kein Stechen, kein Einklemmen.",
       "category": "mobilitaet",
       "block": "knee",
       "equipment": [
@@ -546,6 +609,15 @@
       "id": "straight-leg-raise",
       "name": "Gestrecktes Beinheben",
       "description": "Gestrecktes Bein anheben, ohne dass das Knie einknickt – kräftigt den Quadrizeps ohne Beugung.",
+      "short": "Gestrecktes Bein anheben – kräftigt den vorderen Oberschenkel ohne Kniebeugung.",
+      "setup": "Leg dich auf den Rücken auf die Matte. Das nicht trainierte Bein ist aufgestellt, das Trainingsbein liegt lang. Ab Stufe 4 kommt ein Loop um beide Fußgelenke.",
+      "steps": [
+        "Leg dich hin, ein Bein aufgestellt, das andere lang.",
+        "Spann das lange Bein fest an, Zehen zu dir.",
+        "Heb es gestreckt bis auf Kniehöhe des anderen Beins.",
+        "Langsam ablegen. Erst links, dann Beine tauschen."
+      ],
+      "feel": "Du spürst den vorderen Oberschenkel und etwas den Bauch arbeiten.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -644,6 +716,15 @@
       "id": "tke",
       "name": "Terminal Knee Extension (TKE) mit Band",
       "description": "Aus leichter Beugung gegen das Band in die volle Streckung drücken – Endstreckung im Stand.",
+      "short": "Knie gegen das Band ganz durchstrecken – trainiert die volle Streckung im Stand.",
+      "setup": "Stell dich mit dem Gesicht zur Tür, gut einen Schritt entfernt. Leg die Bandschlaufe hinter das linke Knie (Kniekehle) und geh zurück, bis das Band spannt. Füße hüftbreit, Fersen am Boden.",
+      "steps": [
+        "Band auf Kniehöhe in der Tür, Schlaufe hinter das linke Knie.",
+        "Gesicht zur Tür, Knie leicht beugen, Ferse bleibt unten.",
+        "Knie gegen das Band ganz strecken, 2 s fest anspannen.",
+        "Langsam zurück. Danach Schlaufe ans rechte Knie."
+      ],
+      "feel": "Du spürst den vorderen Oberschenkel direkt über dem Knie fest werden.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -741,6 +822,15 @@
       "id": "wall-sit",
       "name": "Wandsitz isometrisch (30–45°)",
       "description": "Mit dem Rücken an der Wand in leichter Kniebeugung halten – Kraft ohne Bewegung im Gelenk.",
+      "short": "Mit dem Rücken an der Wand in leichter Kniebeuge halten – Kraft ohne Bewegung im Gelenk.",
+      "setup": "Stell dich mit dem Rücken an die Wand. Die Fersen stehen ca. 30–40 cm (gut zwei Fußlängen) vor der Wand, Füße hüftbreit. Gesäß, Rücken und Hinterkopf berühren die Wand. Tiefe: Stufe 1–2 ca. 30°, ab Stufe 3 bis 45° – nie tiefer.",
+      "steps": [
+        "Rücken an die Wand, Fersen ca. 30–40 cm vor der Wand.",
+        "Rutsch an der Wand runter, bis die Knie leicht gebeugt sind.",
+        "Halten – Gewicht auf beiden Fersen, Knie über den Füßen.",
+        "Schieb dich an der Wand wieder hoch."
+      ],
+      "feel": "Du spürst die vorderen Oberschenkel brennen – das Knie selbst bleibt ruhig.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -833,6 +923,15 @@
       "id": "sit-to-stand",
       "name": "Aufstehen vom Stuhl",
       "description": "Kontrolliert aufstehen und hinsetzen – die wichtigste Alltagsbewegung, Schritt für Schritt kräftiger.",
+      "short": "Kontrolliert aufstehen und hinsetzen – die wichtigste Alltagsbewegung, Schritt für Schritt kräftiger.",
+      "setup": "Stell einen festen Stuhl ohne Rollen mit der Lehne an die Wand. Am Anfang ein Kissen auf die Sitzfläche (höherer Sitz). Setz dich vorn auf die Kante, Füße hüftbreit, Arme vor der Brust gekreuzt. Ab Stufe 4 (versetzt): linker Fuß eine halbe Fußlänge weiter hinten.",
+      "steps": [
+        "Setz dich vorn auf den festen Stuhl, Arme vor der Brust.",
+        "Neig den Oberkörper vor, Nase über die Zehen.",
+        "Steh über beide Beine gleichmäßig auf.",
+        "Setz dich langsam (3 s) wieder hin, ohne zu plumpsen."
+      ],
+      "feel": "Du spürst Oberschenkel und Gesäß arbeiten, beide Beine gleich.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -842,7 +941,7 @@
       "side": "both",
       "instructions": [
         "Festen Stuhl ohne Rollen mit der Lehne an die Wand stellen. Am Anfang Kissen auf die Sitzfläche (erhöhter Sitz).",
-        "Vorne auf den Sitz, Füße hüftbreit, Arme vor der Brust gekreuzt oder nach vorn.",
+        "Vorne auf den Sitz, Füße hüftbreit, Arme vor der Brust gekreuzt.",
         "Oberkörper nach vorn neigen, über die Füße kommen und aufstehen.",
         "Langsam (3 s) wieder hinsetzen, kurz absitzen ohne zusammenzusacken."
       ],
@@ -937,6 +1036,15 @@
       "id": "mini-squat",
       "name": "Mini-Kniebeuge mit Loop (0–60°)",
       "description": "Kleine Kniebeuge mit Loop über den Knien – Beinachse stabil halten, Tiefe streng begrenzt.",
+      "short": "Kleine Kniebeuge mit Loop – Beinachse stabil halten, Tiefe streng begrenzt.",
+      "setup": "Stell dich mit dem Gesicht zur Wand, ca. eine Armlänge entfernt. Die Fingerspitzen berühren die Wand auf Bauchhöhe nur leicht. Füße hüftbreit, Loop knapp oberhalb der Knie. Tiefe je Stufe: 30°, 45°, höchstens 60°.",
+      "steps": [
+        "Gesicht zur Wand, eine Armlänge Abstand, Loop über den Knien.",
+        "Schieb das Gesäß nach hinten wie zum Hinsetzen.",
+        "Beug nur bis zur Stufen-Tiefe, Knie drücken leicht nach außen.",
+        "Über die Fersen aufrichten, oben Gesäß anspannen."
+      ],
+      "feel": "Du spürst Oberschenkel und seitliches Gesäß – das Knie bleibt schmerzarm.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -1039,6 +1147,15 @@
       "id": "step-up",
       "name": "Step-up vorwärts",
       "description": "Mit dem linken Bein auf den Step steigen – Kraft und Kontrolle wie beim Treppensteigen.",
+      "short": "Mit dem linken Bein auf die Stufe steigen – Kraft und Kontrolle wie beim Treppensteigen.",
+      "setup": "Stell die Stufe neben eine Wand. Stell dich seitlich zur Wand direkt vor die Stufe (Fußspitzen ca. 10 cm davor), die Wand ist eine Unterarmlänge neben dir. Die wandnahe Hand liegt an der Wand.",
+      "steps": [
+        "Vor die Stufe stellen, eine Hand an der Wand.",
+        "Setz den linken Fuß komplett auf die Stufe.",
+        "Drück dich über links hoch, der rechte Fuß tippt nur auf.",
+        "Rechts langsam (3 s) absteigen. Danach rechts steigen."
+      ],
+      "feel": "Du spürst den linken Oberschenkel und das Gesäß arbeiten.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -1048,7 +1165,7 @@
       "type": "reps",
       "side": "perSide",
       "instructions": [
-        "Vor den Step stellen, eine Hand an der Wand oder Stuhllehne.",
+        "Vor den Step stellen, eine Hand an der Wand.",
         "Linken Fuß komplett auf den Step setzen.",
         "Über das linke Bein hochdrücken, bis es gestreckt ist – rechter Fuß tippt nur auf.",
         "Langsam (3 s) mit dem rechten Fuß wieder absteigen, links bleibt oben bis zuletzt. Danach Seiten tauschen."
@@ -1138,6 +1255,15 @@
       "id": "seated-knee-extension",
       "name": "Kniestrecken im Sitzen mit Band",
       "description": "Unterschenkel gegen leichten Bandzug strecken – gezielt für den Quadrizeps im schmerzfreien Bereich.",
+      "short": "Unterschenkel gegen leichten Bandzug strecken – gezielt für den vorderen Oberschenkel.",
+      "setup": "Setz dich aufrecht auf den Stuhl, die Oberschenkel liegen ganz auf. Knote das Band hinten ums Stuhlbein (PC-Stuhl: um die Mittelsäule) und leg die Schlaufe um das linke Fußgelenk.",
+      "steps": [
+        "Setz dich aufrecht, Bandschlaufe um das linke Fußgelenk.",
+        "Streck den Unterschenkel langsam nach vorn.",
+        "Oben kurz den Oberschenkel anspannen.",
+        "Langsam (3 s) zurück. Danach das rechte Bein."
+      ],
+      "feel": "Du spürst den vorderen Oberschenkel – im Knie höchstens leichtes Ziehen.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -1147,7 +1273,7 @@
       "type": "reps",
       "side": "perSide",
       "instructions": [
-        "Band um das hintere Stuhlbein knoten, Schlaufe um das linke Fußgelenk.",
+        "Band um das hintere Stuhlbein (PC-Stuhl: um die Mittelsäule) knoten, Schlaufe um das linke Fußgelenk.",
         "Aufrecht sitzen, Oberschenkel liegt ganz auf.",
         "Unterschenkel langsam nach vorn strecken, oben Oberschenkel kurz anspannen.",
         "Langsam (3 s) zurück. Danach rechts."
@@ -1231,6 +1357,15 @@
       "id": "lateral-step-down",
       "name": "Seitliches Step-down (exzentrisch)",
       "description": "Auf dem Step stehend die andere Ferse langsam zum Boden senken – Bremskraft und Beinachse.",
+      "short": "Langsam auf einem Bein absenken – trainiert Bremskraft und eine gerade Beinachse.",
+      "setup": "Stell die Stufe ca. eine Unterarmlänge neben eine Wand. Stell dich seitlich zur Wand auf die Stufe, die linke Schulter zeigt zur Wand. Das linke Bein steht, das rechte hängt seitlich frei über der Kante. Die linke Hand liegt an der Wand.",
+      "steps": [
+        "Links auf die Stufe, rechtes Bein hängt seitlich frei.",
+        "Linkes Knie langsam (3–4 s) beugen, bis die rechte Ferse tippt.",
+        "Nicht abstellen – sofort über links wieder hochdrücken.",
+        "Becken bleibt waagerecht. Danach umdrehen, rechts stehen."
+      ],
+      "feel": "Du spürst den linken Oberschenkel und das seitliche Gesäß kräftig arbeiten.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -1321,6 +1456,15 @@
       "id": "glute-bridge",
       "name": "Gesäßbrücke mit Loop",
       "description": "Becken heben, Knie gegen den Loop nach außen – kräftigt Gesäß und Beinrückseite ohne Kniebelastung.",
+      "short": "Becken heben, Knie gegen den Loop – kräftigt Gesäß und Beinrückseite, schont das Knie.",
+      "setup": "Leg dich auf den Rücken auf die Matte. Loop knapp über den Knien, Füße hüftbreit und eher weit vom Gesäß weg (Knie ca. 60–70° gebeugt). Arme neben dem Körper. Stufe 4: oben abwechselnd einen Fuß kurz anheben (Marschieren). Stufe 5: nur das linke Bein drückt, das rechte ist gestreckt in der Luft.",
+      "steps": [
+        "Rückenlage, Loop über den Knien, Füße eher weit weg.",
+        "Drück die Knie leicht nach außen gegen den Loop.",
+        "Gesäß anspannen und Becken heben bis zur geraden Linie.",
+        "Kurz halten, langsam Wirbel für Wirbel ablegen."
+      ],
+      "feel": "Du spürst Gesäß und hintere Oberschenkel – nicht den unteren Rücken.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -1422,6 +1566,15 @@
       "id": "clamshell",
       "name": "Muschel (Clamshell) mit Loop",
       "description": "In Seitlage das obere Knie öffnen – kräftigt den Gesäßmuskel, der das Knie in der Achse hält.",
+      "short": "In Seitlage das obere Knie öffnen – kräftigt den Gesäßmuskel, der das Knie in der Spur hält.",
+      "setup": "Leg dich auf die Seite auf die Matte, Kopf auf dem unteren Arm. Hüfte ca. 45°, Knie ca. 90° gebeugt, Fersen zusammen. Loop knapp über den Knien.",
+      "steps": [
+        "Seitlage, Knie gebeugt, Fersen zusammen, Loop über den Knien.",
+        "Öffne das obere Knie wie eine Muschel.",
+        "Das Becken bleibt still und rollt nicht nach hinten.",
+        "Langsam schließen. Danach auf die andere Seite legen."
+      ],
+      "feel": "Du spürst es seitlich-hinten im Gesäß des oberen Beins.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -1514,6 +1667,15 @@
       "id": "side-lying-hip-abduction",
       "name": "Seitliches Beinheben im Liegen",
       "description": "Gestrecktes oberes Bein in Seitlage anheben – stärkt den mittleren Gesäßmuskel.",
+      "short": "Gestrecktes oberes Bein in Seitlage anheben – stärkt den mittleren Gesäßmuskel.",
+      "setup": "Leg dich auf die Seite auf die Matte, Kopf auf dem unteren Arm. Unteres Bein leicht gebeugt, oberes Bein gestreckt in Verlängerung des Körpers. Ab Stufe 3: Loop knapp über den Knien.",
+      "steps": [
+        "Seitlage, unteres Bein leicht gebeugt, oberes Bein lang.",
+        "Die Fußspitze zeigt nach vorn, nicht zur Decke.",
+        "Heb das obere Bein ca. 30–40 cm an, kurz halten.",
+        "Langsam senken. Danach auf die andere Seite legen."
+      ],
+      "feel": "Du spürst es seitlich an der Hüfte, oberhalb des Gesäßes.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -1603,6 +1765,15 @@
       "id": "lateral-band-walk",
       "name": "Seitwärtsgehen mit Loop",
       "description": "Kleine Seitschritte mit Loop über den Knien – Hüfte stabil, Knie in der Spur.",
+      "short": "Kleine Seitschritte mit Loop – Hüfte stabil, Knie in der Spur.",
+      "setup": "Stell dich frei in den Raum – oder an eine Wand entlang, wenn du unsicher bist. Loop knapp oberhalb der Knie, Füße hüftbreit, Knie leicht gebeugt.",
+      "steps": [
+        "Loop über den Knien, Füße hüftbreit, Knie leicht gebeugt.",
+        "Mach einen kleinen Schritt zur Seite, der Loop bleibt gespannt.",
+        "Zieh den anderen Fuß nach – die Füße kommen nicht zusammen.",
+        "Erst alle Schritte nach rechts, dann gleich viele nach links."
+      ],
+      "feel": "Du spürst es seitlich am Gesäß, auf beiden Seiten.",
       "category": "stabilitaet",
       "block": "knee",
       "equipment": [
@@ -1692,6 +1863,15 @@
       "id": "standing-hip-abduction",
       "name": "Hüftabduktion im Stand mit Band",
       "description": "Rechtes Bein gegen das Band seitlich abspreizen – das linke Standbein arbeitet für die Stabilität.",
+      "short": "Rechtes Bein gegen das Band seitlich abspreizen – das linke Standbein arbeitet für die Stabilität.",
+      "setup": "Stell dich seitlich zur Tür, die linke Schulter zeigt zur Tür, gut einen Schritt entfernt. Die linke Hand stützt am Türrahmen oder an der Wand. Schlaufe ums rechte Fußgelenk, links ist Standbein mit weichem Knie. Für die andere Seite umdrehen.",
+      "steps": [
+        "Band unten in der Tür, Schlaufe ums rechte Fußgelenk.",
+        "Linke Seite zur Tür, linke Hand an Wand oder Rahmen.",
+        "Rechtes Bein gestreckt 20–30° zur Seite führen, kurz halten.",
+        "Langsam zurück. Danach umdrehen: Schlaufe links, rechts Standbein."
+      ],
+      "feel": "Du spürst es seitlich an der Hüfte – im bewegten Bein und im Standbein.",
       "category": "stabilitaet",
       "block": "knee",
       "equipment": [
@@ -1791,6 +1971,15 @@
       "id": "standing-hip-extension",
       "name": "Hüftstreckung im Stand mit Band",
       "description": "Gestrecktes rechtes Bein gegen das Band nach hinten führen – Gesäß kräftigen, links stabilisieren.",
+      "short": "Gestrecktes Bein gegen das Band nach hinten führen – Gesäß kräftigen, Standbein stabilisieren.",
+      "setup": "Stell dich mit dem Gesicht zur Tür, ca. einen Schritt entfernt. Hände auf Brusthöhe an Türrahmen oder Wand. Schlaufe ums rechte Fußgelenk, links ist Standbein mit weichem Knie.",
+      "steps": [
+        "Band unten in der Tür, Schlaufe ums rechte Fußgelenk.",
+        "Gesicht zur Tür, Hände am Rahmen, linkes Knie weich.",
+        "Rechtes Bein gestreckt ca. 20° nach hinten, Gesäß anspannen.",
+        "Langsam zurück. Danach Schlaufe ans linke Bein."
+      ],
+      "feel": "Du spürst das Gesäß des hinteren Beins – nicht den unteren Rücken.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -1889,6 +2078,15 @@
       "id": "seated-hamstring-curl",
       "name": "Beinbeuger im Sitzen mit Band",
       "description": "Ferse gegen das Band unter den Stuhl ziehen – Beinrückseite stärken, Beugung begrenzt.",
+      "short": "Ferse gegen das Band unter den Stuhl ziehen – stärkt die Beinrückseite mit begrenzter Beugung.",
+      "setup": "Stell den Stuhl mit Blick zur Tür ca. ein bis zwei Schritte davor, sodass das Band bei fast gestrecktem Bein leicht spannt. Setz dich aufrecht, Schlaufe um die linke Ferse.",
+      "steps": [
+        "Band unten in der Tür, Stuhl mit Blick zur Tür davor.",
+        "Schlaufe um die linke Ferse, Bein fast gestreckt.",
+        "Zieh die Ferse zurück bis ca. 60° Kniebeugung.",
+        "Langsam (3 s) nach vorn. Danach die rechte Ferse."
+      ],
+      "feel": "Du spürst die Rückseite des Oberschenkels – nicht hinten innen im Knie.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -1912,7 +2110,8 @@
       "mistakes": [
         "Zu weit beugen",
         "Mit dem Oberkörper nach hinten ziehen",
-        "Band zurückschnappen lassen"
+        "Band zurückschnappen lassen",
+        "Stuhl rollt Richtung Tür – dann leichteres Band oder kürzerer Abstand"
       ],
       "kneeNote": "Beugung unter Zug max. ca. 60° (später 90°). Bei Ziehen hinten innen im Knie (Meniskus) Bewegungsweg verkürzen.",
       "levels": [
@@ -1986,6 +2185,15 @@
       "id": "hamstring-bridge-chair",
       "name": "Fersen-Brücke auf dem Stuhl",
       "description": "Fersen auf dem Stuhl, Becken heben – kräftigt Beinbeuger und Gesäß bei fast gestrecktem Knie.",
+      "short": "Fersen auf dem Stuhl, Becken heben – kräftigt Beinbeuger und Gesäß bei fast gestrecktem Knie.",
+      "setup": "Stell einen festen Stuhl ohne Rollen vor die Matte (Lehne an der Wand). Leg dich auf den Rücken, beide Fersen auf die Sitzfläche, Knie nur leicht gebeugt (ca. 20–30°). Arme neben dem Körper.",
+      "steps": [
+        "Rückenlage, beide Fersen auf den festen Stuhl.",
+        "Knie leicht gebeugt, Fersen in die Sitzfläche drücken.",
+        "Becken heben, bis Schultern, Hüfte und Fersen eine Linie bilden.",
+        "Kurz halten, langsam absenken."
+      ],
+      "feel": "Du spürst die Rückseite der Oberschenkel und das Gesäß.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -2090,6 +2298,15 @@
       "id": "calf-raise",
       "name": "Wadenheben",
       "description": "Auf die Zehenspitzen und langsam zurück – kräftige Waden entlasten das Knie beim Gehen.",
+      "short": "Auf die Zehenspitzen und langsam zurück – kräftige Waden entlasten das Knie beim Gehen.",
+      "setup": "Stell dich mit dem Gesicht zur Wand, ca. 30 cm (eine Fußlänge) entfernt, Füße hüftbreit. Leg die Hände auf Brusthöhe leicht an die Wand. Ab Stufe 3 nur auf dem linken Bein, danach rechts gleich viele.",
+      "steps": [
+        "Gesicht zur Wand, ca. 30 cm Abstand, Hände an die Wand.",
+        "Drück dich gleichmäßig auf die Zehenspitzen hoch.",
+        "Oben kurz halten.",
+        "Langsam (3 s) absenken."
+      ],
+      "feel": "Du spürst die Waden fest werden.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -2186,6 +2403,15 @@
       "id": "single-leg-stance",
       "name": "Einbeinstand links",
       "description": "Auf dem linken Bein stehen und ruhig bleiben – schult die Gelenkwahrnehmung nach der Meniskusverletzung.",
+      "short": "Auf dem linken Bein ruhig stehen – schult Gleichgewicht und Kniekontrolle.",
+      "setup": "Stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, sodass deine Hand sie jederzeit erreicht. Stufe 3: auf einem Kissen oder der gefalteten Matte. Stufe 4: rechter Fuß tippt nach vorn, zur Seite und nach hinten. Stufe 5: Band vor dem Bauch auseinanderziehen.",
+      "steps": [
+        "Seitlich neben die Wand, Hand in Reichweite.",
+        "Verlagere das Gewicht aufs linke Bein, Knie leicht gebeugt.",
+        "Rechten Fuß lösen, Becken waagerecht, Blick auf einen Punkt.",
+        "Halten. Rechts gern auch kurz zum Ausgleich."
+      ],
+      "feel": "Du spürst kleine Ausgleichsbewegungen in Fuß und Oberschenkel – das ist gewollt.",
       "category": "stabilitaet",
       "block": "knee",
       "equipment": [
@@ -2289,6 +2515,15 @@
       "id": "band-pull-apart",
       "name": "Band auseinanderziehen (Pull-Apart)",
       "description": "Band vor dem Körper auseinanderziehen – Schulterblätter zusammen, wie beim Vollauszug.",
+      "short": "Band vor der Brust auseinanderziehen – Schulterblätter zusammen, wie beim Vollauszug.",
+      "setup": "Stell dich aufrecht hin (oder setz dich), Füße hüftbreit. Greif das Band schulterbreit vor dem Körper. Mit Schulterschutz nimmt die App die tiefe Variante.",
+      "steps": [
+        "Band schulterbreit greifen, Arme gestreckt auf Schulterhöhe.",
+        "Zieh das Band auseinander, bis es die Brust berührt.",
+        "Schulterblätter dabei zusammen und nach unten.",
+        "Kontrolliert zurück."
+      ],
+      "feel": "Du spürst es zwischen den Schulterblättern.",
       "category": "haltung",
       "block": "archery",
       "equipment": [
@@ -2394,6 +2629,15 @@
       "id": "seated-row",
       "name": "Rudern im Sitzen mit Band",
       "description": "Band zum Bauch ziehen, Schulterblätter nach hinten-unten – die Basis jeder Rückenspannung.",
+      "short": "Band zum Bauch ziehen, Schulterblätter nach hinten-unten – die Basis jeder Rückenspannung.",
+      "setup": "Setz dich auf einen festen Stuhl mit Blick zur Tür, so weit weg, dass das Band bei gestreckten Armen leicht spannt (ca. 1–1,5 m). Aufrecht sitzen, Füße flach, die Hände bleiben unter Schulterhöhe.",
+      "steps": [
+        "Band auf Brusthöhe in der Tür, Blick zur Tür.",
+        "Arme nach vorn gestreckt, Bandenden in beiden Händen.",
+        "Erst Schulterblätter zurück, dann Ellbogen eng zum Bauch ziehen.",
+        "Kurz halten, langsam zurück."
+      ],
+      "feel": "Du spürst den mittleren Rücken zwischen den Schulterblättern.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -2508,6 +2752,15 @@
       "id": "prone-ytw",
       "name": "Y-T-W in Bauchlage",
       "description": "Arme in Y-, T- und W-Form vom Boden heben – stärkt die untere und mittlere Schulterblattmuskulatur.",
+      "short": "Arme in Y-, T- und W-Form abheben – stärkt die Muskeln um die Schulterblätter.",
+      "setup": "Leg dich auf den Bauch auf die Matte, Kissen unter dem Becken, Stirn auf einem kleinen Handtuch. Drückt die Bauchlage aufs linke Knie: gefaltetes Handtuch darunter.",
+      "steps": [
+        "Bauchlage, Stirn aufs Handtuch, Arme lang.",
+        "Y: Arme schräg vorn, Daumen hoch, leicht abheben.",
+        "T: Arme seitlich abheben. W: Ellbogen gebeugt zur Hüfte ziehen.",
+        "Jede Form kurz halten. Y + T + W = eine Wiederholung."
+      ],
+      "feel": "Du spürst die Muskeln um und unter den Schulterblättern.",
       "category": "haltung",
       "block": "archery",
       "equipment": [
@@ -2612,6 +2865,15 @@
       "id": "wall-slide",
       "name": "Wandgleiten mit Loop",
       "description": "Unterarme an der Wand nach oben gleiten lassen, Loop um die Handgelenke – Schulterblätter rotieren sauber.",
+      "short": "Unterarme an der Wand hochgleiten lassen – die Schulterblätter drehen sauber mit.",
+      "setup": "Stell dich mit dem Gesicht zur Wand, ca. eine Fußlänge (30 cm) entfernt. Loop um beide Handgelenke. Unterarme schulterbreit an die Wand, Ellbogen auf Schulterhöhe. Mit Schulterschutz ersetzt die App diese Übung.",
+      "steps": [
+        "Gesicht zur Wand, Unterarme an der Wand, Loop um die Handgelenke.",
+        "Drück die Handgelenke leicht nach außen gegen den Loop.",
+        "Lass die Unterarme nach oben in ein Y gleiten.",
+        "Langsam zurück, der Loop bleibt gespannt."
+      ],
+      "feel": "Du spürst es unter den Schulterblättern und hinten an der Schulter.",
       "category": "haltung",
       "block": "archery",
       "equipment": [
@@ -2721,6 +2983,15 @@
       "id": "serratus-punch",
       "name": "Serratus-Punch mit Band",
       "description": "Arm gegen das Band nach vorn schieben und das Schulterblatt mitnehmen – stabilisiert den Bogenarm.",
+      "short": "Arm gegen das Band nach vorn schieben und das Schulterblatt mitnehmen – stabilisiert den Bogenarm.",
+      "setup": "Stell dich mit dem Rücken zur Tür, so weit weg, dass das Band leicht spannt (ca. ein Schritt). Kleine Schrittstellung, Knie weich, Bandende in einer Hand.",
+      "steps": [
+        "Band auf Brusthöhe in der Tür, Rücken zur Tür.",
+        "Arm auf Schulterhöhe nach vorn, Ellbogen leicht gebeugt.",
+        "Arm strecken und die Schulter ein Stück nach vorn schieben.",
+        "Langsam zurück. Erst links (Bogenarm), dann rechts."
+      ],
+      "feel": "Du spürst es seitlich am Brustkorb unter der Achsel.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -2748,7 +3019,7 @@
       "kneeNote": "Schrittstellung klein und stabil, keine Drehung in den Knien. Alternativ im Sitzen.",
       "levels": [
         {
-          "label": "Rot · 2 × 12 je Seite (links +1 Satz)",
+          "label": "Rot · 2 × 12 je Seite",
           "sets": 2,
           "reps": 12,
           "tempo": "2-1-2",
@@ -2756,7 +3027,7 @@
           "rest": 45
         },
         {
-          "label": "Grün · 3 × 12 je Seite (links +1 Satz)",
+          "label": "Grün · 3 × 12 je Seite",
           "sets": 3,
           "reps": 12,
           "tempo": "2-1-2",
@@ -2764,7 +3035,7 @@
           "rest": 45
         },
         {
-          "label": "Grün · 3 × 15 je Seite (links +1 Satz)",
+          "label": "Grün · 3 × 15 je Seite",
           "sets": 3,
           "reps": 15,
           "tempo": "2-1-2",
@@ -2772,7 +3043,7 @@
           "rest": 45
         },
         {
-          "label": "Blau · 3 × 12 je Seite (links +1 Satz)",
+          "label": "Blau · 3 × 12 je Seite",
           "sets": 3,
           "reps": 12,
           "tempo": "2-1-2",
@@ -2836,6 +3107,15 @@
       "id": "er-towel",
       "name": "Außenrotation 0° mit Handtuch",
       "description": "Unterarm gegen das Band nach außen drehen, Handtuch unter dem Ellbogen – Schutz für die Rotatorenmanschette.",
+      "short": "Unterarm gegen das Band nach außen drehen – kräftigt die Außenrotatoren und schützt die Schulter.",
+      "setup": "Stell dich seitlich zur Tür, ca. einen Schritt entfernt. Für den rechten Arm zeigt die linke Schulter zur Tür – das Band läuft vor dem Bauch zur Tür. Kleines gerolltes Handtuch zwischen Ellbogen und Rumpf, Ellbogen 90° gebeugt.",
+      "steps": [
+        "Band auf Ellbogenhöhe in der Tür, seitlich zur Tür stellen.",
+        "Handtuch unter den Ellbogen, Ellbogen 90°, Hand vor dem Bauch.",
+        "Dreh den Unterarm nach außen, Ellbogen bleibt am Handtuch.",
+        "Langsam zurück. Erst rechts, dann umdrehen für links."
+      ],
+      "feel": "Du spürst es hinten an der Schulter – nicht vorn.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -2848,7 +3128,7 @@
         "Band auf Ellbogenhöhe hinter die Tür (Scharnierseite) klemmen, seitlich zur Tür stellen.",
         "Kleines gerolltes Handtuch zwischen Ellbogen und Rumpf, Ellbogen 90° gebeugt.",
         "Unterarm vom Bauch nach außen drehen, Ellbogen bleibt am Handtuch.",
-        "Langsam zurück. Rechts (Zugarm) zuerst und mit einem Extra-Satz."
+        "Langsam zurück. Rechts (Zugarm) zuerst, danach links."
       ],
       "cues": [
         "Handtuch nicht fallen lassen",
@@ -2863,7 +3143,7 @@
       "kneeNote": "Im Sitzen auf dem Stuhl möglich, falls das Knie heute gereizt ist. Nicht auf dem linken Knie knien.",
       "levels": [
         {
-          "label": "Gelb · 2 × 12 je Seite (rechts +1 Satz)",
+          "label": "Gelb · 2 × 12 je Seite",
           "sets": 2,
           "reps": 12,
           "tempo": "2-1-2",
@@ -2871,7 +3151,7 @@
           "rest": 45
         },
         {
-          "label": "Rot · 3 × 12 je Seite (rechts +1 Satz)",
+          "label": "Rot · 3 × 12 je Seite",
           "sets": 3,
           "reps": 12,
           "tempo": "2-1-2",
@@ -2879,7 +3159,7 @@
           "rest": 45
         },
         {
-          "label": "Rot · 3 × 15 je Seite (rechts +1 Satz)",
+          "label": "Rot · 3 × 15 je Seite",
           "sets": 3,
           "reps": 15,
           "tempo": "3-1-2",
@@ -2887,7 +3167,7 @@
           "rest": 45
         },
         {
-          "label": "Grün · 3 × 12 je Seite (rechts +1 Satz)",
+          "label": "Grün · 3 × 12 je Seite",
           "sets": 3,
           "reps": 12,
           "tempo": "3-1-2",
@@ -2936,6 +3216,15 @@
       "id": "er-90-90",
       "name": "Außenrotation 90/90 mit Band",
       "description": "Oberarm auf Schulterhöhe, Unterarm gegen das Band nach oben drehen – die Schulterposition des Zugarms.",
+      "short": "Unterarm auf Schulterhöhe gegen das Band nach oben drehen – die Schulterposition des Zugarms.",
+      "setup": "Stell dich mit dem Gesicht zur Tür, ca. einen Schritt entfernt. Oberarm seitlich auf Schulterhöhe, Ellbogen 90° gebeugt, Unterarm zeigt nach vorn zur Tür. Mit Schulterschutz ersetzt die App diese Übung.",
+      "steps": [
+        "Band auf Schulterhöhe in der Tür, Gesicht zur Tür.",
+        "Oberarm seitlich auf Schulterhöhe, Ellbogen 90°.",
+        "Dreh den Unterarm nach oben, bis er senkrecht steht.",
+        "Langsam zurück. Erst rechts, dann links."
+      ],
+      "feel": "Du spürst es hinten an der Schulter.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -3041,6 +3330,15 @@
       "id": "sidelying-er",
       "name": "Außenrotation in Seitlage",
       "description": "In Seitlage den Unterarm nach oben drehen – die sanfteste Form für die Außenrotatoren.",
+      "short": "In Seitlage den Unterarm nach oben drehen – die sanfteste Übung für die Außenrotatoren.",
+      "setup": "Leg dich auf die linke Seite (für den rechten Arm), Kopf gestützt, Kissen zwischen den Knien. Oberer Ellbogen 90° gebeugt am Körper, Handtuchrolle darunter, der Unterarm liegt vor dem Bauch.",
+      "steps": [
+        "Seitlage, oberer Ellbogen 90° am Körper, Handtuch darunter.",
+        "Dreh den Unterarm langsam nach oben.",
+        "Der Ellbogen bleibt am Handtuch.",
+        "Langsam zurück. Danach auf die andere Seite legen."
+      ],
+      "feel": "Du spürst es hinten an der oberen Schulter.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -3131,6 +3429,15 @@
       "id": "face-pull",
       "name": "Face Pull mit Außenrotation",
       "description": "Band zum Gesicht ziehen und die Hände nach außen drehen – hintere Schulter und Rotatoren in einem.",
+      "short": "Band zum Gesicht ziehen und die Hände nach außen drehen – hintere Schulter und Rotatoren in einem.",
+      "setup": "Stell dich mit dem Gesicht zur Tür, ca. 1–1,5 m entfernt, Füße hüftbreit. Greif die Bandenden mit den Daumen nach hinten. Mit Schulterschutz nimmt die App die tiefe Variante.",
+      "steps": [
+        "Band über Kopfhöhe in der Tür, Gesicht zur Tür.",
+        "Arme schräg nach oben gestreckt, Daumen zeigen nach hinten.",
+        "Zur Stirn ziehen, Ellbogen hoch, Hände nach hinten drehen.",
+        "Kurz halten, langsam zurück."
+      ],
+      "feel": "Du spürst die hintere Schulter und den oberen Rücken.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -3243,6 +3550,15 @@
       "id": "lat-pulldown",
       "name": "Latzug im Sitzen mit Band",
       "description": "Band von oben zur Brust ziehen – kräftigt den breiten Rückenmuskel für einen stabilen Anker.",
+      "short": "Band von oben zur Brust ziehen – kräftigt den breiten Rückenmuskel für einen stabilen Anker.",
+      "setup": "Stell den Stuhl mit Blick zur Tür ca. 1 m davor. Setz dich aufrecht, Füße flach. Bandenden greifen, Arme schräg nach oben gestreckt. Mit Schulterschutz ersetzt die App diese Übung.",
+      "steps": [
+        "Band oben in der Tür, Stuhl mit Blick zur Tür davor.",
+        "Bandenden greifen, Arme schräg nach oben gestreckt.",
+        "Schulterblätter nach unten, dann Ellbogen zu den Rippen ziehen.",
+        "Langsam zurück, Schultern bleiben tief."
+      ],
+      "feel": "Du spürst es seitlich am Rücken unter den Achseln.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -3346,6 +3662,15 @@
       "id": "straight-arm-pulldown",
       "name": "Überzug mit gestreckten Armen",
       "description": "Gestreckte Arme gegen das Band nach unten führen – verbindet Latissimus und Rumpf wie im Vollauszug.",
+      "short": "Gestreckte Arme gegen das Band nach unten führen – verbindet Rücken und Rumpf wie im Vollauszug.",
+      "setup": "Stell dich mit dem Gesicht zur Tür, einen großen Schritt entfernt. Aufrecht, Knie weich, Bandenden in den Händen. Mit Schulterschutz ersetzt die App diese Übung.",
+      "steps": [
+        "Band oben in der Tür, Gesicht zur Tür, einen Schritt zurück.",
+        "Arme gestreckt schräg nach vorn-oben.",
+        "Zieh die gestreckten Arme bis neben die Oberschenkel.",
+        "Langsam zurück bis Augenhöhe."
+      ],
+      "feel": "Du spürst den breiten Rückenmuskel seitlich und den Bauch.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -3446,6 +3771,15 @@
       "id": "single-arm-high-row",
       "name": "Einarmiges hohes Rudern im Schießstand",
       "description": "Im Schießstand mit dem Zugarm auf Gesichtshöhe ziehen – die Auszugsbewegung mit Widerstand.",
+      "short": "Im Schießstand mit dem Zugarm auf Gesichtshöhe ziehen – die Auszugsbewegung mit Widerstand.",
+      "setup": "Stell dich im Schießstand seitlich zur Tür, die linke Schulter (Bogenarm) zeigt zur Tür, ca. 1–1,5 m entfernt. Die rechte Hand greift das Band, der Arm zeigt gestreckt zur Tür. Für die linke Seite umdrehen.",
+      "steps": [
+        "Band auf Schulterhöhe in der Tür, Bogenarm-Seite zur Tür.",
+        "Rechte Hand greift das Band, Arm zur Tür gestreckt.",
+        "Ellbogen auf Schulterhöhe zurück bis zum Anker an der Kinnlinie.",
+        "Kurz halten, zurück. Danach umdrehen, links ziehen."
+      ],
+      "feel": "Du spürst den Rücken zwischen Schulterblatt und Wirbelsäule.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -3555,6 +3889,15 @@
       "id": "band-draw-hold",
       "name": "Auszug & Halten mit Band (SPT)",
       "description": "Band wie den Bogen ausziehen und im Anker halten – spezifisches Haltetraining für den Compound-Schuss.",
+      "short": "Band wie den Bogen ausziehen und im Anker halten – Haltetraining für den Compound-Schuss.",
+      "setup": "Stell dich im Schießstand hin: hüftbreit, beide Beine gleich belastet, Knie weich. Die linke Hand (Bogenhand) hält das Band auf Schulterhöhe, die rechte greift wie mit dem Release. Nimm ein Band, dessen Zug im Anker etwa deinem Haltegewicht entspricht.",
+      "steps": [
+        "Schießstand, die linke Hand hält das Band auf Schulterhöhe.",
+        "Die rechte Hand zieht ruhig in den Anker.",
+        "Rückenspannung halten, ruhig weiteratmen.",
+        "Kontrolliert zurückführen – das Band nie schnappen lassen."
+      ],
+      "feel": "Du spürst den Rücken auf der Zugseite und eine tiefe, feste Bogenschulter.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -3659,6 +4002,15 @@
       "id": "bow-arm-push",
       "name": "Bogenarm-Isometrie an der Wand",
       "description": "Gestreckten Arm gegen die Wand drücken, Schulter tief – ein stabiler Bogenarm wie ein Pfeiler.",
+      "short": "Gestreckten Arm gegen die Wand drücken – ein stabiler Bogenarm wie ein Pfeiler.",
+      "setup": "Stell dich im Schießstand seitlich zur Wand, die linke Schulter zeigt zur Wand. Abstand ca. eine Armlänge: Der gestreckte linke Arm erreicht die Wand auf Schulterhöhe mit dem Handballen. Für rechts umdrehen.",
+      "steps": [
+        "Seitlich zur Wand, eine Armlänge Abstand, Arm auf Schulterhöhe.",
+        "Handballen wie am Bogengriff an die Wand.",
+        "Aus der Schulter gegen die Wand drücken, Schulter tief.",
+        "Halten, lösen. Erst links, dann umdrehen für rechts."
+      ],
+      "feel": "Du spürst es unter der Achsel und hinten am Schulterblatt.",
       "category": "stabilitaet",
       "block": "archery",
       "equipment": [
@@ -3751,6 +4103,15 @@
       "id": "mirror-draw",
       "name": "Spiegel-Auszug (links ziehen)",
       "description": "Den Auszug gespiegelt mit links ziehen – gleicht die einseitige Belastung des Bogensports aus.",
+      "short": "Den Auszug gespiegelt mit links ziehen – gleicht die einseitige Belastung des Bogensports aus.",
+      "setup": "Stell dich gespiegelt in den Schießstand (rechte Schulter vorn), hüftbreit, Knie weich. Die rechte Hand hält das Band auf Schulterhöhe, die linke zieht. Nimm ein leichteres Band als beim Auszug & Halten.",
+      "steps": [
+        "Gespiegelter Stand: die rechte Hand hält das Band vorn.",
+        "Die linke Hand zieht ruhig in einen gespiegelten Anker.",
+        "Rückenspannung links halten, ruhig atmen.",
+        "Kontrolliert zurück – das Band nie schnappen lassen."
+      ],
+      "feel": "Du spürst den linken Rücken zwischen Schulterblatt und Wirbelsäule.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -3845,6 +4206,15 @@
       "id": "pallof-press",
       "name": "Pallof Press (Anti-Rotation)",
       "description": "Band seitlich, Hände vor die Brust schieben und nicht verdrehen lassen – ein stabiler Rumpf für ruhiges Zielen.",
+      "short": "Band seitlich, Arme nach vorn schieben und nicht verdrehen lassen – ein stabiler Rumpf für ruhiges Zielen.",
+      "setup": "Stell dich seitlich zur Tür, ca. 1 m (ein großer Schritt) entfernt, Füße hüftbreit, Knie weich. Halte das Band mit beiden Händen vor dem Brustbein – die Hände bleiben unter Schulterhöhe.",
+      "steps": [
+        "Band auf Brusthöhe in der Tür, seitlich zur Tür stellen.",
+        "Halte das Band mit beiden Händen vor dem Brustbein.",
+        "Arme langsam nach vorn strecken, 3 s halten, nicht mitdrehen.",
+        "Zurück zur Brust. Danach umdrehen, andere Seite zur Tür."
+      ],
+      "feel": "Du spürst den Bauch, vor allem seitlich – der Rumpf bleibt still.",
       "category": "stabilitaet",
       "block": "archery",
       "equipment": [
@@ -3951,6 +4321,15 @@
       "id": "dead-bug",
       "name": "Dead Bug mit Band (kniefreundlich)",
       "description": "In Rückenlage Arme gegen das Band halten und abwechselnd die Ferse ausgleiten lassen – Rumpfkontrolle ohne Kniebelastung.",
+      "short": "In Rückenlage die Arme gegen das Band halten und die Ferse ausgleiten lassen – Rumpfkontrolle ohne Kniebelastung.",
+      "setup": "Leg dich auf den Rücken auf die Matte, Kopf zur Tür, ca. 1 m vor der Tür. Bandenden greifen, Arme gestreckt Richtung Decke, Füße aufgestellt, unterer Rücken flach. Mit Schulterschutz ersetzt die App diese Übung.",
+      "steps": [
+        "Band unten in der Tür, Rückenlage mit dem Kopf zur Tür.",
+        "Arme gestreckt zur Decke halten, Rücken flach am Boden.",
+        "Ein Bein lang ausgleiten lassen, die Ferse bleibt am Boden.",
+        "Zurück, dann das andere Bein."
+      ],
+      "feel": "Du spürst den Bauch fest arbeiten, der Rücken bleibt am Boden.",
       "category": "stabilitaet",
       "block": "archery",
       "equipment": [
@@ -4053,6 +4432,15 @@
       "id": "side-plank-elevated",
       "name": "Seitstütz erhöht an der Wand",
       "description": "Seitstütz mit erhöhtem Unterarm und gestreckten Beinen – seitliche Rumpfkraft ohne Knien.",
+      "short": "Seitstütz mit erhöhtem Unterarm – seitliche Rumpfkraft ganz ohne Knien.",
+      "setup": "Stell dich seitlich zur Wand. Leg den Unterarm auf Schulterhöhe an die Wand, Ellbogen unter der Schulter. Die Füße stehen ca. einen Schritt von der Wand weg, Beine gestreckt. Ab Stufe 3: Unterarm auf einer stabilen Tischkante – nie auf einem Stuhl mit Rollen.",
+      "steps": [
+        "Seitlich zur Wand, Unterarm an der Wand, Füße einen Schritt weg.",
+        "Beine gestreckt, der Körper bildet eine gerade Linie.",
+        "Becken nach vorn schieben und halten.",
+        "Lösen, umdrehen, andere Seite."
+      ],
+      "feel": "Du spürst die seitliche Bauchmuskulatur auf der wandnahen Seite.",
       "category": "stabilitaet",
       "block": "archery",
       "equipment": [
@@ -4062,7 +4450,7 @@
       "side": "perSide",
       "instructions": [
         "Stufe Wand: seitlich zur Wand, Unterarm auf Schulterhöhe an die Wand, Füße einen Schritt weg.",
-        "Später: Füße weiter weg von der Wand, Beine gestreckt übereinander (nie auf einem Stuhl mit Rollen abstützen).",
+        "Später: Füße weiter weg von der Wand bzw. Unterarm auf einer stabilen Tischkante (nie auf einem Stuhl mit Rollen abstützen).",
         "Becken anheben bzw. halten, bis der Körper eine gerade Linie bildet.",
         "Halten, ablegen, Seite wechseln."
       ],
@@ -4097,7 +4485,7 @@
           "rest": 30
         },
         {
-          "label": "Stuhl · 3 × 20 s je Seite",
+          "label": "Tischkante · 3 × 20 s je Seite",
           "sets": 3,
           "reps": 1,
           "hold": 20,
@@ -4106,7 +4494,7 @@
           "rest": 45
         },
         {
-          "label": "Stuhl · 3 × 30 s je Seite",
+          "label": "Tischkante · 3 × 30 s je Seite",
           "sets": 3,
           "reps": 1,
           "hold": 30,
@@ -4148,6 +4536,15 @@
       "id": "thoracic-extension-chair",
       "name": "Brustwirbel-Streckung über die Stuhllehne",
       "description": "Oberen Rücken über die Stuhllehne strecken – öffnet die Brust für einen aufrechten Auszug.",
+      "short": "Oberen Rücken über die Stuhllehne strecken – öffnet die Brust für einen aufrechten Auszug.",
+      "setup": "Setz dich aufrecht auf einen festen Stuhl mit niedriger Lehne (keine Rollen). Hände hinter den Kopf, Ellbogen zeigen nach vorn.",
+      "steps": [
+        "Setz dich an die niedrige Lehne, Hände hinter den Kopf.",
+        "Bauch leicht fest, Ellbogen zeigen nach vorn.",
+        "Streck den oberen Rücken über die Lehne nach hinten.",
+        "Kurz halten, langsam zurück."
+      ],
+      "feel": "Du spürst eine Dehnung im oberen Rücken und vorn an der Brust.",
       "category": "mobilitaet",
       "block": "archery",
       "equipment": [
@@ -4230,6 +4627,15 @@
       "id": "expansion-drill",
       "name": "Expansions-Drill (Rückenspannung & Lösen)",
       "description": "Im Anker die Rückenspannung weiter aufbauen und das Lösen nur andeuten – Schussablauf ohne Bogen.",
+      "short": "Im Anker die Rückenspannung weiter aufbauen und das Lösen nur andeuten – Schussablauf ohne Bogen.",
+      "setup": "Stell dich im Schießstand hin: hüftbreit, beide Beine gleich belastet, Knie weich. Die linke Hand (Bogenhand) hält das Band auf Schulterhöhe, die rechte greift wie mit dem Release. Nimm ein Band, dessen Zug im Anker etwa deinem Haltegewicht entspricht.",
+      "steps": [
+        "Wie beim Auszug & Halten in den Anker ziehen, 2 s zielen.",
+        "Zugschulterblatt langsam weiter zur Wirbelsäule schieben, 3–5 s.",
+        "Lösen nur andeuten: Ellbogen folgt 2–3 cm nach hinten.",
+        "Band kontrolliert zurückführen, nie loslassen."
+      ],
+      "feel": "Du spürst die Spannung zwischen den Schulterblättern langsam zunehmen.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -4322,6 +4728,15 @@
       "id": "push-pull-iso",
       "name": "Push-Pull-Isometrie",
       "description": "Bogenarm drückt gegen die Wand, Zugarm zieht das Band in den Anker – beide Seiten gleichzeitig halten.",
+      "short": "Bogenarm drückt gegen die Wand, Zugarm zieht das Band in den Anker – beide Seiten halten gleichzeitig.",
+      "setup": "Stell dich im Schießstand seitlich zur Wand bzw. zum Türrahmen, die linke Schulter zeigt dorthin. Abstand ca. eine Armlänge: Der gestreckte linke Arm erreicht Wand oder Rahmen auf Schulterhöhe. Das Band ist auf Schulterhöhe in der Tür befestigt, die rechte Hand greift es.",
+      "steps": [
+        "Schießstand seitlich zur Wand, Band auf Schulterhöhe in der Tür.",
+        "Die linke Hand drückt mit gestrecktem Arm gegen Wand oder Rahmen.",
+        "Die rechte Hand zieht das Band in den Anker – halten.",
+        "Beides kontrolliert lösen."
+      ],
+      "feel": "Du spürst den ganzen Schultergürtel – vorn drücken, hinten ziehen.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -4423,7 +4838,16 @@
     {
       "id": "endurance-series",
       "name": "Ausdauerserie – Turniersimulation",
-      "description": "Passen zu 6 „Pfeilen“: ausziehen, 8–12 s halten, 20 s Pause – Haltekraft für lange Turniere.",
+      "description": "Passen zu 6 „Pfeilen“: ausziehen, 10 s halten, 20 s Pause – Haltekraft für lange Turniere.",
+      "short": "Passen zu 6 „Pfeilen“ ausziehen und halten – Haltekraft für lange Turniere.",
+      "setup": "Stell dich im Schießstand hin: hüftbreit, beide Beine gleich belastet, Knie weich. Die linke Hand (Bogenhand) hält das Band auf Schulterhöhe, die rechte greift wie mit dem Release. Nimm ein Band, dessen Zug im Anker etwa deinem Haltegewicht entspricht. Eine Passe = 6 Pfeile.",
+      "steps": [
+        "Ausziehen, ankern, 10 s zielen und halten.",
+        "Kontrolliert zurück, 20 s Pause – das war ein Pfeil.",
+        "6 Pfeile = eine Passe, danach 2 min Pause.",
+        "Jeden Pfeil mit voller Routine wie einen echten Schuss."
+      ],
+      "feel": "Du spürst gegen Ende der Passe den Rücken müde werden – die Form bleibt sauber.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -4433,7 +4857,7 @@
       "side": "both",
       "instructions": [
         "Band wie beim SPT wählen (Zug ≈ Haltegewicht). Eine Passe = 6 Pfeile.",
-        "Pro Pfeil: ausziehen, ankern, 8–12 s zielen und halten, kontrolliert zurück.",
+        "Pro Pfeil: ausziehen, ankern, 10 s zielen und halten, kontrolliert zurück.",
         "20 s Pause zwischen den Pfeilen, 2 min Pause zwischen den Passen.",
         "Jede Wiederholung wie einen echten Schuss mit voller Routine durchgehen."
       ],
@@ -4533,6 +4957,15 @@
       "id": "doorway-pec-stretch",
       "name": "Brustdehnung im Türrahmen",
       "description": "Unterarm an den Türrahmen, sanft nach vorn lehnen – Gegenpol zur Zugarbeit. Optional: sanfte Sleeper-Dehnung. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Unterarm an den Türrahmen, sanft nach vorn lehnen – dehnt die Brust als Gegenpol zur Zugarbeit.",
+      "setup": "Stell dich in den Türrahmen, kleine Schrittstellung. Leg den Unterarm auf Schulterhöhe an den Rahmen, Ellbogen 90° gebeugt. Mit Schulterschutz nimmt die App die tiefe Variante.",
+      "steps": [
+        "Unterarm auf Schulterhöhe an den Türrahmen, Ellbogen 90°.",
+        "Mach einen kleinen Schritt nach vorn.",
+        "Halte bei sanftem Ziehen in der Brust, ruhig atmen.",
+        "Dann umdrehen, der andere Arm."
+      ],
+      "feel": "Du spürst ein sanftes Ziehen vorn in der Brust – nicht vorn in der Schulter.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -4615,6 +5048,15 @@
       "id": "hamstring-stretch-seated",
       "name": "Beinrückseite dehnen im Sitzen",
       "description": "Auf der Stuhlkante ein Bein lang, mit geradem Rücken vorneigen – sanft für die Beinrückseite. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Mit geradem Rücken vorneigen – dehnt sanft die Rückseite des Oberschenkels.",
+      "setup": "Setz dich auf die vordere Kante des Stuhls. Ein Bein lang nach vorn, Ferse am Boden, Zehen zu dir. Das andere Bein ist angewinkelt.",
+      "steps": [
+        "Vorn auf den Stuhl, ein Bein lang, Ferse am Boden.",
+        "Hände auf den anderen Oberschenkel, Rücken gerade.",
+        "Mit geradem Rücken aus der Hüfte vorneigen und halten.",
+        "Dann die Beine tauschen."
+      ],
+      "feel": "Du spürst ein Ziehen hinten im Oberschenkel – nicht in der Kniekehle.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -4683,6 +5125,15 @@
       "id": "calf-stretch-wall",
       "name": "Wadendehnung an der Wand",
       "description": "Hände an die Wand, hinteres Bein lang – lockert die Wade nach dem Training. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Hinteres Bein lang, Ferse am Boden – lockert die Wade nach dem Training.",
+      "setup": "Stell dich mit dem Gesicht zur Wand, ca. eine Armlänge (60 cm) entfernt. Hände auf Brusthöhe an die Wand – nicht höher. Ein Bein macht einen großen Schritt nach hinten.",
+      "steps": [
+        "Gesicht zur Wand, Hände auf Brusthöhe an die Wand.",
+        "Ein Bein nach hinten, Ferse unten, Fußspitze nach vorn.",
+        "Vorderes Knie leicht beugen, Becken zur Wand schieben – halten.",
+        "Dann die Beine tauschen."
+      ],
+      "feel": "Du spürst ein Ziehen in der Wade des hinteren Beins.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -4691,7 +5142,7 @@
       "type": "hold",
       "side": "perSide",
       "instructions": [
-        "Mit Gesicht zur Wand, Hände auf Schulterhöhe an die Wand.",
+        "Mit Gesicht zur Wand, Hände auf Brusthöhe an die Wand.",
         "Ein Bein nach hinten, Ferse am Boden, Fußspitze zeigt nach vorn.",
         "Vorderes Knie leicht beugen, Becken nach vorn schieben, bis die hintere Wade zieht.",
         "Halten, Seite wechseln."
@@ -4750,6 +5201,15 @@
       "id": "breathing-reset",
       "name": "Atemübung 4-7-8 in Rückenlage",
       "description": "4 Sekunden einatmen (Nase), 7 Sekunden Luft anhalten, 8 Sekunden ausatmen (Mund) – 4 Runden zum Abschluss. Das lange Ausatmen beruhigt den Puls und das Nervensystem. Bei Schwindel einfach normal weiteratmen.",
+      "short": "Atmen im 4-7-8-Rhythmus – beruhigt Puls und Nervensystem zum Abschluss.",
+      "setup": "Leg dich auf den Rücken auf die Matte. Beine lang oder aufgestellt (ein Kissen unter den Knien ist erlaubt). Hände auf den Bauch.",
+      "steps": [
+        "4 Sekunden durch die Nase einatmen, der Bauch hebt sich.",
+        "7 Sekunden die Luft locker anhalten, nicht pressen.",
+        "8 Sekunden langsam durch den Mund ausatmen.",
+        "Bei Schwindel einfach normal weiteratmen."
+      ],
+      "feel": "Du spürst, wie Puls und Atmung ruhiger werden.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -4837,6 +5297,15 @@
       "id": "row-technique-warmup",
       "name": "Rudern – Technik-Aufwärmen",
       "description": "Locker einrudern und dabei die Reihenfolge Beine – Körper – Arme aufbauen.",
+      "short": "Locker einrudern und die Reihenfolge Beine – Körper – Arme aufbauen.",
+      "setup": "Setz dich aufs Rudergerät. Füße in die Fußstützen, Gurt über den breitesten Teil des Fußes. Widerstand niedrig bis mittel einstellen.",
+      "steps": [
+        "Zug: erst Beine strecken, dann leicht zurücklehnen, dann Arme ziehen.",
+        "Griff zum unteren Rippenbogen ziehen, Schultern bleiben tief.",
+        "Zurück: Arme strecken, Oberkörper vor, dann langsam nach vorn rollen.",
+        "Aufbau: nur Arme, dann Oberkörper, dann halber und ganzer Beinweg."
+      ],
+      "feel": "Du spürst vor allem Beine, Gesäß und Rücken arbeiten, der Puls steigt.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -4937,6 +5406,15 @@
       "id": "row-steady",
       "name": "Rudern – Grundlage",
       "description": "Gleichmäßig rudern im Gesprächstempo – Ausdauer und Kalorienverbrauch ohne Stoßbelastung.",
+      "short": "Gleichmäßig rudern im Gesprächstempo – Ausdauer ohne Stoßbelastung fürs Knie.",
+      "setup": "Setz dich aufs Rudergerät. Füße in die Fußstützen, Gurt über den breitesten Teil des Fußes. Widerstand niedrig bis mittel einstellen.",
+      "steps": [
+        "Zug: erst Beine strecken, dann leicht zurücklehnen, dann Arme ziehen.",
+        "Griff zum unteren Rippenbogen ziehen, Schultern bleiben tief.",
+        "Zurück: Arme strecken, Oberkörper vor, dann langsam nach vorn rollen.",
+        "Gleichmäßig rudern – du kannst dich noch unterhalten (RPE 4–5)."
+      ],
+      "feel": "Du spürst vor allem Beine, Gesäß und Rücken arbeiten, der Puls steigt.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -5066,6 +5544,15 @@
       "id": "row-intervals",
       "name": "Rudern – Intervalle",
       "description": "Wechsel aus zügigen und lockeren Minuten – trainiert das Herz-Kreislauf-System effizient.",
+      "short": "Zügige und lockere Minuten im Wechsel – trainiert Herz und Kreislauf effizient.",
+      "setup": "Setz dich aufs Rudergerät. Füße in die Fußstützen, Gurt über den breitesten Teil des Fußes. Widerstand niedrig bis mittel einstellen.",
+      "steps": [
+        "Zug: erst Beine strecken, dann leicht zurücklehnen, dann Arme ziehen.",
+        "Griff zum unteren Rippenbogen ziehen, Schultern bleiben tief.",
+        "Zurück: Arme strecken, Oberkörper vor, dann langsam nach vorn rollen.",
+        "Zügig = mehr Druck pro Schlag, locker = entspannt weiterrudern."
+      ],
+      "feel": "Du spürst vor allem Beine, Gesäß und Rücken arbeiten, der Puls steigt.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -5201,6 +5688,15 @@
       "id": "row-endurance",
       "name": "Rudern – Ausdauer",
       "description": "Längere ruhige Einheit – Grundlagenausdauer für die Zeit nach der OP sichern.",
+      "short": "Längere ruhige Einheit – sichert die Grundausdauer für die Zeit nach der OP.",
+      "setup": "Setz dich aufs Rudergerät. Füße in die Fußstützen, Gurt über den breitesten Teil des Fußes. Widerstand niedrig bis mittel einstellen.",
+      "steps": [
+        "Zug: erst Beine strecken, dann leicht zurücklehnen, dann Arme ziehen.",
+        "Griff zum unteren Rippenbogen ziehen, Schultern bleiben tief.",
+        "Zurück: Arme strecken, Oberkörper vor, dann langsam nach vorn rollen.",
+        "Ruhig und gleichmäßig rudern, RPE 4–5."
+      ],
+      "feel": "Du spürst vor allem Beine, Gesäß und Rücken arbeiten, der Puls steigt.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -5313,6 +5809,15 @@
       "id": "row-cooldown",
       "name": "Rudern – Ausrudern",
       "description": "Ganz locker ausrudern, Puls und Atmung beruhigen.",
+      "short": "Ganz locker ausrudern – Puls und Atmung beruhigen.",
+      "setup": "Setz dich aufs Rudergerät. Füße in die Fußstützen, Gurt über den breitesten Teil des Fußes. Widerstand niedrig bis mittel einstellen.",
+      "steps": [
+        "Zug: erst Beine strecken, dann leicht zurücklehnen, dann Arme ziehen.",
+        "Griff zum unteren Rippenbogen ziehen, Schultern bleiben tief.",
+        "Zurück: Arme strecken, Oberkörper vor, dann langsam nach vorn rollen.",
+        "Ganz locker ausrudern und die Atmung beruhigen."
+      ],
+      "feel": "Du spürst, wie Puls und Atmung langsam ruhiger werden.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -5390,6 +5895,15 @@
       "id": "chair-dip",
       "name": "Stütz-Dips am Stuhl",
       "description": "Trizeps und Schulterstütz für die Krückenzeit – kontrolliert und mit kleiner Bewegung.",
+      "short": "Mit den Armen am Stuhl stützen und ein Stück absenken – Trizeps und Schulterstütz für die Krückenzeit.",
+      "setup": "Stell einen festen Stuhl ohne Rollen mit der Lehne an die Wand. Setz dich vorn auf die Kante, Hände neben dem Gesäß an der Kante, Finger nach vorn. Füße hüftbreit, Knie ca. 90°.",
+      "steps": [
+        "Hände neben dem Gesäß an die Stuhlkante, Finger nach vorn.",
+        "Schieb das Gesäß nach vorn von der Sitzfläche.",
+        "Beug die Ellbogen nach hinten, nur ein kleines Stück absenken.",
+        "Über die Handballen hochdrücken, Schultern bleiben tief."
+      ],
+      "feel": "Du spürst die Rückseite der Oberarme arbeiten.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -5492,6 +6006,15 @@
       "id": "band-triceps-extension",
       "name": "Trizeps-Strecken mit Band",
       "description": "Arme gegen das Band nach unten strecken – Kraft zum Abstützen auf Krücken.",
+      "short": "Arme gegen das Band nach unten strecken – Kraft zum Abstützen auf Krücken.",
+      "setup": "Stell oder setz dich mit dem Gesicht zur Tür, ca. einen großen Schritt entfernt. Bandenden in beiden Händen, Oberarme eng am Körper, Ellbogen ca. 90° gebeugt. Die Arme bleiben unten am Körper.",
+      "steps": [
+        "Band oben in der Tür, Gesicht zur Tür, Enden in den Händen.",
+        "Oberarme eng am Körper, Ellbogen 90° gebeugt.",
+        "Streck die Unterarme nach unten, bis die Arme gerade sind.",
+        "Langsam zurück bis 90°."
+      ],
+      "feel": "Du spürst die Rückseite der Oberarme.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -5598,6 +6121,15 @@
       "id": "seated-press-up",
       "name": "Abstützen im Sitz (Krücken-Stütz)",
       "description": "Mit den Armen das Gesäß vom Stuhl heben und halten – genau die Kraft, die du an Krücken brauchst.",
+      "short": "Mit den Armen das Gesäß vom Stuhl heben und halten – genau die Kraft für Krücken.",
+      "setup": "Setz dich auf einen festen Stuhl mit Armlehnen (nie mit Rollen). Alternativ: zwei stabile Bücherstapel neben dem Gesäß. Hände auf die Armlehnen, Ellbogen leicht gebeugt.",
+      "steps": [
+        "Hände auf die Armlehnen, Ellbogen leicht gebeugt.",
+        "Schultern aktiv nach unten drücken.",
+        "Arme strecken, bis das Gesäß knapp abhebt – halten.",
+        "Langsam wieder absetzen."
+      ],
+      "feel": "Du spürst Oberarme und die Muskeln unter den Schulterblättern.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -5695,6 +6227,15 @@
       "id": "right-leg-sit-to-stand",
       "name": "Aufstehen mit Schwerpunkt rechts",
       "description": "Das gesunde rechte Bein kräftigen – es trägt dich nach der OP durch die Krückenzeit.",
+      "short": "Mit Schwerpunkt rechts aufstehen – das gesunde Bein trägt dich später durch die Krückenzeit.",
+      "setup": "Setz dich auf einen festen Stuhl ohne Rollen (Lehne an der Wand). Rechter Fuß unter dem Knie, linker Fuß eine halbe Fußlänge weiter vorn. Arme vor der Brust gekreuzt.",
+      "steps": [
+        "Rechter Fuß unter dem Knie, linker Fuß etwas vorn.",
+        "Oberkörper vor, Gewicht deutlich aufs rechte Bein.",
+        "Über das rechte Bein aufstehen, links tippt nur leicht.",
+        "Langsam (3 s) wieder hinsetzen."
+      ],
+      "feel": "Du spürst vor allem den rechten Oberschenkel und das rechte Gesäß.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -5790,6 +6331,15 @@
       "id": "single-leg-stance-reach",
       "name": "Einbeinstand links mit Armreichen",
       "description": "Kontrolle des linken Beins: Standbein stabil halten, während die Arme in verschiedene Richtungen reichen.",
+      "short": "Auf dem linken Bein stehen und mit dem Arm reichen – Kniekontrolle unter Ablenkung.",
+      "setup": "Stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, die Hand in Reichweite. Stell dich aufs linke Bein, Knie ganz leicht gebeugt. Mit Schulterschutz nimmt die App den einfachen Einbeinstand.",
+      "steps": [
+        "Seitlich an die Wand, aufs linke Bein stellen.",
+        "Knie leicht gebeugt, nicht durchgedrückt.",
+        "Rechten Arm langsam nach vorn, zur Seite und hoch reichen.",
+        "Halten, dann den Arm wechseln."
+      ],
+      "feel": "Du spürst Fuß, Oberschenkel und Gesäß links ausgleichen.",
       "category": "stabilitaet",
       "block": "knee",
       "equipment": [
@@ -5885,6 +6435,15 @@
       "id": "patella-mobilization",
       "name": "Kniescheiben-Mobilisation (Selbsthilfe)",
       "description": "Kniescheibe sanft nach unten, oben, innen und außen gleiten lassen – entlastet bei Druck direkt oberhalb der Kniescheibe. Ersetzt keine Behandlung.",
+      "short": "Kniescheibe sanft in alle Richtungen schieben – entlastet bei Druck oberhalb der Kniescheibe.",
+      "setup": "Setz dich im Langsitz auf die Matte, den Rücken angelehnt oder hinten abgestützt. Linkes Bein gestreckt und ganz locker.",
+      "steps": [
+        "Langsitz, linkes Bein lang und ganz locker.",
+        "Fass die Kniescheibe mit Daumen und Zeigefinger von oben.",
+        "Langsam nach unten schieben, halten, zurück – 10 ×.",
+        "Dann nach oben, innen und außen, je 10 ×."
+      ],
+      "feel": "Du spürst eine sanfte Dehnung rund um die Kniescheibe – höchstens leichter Schmerz.",
       "category": "mobilitaet",
       "block": "knee",
       "equipment": [
@@ -5959,6 +6518,15 @@
       "id": "glute-set",
       "name": "Gesäß anspannen (Glute Set)",
       "description": "Gesäßmuskeln im Liegen fest anspannen – hält die Hüfte aktiv, ohne das Knie zu belasten.",
+      "short": "Gesäß im Liegen fest anspannen – hält die Hüfte aktiv, ganz ohne Kniebelastung.",
+      "setup": "Leg dich auf den Rücken auf die Matte, Beine lang, Arme neben dem Körper.",
+      "steps": [
+        "Rückenlage, beide Beine lang.",
+        "Kneif beide Gesäßhälften fest zusammen.",
+        "Halten und ruhig weiteratmen.",
+        "Locker lassen."
+      ],
+      "feel": "Du spürst das Gesäß hart werden, das Becken hebt sich minimal.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -6038,6 +6606,15 @@
       "id": "right-leg-band-press",
       "name": "Beinpresse rechts mit Band (Liegen)",
       "description": "Das gesunde rechte Bein im Liegen gegen das Band strecken – Kraft erhalten, ohne links zu belasten.",
+      "short": "Das gesunde rechte Bein gegen das Band strecken – Kraft erhalten, links bleibt entlastet.",
+      "setup": "Leg dich auf den Rücken auf die Matte, linkes Bein lang und locker. Band um die rechte Fußsohle, Enden in beiden Händen, rechtes Knie zur Brust.",
+      "steps": [
+        "Rückenlage, Band um die rechte Fußsohle, Knie zur Brust.",
+        "Streck das rechte Bein langsam gegen das Band.",
+        "Kurz halten, das Knie ist fast gestreckt.",
+        "Kontrolliert zurück zur Brust."
+      ],
+      "feel": "Du spürst den rechten vorderen Oberschenkel und das Gesäß.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -6131,6 +6708,15 @@
       "id": "leg-swing-front",
       "name": "Beinpendel vor & zurück (an der Wand)",
       "description": "Bein locker vor- und zurückschwingen, eine Hand an der Wand. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "short": "Bein locker vor und zurück pendeln – macht die Hüfte warm, ohne zu dehnen.",
+      "setup": "Stell dich seitlich neben die Wand, ca. eine Unterarmlänge entfernt. Die wandnahe Hand liegt auf Brusthöhe an der Wand. Standbein leicht gebeugt.",
+      "steps": [
+        "Seitlich an die Wand, nahe Hand auf Brusthöhe an der Wand.",
+        "Standbein leicht gebeugt, Oberkörper aufrecht.",
+        "Freies Bein locker vor und zurück pendeln, kleiner Bogen.",
+        "Nach der Zeit umdrehen und das andere Bein pendeln."
+      ],
+      "feel": "Du spürst die Hüfte locker und warm werden.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -6139,7 +6725,7 @@
       "type": "timed",
       "side": "perSide",
       "instructions": [
-        "Seitlich neben die Wand stellen, die nahe Hand auf Schulterhöhe an die Wand.",
+        "Seitlich neben die Wand stellen, die nahe Hand auf Brusthöhe an die Wand.",
         "Standbein leicht gebeugt (nicht durchdrücken), Oberkörper aufrecht.",
         "Das freie Bein locker vor und zurück pendeln – kleiner Bogen, etwa bis Kniehöhe vorne.",
         "Nach der Zeit umdrehen und das andere Bein pendeln."
@@ -6211,6 +6797,15 @@
       "id": "leg-swing-side",
       "name": "Beinpendel seitlich (Hände an der Wand)",
       "description": "Bein vor dem Körper seitlich hin und her pendeln – macht die Hüfte (Abduktoren/Adduktoren) warm. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "short": "Bein vor dem Körper seitlich pendeln – macht die Hüfte innen und außen warm.",
+      "setup": "Stell dich mit dem Gesicht zur Wand, ca. eine Armlänge entfernt. Beide Hände auf Brusthöhe an die Wand. Standbein leicht gebeugt.",
+      "steps": [
+        "Gesicht zur Wand, beide Hände auf Brusthöhe an der Wand.",
+        "Standbein leicht gebeugt.",
+        "Freies Bein seitlich nach außen und wieder nach innen pendeln.",
+        "Nach der Zeit die Beine tauschen."
+      ],
+      "feel": "Du spürst die Hüfte innen und außen warm werden.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -6289,6 +6884,15 @@
       "id": "hip-circles-standing",
       "name": "Becken kreisen im Stand",
       "description": "Hände an die Hüften, Becken in ruhigen Kreisen bewegen – beide Füße bleiben am Boden. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "short": "Becken in ruhigen Kreisen bewegen – lockert Hüfte und unteren Rücken.",
+      "setup": "Stell dich hüftbreit hin, Knie weich, Hände an die Hüften.",
+      "steps": [
+        "Hüftbreit stehen, Knie weich, Hände an die Hüften.",
+        "Becken langsam kreisen: vor, Seite, zurück, andere Seite.",
+        "Nach der halben Zeit die Richtung wechseln.",
+        "Beide Füße bleiben am Boden."
+      ],
+      "feel": "Du spürst Hüfte und unteren Rücken locker werden.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -6356,6 +6960,15 @@
       "id": "ankle-circles-seated",
       "name": "Fußkreisen im Sitzen",
       "description": "Sprunggelenk im Sitzen kreisen und auf/ab bewegen – Bein lang nach vorn, Ferse am Boden. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "short": "Sprunggelenk im Sitzen kreisen – macht Füße und Waden warm.",
+      "setup": "Setz dich aufrecht auf den Stuhl. Ein Bein lang nach vorn, Ferse am Boden.",
+      "steps": [
+        "Setz dich hin, ein Bein lang, Ferse am Boden.",
+        "Kreise den Fuß langsam in großen Kreisen.",
+        "Dann Zehen abwechselnd zu dir ziehen und wegstrecken.",
+        "Nach der Zeit das andere Bein."
+      ],
+      "feel": "Du spürst Sprunggelenk und Wade locker werden.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -6432,6 +7045,15 @@
       "id": "band-dislocate",
       "name": "Schulterkreisen mit Band (leicht)",
       "description": "Band weit greifen und mit gestreckten Armen über den Kopf nach hinten und zurück führen – öffnet Brust und Schultern für den Auszug. Kurz und locker mobilisieren – kein Dehnen auf Zug, kein Wippen in die Endposition.",
+      "short": "Band weit gegriffen über den Kopf führen – öffnet Brust und Schultern.",
+      "setup": "Stell dich aufrecht hin oder setz dich. Greif ein leichtes Band (gelb) sehr weit, Arme gestreckt vor dem Körper. Mit Schulterschutz ersetzt die App diese Übung.",
+      "steps": [
+        "Leichtes Band sehr weit greifen, Arme gestreckt vorn.",
+        "Arme langsam über den Kopf und – schmerzfrei – nach hinten.",
+        "Auf demselben Weg zurück nach vorn.",
+        "Zwickt es: Griff weiter machen."
+      ],
+      "feel": "Du spürst eine sanfte Dehnung vorn an Brust und Schultern.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -6510,6 +7132,15 @@
       "id": "mobility-flow-short",
       "name": "Mobilisation kompakt (2 Min)",
       "description": "Kompakte Runde für das Kurztraining – jeder Abschnitt wird angesagt. Beinpendel, Becken kreisen, Schulterkreisen und Rumpfdrehung.",
+      "short": "Kompakte Mobilisation in 2 Minuten – jeder Abschnitt wird angesagt.",
+      "setup": "Stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, die nahe Hand an der Wand. Die App sagt jeden Abschnitt an.",
+      "steps": [
+        "Beinpendel an der Wand: 15 s rechts, 15 s links.",
+        "Becken kreisen, beide Füße am Boden (30 s).",
+        "Schultern rückwärts kreisen, dann Arme heben (30 s).",
+        "Rumpfdrehung im Stand, Arme vor der Brust (30 s)."
+      ],
+      "feel": "Du spürst Hüfte, Rücken und Schultern warm werden.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -6597,6 +7228,15 @@
       "id": "mobility-flow-seated",
       "name": "Mobilisation im Sitzen kompakt (2 Min)",
       "description": "Kompakte Runde für das Kurztraining – jeder Abschnitt wird angesagt. Alles im Sitzen bzw. Liegen – passend zur Entlastungsphase.",
+      "short": "Kompakte Mobilisation im Sitzen in 2 Minuten – passend für die Entlastungsphase.",
+      "setup": "Setz dich aufrecht auf den Stuhl, linkes Bein lang nach vorn. Die App sagt jeden Abschnitt an.",
+      "steps": [
+        "Fußpumpe: Zehen zu dir und weg (30 s).",
+        "Schultern rückwärts kreisen (30 s).",
+        "Wirbelsäulen-Welle: Rücken rund, dann aufrichten (30 s).",
+        "Rumpfdrehung, Arme vor der Brust verschränkt (30 s)."
+      ],
+      "feel": "Du spürst Füße, Rücken und Schultern warm werden – das linke Knie bleibt entlastet.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [
@@ -6677,6 +7317,15 @@
       "id": "stretch-flow-short",
       "name": "Dehnen kompakt (2 Min)",
       "description": "Kompakte Runde für das Kurztraining – jeder Abschnitt wird angesagt. Hüftbeuger, Waden, Brust, Unterarme, hintere Schulter. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Kompaktes Dehnen in 2 Minuten – jeder Abschnitt wird angesagt.",
+      "setup": "Stell dich in die Nähe von Wand und Türrahmen. Für Hüftbeuger und Wade: Gesicht zur Wand, ca. eine Armlänge entfernt, Hände auf Brusthöhe. Für die Brust stellst du dich in den Türrahmen. Die App sagt jeden Abschnitt an.",
+      "steps": [
+        "Hüftbeuger: kurze Schrittstellung, Becken aufrichten, 20 s je Seite.",
+        "Wade an der Wand: 15 s je Seite.",
+        "Brust im Türrahmen: 20 s.",
+        "Unterarme 15 s, dann hintere Schulter 15 s."
+      ],
+      "feel": "Du spürst nacheinander sanftes Ziehen in Hüfte, Wade, Brust und Armen.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -6775,6 +7424,15 @@
       "id": "stretch-flow-seated",
       "name": "Dehnen im Sitzen kompakt (2 Min)",
       "description": "Kompakte Runde für das Kurztraining – jeder Abschnitt wird angesagt. Alles im Sitzen – passend zur Entlastungsphase. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Kompaktes Dehnen im Sitzen in 2 Minuten – passend für die Entlastungsphase.",
+      "setup": "Setz dich aufrecht auf den Stuhl, linkes Bein lang nach vorn. Die App sagt jeden Abschnitt an. Mit Schulterschutz nimmt die App die schulterfreundliche Variante.",
+      "steps": [
+        "Brust: Hände hinter den Kopf, Ellbogen nach hinten (20 s).",
+        "Seitdehnung: Arm über den Kopf, zur Seite neigen.",
+        "Hintere Schulter: Arm vor der Brust, je Seite 15 s.",
+        "Unterarme, dann Nacken: Ohr Richtung Schulter."
+      ],
+      "feel": "Du spürst sanftes Ziehen in Brust, Flanken, Schultern und Nacken.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -6874,6 +7532,15 @@
       "id": "hip-flexor-stretch-standing",
       "name": "Hüftbeuger-Dehnung im Stand (kurze Schrittstellung)",
       "description": "Kurze Schrittstellung, Becken aufrichten – dehnt den Hüftbeuger des hinteren Beins, ohne das Knie tief zu beugen. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Becken aufrichten in kurzer Schrittstellung – dehnt den Hüftbeuger, ohne das Knie tief zu beugen.",
+      "setup": "Stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, die nahe Hand an der Wand. Kurze Schrittstellung: Der hintere Fuß steht ca. eine Fußlänge hinter dem vorderen.",
+      "steps": [
+        "Seitlich an der Wand, kurze Schrittstellung, Hand an der Wand.",
+        "Vorderes Knie leicht beugen, hinteres fast gestreckt.",
+        "Po anspannen, Becken unten nach vorn einrollen – halten.",
+        "Dann umdrehen, das andere Bein nach hinten."
+      ],
+      "feel": "Du spürst ein Ziehen vorn an der Hüfte des hinteren Beins.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -6944,6 +7611,15 @@
       "id": "hip-flexor-stretch-supine",
       "name": "Hüftbeuger-Dehnung in Rückenlage (linkes Bein lang)",
       "description": "Rückenlage, rechtes Knie zur Brust ziehen, linkes Bein bleibt lang liegen – dehnt den linken Hüftbeuger ohne Kniebeugung links. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Rechtes Knie zur Brust, linkes Bein bleibt lang – dehnt den linken Hüftbeuger ohne Kniebeugung links.",
+      "setup": "Leg dich auf den Rücken (Bett oder Matte), beide Beine lang.",
+      "steps": [
+        "Rückenlage, beide Beine lang.",
+        "Zieh das rechte Knie mit beiden Händen zur Brust.",
+        "Das linke Bein bleibt gestreckt liegen und sinkt locker ab.",
+        "Halten, ruhig atmen, langsam lösen."
+      ],
+      "feel": "Du spürst ein leichtes Ziehen vorn an der linken Hüfte.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -7021,6 +7697,15 @@
       "id": "hamstring-stretch-band",
       "name": "Beinrückseite dehnen mit Band (Rückenlage)",
       "description": "Rückenlage, Band um den Fuß, gestrecktes Bein sanft anheben – dehnt die Oberschenkelrückseite mit gestrecktem Knie. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Gestrecktes Bein mit dem Band anheben – dehnt die Oberschenkelrückseite.",
+      "setup": "Leg dich auf den Rücken auf die Matte. Band um eine Fußsohle, Enden in beiden Händen. Das andere Bein liegt lang.",
+      "steps": [
+        "Rückenlage, Band um die Fußsohle, Enden in den Händen.",
+        "Heb das Bein gestreckt an, bis es hinten leicht zieht.",
+        "Das andere Bein bleibt lang liegen – halten.",
+        "Bein langsam ablegen, Band ans andere Bein."
+      ],
+      "feel": "Du spürst ein Ziehen hinten im Oberschenkel – nicht in der Kniekehle.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -7094,6 +7779,15 @@
       "id": "figure-4-stretch-supine",
       "name": "Gesäß-Dehnung in Rückenlage (Figur 4)",
       "description": "Rückenlage, Knöchel auf das andere Knie legen – dehnt Gesäß und Hüftrotatoren (Bogenstand!). Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Knöchel aufs andere Knie legen – dehnt Gesäß und Hüftrotatoren (wichtig für den Bogenstand).",
+      "setup": "Leg dich auf den Rücken auf die Matte, beide Füße aufgestellt.",
+      "steps": [
+        "Rückenlage, beide Füße aufgestellt.",
+        "Leg den rechten Knöchel auf das linke Knie.",
+        "Rechtes Knie locker nach außen sinken lassen – halten.",
+        "Seite wechseln: linker Knöchel aufs rechte Knie."
+      ],
+      "feel": "Du spürst ein Ziehen tief im Gesäß.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -7162,6 +7856,15 @@
       "id": "seated-pec-stretch",
       "name": "Brustdehnung im Sitzen (Hände hinter dem Kopf)",
       "description": "Hände hinter den Kopf, Ellbogen nach hinten öffnen – Gegenpol zur Zugarbeit, ohne Stehen. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Hände hinter den Kopf, Ellbogen öffnen – dehnt die Brust im Sitzen.",
+      "setup": "Setz dich aufrecht auf die vordere Hälfte des Stuhls. Mit Schulterschutz nimmt die App die tiefe Variante.",
+      "steps": [
+        "Aufrecht sitzen, Hände locker hinter den Kopf.",
+        "Ellbogen weit nach außen und hinten öffnen.",
+        "Brustbein leicht anheben, halten, ruhig atmen.",
+        "Kurz lösen, dann die zweite Runde."
+      ],
+      "feel": "Du spürst die Brust sanft gedehnt.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -7234,6 +7937,15 @@
       "id": "lat-side-stretch",
       "name": "Seitdehnung / Latissimus im Sitzen",
       "description": "Arm über den Kopf, Oberkörper zur Seite neigen – dehnt Latissimus und Flanke (Zugmuskulatur). Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Arm über den Kopf, zur Seite neigen – dehnt Latissimus und Flanke.",
+      "setup": "Setz dich aufrecht auf den Stuhl, beide Sitzbeinhöcker bleiben auf der Sitzfläche. Mit Schulterschutz nimmt die App die tiefe Seitneigung.",
+      "steps": [
+        "Aufrecht sitzen, den rechten Arm lang über den Kopf.",
+        "Oberkörper sanft nach links neigen.",
+        "Halten, ruhig in die Flanke atmen.",
+        "Dann die Seite wechseln."
+      ],
+      "feel": "Du spürst ein Ziehen seitlich am Rumpf.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -7307,6 +8019,15 @@
       "id": "cross-body-shoulder-stretch",
       "name": "Hintere Schulter dehnen (Arm vor der Brust)",
       "description": "Arm waagerecht vor der Brust mit der anderen Hand sanft heranziehen – dehnt die hintere Schulter (Zughand!). Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Arm vor der Brust heranziehen – dehnt die hintere Schulter.",
+      "setup": "Setz dich aufrecht hin (oder stell dich hin). Mit Schulterschutz nimmt die App eine tiefe Variante.",
+      "steps": [
+        "Rechten Arm waagerecht vor die Brust führen.",
+        "Mit der linken Hand oberhalb des Ellbogens sanft heranziehen.",
+        "Die Schulter bleibt tief – halten.",
+        "Dann die Arme tauschen."
+      ],
+      "feel": "Du spürst ein Ziehen hinten an der Schulter.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -7381,6 +8102,15 @@
       "id": "forearm-flexor-stretch",
       "name": "Unterarm-Beuger dehnen (Zug- & Bogenhand)",
       "description": "Arm nach vorn, Handfläche nach vorn, Finger sanft zurückziehen – entlastet Zughand (Release/Finger) und Bogenhand (Griff). Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Finger sanft zurückziehen – entlastet Zughand und Bogenhand.",
+      "setup": "Setz dich aufrecht hin. Ein Arm gestreckt schräg nach vorn-unten (unter Schulterhöhe), Handfläche zeigt nach vorn, Finger nach unten.",
+      "steps": [
+        "Arm gestreckt schräg nach vorn-unten, Handfläche nach vorn.",
+        "Mit der anderen Hand die Finger sanft zu dir ziehen.",
+        "Halten, solange es innen am Unterarm zieht.",
+        "Dann die Hände tauschen."
+      ],
+      "feel": "Du spürst ein Ziehen an der Innenseite des Unterarms.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -7389,7 +8119,7 @@
       "type": "hold",
       "side": "perSide",
       "instructions": [
-        "Aufrecht sitzen, einen Arm gestreckt nach vorn, Handfläche zeigt nach vorn (Finger nach unten oder oben).",
+        "Aufrecht sitzen, einen Arm gestreckt schräg nach vorn-unten (unter Schulterhöhe), Handfläche zeigt nach vorn, Finger nach unten.",
         "Mit der anderen Hand die Finger sanft zu dir ziehen.",
         "Ziehen an der Innenseite des Unterarms – halten.",
         "Seite wechseln; beide Hände sind wichtig: Zughand und Bogenhand."
@@ -7451,6 +8181,15 @@
       "id": "neck-side-stretch",
       "name": "Nacken sanft dehnen (oberer Trapez)",
       "description": "Ohr Richtung Schulter neigen, gegenüberliegende Schulter tief – löst den oberen Trapez, der beim Auszug gern mitarbeitet. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich, entspannt und hilft der Haltung (wichtig für den Bogen).",
+      "short": "Ohr Richtung Schulter – löst den oberen Nacken, der beim Auszug gern mitarbeitet.",
+      "setup": "Setz dich aufrecht hin. Die linke Hand greift unter die Sitzfläche oder hängt locker. Mit Schulterschutz nimmt die App die Variante ohne Hand am Kopf.",
+      "steps": [
+        "Aufrecht sitzen, linke Hand hängt locker oder greift den Sitz.",
+        "Kopf sanft nach rechts neigen, Blick nach vorn.",
+        "Optional rechte Hand leicht auf den Kopf – nicht ziehen.",
+        "Halten, langsam zurück, Seite wechseln."
+      ],
+      "feel": "Du spürst ein Ziehen seitlich am Hals bis zur Schulter.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -7526,6 +8265,15 @@
       "id": "row-warmup-10",
       "name": "Rudern zum Aufwärmen (10 Min)",
       "description": "10 Minuten lockeres Rudern vor dem Krafttraining: 2 Minuten Technik-Aufbau, dann 8 Minuten ruhig (RPE 3–4, 18–22 Schläge/Min). Ersetzt den allgemeinen Teil der Mobilisation.",
+      "short": "10 Minuten locker rudern – wärmt den ganzen Körper vor dem Krafttraining auf.",
+      "setup": "Setz dich aufs Rudergerät. Füße in die Fußstützen, Gurt über den breitesten Teil des Fußes. Widerstand niedrig bis mittel einstellen.",
+      "steps": [
+        "Zug: erst Beine strecken, dann leicht zurücklehnen, dann Arme ziehen.",
+        "Griff zum unteren Rippenbogen ziehen, Schultern bleiben tief.",
+        "Zurück: Arme strecken, Oberkörper vor, dann langsam nach vorn rollen.",
+        "Erst 2 min Technik-Aufbau, dann 8 min locker (RPE 3–4)."
+      ],
+      "feel": "Du spürst vor allem Beine, Gesäß und Rücken arbeiten, der Puls steigt.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -7631,6 +8379,15 @@
       "id": "row-finisher-short",
       "name": "Ruder-Finisher locker/zügig (ca. 5 Min)",
       "description": "Optional nach dem Krafttraining, nur bei grüner Knie-Ampel: 5 × (30 s zügig / 30 s locker). Macht zusätzlich Kalorien bei geringer Kniebelastung. Ehrlich: Für das Abnehmen zählt vor allem das Gesamtvolumen pro Woche – und der größte Hebel ist die Ernährung. Die App zeigt nur die Trainings-Kalorien als Schätzung.",
+      "short": "Kurzer Ruder-Finisher mit zügigen 30-s-Abschnitten – nur bei grüner Knie-Ampel.",
+      "setup": "Setz dich aufs Rudergerät. Füße in die Fußstützen, Gurt über den breitesten Teil des Fußes. Widerstand niedrig bis mittel einstellen.",
+      "steps": [
+        "Zug: erst Beine strecken, dann leicht zurücklehnen, dann Arme ziehen.",
+        "Griff zum unteren Rippenbogen ziehen, Schultern bleiben tief.",
+        "Zurück: Arme strecken, Oberkörper vor, dann langsam nach vorn rollen.",
+        "5 Runden: 30 s zügig, 30 s locker – Technik vor Tempo."
+      ],
+      "feel": "Du spürst den Puls in den zügigen Abschnitten deutlich steigen.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -7705,6 +8462,15 @@
       "id": "row-finisher-intervals",
       "name": "Ruder-Finisher Intervalle 1:1 (8–10 Min)",
       "description": "Optional nach dem Krafttraining, nur bei grüner Knie-Ampel: Intervalle 1 min zügig / 1 min locker. Ehrlich: Für das Abnehmen zählt vor allem das Gesamtvolumen pro Woche – und der größte Hebel ist die Ernährung. Die App zeigt nur die Trainings-Kalorien als Schätzung.",
+      "short": "Ruder-Intervalle 1:1 nach dem Krafttraining – nur bei grüner Knie-Ampel.",
+      "setup": "Setz dich aufs Rudergerät. Füße in die Fußstützen, Gurt über den breitesten Teil des Fußes. Widerstand niedrig bis mittel einstellen.",
+      "steps": [
+        "Zug: erst Beine strecken, dann leicht zurücklehnen, dann Arme ziehen.",
+        "Griff zum unteren Rippenbogen ziehen, Schultern bleiben tief.",
+        "Zurück: Arme strecken, Oberkörper vor, dann langsam nach vorn rollen.",
+        "1 min zügig, 1 min locker im Wechsel – Technik vor Tempo."
+      ],
+      "feel": "Du spürst den Puls in den zügigen Minuten deutlich steigen.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -7797,6 +8563,15 @@
       "id": "row-long",
       "name": "Rudern lang – Grundlage / Fettstoffwechsel",
       "description": "Lange, lockere bis mittlere Einheit (RPE 4–5, 18–22 Schläge/Min): viele Kalorien bei geringer Kniebelastung, gut für die Grundlagenausdauer. Ehrlich: Für das Abnehmen zählt vor allem das Gesamtvolumen pro Woche – und der größte Hebel ist die Ernährung. Die App zeigt nur die Trainings-Kalorien als Schätzung.",
+      "short": "Lange, ruhige Rudereinheit – viel Grundlagenausdauer bei wenig Kniebelastung.",
+      "setup": "Setz dich aufs Rudergerät. Füße in die Fußstützen, Gurt über den breitesten Teil des Fußes. Widerstand niedrig bis mittel einstellen. Trinkflasche bereitstellen.",
+      "steps": [
+        "Zug: erst Beine strecken, dann leicht zurücklehnen, dann Arme ziehen.",
+        "Griff zum unteren Rippenbogen ziehen, Schultern bleiben tief.",
+        "Zurück: Arme strecken, Oberkörper vor, dann langsam nach vorn rollen.",
+        "Lang und ruhig rudern, Schlagzahl 18–22, RPE 4–5."
+      ],
+      "feel": "Du spürst vor allem Beine, Gesäß und Rücken arbeiten, der Puls steigt.",
       "category": "kardio",
       "block": "cardio",
       "equipment": [
@@ -7904,6 +8679,15 @@
       "id": "sling-row",
       "name": "Rudern am Schlingentrainer (Inverted Row)",
       "description": "Schräg zurücklehnen und die Brust zu den Griffen ziehen – Rücken und Schulterblätter wie beim Auszug, mit dem eigenen Körpergewicht.",
+      "short": "Schräg zurücklehnen und die Brust zu den Griffen ziehen – Rücken und Schulterblätter mit Körpergewicht.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich mit dem Gesicht zur Tür, Füße hüftbreit ca. einen Schritt vor der Tür. Griffe fassen, die Hände bleiben unter Schulterhöhe.",
+      "steps": [
+        "Gesicht zur Tür, Griffe fassen, Füße hüftbreit.",
+        "Mit gestreckten Armen zurücklehnen, der Körper bleibt gerade.",
+        "Schulterblätter zurück, dann Ellbogen eng zur Brust ziehen.",
+        "Kurz halten, langsam zurück in die Streckung."
+      ],
+      "feel": "Du spürst den Rücken zwischen den Schulterblättern.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -8000,6 +8784,15 @@
       "id": "sling-face-pull",
       "name": "Face Pull am Schlingentrainer",
       "description": "Griffe zur Stirn ziehen und die Hände nach außen drehen – hintere Schulter und Rotatoren, mit dem Körperwinkel dosiert.",
+      "short": "Griffe zur Stirn ziehen und nach außen drehen – hintere Schulter und Rotatoren.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich mit dem Gesicht zur Tür, ca. einen Schritt davor. Griffe mit den Daumen nach hinten fassen. Mit Schulterschutz nimmt die App die tiefe Variante.",
+      "steps": [
+        "Gesicht zur Tür, leicht zurücklehnen, Arme schräg nach oben.",
+        "Hände zur Stirn ziehen, Ellbogen hoch und weit.",
+        "Am Ende die Hände nach hinten-oben drehen.",
+        "Kurz halten, kontrolliert zurück."
+      ],
+      "feel": "Du spürst hintere Schulter und oberen Rücken.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -8097,6 +8890,15 @@
       "id": "sling-y-raise",
       "name": "Y-Heben am Schlingentrainer",
       "description": "Mit gestreckten Armen in ein Y über den Kopf ziehen – unterer Trapezius für einen stabilen Bogenarm und eine tiefe Schulter.",
+      "short": "Mit gestreckten Armen in ein Y ziehen – unterer Trapez für eine tiefe Schulter.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich mit dem Gesicht zur Tür, ca. einen Schritt davor, Griffe vor der Brust. Mit Schulterschutz ersetzt die App diese Übung.",
+      "steps": [
+        "Gesicht zur Tür, Griffe vor der Brust, leicht zurücklehnen.",
+        "Arme gestreckt schräg nach oben in ein Y führen.",
+        "Schultern tief, kurz halten.",
+        "Langsam zurück."
+      ],
+      "feel": "Du spürst es unter den Schulterblättern.",
       "category": "haltung",
       "block": "archery",
       "equipment": [
@@ -8194,6 +8996,15 @@
       "id": "sling-t-raise",
       "name": "T-Heben am Schlingentrainer",
       "description": "Arme gestreckt seitlich öffnen, bis der Körper ein T bildet – wie ein Pull-Apart, nur mit dem eigenen Körpergewicht.",
+      "short": "Arme seitlich öffnen, bis der Körper ein T bildet – wie ein Pull-Apart mit Körpergewicht.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich mit dem Gesicht zur Tür, ca. einen Schritt davor, Griffe vor der Brust. Mit Schulterschutz nimmt die App die tiefe Variante.",
+      "steps": [
+        "Gesicht zur Tür, Griffe vor der Brust, leicht zurücklehnen.",
+        "Arme fast gestreckt seitlich öffnen, bis ein T entsteht.",
+        "Schulterblätter zusammen, kurz halten.",
+        "Langsam zurück."
+      ],
+      "feel": "Du spürst es zwischen den Schulterblättern.",
       "category": "haltung",
       "block": "archery",
       "equipment": [
@@ -8291,6 +9102,15 @@
       "id": "sling-rear-delt-fly",
       "name": "Reverse Flys am Schlingentrainer",
       "description": "Mit leicht gebeugten Ellbogen nach hinten-außen öffnen – hintere Schulter und mittlerer Rücken für den Zugarm.",
+      "short": "Mit weichen Ellbogen nach hinten-außen öffnen – hintere Schulter und mittlerer Rücken.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich mit dem Gesicht zur Tür, ca. einen Schritt davor, Griffe vor der Brust, Ellbogen weich.",
+      "steps": [
+        "Gesicht zur Tür, Griffe vor der Brust, Ellbogen weich.",
+        "Leicht zurücklehnen, der Körper bleibt gerade.",
+        "Arme im weiten Bogen nach außen-hinten öffnen.",
+        "Kurz halten, kontrolliert zurück."
+      ],
+      "feel": "Du spürst die hintere Schulter.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -8388,6 +9208,15 @@
       "id": "sling-single-arm-row",
       "name": "Einarmiges Rudern im Schießstand (Sling)",
       "description": "Wie der Auszug: Zughand zieht den Griff bis zur Ankerposition, die andere Hand bleibt lang nach vorn wie der Bogenarm.",
+      "short": "Wie der Auszug: Zughand zieht den Griff bis zum Anker – mit dem eigenen Körpergewicht.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Fass beide Gurte zu einem Griff zusammen oder nutze nur einen. Stell dich im Schießstand seitlich zur Tür, die linke Schulter zeigt zur Tür, Füße schulterbreit. Für die linke Seite umdrehen.",
+      "steps": [
+        "Schießstand seitlich zur Tür, die rechte Hand am Griff.",
+        "Leicht zurücklehnen, der linke Arm zeigt lang nach vorn.",
+        "Rechten Ellbogen zurückziehen bis zum Anker am Kinn.",
+        "Kurz halten, zurück. Danach umdrehen, links ziehen."
+      ],
+      "feel": "Du spürst den Rücken auf der Zugseite.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -8485,6 +9314,15 @@
       "id": "sling-plank-forearms",
       "name": "Unterarmstütz am Schlingentrainer (stehend)",
       "description": "Unterarme in den Schlaufen, Füße am Boden, Körper schräg nach vorn – Rumpfstabilität ganz ohne Knien.",
+      "short": "Stehender Unterarmstütz in den Schlaufen – Rumpfkraft ganz ohne Knien.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Schlaufen auf Hüfthöhe einstellen. Stell dich mit dem Rücken zur Tür, ca. einen halben Schritt davor, Füße hüftbreit.",
+      "steps": [
+        "Rücken zur Tür, Unterarme in die Schlaufen.",
+        "Ellbogen unter den Schultern, Füße hüftbreit am Boden.",
+        "Mit geradem Körper nach vorn lehnen und halten.",
+        "Ruhig atmen, dann aufrichten."
+      ],
+      "feel": "Du spürst den Bauch fest arbeiten.",
       "category": "stabilitaet",
       "block": "archery",
       "equipment": [
@@ -8582,6 +9420,15 @@
       "id": "sling-pallof-press",
       "name": "Pallof Press am Schlingentrainer",
       "description": "Seitlich zur Tür lehnen und die Griffe vor der Brust nach vorn drücken – der Rumpf darf sich nicht zur Tür drehen.",
+      "short": "Seitlich lehnen und die Griffe nach vorn drücken – der Rumpf darf sich nicht drehen.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich seitlich zur Tür, ca. einen Schritt entfernt, Füße hüftbreit. Griffe mit beiden Händen vor dem Brustbein, die Hände bleiben unter Schulterhöhe.",
+      "steps": [
+        "Seitlich zur Tür, Griffe vor dem Brustbein.",
+        "Ein kleines Stück von der Tür weg lehnen.",
+        "Arme nach vorn strecken, 3 s halten, nicht mitdrehen.",
+        "Zurück zur Brust. Danach umdrehen, andere Seite."
+      ],
+      "feel": "Du spürst die seitlichen Bauchmuskeln.",
       "category": "stabilitaet",
       "block": "archery",
       "equipment": [
@@ -8673,6 +9520,15 @@
       "id": "sling-standing-rollout",
       "name": "Rollout im Stand (Sling-Fallout)",
       "description": "Rücken zur Tür, Arme gestreckt nach vorn-oben führen und den Körper nur ein kleines Stück nach vorn fallen lassen – Bauchmuskeln gegen das Hohlkreuz.",
+      "short": "Im Stand nach vorn ausrollen – Bauchmuskeln gegen das Hohlkreuz.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich mit dem Rücken zur Tür, Füße hüftbreit, Griffe mit gestreckten Armen vor der Brust. Mit Schulterschutz ersetzt die App diese Übung.",
+      "steps": [
+        "Rücken zur Tür, Griffe vor der Brust, leicht vorlehnen.",
+        "Arme gestreckt langsam nach vorn-oben führen.",
+        "Der Körper folgt nur, solange der Rumpf gerade bleibt.",
+        "Mit festem Bauch zurückziehen."
+      ],
+      "feel": "Du spürst den Bauch stark arbeiten.",
       "category": "stabilitaet",
       "block": "archery",
       "equipment": [
@@ -8766,6 +9622,15 @@
       "id": "sling-assisted-mini-squat",
       "name": "Mini-Kniebeuge mit Sling-Unterstützung",
       "description": "An den Griffen festhalten und nach hinten setzen – die Gurte nehmen Gewicht ab, so bleibt die Beuge kontrolliert und knieschonend.",
+      "short": "Mini-Kniebeuge mit Halt an den Griffen – kontrolliert und knieschonend.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich mit dem Gesicht zur Tür, ca. einen Schritt davor, Füße hüftbreit. Griffe mit leicht gestreckten Armen halten.",
+      "steps": [
+        "Gesicht zur Tür, Griffe halten, Füße hüftbreit.",
+        "Gesäß nach hinten setzen, Knie über den Zehen.",
+        "Nur bis 45–60° beugen, kurz halten.",
+        "Über die Fersen aufrichten, die Arme helfen nur wenig."
+      ],
+      "feel": "Du spürst Oberschenkel und Gesäß – das Knie bleibt schmerzarm.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -8860,6 +9725,15 @@
       "id": "sling-heel-bridge",
       "name": "Fersenbrücke im Schlingentrainer",
       "description": "Rückenlage, Fersen in den Fußschlaufen, Becken zu einer geraden Linie heben – Gesäß und Beinbeuger mit fast gestreckten Knien.",
+      "short": "Fersen in den Schlaufen, Becken heben – Gesäß und Beinbeuger bei fast gestreckten Knien.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Schlaufen ca. 30–40 cm über dem Boden einstellen. Leg dich auf den Rücken auf die Matte, Füße zur Tür, Kopf von der Tür weg. Beide Fersen in die Fußschlaufen.",
+      "steps": [
+        "Rückenlage, Fersen in den Schlaufen, Knie leicht gebeugt.",
+        "Arme seitlich auf den Boden.",
+        "Gesäß anspannen, Becken heben bis zur geraden Linie.",
+        "Kurz halten, langsam absenken."
+      ],
+      "feel": "Du spürst Gesäß und Rückseite der Oberschenkel.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -8953,6 +9827,15 @@
       "id": "sling-triceps-press",
       "name": "Trizepsdrücken am Schlingentrainer",
       "description": "Rücken zur Tür, aus gebeugten Ellbogen die Arme nach vorn-oben strecken – Trizeps für die Krücken, dosiert über die Neigung.",
+      "short": "Aus gebeugten Ellbogen die Arme strecken – Trizeps für die Krücken.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich mit dem Rücken zur Tür, Füße hüftbreit, Griffe neben der Stirn, Körper gerade nach vorn gelehnt. Mit Schulterschutz ersetzt die App diese Übung.",
+      "steps": [
+        "Rücken zur Tür, Griffe neben der Stirn, vorlehnen.",
+        "Ellbogen zeigen nach vorn-oben.",
+        "Nur die Unterarme bewegen: Arme strecken.",
+        "Langsam zurück, Ellbogen bleiben eng."
+      ],
+      "feel": "Du spürst die Rückseite der Oberarme.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -9048,6 +9931,15 @@
       "id": "sling-dip-assisted",
       "name": "Stütz-Dips am Schlingentrainer (Füße am Boden)",
       "description": "Zwischen den Gurten stützen und den Körper nur ein Stück absenken – Trizeps und Schulterdepression wie auf Krücken.",
+      "short": "Zwischen den Gurten stützen und etwas absenken – Trizeps und tiefe Schultern wie auf Krücken.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Gurte kurz einstellen, die Griffe hängen neben den Hüften. Stell dich mit dem Rücken zur Tür zwischen die Gurte. Beine lang nach vorn, Fersen am Boden.",
+      "steps": [
+        "Rücken zur Tür, Griffe neben den Hüften, Arme gestreckt.",
+        "Beine lang nach vorn, die Fersen bleiben am Boden.",
+        "Ellbogen nach hinten beugen, nur ein Stück absenken.",
+        "Nach unten drücken und die Arme wieder strecken."
+      ],
+      "feel": "Du spürst die Rückseite der Oberarme.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -9141,6 +10033,15 @@
       "id": "sling-push-up-incline",
       "name": "Schräge Liegestütze am Schlingentrainer",
       "description": "Rücken zur Tür, Hände in den Griffen, Brust zwischen die Hände absenken – Brust, Trizeps und Serratus für das Abstützen an Krücken.",
+      "short": "Schräge Liegestütze in den Griffen – Brust, Trizeps und Serratus für das Abstützen.",
+      "setup": "Befestige den Schlingentrainer oben in der Tür (Scharnierseite), schließ die Tür zu dir hin und am besten ab. Teste den Halt mit einem kräftigen Zug. Stell dich mit dem Rücken zur Tür, Füße hüftbreit, Griffe auf Brusthöhe, Arme gestreckt. Körper gerade nach vorn lehnen. Mit Schulterschutz nimmt die App den Wand-Liegestütz.",
+      "steps": [
+        "Rücken zur Tür, Griffe auf Brusthöhe, nach vorn lehnen.",
+        "Ellbogen 45° beugen, Brust zwischen die Hände senken.",
+        "Kräftig zurückdrücken.",
+        "Oben die Schulterblätter leicht auseinanderschieben."
+      ],
+      "feel": "Du spürst Brust, Oberarme und seitlich den Brustkorb.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -9253,6 +10154,15 @@
       "id": "box-squat-bed-edge",
       "name": "Hinsetzen auf die Bettkante (Box Squat)",
       "description": "Kontrolliert zur Bett- oder Sofakante absitzen und wieder aufstehen – wie Aufstehen vom Stuhl, ohne Rollen.",
+      "short": "Kontrolliert zur Bettkante absitzen und aufstehen – wie Aufstehen vom Stuhl, ohne Rollen.",
+      "setup": "Stell dich mit dem Rücken vor eine feste Bett- oder Sofakante, die Kante berührt fast die Waden. Füße hüftbreit, Arme vor der Brust gekreuzt. Am Anfang ein Kissen auf die Kante.",
+      "steps": [
+        "Rücken zur Bettkante, Füße hüftbreit, Arme vor der Brust.",
+        "Gesäß nach hinten, langsam (3 s) zur Kante absitzen.",
+        "Nur kurz antippen, nicht zusammensacken.",
+        "Über die Fersen aufstehen, oben Gesäß anspannen."
+      ],
+      "feel": "Du spürst Oberschenkel und Gesäß arbeiten.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -9338,6 +10248,15 @@
       "id": "hamstring-bridge-step",
       "name": "Fersen-Brücke auf der Stufe",
       "description": "Fersen auf der Stufe, Becken heben – Beinbeuger und Gesäß bei fast gestrecktem Knie.",
+      "short": "Fersen auf der Stufe, Becken heben – Beinbeuger und Gesäß bei fast gestrecktem Knie.",
+      "setup": "Leg dich auf den Rücken vor die Stufe auf die Matte. Beide Fersen auf die Stufe, Knie nur leicht gebeugt (ca. 20–30°). Arme neben dem Körper. Stufe 3: links stärker drücken. Stufe 4: nur links, das rechte Bein ist gestreckt in der Luft.",
+      "steps": [
+        "Rückenlage, beide Fersen auf die Stufe.",
+        "Knie leicht gebeugt, Fersen in die Stufe drücken.",
+        "Becken heben bis zur geraden Linie.",
+        "Langsam absenken."
+      ],
+      "feel": "Du spürst die Rückseite der Oberschenkel und das Gesäß.",
       "category": "kraft",
       "block": "knee",
       "equipment": [
@@ -9427,6 +10346,15 @@
       "id": "thoracic-extension-floor",
       "name": "Brustwirbel-Streckung über die Handtuchrolle",
       "description": "Oberen Rücken auf dem Boden über eine Handtuchrolle strecken – ohne Stuhl, ohne Rollen, Arme bleiben unten.",
+      "short": "Oberen Rücken über eine Handtuchrolle strecken – die Arme bleiben unten.",
+      "setup": "Roll ein großes Handtuch fest zusammen. Leg dich auf den Rücken auf die Matte, die Rolle quer unter den Schulterblättern. Knie angestellt, Arme vor der Brust gekreuzt, Kopf ggf. auf einem Kissen.",
+      "steps": [
+        "Rückenlage, Handtuchrolle quer unter den Schulterblättern.",
+        "Knie angestellt, Arme vor der Brust gekreuzt.",
+        "Oberen Rücken ausatmend über die Rolle sinken lassen.",
+        "Kurz halten. Rolle eine Handbreit höher, wiederholen."
+      ],
+      "feel": "Du spürst eine Dehnung im oberen Rücken und vorn an der Brust.",
       "category": "mobilitaet",
       "block": "archery",
       "equipment": [
@@ -9508,6 +10436,15 @@
       "id": "long-sit-row",
       "name": "Rudern im Langsitz mit Band",
       "description": "Auf der Matte sitzend das Band zum Bauch ziehen – Rücken und Schulterblätter, ohne Stuhl und unter Schulterhöhe.",
+      "short": "Im Langsitz das Band zum Bauch ziehen – Rücken und Schulterblätter, ganz ohne Stuhl.",
+      "setup": "Setz dich im Langsitz mit Blick zur Tür auf die Matte, ca. 1–1,5 m vor der Tür. Beine lang und locker, Rücken aufrecht, Bandenden in den Händen.",
+      "steps": [
+        "Band unten in der Tür, im Langsitz Blick zur Tür.",
+        "Arme gestreckt nach vorn-unten, Rücken aufrecht.",
+        "Schulterblätter zurück, dann Ellbogen eng nach hinten ziehen.",
+        "Kurz halten, langsam zurück."
+      ],
+      "feel": "Du spürst den mittleren Rücken zwischen den Schulterblättern.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -9609,6 +10546,15 @@
       "id": "quad-massage-stick",
       "name": "Oberschenkel-Massage mit dem Massagestab",
       "description": "Vorderen Oberschenkel mit dem Massagestab lockern – auch knapp oberhalb der Kniescheibe, nie direkt auf der Kniescheibe.",
+      "short": "Vorderen Oberschenkel mit dem Massagestab lockern – entlastet das Knie.",
+      "setup": "Setz dich im Langsitz auf die Matte (oder aufrecht hin), linkes Bein entspannt lang. Leg den Massagestab mit beiden Händen quer auf den vorderen Oberschenkel.",
+      "steps": [
+        "Linkes Bein lang und locker, Stab quer auf den Oberschenkel.",
+        "Roll langsam von der Mitte bis knapp über die Kniescheibe.",
+        "Sanfter Druck, langsam wieder zurück.",
+        "Nie direkt über die Kniescheibe rollen."
+      ],
+      "feel": "Du spürst angenehmen Druck, der Oberschenkel wird weicher.",
       "category": "mobilitaet",
       "block": "knee",
       "equipment": [
@@ -9684,6 +10630,15 @@
       "id": "quad-self-massage",
       "name": "Oberschenkel-Massage mit den Händen",
       "description": "Vorderen Oberschenkel mit beiden Händen ausstreichen und kneten – oberhalb der Kniescheibe ganz sanft.",
+      "short": "Vorderen Oberschenkel mit den Händen ausstreichen – lockert und entlastet das Knie.",
+      "setup": "Setz dich im Langsitz auf die Matte, linkes Bein entspannt lang.",
+      "steps": [
+        "Langsitz, linkes Bein lang und locker.",
+        "Streich den Oberschenkel mit beiden Händen Richtung Knie aus.",
+        "Knete sanft, oberhalb der Kniescheibe nur ganz leicht.",
+        "Ruhig atmen, der Oberschenkel bleibt locker."
+      ],
+      "feel": "Du spürst Wärme und Entspannung im Oberschenkel.",
       "category": "mobilitaet",
       "block": "knee",
       "equipment": [
@@ -9754,6 +10709,15 @@
       "id": "prone-quad-lengthening-band",
       "name": "Vorderen Oberschenkel sanft verlängern (Bauchlage mit Band)",
       "description": "In Bauchlage den linken Unterschenkel mit dem Band nur bis ca. 60–70° Kniebeugung heranziehen – ohne tiefe Beugung, ohne Knien. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "short": "Vorderen Oberschenkel in Bauchlage sanft verlängern – ohne tiefe Beugung, ohne Knien.",
+      "setup": "Leg dich auf den Bauch auf die Matte, Kissen unter dem Bauch, Stirn auf den Händen. Bandschlaufe um den linken Knöchel, die Enden in der rechten Hand neben dem Körper.",
+      "steps": [
+        "Bauchlage, Bandschlaufe um den linken Knöchel.",
+        "Halte die Bandenden rechts neben dem Körper.",
+        "Unterschenkel mit dem Band nur bis 60–70° heranziehen.",
+        "Halten, ruhig atmen, langsam ablegen."
+      ],
+      "feel": "Du spürst ein leichtes Ziehen vorn am linken Oberschenkel.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -9833,6 +10797,15 @@
       "id": "scapula-setting",
       "name": "Schulterblätter setzen (Scapula-Setting)",
       "description": "Schulterblätter sanft nach hinten-unten ziehen und halten – im Stehen oder Sitzen, Arme bleiben unten.",
+      "short": "Schulterblätter sanft nach hinten-unten ziehen – die Basis für eine tiefe, stabile Schulter.",
+      "setup": "Stell dich aufrecht hin oder setz dich. Die Arme hängen locker.",
+      "steps": [
+        "Aufrecht stehen oder sitzen, Arme hängen locker.",
+        "Schulterblätter sanft nach hinten-unten ziehen.",
+        "Brustbein leicht anheben, halten, ruhig atmen.",
+        "Locker lassen, wiederholen."
+      ],
+      "feel": "Du spürst die Muskeln zwischen und unter den Schulterblättern.",
       "category": "haltung",
       "block": "archery",
       "equipment": [
@@ -9908,6 +10881,15 @@
       "id": "prone-low-row",
       "name": "Bauchlage „W“ & Arme an der Seite",
       "description": "In Bauchlage die Arme in „W“-Position bzw. an der Seite (Daumen außen) leicht abheben – Schulterblätter nach hinten-unten.",
+      "short": "In Bauchlage die Arme neben dem Körper leicht abheben – Schulterblätter nach hinten-unten.",
+      "setup": "Leg dich auf den Bauch auf die Matte, Kissen unter dem Becken, Stirn auf einem kleinen Handtuch. Arme lang neben dem Körper (Daumen außen) oder als W gebeugt.",
+      "steps": [
+        "Bauchlage, Stirn aufs Handtuch, Arme neben dem Körper.",
+        "Schulterblätter nach hinten-unten ziehen.",
+        "Arme wenige Zentimeter vom Boden abheben.",
+        "Kurz halten, langsam ablegen."
+      ],
+      "feel": "Du spürst es zwischen und unter den Schulterblättern.",
       "category": "haltung",
       "block": "archery",
       "equipment": [
@@ -9989,6 +10971,15 @@
       "id": "serratus-punch-low",
       "name": "Serratus-Punch tief (bis ca. 60°)",
       "description": "Arm gegen das Band nach vorn-unten schieben und die Schulter ein Stück nachschieben – unter Schulterhöhe.",
+      "short": "Arm nach vorn-unten schieben und die Schulter nachschieben – Serratus unter Schulterhöhe.",
+      "setup": "Stell dich mit dem Rücken zur Tür, ca. einen Schritt entfernt, kleine Schrittstellung, Knie weich. Bandende in einer Hand.",
+      "steps": [
+        "Band auf Bauchhöhe in der Tür, Rücken zur Tür.",
+        "Arm schräg nach vorn-unten, deutlich unter Schulterhöhe.",
+        "Arm strecken und die Schulter ein Stück nach vorn schieben.",
+        "Langsam zurück. Erst links, dann rechts."
+      ],
+      "feel": "Du spürst es seitlich am Brustkorb unter der Achsel.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -10089,6 +11080,15 @@
       "id": "wall-push-up-plus",
       "name": "Wand-Liegestütz mit Plus",
       "description": "Liegestütz an der Wand, oben die Schulterblätter auseinanderschieben („Plus“) – Hände unter Schulterhöhe.",
+      "short": "Liegestütz an der Wand mit „Plus“ – kräftigt Brust und Serratus unter Schulterhöhe.",
+      "setup": "Stell dich mit dem Gesicht zur Wand, eine große Schrittlänge (ca. 70–80 cm) entfernt. Hände etwa auf Höhe der unteren Brust schulterbreit an die Wand.",
+      "steps": [
+        "Gesicht zur Wand, großer Schritt Abstand, Hände auf Brusthöhe.",
+        "Körper gerade, Brust zur Wand senken.",
+        "Zurückdrücken, am Ende Schulterblätter auseinanderschieben.",
+        "Langsam zurück in die Ausgangsposition."
+      ],
+      "feel": "Du spürst Brust, Oberarme und seitlich den Brustkorb.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -10171,6 +11171,15 @@
       "id": "low-row-band",
       "name": "Low Row mit Band",
       "description": "Gestreckte Arme gegen das Band nach hinten neben die Hüfte ziehen – Schulterblätter nach hinten-unten, Arme bleiben tief.",
+      "short": "Gestreckte Arme neben die Hüfte ziehen – Schulterblätter nach hinten-unten, Arme bleiben tief.",
+      "setup": "Stell dich mit dem Gesicht zur Tür, ca. 1 m (ein großer Schritt) entfernt, Füße hüftbreit, Knie weich.",
+      "steps": [
+        "Band auf Hüfthöhe in der Tür, Gesicht zur Tür.",
+        "Arme gestreckt schräg nach vorn-unten.",
+        "Schulterblätter zurück, gestreckte Arme neben die Hüfte ziehen.",
+        "Kurz halten, langsam zurück."
+      ],
+      "feel": "Du spürst es unter den Schulterblättern und im breiten Rückenmuskel.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -10270,6 +11279,15 @@
       "id": "pull-apart-low",
       "name": "Pull-Apart tief (Brust- bis Bauchhöhe)",
       "description": "Leichtes Band auf Brust- bis Bauchhöhe auseinanderziehen – Schulterblätter zusammen, Arme unter Schulterhöhe.",
+      "short": "Leichtes Band unter Schulterhöhe auseinanderziehen – Schulterblätter zusammen.",
+      "setup": "Stell dich aufrecht hin oder setz dich. Greif ein leichtes Band schulterbreit, Arme gestreckt auf Brust- bis Bauchhöhe.",
+      "steps": [
+        "Leichtes Band schulterbreit, Arme auf Bauch- bis Brusthöhe.",
+        "Band auseinanderziehen, Schulterblätter zusammen.",
+        "Die Schultern bleiben tief.",
+        "Kontrolliert zurück."
+      ],
+      "feel": "Du spürst es zwischen den Schulterblättern.",
       "category": "haltung",
       "block": "archery",
       "equipment": [
@@ -10353,6 +11371,15 @@
       "id": "low-face-pull",
       "name": "Low Face Pull mit Außenrotation (Brusthöhe)",
       "description": "Band auf Brusthöhe zurückziehen und am Ende die Unterarme nach oben drehen – Ellbogen bleiben unter Schulterhöhe.",
+      "short": "Band zurückziehen und die Unterarme aufdrehen – Rotatoren und hintere Schulter unter Schulterhöhe.",
+      "setup": "Stell dich mit dem Gesicht zur Tür, ca. 1 m entfernt, Füße hüftbreit, Knie weich.",
+      "steps": [
+        "Band auf Brusthöhe in der Tür, Gesicht zur Tür.",
+        "Arme schräg nach vorn-unten gestreckt.",
+        "Ellbogen nach hinten-außen ziehen, unter Schulterhöhe.",
+        "Am Ende Unterarme aufdrehen, dann langsam zurück."
+      ],
+      "feel": "Du spürst die hintere Schulter und den Bereich zwischen den Schulterblättern.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -10452,6 +11479,15 @@
       "id": "er-iso-door",
       "name": "Außenrotation isometrisch am Türrahmen",
       "description": "Handrücken gegen den Türrahmen drücken, ohne Bewegung – kräftigt die Rotatorenmanschette schmerzarm.",
+      "short": "Handrücken gegen den Türrahmen drücken – kräftigt die Außenrotatoren schmerzarm.",
+      "setup": "Stell dich seitlich in den Türrahmen, die trainierte Schulter zeigt zum Rahmen, ca. eine Handbreit Abstand. Ellbogen 90° gebeugt am Körper, kleine Handtuchrolle darunter. Der Handrücken liegt am Rahmen.",
+      "steps": [
+        "Seitlich in den Türrahmen, Ellbogen 90° am Körper.",
+        "Leg den Handrücken an den Rahmen.",
+        "Mit 30–50 % Kraft nach außen drücken – keine Bewegung.",
+        "Halten, lösen. Dann umdrehen für die andere Seite."
+      ],
+      "feel": "Du spürst es hinten an der Schulter – ohne Schmerz.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -10528,6 +11564,15 @@
       "id": "ir-iso-door",
       "name": "Innenrotation isometrisch am Türrahmen",
       "description": "Handfläche gegen den Türrahmen nach innen drücken, ohne Bewegung – Rotatorenmanschette vorne.",
+      "short": "Handfläche gegen den Türrahmen nach innen drücken – kräftigt die Rotatorenmanschette vorn.",
+      "setup": "Stell dich vor die Kante des Türrahmens, ca. eine Unterarmlänge entfernt, sodass die Kante vor deinem Bauch ist. Ellbogen 90° gebeugt am Körper, kleine Handtuchrolle darunter. Die Handfläche liegt an der Rahmenkante.",
+      "steps": [
+        "Ellbogen 90° am Körper, Handfläche an die Rahmenkante.",
+        "Mit 30–50 % Kraft nach innen drücken – keine Bewegung.",
+        "Halten, ruhig atmen.",
+        "Lösen, dann die andere Hand."
+      ],
+      "feel": "Du spürst es vorn an der Schulter und an der Brust – ohne Schmerz.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -10603,6 +11648,15 @@
       "id": "ir-band",
       "name": "Innenrotation mit Band (leicht)",
       "description": "Unterarm gegen ein leichtes Band zum Bauch drehen, Ellbogen am Körper – 0° Armhebung.",
+      "short": "Unterarm gegen ein leichtes Band zum Bauch drehen – Rotatorenmanschette vorn, ohne Armheben.",
+      "setup": "Stell dich seitlich zur Tür, ca. einen Schritt entfernt – die trainierte Schulter zeigt zur Tür. Handtuchrolle zwischen Ellbogen und Rumpf, Ellbogen 90° gebeugt.",
+      "steps": [
+        "Leichtes Band auf Ellbogenhöhe, trainierte Seite zur Tür.",
+        "Handtuch unter den Ellbogen, Ellbogen 90° gebeugt.",
+        "Dreh den Unterarm langsam zum Bauch.",
+        "Langsam zurück. Danach umdrehen, andere Seite."
+      ],
+      "feel": "Du spürst es vorn an der Schulter.",
       "category": "kraft",
       "block": "archery",
       "equipment": [
@@ -10693,6 +11747,15 @@
       "id": "pec-stretch-low",
       "name": "Brust öffnen tief (Hände hinter dem Rücken)",
       "description": "Hände hinter dem Rücken, Schulterblätter sanft zusammen – öffnet die Brust ohne Armheben. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "short": "Hände hinter dem Rücken, Brust öffnen – dehnt die Brust ohne Armheben.",
+      "setup": "Stell dich aufrecht hin oder setz dich. Hände hinter dem Rücken locker verschränken (oder ein Handtuch greifen).",
+      "steps": [
+        "Hände hinter dem Rücken verschränken.",
+        "Schulterblätter sanft zusammen und nach unten.",
+        "Brustbein leicht heben, Arme nur wenig nach hinten.",
+        "Halten, ruhig atmen."
+      ],
+      "feel": "Du spürst die Brust sanft gedehnt.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -10763,6 +11826,15 @@
       "id": "side-bend-low",
       "name": "Seitneigung tief (Hand gleitet am Bein)",
       "description": "Sanfte Seitneigung, die Hand gleitet am Oberschenkel entlang – Flanke dehnen ohne Arm über dem Kopf. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "short": "Sanfte Seitneigung ohne Armheben – dehnt die Flanke.",
+      "setup": "Setz dich aufrecht hin oder stell dich hin, die Arme hängen locker.",
+      "steps": [
+        "Aufrecht sitzen oder stehen, Arme locker.",
+        "Oberkörper sanft nach rechts neigen, Hand gleitet am Bein.",
+        "Nicht nach vorn kippen – in die Flanke atmen.",
+        "Halten, dann zur anderen Seite."
+      ],
+      "feel": "Du spürst ein Ziehen seitlich am Rumpf auf der Gegenseite.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -10833,6 +11905,15 @@
       "id": "neck-stretch-low",
       "name": "Nacken sanft dehnen (Arme unten)",
       "description": "Ohr Richtung Schulter, die Gegenseite hängt locker nach unten – ohne Hand am Kopf. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "short": "Ohr Richtung Schulter, ohne Zug am Kopf – lockert den Nacken.",
+      "setup": "Setz dich aufrecht hin oder stell dich hin, beide Arme hängen locker.",
+      "steps": [
+        "Aufrecht, beide Arme hängen locker.",
+        "Kopf sanft zur Seite neigen, Ohr Richtung Schulter.",
+        "Die Gegenseite sinkt nach unten – halten.",
+        "Langsam zurück, dann die andere Seite."
+      ],
+      "feel": "Du spürst ein Ziehen seitlich am Hals.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -10887,7 +11968,10 @@
       "regressTo": null,
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "mistakes": [],
+      "mistakes": [
+        "Ziehen bis in den Schmerz",
+        "Arme über Schulterhöhe heben"
+      ],
       "cues": [
         "Arme unter Schulterhöhe"
       ],
@@ -10899,6 +11983,15 @@
       "id": "stretch-flow-seated-low",
       "name": "Dehnen im Sitzen kompakt – schulterfreundlich (2 Min)",
       "description": "Kompakte Runde ohne Armheben über Schulterhöhe – jeder Abschnitt wird angesagt. Passend zur Entlastungsphase und bei Schulter-Impingement. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "short": "Kompaktes Dehnen im Sitzen ohne Armheben – schulterfreundlich, jeder Abschnitt wird angesagt.",
+      "setup": "Setz dich aufrecht auf den Stuhl, linkes Bein lang nach vorn. Die App sagt jeden Abschnitt an.",
+      "steps": [
+        "Brust tief: Hände hinter dem Rücken (20 s).",
+        "Seitneigung: Hand gleitet am Bein, je Seite 15 s.",
+        "Unterarme: Arm vorn-unten, Finger sanft zurück (15 s).",
+        "Nacken: Ohr Richtung Schulter, ohne Zug (25 s)."
+      ],
+      "feel": "Du spürst sanftes Ziehen in Brust, Flanken, Unterarmen und Nacken.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -10965,7 +12058,11 @@
       "regressTo": null,
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "mistakes": [],
+      "mistakes": [
+        "Wippen",
+        "Ziehen bis in den Schmerz",
+        "Arme über Schulterhöhe heben"
+      ],
       "cues": [
         "Arme unter Schulterhöhe"
       ],
@@ -10976,6 +12073,15 @@
       "id": "stretch-flow-short-low",
       "name": "Dehnen kompakt – schulterfreundlich (2 Min)",
       "description": "Hüftbeuger, Waden, Brust tief und Unterarme – ohne Arme über Schulterhöhe. Jeder Abschnitt wird angesagt. Ehrlich gesagt: Dehnen verhindert Muskelkater kaum – es hält dich aber beweglich und entspannt.",
+      "short": "Kompaktes Dehnen ohne Armheben – schulterfreundlich, jeder Abschnitt wird angesagt.",
+      "setup": "Stell dich mit dem Gesicht zur Wand, ca. eine Armlänge entfernt, Hände auf Brusthöhe an der Wand. Die App sagt jeden Abschnitt an.",
+      "steps": [
+        "Hüftbeuger: kurze Schrittstellung, Becken aufrichten, 20 s je Seite.",
+        "Wade an der Wand: 15 s je Seite.",
+        "Brust tief: Hände hinter dem Rücken (20 s).",
+        "Unterarme: Arm vorn-unten, Finger sanft zurück (15 s)."
+      ],
+      "feel": "Du spürst nacheinander sanftes Ziehen in Hüfte, Wade, Brust und Unterarmen.",
       "category": "dehnung",
       "block": "cooldown",
       "equipment": [
@@ -11046,7 +12152,10 @@
       "regressTo": null,
       "progressTo": null,
       "phaseMin": "p1-basis",
-      "mistakes": [],
+      "mistakes": [
+        "Wippen in die Endposition",
+        "Arme über Schulterhöhe heben"
+      ],
       "cues": [
         "Arme bleiben unten"
       ],
@@ -11057,6 +12166,15 @@
       "id": "mobility-flow-short-low",
       "name": "Mobilisation kompakt – schulterfreundlich (2 Min)",
       "description": "Beinpendel, Becken kreisen, Schulterblätter setzen und Rumpfdrehung – ohne Armheben über Schulterhöhe.",
+      "short": "Kompakte Mobilisation ohne Armheben – Hüfte, Rücken und Schulterblätter in 2 Minuten.",
+      "setup": "Stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, die nahe Hand auf Brusthöhe an der Wand. Die App sagt jeden Abschnitt an.",
+      "steps": [
+        "Beinpendel an der Wand: 15 s rechts, 15 s links.",
+        "Becken kreisen, beide Füße am Boden (30 s).",
+        "Schulterblätter nach hinten-unten ziehen und lösen (30 s).",
+        "Rumpfdrehung im Stand, Arme vor der Brust (30 s)."
+      ],
+      "feel": "Du spürst Hüfte, Rücken und Schulterblätter warm werden.",
       "category": "mobilitaet",
       "block": "warmup",
       "equipment": [

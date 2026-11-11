@@ -262,6 +262,55 @@ test('v5.3 QA in the browser (dark, 412×915, user equipment + shoulder protecti
       assert.equal(a.exercises.flatMap((e) => e.sets).reduce((x, y) => x + (y.seconds || 0), 0) > 900, true);
       await ctx.close();
     }
+    // ---- 6. layperson texts: short + steps below the figure (large), „Mehr Details“ collapsed, setup in the timer card,
+    //         starting a set collapses the details and brings the timer above the sticky button (also during the rest)
+    {
+      const data = withActive([entry('wall-sit', 'knee', { plannedSets: 2, override: { reps: 1, hold: 4 } }), entry('scapula-setting', 'archery')]);
+      const { page, ctx } = await open(data, '#/session', { clock: true });
+      await page.waitForSelector('[data-steps]');
+      await page.clock.runFor(1200);
+      const fig = await page.locator('.ses-fig').boundingBox();
+      const howto = await page.locator('[data-howto]').boundingBox();
+      assert.ok(howto.y >= fig.y + fig.height - 1 && howto.y - (fig.y + fig.height) < 40, `howto directly below the figure (${fig.y + fig.height} → ${howto.y})`);
+      assert.ok(await page.locator('[data-short]').isVisible());
+      const steps = await page.$$eval('[data-steps] li', (els) => els.map((e) => ({ t: e.textContent.trim(), fs: parseFloat(getComputedStyle(e).fontSize) })));
+      const wsit = exercises.find((e) => e.id === 'wall-sit');
+      assert.deepEqual(steps.map((x) => x.t), wsit.steps);
+      assert.ok(steps.every((x) => x.fs >= 18), `step font ≥ 18 px (${steps.map((x) => x.fs)})`);
+      assert.ok(parseFloat(await page.$eval('[data-short]', (e) => getComputedStyle(e).fontSize)) >= 18);
+      assert.equal(await page.$eval('details[data-more]', (e) => e.open), false, 'Mehr Details collapsed');
+      assert.match(await page.textContent('[data-setup]'), /Rücken an die Wand/);
+      await page.screenshot({ path: join(SHOTS, 'v53-howto.png'), fullPage: true });
+      await page.click('details[data-more] > summary');
+      await page.clock.runFor(300);
+      assert.ok(await page.locator('[data-setup-list]').isVisible());
+      assert.match(await page.textContent('[data-setup-list]'), /30–40 cm \(gut zwei Fußlängen\) vor der Wand/);
+      assert.match(await page.textContent('[data-feel]'), /Du spürst/);
+      await page.screenshot({ path: join(SHOTS, 'v53-howto-details.png'), fullPage: true });
+      const inView = async (sel) => {
+        const b = await page.locator(sel).boundingBox();
+        const c = await page.locator('.sticky-cta .ses-cta').boundingBox();
+        return b && b.y >= 0 && b.y + b.height <= c.y + 1 ? true : `${sel}: ${b?.y}+${b?.height} vs CTA ${c.y}`;
+      };
+      await cta(page).click();
+      await page.clock.runFor(1500);
+      await page.waitForTimeout(800); // smooth scroll to the timer card runs on real time
+      assert.equal(await ctaText(page), 'Anhalten');
+      assert.equal(await page.$eval('details[data-more]', (e) => e.open), false, 'details auto-collapsed on start');
+      assert.equal(await inView('[data-slot="timer"] pt-timer'), true);
+      assert.ok(await page.locator('[data-slot="timer"] [data-setup]').isVisible(), 'setup line visible during prep');
+      await page.screenshot({ path: join(SHOTS, 'v53-howto-timer.png') });
+      for (let i = 0; i < 9; i++) await page.clock.runFor(1000); // prep 5 s + hold 4 s → rest
+      assert.equal(await ctaText(page), 'Pause überspringen');
+      assert.equal(await inView('[data-slot="rest"] pt-timer'), true);
+      // exercise detail: Ausgangsposition first, then the steps
+      await page.goto(URL0 + '#/uebung/wall-sit');
+      await page.waitForSelector('[data-howto] [data-steps]');
+      const order = await page.$eval('[data-howto]', (el) => [...el.querySelectorAll('[data-setup], [data-steps], [data-feel]')].map((e) => e.dataset.setup != null ? 'setup' : e.dataset.steps != null ? 'steps' : 'feel'));
+      assert.deepEqual(order, ['setup', 'steps', 'feel']);
+      assert.match(await page.textContent('[data-short]'), /Wand/);
+      await ctx.close();
+    }
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

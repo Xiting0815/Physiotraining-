@@ -7,7 +7,8 @@
 // (cursor {index, set, step}); reloading #/session resumes it. Summary: #/session?summary=<id>.
 import { html, raw, render as paint } from '../render.js';
 import { nextWorkout, buildSessionPlan, getWorkout, workoutKind, canRowWarmup, finisherPlan, finisherEligible, appendFinisher } from '../logic/progression.js';
-import { instructionsFor, ownsRowingMachine, officeChairOnly, OFFICE_CHAIR_NOTE } from '../logic/equipment.js';
+import { ownsRowingMachine, officeChairOnly, OFFICE_CHAIR_NOTE } from '../logic/equipment.js';
+import { shortFor, stepsFor, feelFor, setupFor, setupHeadline } from '../logic/exercise-text.js';
 import { shoulderProtect, isShoulderExercise, SHOULDER_NOTE, DRAW_NOTE } from '../logic/shoulder.js';
 import { estimateWorkoutMinutes } from '../logic/duration.js';
 import { rowingPhases, validateRowing } from '../logic/cardio.js';
@@ -430,6 +431,37 @@ export function render(root, ctx) {
         <p class="ses-hint">Gibt den Takt vor (Hoch–Halten–Runter) – mit 5 s „Bereit machen“ und Ansage.</p>` : ''}`;
   }
 
+  /**
+   * v5.3 (verständliche Anleitungen): always-visible „short“ line + numbered steps directly below the figure, then the
+   * collapsible „Mehr Details“ (Ausgangsposition incl. equipment setup, feel, cues, mistakes, knee/shoulder notes).
+   */
+  function howtoMarkup(ex, sec) {
+    const archery = sec === 'archery';
+    const setup = setupFor(ex, settings(), { chair: false });
+    const feel = feelFor(ex);
+    return html`<div class="ses-howto" data-howto>
+        ${shortFor(ex) ? html`<p class="ses-howto__short" data-short>${shortFor(ex)}</p>` : ''}
+        <ol class="steps ses-steps" data-steps>${stepsFor(ex).map((x) => html`<li>${x}</li>`)}</ol>
+      </div>
+      <details class="disclosure ses-more" data-more>
+        <summary>Mehr Details</summary>
+        <div class="stack stack--sm">
+          ${setup.length ? html`<p class="field__label mb-0">Ausgangsposition</p><ul class="ses-setup-list" data-setup-list>${setup.map((x) => html`<li>${x}</li>`)}</ul>` : ''}
+          ${feel ? html`<p class="ses-feel mb-0" data-feel>🎯 ${feel}</p>` : ''}
+          ${ex.cues?.length ? html`<p class="field__label mb-0 mt-2">Darauf achten</p><div class="chip-row">${ex.cues.map((c) => html`<span class="chip chip--${archery ? 'archery' : 'knee'}">${c}</span>`)}</div>` : ''}
+          ${ex.mistakes?.length ? html`<p class="field__label mb-0 mt-2">Typische Fehler</p><ul class="ses-reasons">${ex.mistakes.map((m) => html`<li>${m}</li>`)}</ul>` : ''}
+          ${ex.kneeNote ? html`<p class="ses-consult mb-0">🦵 ${ex.kneeNote}</p>` : ''}
+          ${ex.description && ex.description !== shortFor(ex) ? html`<p class="text-sm muted mb-0">${ex.description}</p>` : ''}
+        </div>
+      </details>`;
+  }
+
+  /** Collapse „Mehr Details“ so the timer card stays visible above the sticky button during a set. */
+  function collapseMore() {
+    const d = /** @type {HTMLDetailsElement|null} */ (root.querySelector('details[data-more]'));
+    if (d?.open) d.open = false;
+  }
+
   function renderExercise() {
     const idx = session.cursor.index;
     const entry = session.exercises[idx];
@@ -467,11 +499,12 @@ export function render(root, ctx) {
         <button type="button" class="btn btn--ghost btn--sm ses-ovw" data-act="overview">${raw(ICON.list)}Übersicht</button>
       </div>
       <section class="card ses-ex mt-4">
-        <div class="ses-fig ${compactFig ? 'ses-fig--compact' : ''}"><pt-figure aspect="${compactFig ? '2.2' : '1.5'}" exercise-id="${ex.id}" level="${entry.level ?? 0}" ${dose.band ? html`band-id="${dose.band}"` : ''} aria-label="${ex.name}"></pt-figure></div>
         <div class="row row--between row--top">
           <h1 class="card__title">${ex.name}</h1>
           <span class="chip chip--${archery ? 'archery' : 'knee'} chip--sm" style="flex:none">Stufe ${(entry.level ?? 0) + 1}/${ex.levels.length}</span>
         </div>
+        <div class="ses-fig ${compactFig ? 'ses-fig--compact' : ''}"><pt-figure aspect="${compactFig ? '2.2' : '1.5'}" exercise-id="${ex.id}" level="${entry.level ?? 0}" ${dose.band ? html`band-id="${dose.band}"` : ''} aria-label="${ex.name}"></pt-figure></div>
+        ${howtoMarkup(ex, sec)}
         <p class="ses-note" data-dose-label>${H.doseLabel(entry, ex, dose)}</p>
         ${entry.note ? html`<p class="ses-note">💡 ${entry.note}</p>` : ''}
         <div class="ses-meta">
@@ -497,7 +530,7 @@ export function render(root, ctx) {
         <div data-slot="done" class="mt-4" ${allDone ? '' : 'hidden'}><div class="ses-done"><span class="ses-done__icon">✓</span><span>Übung geschafft! ${archery ? 'Wie anstrengend war’s?' : knee ? 'Wie war das Knie?' : 'Weiter geht’s.'}</span></div></div>
       </section>
       <div data-slot="rest"></div>
-      ${timer ? html`<section class="card ses-timer" data-slot="timer" ${allDone ? 'hidden' : ''}><p class="ses-setno" data-setno>${allDone ? '' : `Satz ${Math.min(dose.sets, H.doneCount(entry) + 1)} von ${dose.sets}`}</p>${timer}
+      ${timer ? html`<section class="card ses-timer" data-slot="timer" ${allDone ? 'hidden' : ''}>${setupHeadline(ex) ? html`<p class="ses-setup" data-setup><span aria-hidden="true">📍</span> ${setupHeadline(ex)}</p>` : ''}<p class="ses-setno" data-setno>${allDone ? '' : `Satz ${Math.min(dose.sets, H.doneCount(entry) + 1)} von ${dose.sets}`}</p>${timer}
         ${hasWorkTimer ? html`<details class="ses-tctl"><summary>Timer anpassen</summary><div class="ses-tctl__row">
           <button type="button" class="btn btn--outline btn--sm" data-act="t-minus" aria-label="15 Sekunden weniger">−15 s</button>
           <button type="button" class="btn btn--outline btn--sm" data-act="t-plus" aria-label="15 Sekunden mehr">+15 s</button>
@@ -512,15 +545,6 @@ export function render(root, ctx) {
           <pt-pain-scale kind="rpe" label="Anstrengung (RPE)" data-f="rpe" ${entry.rpe != null ? html`value="${entry.rpe}"` : ''}></pt-pain-scale>
           <p class="text-xs muted mt-2 mb-0">≤ 6 locker · 7–8 fordernd · ≥ 9 zu schwer</p>
         </section>` : ''}
-      <details class="disclosure">
-        <summary>Anleitung &amp; Tipps</summary>
-        <div class="stack stack--sm">
-          <ol class="steps">${instructionsFor(ex, settings()).map((s) => html`<li>${s}</li>`)}</ol>
-          ${ex.cues?.length ? html`<p class="field__label mb-0 mt-2">Darauf achten</p><div class="chip-row">${ex.cues.map((c) => html`<span class="chip chip--${archery ? 'archery' : 'knee'}">${c}</span>`)}</div>` : ''}
-          ${ex.mistakes?.length ? html`<p class="field__label mb-0 mt-2">Typische Fehler</p><ul class="ses-reasons">${ex.mistakes.map((m) => html`<li>${m}</li>`)}</ul>` : ''}
-          ${ex.kneeNote ? html`<p class="ses-consult mb-0">🦵 ${ex.kneeNote}</p>` : ''}
-        </div>
-      </details>
       <button type="button" class="ses-link ses-skip" data-act="skip">Übung überspringen</button>
       <div class="sticky-cta"><div class="ses-cta">
         <button type="button" class="btn btn--outline btn--prev" data-act="prev" aria-label="Vorherige Übung" ${prev < 0 ? 'disabled' : ''}>${raw(ICON.prev)}</button>
@@ -574,6 +598,7 @@ export function render(root, ctx) {
         const work = root.querySelector('pt-timer[data-role="work"]');
         if (st.key === 'next' || st.key === 'finish') { actions.next(); return; }
         if (st.key === 'skip-rest') { afterRest(); screen.refreshCta?.(); return; }
+        if (st.key === 'start' || st.key === 'set-done') collapseMore();
         if (st.key === 'start' && work) {
           applyWorkPlan(work, entry);
           work.start();
@@ -609,6 +634,7 @@ export function render(root, ctx) {
       },
       tempo: () => {
         voiceUnlock();
+        collapseMore();
         if (knee) entry.manualTempo = false; else entry.tempoCoach = true;
         persist();
         renderExercise();
@@ -1038,7 +1064,8 @@ export function render(root, ctx) {
       <details class="disclosure">
         <summary>Technik: Beine – Körper – Arme</summary>
         <div class="stack stack--sm">
-          <ol class="steps">${(mainEx?.instructions || []).map((x) => html`<li>${x}</li>`)}</ol>
+          ${mainEx?.setup ? html`<p class="text-sm mb-0">📍 ${mainEx.setup}</p>` : ''}
+          <ol class="steps">${stepsFor(mainEx).map((x) => html`<li>${x}</li>`)}</ol>
           ${mainEx?.kneeNote ? html`<p class="ses-consult mb-0">🦵 ${mainEx.kneeNote}</p>` : ''}
         </div>
       </details>

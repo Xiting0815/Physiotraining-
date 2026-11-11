@@ -129,6 +129,9 @@ test('session hardening in the browser (dark, 412×915)', { skip: !process.env.P
       const { page, ctx } = await open(withActive('p1-a', { entries: [['band-pull-apart', 'archery'], ['quad-set', 'knee']] }), '#/session');
       await page.waitForSelector('.set-check');
       await page.waitForTimeout(700);
+      // v5.3: short + steps sit below the figure – the set buttons are reached by scrolling
+      await page.$eval('.set-check[data-set="0"]', (e) => e.scrollIntoView({ block: 'center' }));
+      await page.waitForTimeout(200);
       await tapTwice(page, '.set-check[data-set="0"]', 160);
       await page.waitForTimeout(200);
       assert.equal(await page.getAttribute('.set-check[data-set="0"]', 'aria-pressed'), 'true');

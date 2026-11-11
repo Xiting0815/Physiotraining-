@@ -1071,6 +1071,17 @@ const CSS = `
 .ses-fig pt-figure{display:block;width:100%;max-width:330px}
 .ses-fig--compact{min-height:0}
 .ses-fig--compact pt-figure{max-width:none;max-height:28vh}
+.ses-howto{margin:0 0 var(--s-3)}
+.ses-howto__short{font-size:19px;line-height:1.4;font-weight:var(--fw-semibold);color:var(--text);margin:0 0 var(--s-3)}
+.ses-steps{gap:var(--s-3)}
+.ses-steps>li{font-size:20px;line-height:1.4;color:var(--text);font-weight:var(--fw-medium)}
+.ses-steps>li::before{width:32px;height:32px;font-size:18px}
+.ses-more{margin:0 0 var(--s-3)}
+.ses-more>summary{font-size:18px}
+.ses-more .stack{font-size:17px;line-height:1.45}
+.ses-setup-list{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:var(--s-2)}
+.ses-feel{color:var(--text);font-weight:var(--fw-medium)}
+.ses-setup{font-size:17px;line-height:1.4;margin:0 0 var(--s-2);color:var(--text)}
 .ses-ex .card__title{font-size:var(--fs-xl);margin:0;line-height:1.15}
 .ses-note{color:var(--muted);font-size:16px;margin:var(--s-1) 0 0}
 .ses-meta .chip{font-size:15px;min-height:36px}

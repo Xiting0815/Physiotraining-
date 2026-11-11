@@ -1,8 +1,10 @@
 // Übung (detail) – see docs/SPEC.md §3.5.
 import { html, raw, render as paint } from '../render.js';
 import { levelOf } from '../logic/progression.js';
-import { instructionsFor, equipmentNeeds, missingEquipment, upgradeRules, fallbackRules } from '../logic/equipment.js';
+import { equipmentNeeds, missingEquipment, upgradeRules, fallbackRules } from '../logic/equipment.js';
 import { dayOf } from '../logic/stats.js';
+import { shoulderProtect, isShoulderExercise, SHOULDER_NOTE, DRAW_NOTE } from '../logic/shoulder.js';
+import { shortFor, stepsFor, feelFor, setupFor } from '../logic/exercise-text.js';
 import { lineChart } from '../components/charts.js';
 import { rowingPhases, INTENSITY_LABELS } from '../logic/cardio.js';
 import {
@@ -116,6 +118,7 @@ export function render(root, { store, content, params, query }) {
     const missing = missingEquipment(ex, settings);
     const fbId = ex.fallback || fallbackRules(content.exercises).get(ex.id);
     const fallback = fbId ? exById(fbId) : null;
+    const setupList = setupFor(ex, settings);
     const variants = (upgradeRules(content.exercises).get(ex.id) || []).map((r) => ({ ex: exById(r.exerciseId), owned: missingEquipment(exById(r.exerciseId), settings).length === 0 })).filter((v) => v.ex);
 
     paint(root, html`
@@ -130,7 +133,17 @@ export function render(root, { store, content, params, query }) {
         </div>
       </div>
 
-      ${ex.description ? html`<p class="text-lg">${ex.description}</p>` : ''}
+      ${shortFor(ex) ? html`<p class="text-lg" data-short>${shortFor(ex)}</p>` : ''}
+
+      <section class="card" data-howto>
+        <h2 class="card__title mb-4">So geht's</h2>
+        ${setupList.length ? html`<p class="eyebrow mb-2">Ausgangsposition</p>
+        <ul class="pv-bullets text-sm mb-4" data-setup>${setupList.map((x) => html`<li>${x}</li>`)}</ul>` : ''}
+        <p class="eyebrow mb-2">Ablauf</p>
+        <ol class="steps" data-steps>${stepsFor(ex).map((x) => html`<li>${x}</li>`)}</ol>
+        ${feelFor(ex) ? html`<p class="mt-4 mb-0" data-feel>🎯 ${feelFor(ex)}</p>` : ''}
+        ${ex.description && ex.description !== shortFor(ex) ? html`<p class="text-sm muted mt-4 mb-0">${ex.description}</p>` : ''}
+      </section>
 
       <section class="card">
         <div class="card__header">
@@ -166,16 +179,14 @@ export function render(root, { store, content, params, query }) {
       ${ex.kneeNote ? html`<div class="pv-callout pv-callout--knee"><span class="pv-callout__icon" aria-hidden="true">🦵</span>
         <div><p class="strong">Hinweis fürs Knie</p><p>${ex.kneeNote}</p></div></div>` : ''}
 
+      ${shoulderProtect(settings) && (isShoulderExercise(ex) || ex.archeryDraw) ? html`<div class="pv-callout" data-shoulder-note><span class="pv-callout__icon" aria-hidden="true">🛡️</span>
+        <div><p class="strong">Hinweis für die Schulter</p><p>${ex.archeryDraw ? DRAW_NOTE : SHOULDER_NOTE}</p></div></div>` : ''}
+
       ${ex.postOpNote ? html`<div class="pv-callout ${postop ? 'pv-callout--warn' : ''}"><span class="pv-callout__icon" aria-hidden="true">🩼</span>
         <div><p class="strong">Nach der OP</p><p>${ex.postOpNote}</p></div></div>` : ''}
       ${ex.postOpAllowed === false ? html`<div class="pv-callout ${postop && av.kind === 'blocked' ? 'pv-callout--stop' : 'pv-callout--warn'}"><span class="pv-callout__icon" aria-hidden="true">${av.kind === 'enabled' ? '✅' : '⛔'}</span>
         <div><p class="strong">${av.kind === 'enabled' ? 'Nach der OP für dich freigegeben' : postop ? 'In der Entlastungsphase gesperrt' : 'Nach der OP pausiert'}</p>
         <p class="text-sm">${cardio ? 'Rudern ist in den 6 Wochen ohne Belastung (Krücken) nicht vorgesehen. Bis zum OP-Tag darfst du rudern – die Ampel gilt.' : av.kind === 'enabled' ? 'Du hast die Übung freigegeben – nur so, wie dein Team es erlaubt.' : 'In der Entlastungsphase nach der OP wird die Übung übersprungen – außer dein Arzt/Physio erlaubt sie ausdrücklich.'}</p></div></div>` : ''}
-
-      <section class="card">
-        <h2 class="card__title mb-4">So geht's</h2>
-        <ol class="steps">${instructionsFor(ex, settings).map((s) => html`<li>${s}</li>`)}</ol>
-      </section>
 
       ${(ex.cues || []).length || (ex.mistakes || []).length ? html`<div class="grid-2 mb-4">
         ${(ex.cues || []).length ? html`<section class="card card--tight"><p class="eyebrow">Darauf achten</p>

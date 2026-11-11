@@ -41,7 +41,7 @@ const Base = globalThis.HTMLElement ?? class {};
 const RAD = Math.PI / 180;
 const ANGLE_KEYS = ['trunk', 'hipL', 'hipR', 'kneeL', 'kneeR', 'shoulderL', 'shoulderR', 'elbowL', 'elbowR'];
 const LEN_KEYS = ['thighLenL', 'thighLenR', 'shinLenL', 'shinLenR', 'upperArmLenL', 'upperArmLenR', 'forearmLenL', 'forearmLenR'];
-const EXTRA_KEYS = ['ankleL', 'ankleR', 'headTilt', 'twist', 'reachL', 'reachR'];
+const EXTRA_KEYS = ['ankleL', 'ankleR', 'headTilt', 'twist', 'reachL', 'reachR', 'face', 'patellaX', 'patellaY', 'gripX'];
 export const OPTIONAL_KEYS = [...EXTRA_KEYS, ...LEN_KEYS];
 export const DEFAULT_SEGMENTS = { trunk: 50, thigh: 42, shin: 42, upperArm: 30, forearm: 28, head: 10, foot: 10 };
 export const FLOOR = 185;
@@ -70,6 +70,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
  */
 export function computePoints(pose, segments = DEFAULT_SEGMENTS) {
   const S = { ...DEFAULT_SEGMENTS, ...segments };
+  if (pose.camera === 'above') return pose.closeup === 'knee' ? kneeCloseupPoints(pose) : topPoints(pose, S);
   const front = pose.view === 'front';
   const t = num(pose.trunk);
   const up = { x: Math.sin(t * RAD), y: -Math.cos(t * RAD) }; // hip → neck
@@ -108,6 +109,59 @@ export function computePoints(pose, segments = DEFAULT_SEGMENTS) {
 }
 
 /**
+ * v5.3 top view of a standing person (pose `view: "front", camera: "above"`; seen from above, pure). `root` = centre of the shoulders, `face` = facing
+ * direction (° from +y = toward the bottom of the image, + toward +x). Arms: `shoulderL/R` = upper-arm direction
+ * relative to the facing (0 = forward, + = outward), `upperArmLen*` its projected length (hanging arm ≈ 0.15);
+ * `elbowL/R` = forearm direction relative to the facing (0 = forward, + = outward → external rotation), `forearmLen*`.
+ * Feet: small marks under the body, `hipL/R` = stance width (°-ish). Like the front view, the figure's left is on the
+ * viewer's right when it faces the viewer.
+ */
+function topPoints(pose, S) {
+  const c = { x: num(pose.root?.x, 100), y: num(pose.root?.y, 100) };
+  const fa = num(pose.face);
+  const F = down(fa, 1);
+  const Lv = { x: Math.cos(fa * RAD), y: -Math.sin(fa * RAD) };
+  const pts = { hip: c, neck: c, head: add(c, mul(F, 1.5)) };
+  for (const side of ['L', 'R']) {
+    const lat = mul(Lv, side === 'L' ? 1 : -1);
+    const rel = (a) => add(mul(F, Math.cos(a * RAD)), mul(lat, Math.sin(a * RAD)));
+    const sh = add(c, mul(lat, 17));
+    const elbow = add(sh, mul(rel(num(pose['shoulder' + side])), S.upperArm * num(pose['upperArmLen' + side], 0.15)));
+    const hand = add(elbow, mul(rel(num(pose['elbow' + side])), S.forearm * num(pose['forearmLen' + side], 1)));
+    const foot = add(add(c, mul(lat, 6 + num(pose['hip' + side], 4) * 0.5)), mul(F, 2));
+    Object.assign(pts, {
+      ['hipJ' + side]: add(c, mul(lat, 7)), ['knee' + side]: foot, ['foot' + side]: foot, ['ankle' + side]: foot,
+      ['toe' + side]: add(foot, mul(F, 8)), ['shoulder' + side]: sh, ['elbow' + side]: elbow, ['hand' + side]: hand,
+    });
+  }
+  pts.hands = mid(pts.handL, pts.handR);
+  pts.feet = mid(pts.footL, pts.footR);
+  pts.knees = mid(pts.kneeL, pts.kneeR);
+  return pts;
+}
+
+/**
+ * v5.3 close-up of the (left) knee seen from above, leg lying horizontally (thigh left, foot right).
+ * `root` = resting centre of the kneecap, `patellaX/Y` = glide of the kneecap, `gripX` = where thumb (handR, from
+ * above) and index finger (handL, from below) touch the kneecap rim (relative to its centre).
+ */
+function kneeCloseupPoints(pose) {
+  const c = { x: num(pose.root?.x, 100), y: num(pose.root?.y, 100) };
+  const pat = { x: c.x + num(pose.patellaX), y: c.y + num(pose.patellaY) };
+  const gx = num(pose.gripX, -9);
+  const thumb = { x: pat.x + gx, y: pat.y - 6.5 };
+  const index = { x: pat.x + gx, y: pat.y + 6.5 };
+  const hip = { x: c.x - 78, y: c.y };
+  const foot = { x: c.x + 78, y: c.y };
+  return {
+    hip, neck: { x: hip.x - 1, y: c.y }, head: { x: hip.x - 2, y: c.y }, kneeL: pat, kneeR: pat, knees: pat,
+    hipJL: hip, hipJR: hip, footL: foot, footR: foot, ankleL: foot, ankleR: foot, toeL: foot, toeR: foot, feet: foot,
+    handR: thumb, handL: index, hands: mid(thumb, index), elbowR: { x: thumb.x - 6, y: thumb.y - 26 }, elbowL: { x: index.x - 6, y: index.y + 26 },
+    shoulderL: hip, shoulderR: hip, patella: pat, patellaRest: c,
+  };
+}
+
+/**
  * Linear interpolation of all angles (+ optional extra keys) and root (pure).
  * @param {import('../types.js').Pose} a @param {import('../types.js').Pose} b @param {number} t 0..1
  * @returns {import('../types.js').Pose}
@@ -124,6 +178,7 @@ export function interpolatePose(a, b, t) {
   // Segments with an explicit length key are foreshortened (they move out of the image plane):
   // interpolate their projected vector instead of their angle, so e.g. an arm sweeping toward
   // the camera shrinks through the middle instead of swinging down.
+  if (a.camera === 'above') return out; // top view: lengths and directions are already projected
   for (const s of ['L', 'R']) {
     projectLimb(a, b, t, out, 'shoulder' + s, 'elbow' + s, 'upperArmLen' + s, 'forearmLen' + s, 1);
     projectLimb(a, b, t, out, 'hip' + s, 'knee' + s, 'thighLen' + s, 'shinLen' + s, -1);
@@ -241,12 +296,14 @@ function mergeProps(figureProps = [], pose0) {
 
 /** Resolve prop placement from the first keyframe (stable during animation). */
 export function layoutProps(props, pose0, P, band) {
-  const side = pose0.view !== 'front';
+  const side = pose0.view === 'side';
+  const topView = pose0.camera === 'above';
   const out = [];
   const lowFoot = P.footL.y >= P.footR.y ? 'L' : 'R';
   const highFoot = lowFoot === 'L' ? 'R' : 'L';
   for (const raw of props) {
     const p = { ...raw };
+    if (topView) p.top = true;
     switch (p.type) {
       case 'chair': {
         if (p.x === undefined || p.y === undefined) {
@@ -265,12 +322,14 @@ export function layoutProps(props, pose0, P, band) {
         break;
       }
       case 'wall': {
-        p.line = side || p.x !== undefined;
+        if (p.plane) { p.anchor = { x: p.x ?? P.hip.x, y: p.y ?? P.hip.y - 20 }; break; } // wall behind the figure (background)
+        p.line = side || p.x !== undefined || p.y !== undefined;
         if (p.x === undefined) {
           p.x = side ? Math.min(P.hip.x - BODY.trunk / 2, P.neck.x - BODY.trunk / 2, P.head.x - DEFAULT_SEGMENTS.head) - 1.5 : 100;
         }
         p.away ??= p.facing ? -p.facing : (p.x < P.hip.x ? -1 : 1); // hatch on the far side of the figure
-        p.anchor = { x: p.x, y: p.y ?? P.hip.y - 20 };
+        if (p.orient === 'h') p.away = p.facing ? -p.facing : (p.y < P.hip.y ? -1 : 1);
+        p.anchor = p.orient === 'h' ? { x: p.x, y: p.y } : { x: p.x, y: p.y ?? P.hip.y - 20 };
         break;
       }
       case 'door': {
@@ -279,6 +338,7 @@ export function layoutProps(props, pose0, P, band) {
           const ref = from || P.hands;
           p.x ??= ref.x + (side ? 55 : 60);
           p.y ??= ref.y;
+          if (topView) p.top = true;
         }
         p.anchor = { x: p.x, y: p.y };
         break;
@@ -349,7 +409,8 @@ function propBounds(p) {
   switch (p.type) {
     case 'chair': return [{ x: p.x - 18, y: p.y - (p.back === false ? (p.arms || 0) : 50) }, { x: p.x + 18, y: FLOOR }];
     case 'rower': return [{ x: p.x0 - 6, y: p.rail - 10 - p.r - 50 }, { x: p.x1 + p.r + 4, y: FLOOR }];
-    case 'door': return [{ x: p.x - 6, y: p.y - 6 }, { x: p.x + 6, y: p.y + 6 }];
+    case 'door': return p.top ? [{ x: p.x - 6, y: p.y - 18 }, { x: p.x + 6, y: p.y + 18 }] : [{ x: p.x - 6, y: p.y - 6 }, { x: p.x + 6, y: p.y + 6 }];
+    case 'wall': return p.orient === 'h' && Number.isFinite(p.y) ? [{ x: p.x - 20, y: p.y - 7 }, { x: p.x + 20, y: p.y + 7 }] : [];
     case 'sling': return [{ x: p.x - 7, y: p.y - 10 }, { x: p.x + 7, y: p.y + 4 }];
     case 'step': return [{ x: p.x - p.w / 2, y: p.top }, { x: p.x + p.w / 2, y: FLOOR }];
     case 'towel': return [{ x: p.x - p.r, y: p.y - p.r }, { x: p.x + p.r, y: p.y + p.r }];
@@ -385,15 +446,30 @@ function propSvg(p, frame, front) {
         <rect class="fig-prop-solid" x="${f(Math.min(back, fr) - 2)}" y="${f(p.y)}" width="36" height="5" rx="2"/></g>`;
     }
     case 'wall': {
-      if (front && !p.line) {
-        return `<rect class="fig-wall-bg" x="${f(frame.x)}" y="${f(frame.y)}" width="${f(frame.w)}" height="${f(FLOOR - frame.y)}"/>`;
+      if (p.plane || (front && !p.line)) {
+        const h = p.top ? frame.h : FLOOR - frame.y;
+        return `<rect class="fig-wall-bg" x="${f(frame.x)}" y="${f(frame.y)}" width="${f(frame.w)}" height="${f(h)}"/>`;
       }
       const xs = p.away;
+      if (p.orient === 'h') {
+        let hh = '';
+        for (let x = frame.x + 4; x < frame.x + frame.w; x += 12) hh += `M${f(x)} ${f(p.y)}l${-6} ${f(xs * 6)}`;
+        return `<g class="fig-prop"><path class="fig-prop-hatch" d="${hh}"/><path class="fig-prop-wall" d="M${f(frame.x - 2)} ${f(p.y)}H${f(frame.x + frame.w + 2)}"/></g>`;
+      }
+      if (p.top) {
+        let hv = '';
+        for (let y = frame.y + frame.h - 4; y > frame.y; y -= 12) hv += `M${f(p.x)} ${f(y)}l${f(xs * 6)} ${-6}`;
+        return `<g class="fig-prop"><path class="fig-prop-hatch" d="${hv}"/><path class="fig-prop-wall" d="M${f(p.x)} ${f(frame.y + frame.h + 2)}V${f(frame.y - 2)}"/></g>`;
+      }
       let hatch = '';
       for (let y = FLOOR - 4; y > frame.y; y -= 12) hatch += `M${f(p.x)} ${f(y)}l${f(xs * 6)} ${-6}`;
       return `<g class="fig-prop"><path class="fig-prop-hatch" d="${hatch}"/><path class="fig-prop-wall" d="M${f(p.x)} ${FLOOR}V${f(frame.y - 2)}"/></g>`;
     }
     case 'door': {
+      if (p.top) { // door frame / leaf edge seen from above
+        return `<g class="fig-prop"><rect class="fig-prop-solid" x="${f(p.x - 2.5)}" y="${f(p.y - 16)}" width="5" height="32" rx="1.5"/>
+          ${p.knot === false ? '' : `<circle class="fig-knot" cx="${f(p.x)}" cy="${f(p.y)}" r="3.4"/>`}</g>`;
+      }
       const ax = p.x;
       const fx = front ? ax : ax + 3;
       return `<g class="fig-prop">
@@ -512,6 +588,7 @@ function limbGroup(d, width, cls, extra = '') {
  * @param {{highlightLeftKnee?: boolean, highlight?: string[]|string, mirror?: boolean}} [opts]
  */
 export function poseSvg(pose, segments, { highlightLeftKnee = false, highlight = [], mirror = false } = {}) {
+  if (pose.camera === 'above') return pose.closeup === 'knee' ? kneeCloseupSvg(pose) : topSvg(pose, segments, normalizeHighlight(highlight));
   const p = computePoints(pose, segments);
   const S = { ...DEFAULT_SEGMENTS, ...segments };
   const front = pose.view === 'front';
@@ -553,6 +630,33 @@ export function poseSvg(pose, segments, { highlightLeftKnee = false, highlight =
   return `${armSvg(far, 'fig-far')}${legSvg(far, 'fig-far')}${trunkSvg}${headSvg}${legSvg(near, 'fig-near')}${armSvg(near, 'fig-near')}${ring}`;
 }
 
+/** v5.3 top view: feet, shoulder girdle, arms, head with a nose mark (facing direction). */
+function topSvg(pose, segments, hl) {
+  const p = computePoints(pose, segments);
+  const F = down(num(pose.face), 1);
+  const arm = (s) => limbGroup(path([p['shoulder' + s], p['elbow' + s], p['hand' + s]]), BODY.arm, `fig-limb fig-arm fig-arm--${s} fig-near${hl.has('arm' + s) ? ' fig-hl' : ''}`);
+  const torso = limbGroup(path([p.shoulderL, p.shoulderR]), BODY.trunk + 5, `fig-trunk${hl.has('trunk') ? ' fig-hl' : ''}`);
+  const r = DEFAULT_SEGMENTS.head - 1.5;
+  const nose = add(p.head, mul(F, r));
+  return `${torso}${arm('L')}${arm('R')}<circle class="fig-head" cx="${f(p.head.x)}" cy="${f(p.head.y)}" r="${f(r)}"/><circle class="fig-head fig-nose" cx="${f(nose.x)}" cy="${f(nose.y)}" r="2.6"/>`;
+}
+
+/** v5.3 close-up: left knee from above, kneecap (highlight colour), thumb from above and index finger from below. */
+function kneeCloseupSvg(pose) {
+  const P = computePoints(pose);
+  const c = P.patellaRest;
+  const legD = `M${f(c.x - 84)} ${f(c.y - 2)}L${f(c.x)} ${f(c.y)}L${f(c.x + 84)} ${f(c.y + 3)}`;
+  const leg = `<g class="fig-limb fig-knee-leg"><path class="fig-out" d="${legD}" stroke-width="${30 + BODY.outline}"/><path class="fig-stroke fig-knee-skin" d="${legD}" stroke-width="30"/></g>`;
+  const pat = P.patella;
+  const patSvg = `<ellipse class="fig-patella" cx="${f(pat.x)}" cy="${f(pat.y)}" rx="9" ry="8"/>`;
+  const finger = (tip, root) => {
+    const a = Math.atan2(tip.y - root.y, tip.x - root.x) / RAD;
+    const palm = add(root, mul(unit({ x: root.x - tip.x, y: root.y - tip.y }), 6));
+    return `<ellipse class="fig-head fig-hand" cx="${f(palm.x)}" cy="${f(palm.y)}" rx="13" ry="9" transform="rotate(${f(a)} ${f(palm.x)} ${f(palm.y)})"/>` + limbGroup(path([root, tip]), 6, 'fig-limb fig-finger');
+  };
+  return `${leg}${patSvg}${finger(P.handR, P.elbowR)}${finger(P.handL, P.elbowL)}`;
+}
+
 export function normalizeHighlight(h) {
   const list = Array.isArray(h) ? h : String(h || '').split(/[\s,]+/);
   const out = new Set();
@@ -565,6 +669,10 @@ export function normalizeHighlight(h) {
 
 /** Bounding box of the drawn body for one pose. */
 export function poseBounds(pose, segments) {
+  if (pose.camera === 'above' && pose.closeup === 'knee') {
+    const c = pose.root;
+    return { minX: c.x - 88, minY: c.y - 42, maxX: c.x + 88, maxY: c.y + 42 };
+  }
   const P = computePoints(pose, segments);
   const S = { ...DEFAULT_SEGMENTS, ...segments };
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -700,6 +808,9 @@ export function autoArrowPoints(keyframes, segments = DEFAULT_SEGMENTS, highligh
     return { point: name, path, travel, score: travel * w * boost };
   }).filter((c) => c.travel >= AUTO_MIN).sort((a, b) => b.score - a.score);
   if (!scored.length) return [];
+  // whole-body movements (squat, sit-to-stand, bridge, step-up …): the hip carries the arrow
+  const hipC = scored.find((c) => c.point === 'hip');
+  if (hipC && hipC.travel >= 12 && scored[0].travel < hipC.travel * 3) return [{ point: 'hip', path: hipC.path }];
   const best = scored[0];
   const out = [best];
   const mate = scored.find((c) => c.point === PARTNER[best.point]);
@@ -759,11 +870,11 @@ function shapePath(path, bodyC, off = 6.5) {
   return pts.slice(i - 1);
 }
 
-function arcPoints(c, r, a0, a1, n = 18) {
+function arcPoints(c, r, a0, a1, n = 18, ry = 1) {
   const out = [];
   for (let i = 0; i <= n; i++) {
     const a = (a0 + (a1 - a0) * (i / n)) * RAD;
-    out.push({ x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r });
+    out.push({ x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r * ry });
   }
   return out;
 }
@@ -782,10 +893,10 @@ function explicitArrowSvg(a, P0, P1, props, sink = null) {
     if (!Number.isFinite(a1) && p1) a1 = angOf(c, p1);
     if (!Number.isFinite(a0) || !Number.isFinite(a1)) return '';
     let d = a1 - a0;
-    if (!Number.isFinite(a.a1)) d = ((d + 540) % 360) - 180; // shortest way between two directions
+    if (!Number.isFinite(a.a1) || !Number.isFinite(a.a0)) d = ((d + 540) % 360) - 180; // shortest way between two directions
     const r = a.r ?? (p0 ? Math.max(8, dist(c, p0) * 0.7) : 14);
     const trim = Math.sign(d) * Math.min(Math.abs(d) * 0.12, 10);
-    return pathArrowSvg(arcPoints(c, r, a0 + trim, a0 + d - trim * 0.3), ' fig-motion--rotate', sink);
+    return pathArrowSvg(arcPoints(c, r, a0 + trim, a0 + d - trim * 0.3, Math.max(18, Math.round(Math.abs(d) / 8)), a.ry ?? 1), ' fig-motion--rotate', sink);
   }
   const pose = kind === 'move' ? P0 : P1;
   const s = refPoint(pose, a.from, props);
@@ -834,8 +945,8 @@ export function buildScene(spec) {
   const segments = { ...DEFAULT_SEGMENTS, ...(spec.segments || {}) };
   const pose0 = poses[0];
   const P0 = computePoints(pose0, segments);
-  const front = pose0.view === 'front';
-  const top = front && pose0.camera === 'top';
+  const front = pose0.view !== 'side';
+  const top = pose0.camera === 'above' || (front && pose0.camera === 'top');
   const band = spec.band && spec.band.from ? spec.band : null;
   const handBand = band && /^hand[LR]$/.test(band.from) && /^hand[LR]$/.test(String(band.to));
   // a band drawn hand-to-hand replaces the bow (band drills in archery stance)
@@ -855,7 +966,8 @@ export function buildScene(spec) {
   }
   if (band && typeof band.to === 'object' && Number.isFinite(band.to?.x)) grow({ minX: band.to.x - 4, minY: band.to.y - 4, maxX: band.to.x + 4, maxY: band.to.y + 4 });
   const wall = props.find((p) => p.type === 'wall');
-  if (wall && !front) grow({ minX: wall.x - 8, maxX: wall.x + 8, minY: bb.minY, maxY: bb.maxY });
+  if (wall && !front && !wall.plane) grow({ minX: wall.x - 8, maxX: wall.x + 8, minY: bb.minY, maxY: bb.maxY });
+  if (wall && top && wall.line && wall.orient !== 'h') grow({ minX: wall.x - 8, maxX: wall.x + 8, minY: bb.minY, maxY: bb.maxY });
 
   // v5.3 motion arrows (static overlay along the path start → end) and prop labels
   const loop = !!spec.loop && poses.length >= 3;
@@ -885,7 +997,7 @@ export function buildScene(spec) {
   const pad = 10;
   let w = bb.maxX - bb.minX + pad * 2;
   let h = bb.maxY - bb.minY + pad * 2;
-  h = Math.max(h, 96);
+  h = Math.max(h, top && pose0.camera === 'above' ? 124 : 96);
   if (w / h < aspect) w = h * aspect; else h = w / aspect;
   const cx = (bb.minX + bb.maxX) / 2;
   const contentH = bb.maxY - bb.minY;
@@ -1021,6 +1133,8 @@ export const FIGURE_CSS = `
   pt-figure .fig-bow-string{fill:none;stroke:var(--fig-bow,var(--muted,#5B6573));stroke-width:1;opacity:.85}
   pt-figure .fig-arrow{fill:none;stroke:var(--fig-arrow,var(--accent,#E07A1F));stroke-width:1.8;stroke-linecap:round}
   pt-figure .fig-pair-arrow{fill:none;stroke:var(--muted,#5B6573);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+  pt-figure .fig-knee-skin{opacity:.22}
+  pt-figure .fig-patella{fill:var(--fig-hl,var(--primary,#0E7C86));stroke:var(--fig-bg);stroke-width:1.5}
   pt-figure .fig-motion-halo{fill:none;stroke:var(--fig-bg);stroke-width:4.6;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
   pt-figure .fig-motion-line{fill:none;stroke:var(--fig-arrow,var(--accent,#E07A1F));stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   pt-figure .fig-motion-head{fill:var(--fig-arrow,var(--accent,#E07A1F));stroke:var(--fig-arrow,var(--accent,#E07A1F));stroke-width:.8;stroke-linejoin:round}

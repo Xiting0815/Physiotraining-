@@ -123,7 +123,7 @@ function lowestBody(p) {
   if (p.view === 'front') ys.push(P.shoulderL.y + 5, P.shoulderR.y + 5, P.hipJL.y + 5, P.hipJR.y + 5); else ys.push(P.hip.y + 6.5, P.neck.y + 6.5);
   return Math.max(...ys);
 }
-const viewed = Object.entries(poses).filter(([, p]) => p.camera !== 'top');
+const viewed = Object.entries(poses).filter(([, p]) => p.camera !== 'top' && p.camera !== 'above'); // seen from above: no floor
 
 test('poses: nothing goes through the floor', () => {
   for (const [id, p] of viewed) assert.ok(lowestBody(p) <= FLOOR + SUPPORT_TOL, `${id} below the floor (${lowestBody(p).toFixed(1)})`);

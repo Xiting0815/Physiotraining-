@@ -1,0 +1,956 @@
+{
+  "version": 1,
+  "note": "v5.3 figure audit (SPEC §18.6): merged over exercises[].figure by js/content.js and figureSpecForExercise. Keys: poses, view, props, band, arrows, labels, mirror, tempo, loop, highlight. Pose ids live in data/poses.json (tools/gen-poses.mjs).",
+  "overrides": {
+    "tke": {
+      "arrows": [
+        {
+          "kind": "arrow",
+          "from": {
+            "at": "kneeL",
+            "dx": 12,
+            "dy": -11
+          },
+          "to": {
+            "at": "kneeL",
+            "dx": -4,
+            "dy": -11
+          }
+        }
+      ],
+      "labels": [
+        {
+          "text": "Tür",
+          "at": "door",
+          "dx": 5,
+          "dy": -40,
+          "anchor": "start"
+        }
+      ]
+    },
+    "wall-sit": {
+      "poses": [
+        "stand-wall-upright",
+        "stand-wall-sit"
+      ],
+      "props": [],
+      "labels": [
+        {
+          "text": "Wand",
+          "at": "wall",
+          "dx": -4,
+          "dy": -30,
+          "anchor": "end"
+        }
+      ],
+      "arrows": [
+        {
+          "kind": "arrow",
+          "from": {
+            "at": "hip",
+            "dx": 11,
+            "dy": -24
+          },
+          "to": {
+            "at": "hip",
+            "dx": 11,
+            "dy": -6
+          }
+        }
+      ]
+    },
+    "sit-to-stand": {
+      "poses": [
+        "sit-chair-wall",
+        "sit-to-stand-mid-wall",
+        "sit-to-stand-end-wall"
+      ],
+      "props": []
+    },
+    "mini-squat": {
+      "poses": [
+        "wall-mini-squat-a",
+        "wall-mini-squat-b"
+      ],
+      "props": [],
+      "labels": [
+        {
+          "text": "Wand",
+          "at": "wall",
+          "dx": 4,
+          "dy": -40,
+          "anchor": "start"
+        }
+      ],
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "hip",
+            "dx": -12
+          },
+          "to": {
+            "at": "hip",
+            "dx": -12
+          },
+          "bend": 0.2
+        }
+      ]
+    },
+    "step-up": {
+      "poses": [
+        "stand-step-left-up",
+        "stand-step-top"
+      ],
+      "props": [],
+      "labels": [
+        {
+          "text": "Stufe",
+          "at": "step",
+          "dy": 24
+        }
+      ]
+    },
+    "standing-hip-abduction": {
+      "view": "front",
+      "poses": [
+        "front-hip-abd-door-a",
+        "front-hip-abd-door-b"
+      ],
+      "props": [],
+      "band": {
+        "from": "footR",
+        "to": "door"
+      },
+      "labels": [
+        {
+          "text": "Türrahmen",
+          "at": "door",
+          "dx": 5,
+          "dy": -60,
+          "anchor": "start"
+        }
+      ]
+    },
+    "standing-hip-extension": {
+      "labels": [
+        {
+          "text": "Wand",
+          "at": "wall",
+          "dx": 4,
+          "dy": -62,
+          "anchor": "start"
+        }
+      ]
+    },
+    "calf-raise": {
+      "poses": [
+        "wall-calf-raise-down",
+        "wall-calf-raise-up"
+      ],
+      "props": [],
+      "arrows": [
+        {
+          "kind": "arrow",
+          "from": {
+            "at": "footR",
+            "dx": -11,
+            "dy": 2
+          },
+          "to": {
+            "at": "footR",
+            "dx": -11,
+            "dy": -16
+          }
+        }
+      ],
+      "labels": [
+        {
+          "text": "Wand",
+          "at": "wall",
+          "dx": 4,
+          "dy": -40,
+          "anchor": "start"
+        }
+      ]
+    },
+    "single-leg-stance": {
+      "view": "front",
+      "poses": [
+        "front-wall-stand",
+        "front-wall-single-leg"
+      ],
+      "props": [],
+      "labels": [
+        {
+          "text": "Wand",
+          "at": "wall",
+          "dx": 4,
+          "dy": -40,
+          "anchor": "start"
+        }
+      ],
+      "arrows": [
+        {
+          "kind": "arrow",
+          "from": {
+            "at": "footR",
+            "dx": -9,
+            "dy": 8
+          },
+          "to": {
+            "at": "footR",
+            "dx": -9,
+            "dy": -12
+          }
+        }
+      ]
+    },
+    "seated-row": {
+      "poses": [
+        "sit-row-start",
+        "sit-row-end"
+      ],
+      "props": [
+        "chair",
+        "door"
+      ],
+      "labels": [
+        {
+          "text": "Tür",
+          "at": "door",
+          "dy": -36
+        }
+      ]
+    },
+    "wall-slide": {
+      "poses": [
+        "stand-wall-slide-low",
+        "stand-wall-slide-high"
+      ],
+      "props": []
+    },
+    "er-towel": {
+      "view": "top",
+      "poses": [
+        "top-er-in",
+        "top-er-out"
+      ],
+      "props": [],
+      "labels": [
+        {
+          "text": "Tür",
+          "at": "door",
+          "dy": -22
+        },
+        {
+          "text": "von oben",
+          "at": "head",
+          "dy": -18
+        }
+      ]
+    },
+    "ir-band": {
+      "view": "top",
+      "poses": [
+        "top-ir-out",
+        "top-ir-in"
+      ],
+      "props": [],
+      "labels": [
+        {
+          "text": "Tür",
+          "at": "door",
+          "dy": -22
+        },
+        {
+          "text": "von oben",
+          "at": "head",
+          "dy": -18
+        }
+      ]
+    },
+    "er-iso-door": {
+      "view": "top",
+      "poses": [
+        "top-er-iso"
+      ],
+      "props": [],
+      "arrows": [
+        {
+          "kind": "push",
+          "from": {
+            "at": "handR",
+            "dx": 2,
+            "dy": -2
+          },
+          "to": {
+            "at": "handR",
+            "dx": -9,
+            "dy": -2
+          }
+        }
+      ],
+      "labels": [
+        {
+          "text": "Türrahmen",
+          "at": "door",
+          "dy": 28
+        },
+        {
+          "text": "von oben",
+          "at": "head",
+          "dy": -18
+        }
+      ]
+    },
+    "ir-iso-door": {
+      "view": "top",
+      "poses": [
+        "top-ir-iso"
+      ],
+      "props": [],
+      "arrows": [
+        {
+          "kind": "push",
+          "from": {
+            "at": "handR",
+            "dx": -2,
+            "dy": -2
+          },
+          "to": {
+            "at": "handR",
+            "dx": 9,
+            "dy": -2
+          }
+        }
+      ],
+      "labels": [
+        {
+          "text": "Türrahmen",
+          "at": "door",
+          "dy": 28
+        },
+        {
+          "text": "von oben",
+          "at": "head",
+          "dy": -18
+        }
+      ]
+    },
+    "pallof-press": {
+      "view": "top",
+      "poses": [
+        "top-pallof-in",
+        "top-pallof-out"
+      ],
+      "props": [],
+      "band": {
+        "from": "hands",
+        "to": "door"
+      },
+      "labels": [
+        {
+          "text": "Tür",
+          "at": "door",
+          "dy": -22
+        },
+        {
+          "text": "Rumpf dreht nicht mit",
+          "at": "head",
+          "dy": -18
+        }
+      ],
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "hands",
+            "dx": -16
+          },
+          "to": {
+            "at": "hands",
+            "dx": -16
+          },
+          "bend": 0
+        }
+      ]
+    },
+    "bow-arm-push": {
+      "view": "front",
+      "poses": [
+        "front-bow-arm-wall"
+      ],
+      "props": [],
+      "arrows": [
+        {
+          "kind": "push",
+          "from": {
+            "at": "handL",
+            "dx": -16,
+            "dy": -9
+          },
+          "to": {
+            "at": "handL",
+            "dx": -1,
+            "dy": -9
+          }
+        }
+      ],
+      "labels": [
+        {
+          "text": "Wand",
+          "at": "wall",
+          "dx": 4,
+          "dy": -70,
+          "anchor": "start"
+        }
+      ]
+    },
+    "push-pull-iso": {
+      "view": "front",
+      "poses": [
+        "front-push-pull-iso"
+      ],
+      "props": [],
+      "band": {
+        "from": "handR",
+        "to": "door"
+      },
+      "arrows": [
+        {
+          "kind": "push",
+          "from": {
+            "at": "handL",
+            "dx": -14,
+            "dy": 9
+          },
+          "to": {
+            "at": "handL",
+            "dx": -1,
+            "dy": 9
+          }
+        },
+        {
+          "kind": "pull",
+          "from": {
+            "at": "handR",
+            "dx": 4,
+            "dy": 9
+          },
+          "to": {
+            "at": "handR",
+            "dx": -12,
+            "dy": 9
+          }
+        }
+      ],
+      "labels": [
+        {
+          "text": "Türrahmen",
+          "at": "door",
+          "dx": 6,
+          "dy": -40,
+          "anchor": "start"
+        }
+      ]
+    },
+    "side-plank-elevated": {
+      "view": "front",
+      "poses": [
+        "front-side-plank-wall-sag",
+        "front-side-plank-wall"
+      ],
+      "props": [],
+      "arrows": [
+        {
+          "kind": "arrow",
+          "from": {
+            "at": "hip",
+            "dx": -12,
+            "dy": 16
+          },
+          "to": {
+            "at": "hip",
+            "dx": -3,
+            "dy": 7
+          }
+        }
+      ],
+      "labels": [
+        {
+          "text": "Wand",
+          "at": "wall",
+          "dx": -4,
+          "dy": -70,
+          "anchor": "end"
+        }
+      ]
+    },
+    "breathing-reset": {
+      "poses": [
+        "supine-hands-belly"
+      ]
+    },
+    "chair-dip": {
+      "poses": [
+        "chair-dip-up-wall",
+        "chair-dip-down-wall"
+      ],
+      "props": []
+    },
+    "seated-press-up": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "hip",
+            "dx": -12
+          },
+          "to": {
+            "at": "hip",
+            "dx": -12
+          },
+          "bend": 0
+        }
+      ]
+    },
+    "seated-thoracic-rotation": {
+      "arrows": [
+        {
+          "kind": "rotate",
+          "around": {
+            "at": "neck",
+            "dy": 10
+          },
+          "a0": 150,
+          "a1": 30,
+          "r": 24,
+          "ry": 0.32
+        }
+      ]
+    },
+    "patella-mobilization": {
+      "view": "top",
+      "poses": [
+        "knee-closeup-rest",
+        "knee-closeup-down"
+      ],
+      "props": [],
+      "mirror": false,
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "patellaRest",
+            "dx": 14
+          },
+          "to": {
+            "at": "patellaRest",
+            "dx": 30
+          },
+          "bend": 0
+        },
+        {
+          "kind": "move",
+          "from": {
+            "at": "patellaRest",
+            "dx": -20
+          },
+          "to": {
+            "at": "patellaRest",
+            "dx": -34
+          },
+          "bend": 0
+        },
+        {
+          "kind": "move",
+          "from": {
+            "at": "patellaRest",
+            "dx": 6,
+            "dy": -12
+          },
+          "to": {
+            "at": "patellaRest",
+            "dx": 6,
+            "dy": -25
+          },
+          "bend": 0
+        },
+        {
+          "kind": "move",
+          "from": {
+            "at": "patellaRest",
+            "dx": 6,
+            "dy": 12
+          },
+          "to": {
+            "at": "patellaRest",
+            "dx": 6,
+            "dy": 25
+          },
+          "bend": 0
+        }
+      ],
+      "labels": [
+        {
+          "text": "Oberschenkel",
+          "at": "patellaRest",
+          "dx": -52,
+          "dy": -22
+        },
+        {
+          "text": "Richtung Fuß",
+          "at": "patellaRest",
+          "dx": 50,
+          "dy": -22
+        }
+      ]
+    },
+    "leg-swing-front": {
+      "poses": [
+        "leg-swing-wall-a",
+        "leg-swing-wall-b"
+      ],
+      "props": [],
+      "labels": [
+        {
+          "text": "Wand (seitlich)",
+          "at": "neck",
+          "dx": -40,
+          "dy": -26,
+          "anchor": "start"
+        }
+      ]
+    },
+    "mobility-flow-short": {
+      "poses": [
+        "leg-swing-wall-a",
+        "leg-swing-wall-b"
+      ],
+      "props": []
+    },
+    "mobility-flow-short-low": {
+      "poses": [
+        "leg-swing-wall-a",
+        "leg-swing-wall-b"
+      ],
+      "props": []
+    },
+    "leg-swing-side": {
+      "poses": [
+        "leg-swing-wall-side-out",
+        "leg-swing-wall-side-in"
+      ],
+      "props": [],
+      "labels": [
+        {
+          "text": "Blick zur Wand",
+          "at": "head",
+          "dy": -16
+        }
+      ]
+    },
+    "hip-circles-standing": {
+      "arrows": [
+        {
+          "kind": "rotate",
+          "around": "hip",
+          "a0": 200,
+          "a1": 500,
+          "r": 20,
+          "ry": 0.32
+        }
+      ]
+    },
+    "ankle-circles-seated": {
+      "arrows": [
+        {
+          "kind": "rotate",
+          "around": {
+            "at": "toeR",
+            "dx": 2,
+            "dy": -2
+          },
+          "a0": -40,
+          "a1": 250,
+          "r": 9
+        }
+      ]
+    },
+    "hip-flexor-stretch-standing": {
+      "poses": [
+        "hip-flexor-wall-a",
+        "hip-flexor-wall-b"
+      ],
+      "props": [],
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "hip",
+            "dx": -10,
+            "dy": -4
+          },
+          "to": {
+            "at": "hip",
+            "dx": -4,
+            "dy": 6
+          },
+          "bend": -0.3
+        }
+      ],
+      "labels": [
+        {
+          "text": "Wand (seitlich)",
+          "at": "neck",
+          "dx": -40,
+          "dy": -26,
+          "anchor": "start"
+        }
+      ]
+    },
+    "stretch-flow-short": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "hip",
+            "dx": -10,
+            "dy": -4
+          },
+          "to": {
+            "at": "hip",
+            "dx": -4,
+            "dy": 6
+          },
+          "bend": -0.3
+        }
+      ]
+    },
+    "stretch-flow-short-low": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "hip",
+            "dx": -10,
+            "dy": -4
+          },
+          "to": {
+            "at": "hip",
+            "dx": -4,
+            "dy": 6
+          },
+          "bend": -0.3
+        }
+      ]
+    },
+    "wall-push-up-plus": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "neck",
+            "dy": -12
+          },
+          "to": {
+            "at": "neck",
+            "dy": -12
+          },
+          "bend": 0
+        }
+      ],
+      "labels": [
+        {
+          "text": "Wand",
+          "at": "wall",
+          "dx": 4,
+          "dy": -62,
+          "anchor": "start"
+        }
+      ]
+    },
+    "sling-y-raise": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": "handR",
+          "to": "handR",
+          "bend": 0.25
+        }
+      ]
+    },
+    "sling-t-raise": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": "handR",
+          "to": "handR",
+          "bend": 0.25
+        }
+      ]
+    },
+    "sling-rear-delt-fly": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": "handR",
+          "to": "handR",
+          "bend": 0.25
+        }
+      ]
+    },
+    "sling-assisted-mini-squat": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "hip",
+            "dx": -10
+          },
+          "to": {
+            "at": "hip",
+            "dx": -10
+          },
+          "bend": 0.15
+        }
+      ]
+    },
+    "sling-triceps-press": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": "handR",
+          "to": "handR",
+          "bend": -0.25
+        }
+      ]
+    },
+    "face-pull": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": "handR",
+          "to": "handR",
+          "bend": -0.3
+        }
+      ]
+    },
+    "low-face-pull": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": "handR",
+          "to": "handR",
+          "bend": -0.3
+        }
+      ]
+    },
+    "sling-face-pull": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": "handR",
+          "to": "handR",
+          "bend": -0.3
+        }
+      ]
+    },
+    "quad-massage-stick": {
+      "arrows": [
+        {
+          "kind": "move",
+          "from": {
+            "at": "hands",
+            "dy": -12
+          },
+          "to": {
+            "at": "hands",
+            "dy": -12
+          },
+          "bend": 0
+        }
+      ]
+    },
+    "seated-pec-stretch": {
+      "view": "front",
+      "poses": [
+        "front-sit-hands-head-in",
+        "front-sit-hands-head-out"
+      ],
+      "props": [],
+      "arrows": [
+        {
+          "kind": "move",
+          "from": "elbowR",
+          "to": "elbowR",
+          "bend": 0.25
+        },
+        {
+          "kind": "move",
+          "from": "elbowL",
+          "to": "elbowL",
+          "bend": -0.25
+        }
+      ]
+    },
+    "ankle-pumps": {
+      "arrows": [
+        {
+          "kind": "rotate",
+          "around": "footR",
+          "from": "toeR",
+          "to": "toeR",
+          "r": 13
+        }
+      ]
+    },
+    "quad-set": {
+      "arrows": [
+        {
+          "kind": "push",
+          "from": {
+            "at": "kneeL",
+            "dy": -20
+          },
+          "to": {
+            "at": "kneeL",
+            "dy": -7
+          }
+        }
+      ]
+    },
+    "expansion-drill": {
+      "arrows": [
+        {
+          "kind": "pull",
+          "from": {
+            "at": "handR",
+            "dx": 4,
+            "dy": -9
+          },
+          "to": {
+            "at": "handR",
+            "dx": -12,
+            "dy": -9
+          }
+        }
+      ]
+    },
+    "glute-set": {
+      "arrows": []
+    },
+    "thoracic-extension-floor": {
+      "arrows": [
+        {
+          "kind": "rotate",
+          "around": "neck",
+          "a0": 205,
+          "a1": 165,
+          "r": 24
+        }
+      ]
+    }
+  }
+}
