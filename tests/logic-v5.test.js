@@ -254,7 +254,8 @@ test('sling content: upgrades valid, German texts, knee notes, figures with the 
       assert.ok(v, `${from} → ${r.exerciseId}`);
       assert.ok(r.equipment.every((id) => v.equipment.includes(id)), `${v.id} needs the upgrade equipment`);
       assert.equal(v.block, b.block, `${v.id} same block as ${from}`);
-      assert.equal(fb.get(v.id), from);
+      // the derived fallback is the first base that upgrades to the variant (v5.4: several bases may share one variant)
+      assert.ok((rules.get(fb.get(v.id)) || []).some((x) => x.exerciseId === v.id), `${v.id} derived fallback`);
       targets.add(v.id);
     }
   }

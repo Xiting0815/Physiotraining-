@@ -131,7 +131,7 @@
           "label": "20 Wiederholungen",
           "sets": 1,
           "reps": 20,
-          "tempo": null,
+          "tempo": "1-0-1",
           "band": null,
           "rest": 10
         },
@@ -139,7 +139,7 @@
           "label": "30 Wiederholungen",
           "sets": 1,
           "reps": 30,
-          "tempo": null,
+          "tempo": "1-0-1",
           "band": null,
           "rest": 10
         }
@@ -165,7 +165,9 @@
       },
       "setupSec": 5,
       "cueWords": {
-        "work": "Fuß auf und ab"
+        "work": "Fuß auf und ab",
+        "up": "Strecken",
+        "down": "Anziehen"
       },
       "shoulderElevationDeg": 20
     },
@@ -1780,7 +1782,7 @@
         "loop"
       ],
       "type": "reps",
-      "side": "both",
+      "side": "perSide",
       "instructions": [
         "Loop knapp oberhalb der Knie, Füße hüftbreit, Knie ganz leicht gebeugt.",
         "Kleinen Schritt zur Seite, Spannung im Loop halten.",
@@ -1803,7 +1805,7 @@
           "label": "Loop orange über den Knien · 2 × 10 je Richtung",
           "sets": 2,
           "reps": 10,
-          "tempo": null,
+          "tempo": "1-0-1",
           "band": "loop-orange",
           "rest": 45
         },
@@ -1811,7 +1813,7 @@
           "label": "Loop orange über den Knien · 3 × 10 je Richtung",
           "sets": 3,
           "reps": 10,
-          "tempo": null,
+          "tempo": "1-0-1",
           "band": "loop-orange",
           "rest": 45
         },
@@ -1819,7 +1821,7 @@
           "label": "Loop blau über den Knien · 3 × 10 je Richtung",
           "sets": 3,
           "reps": 10,
-          "tempo": null,
+          "tempo": "1-0-1",
           "band": "loop-blue",
           "rest": 60
         },
@@ -1827,7 +1829,7 @@
           "label": "Loop blau über den Knien · 3 × 12 je Richtung",
           "sets": 3,
           "reps": 12,
-          "tempo": null,
+          "tempo": "1-0-1",
           "band": "loop-blue",
           "rest": 60
         }
@@ -1855,7 +1857,10 @@
       },
       "postOpAllowed": false,
       "cueWords": {
-        "work": "Seitlich gehen"
+        "work": "Seitlich gehen",
+        "up": "Schritt zur Seite",
+        "down": "Nachziehen",
+        "switch": "Richtung wechseln"
       },
       "shoulderElevationDeg": 20
     },
@@ -5997,10 +6002,12 @@
           "chip": "Sling-Variante"
         }
       ],
+      "shoulderElevationDeg": 0,
+      "shoulderDip": true,
       "fallback": [
+        "sling-triceps-press",
         "band-triceps-extension"
-      ],
-      "shoulderElevationDeg": 0
+      ]
     },
     {
       "id": "band-triceps-extension",
@@ -10027,7 +10034,12 @@
         "hold": "Halten",
         "down": "Hochdrücken"
       },
-      "shoulderElevationDeg": 0
+      "shoulderElevationDeg": 0,
+      "shoulderDip": true,
+      "fallback": [
+        "sling-triceps-press",
+        "band-triceps-extension"
+      ]
     },
     {
       "id": "sling-push-up-incline",
@@ -10451,6 +10463,15 @@
         "theraband",
         "door",
         "mat"
+      ],
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-row",
+          "chip": "Sling-Variante"
+        }
       ],
       "type": "reps",
       "side": "both",
@@ -11185,6 +11206,15 @@
       "equipment": [
         "theraband",
         "door"
+      ],
+      "upgrades": [
+        {
+          "equipment": [
+            "sling-trainer"
+          ],
+          "exerciseId": "sling-row",
+          "chip": "Sling-Variante"
+        }
       ],
       "type": "reps",
       "side": "both",

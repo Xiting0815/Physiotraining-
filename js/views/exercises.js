@@ -2,7 +2,7 @@
 import { html, raw, render as paint } from '../render.js';
 import { levelOf, phasePlanExerciseIds } from '../logic/progression.js';
 import { usesEquipment, missingEquipment, EQUIPMENT_INFO } from '../logic/equipment.js';
-import { shoulderOk, shoulderLimit } from '../logic/shoulder.js';
+import { isDipExercise, shoulderOk, shoulderLimit } from '../logic/shoulder.js';
 import {
   ICON, figureThumb, ensureViewStyles, applyFontScale, pageHeader, doseText, bandChip, workoutItems,
   safeData,
@@ -107,7 +107,9 @@ export function render(root, { store, content, query }) {
               ${ex.side === 'left' ? html`<span class="chip chip--sm chip--outline">OP-Knie</span>` : ''}
               ${availabilityChip(av)}
               ${miss.length ? html`<span class="chip chip--sm chip--outline" title="Nicht in Meine Ausrüstung abgehakt">fehlt: ${miss.map((m) => EQUIPMENT_INFO[m]?.label ?? m).join(', ')}</span>` : ''}
-              ${!shoulderOk(ex, levelOf(state, ex.id, ex), settings) ? html`<span class="chip chip--sm chip--outline" data-shoulder-chip title="Schulter-Schutz: Armhebung über ${shoulderLimit(settings)}°">🛡️ über Schulter-Limit</span>` : ''}
+              ${!shoulderOk(ex, levelOf(state, ex.id, ex), settings) ? (isDipExercise(ex)
+                ? html`<span class="chip chip--sm chip--outline" data-shoulder-chip title="Schulter-Schutz: keine Dips">🛡️ Dip – mit Schulter-Schutz aus</span>`
+                : html`<span class="chip chip--sm chip--outline" data-shoulder-chip title="Schulter-Schutz: Armhebung über ${shoulderLimit(settings)}°">🛡️ über Schulter-Limit</span>`) : ''}
             </span>
           </div>
           ${raw(ICON.chev)}

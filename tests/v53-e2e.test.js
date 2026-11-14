@@ -21,6 +21,8 @@ const load = (f) => JSON.parse(readFileSync(join(ROOT, 'data', `${f}.json`), 'ut
 const exercises = load('exercises').exercises;
 const UNSAFE_CHAIR = exercises.filter((e) => e.equipment.includes('chair-fixed')).map((e) => e.name);
 const OVERHEAD = exercises.filter((e) => !e.archeryDraw && e.block !== 'cardio' && (e.shoulderElevationDeg ?? 0) > 65).map((e) => e.name);
+/** v5.4: tempo of low-row-band level 1 (2-2-2) in seconds per rep – the Tempo-Coach runs 3 reps in the CTA test. */
+const REP_SEC = 6;
 
 const MOCK = () => {
   window.__utter = [];
@@ -165,18 +167,29 @@ test('v5.3 QA in the browser (dark, 412×915, user equipment + shoulder protecti
       let a = (await stored(page)).state.activeSession;
       assert.equal(a.cursor.index, 1);
       assert.equal(a.exercises[1].skipped, false, 'rep exercise not skipped by the double tap');
-      // rep exercise without timer: „Satz fertig“ → rest → … → „Zum Abschluss“
+      // v5.4: rep exercise with tempo → Tempo-Coach by default: „Satz starten“ → set ticks itself → rest → next set
+      // starts with its prep; „Lieber selbst zählen“ mid-set → „Satz fertig“ → „Zum Abschluss“
       await page.clock.runFor(1200);
-      assert.equal(await ctaText(page), 'Satz fertig');
+      assert.equal(await ctaText(page), 'Satz starten');
+      assert.ok(await page.locator('[data-act="tempo-manual"]').isVisible(), '„Lieber selbst zählen“ offered');
       await page.screenshot({ path: join(SHOTS, 'v53-cta-reps.png') });
       await cta(page).click();
-      await page.clock.runFor(900);
+      await page.clock.runFor(1500);
+      assert.equal(await ctaText(page), 'Anhalten');
+      for (let i = 0; i < 5 + 3 * REP_SEC; i++) await page.clock.runFor(1000); // prep 5 s + 3 reps × tempo
+      a = (await stored(page)).state.activeSession;
+      assert.equal(a.exercises[1].sets.filter((x) => x?.done).length, 1, 'Tempo-Coach ticks the set');
       assert.equal(await ctaText(page), 'Pause überspringen');
-      for (let i = 0; i < 7; i++) await page.clock.runFor(1000);
-      assert.equal(await ctaText(page), 'Satz fertig', 'rest over → next set by hand');
+      await cta(page).click();
+      await page.clock.runFor(1200);
+      assert.equal(await ctaText(page), 'Anhalten', 'next coached set starts after the rest');
+      await page.click('[data-act="tempo-manual"]');
+      await page.clock.runFor(900);
+      assert.equal(await ctaText(page), 'Satz fertig');
       await cta(page).click();
       await page.clock.runFor(900);
       assert.equal(await ctaText(page), 'Zum Abschluss');
+      assert.equal((await stored(page)).state.activeSession.exercises[1].manualTempo, true);
       a = (await stored(page)).state.activeSession;
       assert.equal(a.exercises[1].sets.filter((x) => x?.done).length, 2);
       // RPE nudge first, then to the post-check
@@ -305,7 +318,8 @@ test('v5.3 QA in the browser (dark, 412×915, user equipment + shoulder protecti
       assert.equal(await inView('[data-slot="rest"] pt-timer'), true);
       // exercise detail: Ausgangsposition first, then the steps
       await page.goto(URL0 + '#/uebung/wall-sit');
-      await page.waitForSelector('[data-howto] [data-steps]');
+      // hash navigation: the session screen also has [data-howto] [data-steps] – wait for the detail's setup list
+      await page.waitForSelector('[data-howto] [data-setup]');
       const order = await page.$eval('[data-howto]', (el) => [...el.querySelectorAll('[data-setup], [data-steps], [data-feel]')].map((e) => e.dataset.setup != null ? 'setup' : e.dataset.steps != null ? 'steps' : 'feel'));
       assert.deepEqual(order, ['setup', 'steps', 'feel']);
       assert.match(await page.textContent('[data-short]'), /Wand/);

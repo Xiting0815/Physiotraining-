@@ -114,12 +114,14 @@ test('voice cues in the browser: hold + tempo exercise, gaps ≥ 5 s, no console
     const sets = await page.$$eval('.set-check[aria-pressed="true"]', (b) => b.length);
     assert.equal(sets, 2);
 
-    // ---- knee pain → next exercise (tempo coach 3-0-3 × 3)
+    // ---- knee pain → next exercise (tempo coach 3-0-3 × 3) – v5.4: the coach is on by default (warm-up reps too)
     await page.click('[data-slot="pain"] pt-pain-scale button >> nth=0');
     await page.click('[data-act="cta"]'); // „Nächste Übung“
-    await page.waitForSelector('[data-act="tempo"]');
+    await page.waitForSelector('[data-act="tempo-manual"]');
+    await page.clock.runFor(1000); // CTA double-tap guard
+    assert.equal((await page.textContent('[data-act="cta"]')).trim(), 'Satz starten');
     await page.evaluate(() => { window.__utter = []; });
-    await page.click('[data-act="tempo"]');
+    await page.click('[data-act="cta"]'); // „Satz starten“
     await page.clock.runFor(2000);
     assert.equal(await page.getAttribute('pt-timer[data-role="work"]', 'data-cue'), 'prep');
     for (let i = 0; i < 30; i++) await page.clock.runFor(1000);

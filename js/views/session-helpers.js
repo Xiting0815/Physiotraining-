@@ -628,6 +628,20 @@ export function ctaState(f = {}) {
   return { key: 'set-done', label: 'Satz fertig' };
 }
 
+/* ------------------------------------------------------------------ v5.4: Tempo-Coach default (pure) */
+
+/**
+ * Does this rep entry run with the Tempo-Coach (voice counts the tempo, the set is ticked automatically)?
+ * v5.4 (SPEC §19.1): on by default for every rep exercise with a `tempo`, in every section. „Lieber selbst zählen“
+ * stores `entry.manualTempo = true` (manual „Satz fertig“ for that exercise). Older sessions: knee entries used
+ * `manualTempo`, others `tempoCoach: true` – a stored `tempoCoach: true` always means the coach was chosen last.
+ * @param {{type?: string, tempo?: string|null}} dose @param {{manualTempo?: boolean, tempoCoach?: boolean}|null} [entry]
+ */
+export function tempoCoachActive(dose, entry) {
+  if (!dose?.tempo || dose.type === 'hold' || dose.type === 'timed') return false;
+  return !(entry?.manualTempo === true && entry?.tempoCoach !== true);
+}
+
 /* ------------------------------------------------------------------ v5.3: rowing without a timer (pure) */
 
 const ROW_WORD = { easy: 'locker', moderate: 'gleichmäßig', vigorous: 'zügig' };

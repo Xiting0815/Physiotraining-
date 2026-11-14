@@ -401,9 +401,8 @@ export function render(root, ctx) {
     return out;
   }
 
-  /** Knee reps with a tempo run with the Tempo-Coach by default (hands-free); others on request. */
-  const tempoCoachOn = (dose, entry) => !!dose.tempo && dose.type !== 'hold' && dose.type !== 'timed'
-    && (entry?.section === 'knee' ? !entry.manualTempo : !!entry?.tempoCoach);
+  /** v5.4 (SPEC §19.1): every rep exercise with a tempo runs with the Tempo-Coach unless „Lieber selbst zählen“. */
+  const tempoCoachOn = (dose, entry) => H.tempoCoachActive(dose, entry);
 
   function timerMarkup(dose, entry) {
     const blk = H.timerBlock(entry?.section);
@@ -635,7 +634,8 @@ export function render(root, ctx) {
       tempo: () => {
         voiceUnlock();
         collapseMore();
-        if (knee) entry.manualTempo = false; else entry.tempoCoach = true;
+        entry.manualTempo = false;
+        delete entry.tempoCoach;
         persist();
         renderExercise();
         const card = root.querySelector('[data-slot="timer"]');
@@ -645,7 +645,7 @@ export function render(root, ctx) {
       },
       'tempo-manual': () => {
         entry.manualTempo = true;
-        entry.tempoCoach = false;
+        delete entry.tempoCoach;
         persist();
         renderExercise();
         toTimer(root.querySelector('[data-slot="timer"]'));

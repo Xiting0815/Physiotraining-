@@ -1749,3 +1749,53 @@ red warning, „Heute nicht gerudert“ / „Überspringen“. Big button „Ger
 same fields as before (`warmupRowing`, `finisherRowing`, `rowing.durationSec` …) so statistics, kcal and sync are unchanged.
 No phase announcements – only „Rudern: … Tippe auf Erledigt, wenn du fertig bist.“ when the card opens. Old resumes with
 step `rowlog` open the card; a stale `rowTimer` of ≤ 5.2 is still flushed on „Jetzt abschließen“.
+
+## 19. v5.4 – Tempo-Coach immer an, Timer-Audit, Sling in jedem Krafttraining, keine Dips mit Schulter-Schutz
+
+Feedback of the user (same profile as §18, shoulder protection on, sling trainer owned): workouts B and C had no sling
+exercise with the shoulder protection on (their sling upgrades are > 65°), and many rep exercises ran without any timer.
+`APP_VERSION` 5.4.0, `SCHEMA_VERSION` stays 1, no migration. Tests: `tests/logic-v54.test.js` (+ updated v4/v5 unit tests and
+the e2e suites). Debug helper: `node tools/sim-plans.mjs` prints the p1/p2 plans for sling owned/not × protection on/off.
+
+### 19.1 Tempo-Coach for every rep exercise — `session-helpers.tempoCoachActive` (pure)
+
+- Every rep exercise with a `tempo` runs with the Tempo-Coach by default in **every** section (before: only the knee
+  block): compact figure, work timer with prep + spoken tempo, the set is ticked automatically, the big button reads
+  „Satz starten“ → „Anhalten“/„Weiter“ → „Pause überspringen“ (§18.2); after the rest the next set starts with its prep.
+  Per-side exercises count both sides with the switch phase of the cue plan.
+- „Lieber selbst zählen“ stores `entry.manualTempo = true` → manual „Satz fertig“ for that exercise; „Tempo-Coach · x“ sets
+  `manualTempo = false` and starts the set. Old sessions: `manualTempo: true` stays manual unless a stored
+  `tempoCoach: true` says the coach was chosen last; the legacy `tempoCoach` field is removed on the next toggle.
+- Data: every rep exercise now has a tempo in every level (asserted). `ankle-pumps` „1-0-1“ (words Strecken/Anziehen);
+  `lateral-band-walk` „1-0-1“, now `side: "perSide"` (= je Richtung; words „Schritt zur Seite“/„Nachziehen“, switch
+  „Richtung wechseln“). The duration model already used the tempo, so estimate and coach time agree (asserted per level);
+  `durationMin` of p2-b/p4-a/p4-b and `durationMinWithRow` of p3-b updated; all plans stay within their budget.
+
+### 19.2 Timer audit
+
+All 32 `hold` and 26 `timed` exercises (every level), the `override`s in workouts (patella mobilisation 35 s, relief
+routine, hold reps) and every hold/timed entry of every planned workout (fallbacks, sling variants, `*-low` flows) were
+checked: valid `hold` / `seconds` / `phases` (phase sums = seconds), no type/dose mismatch (no hold with seconds/tempo, no
+timed with reps/hold/tempo), and the session's work-timer plan (`timerCuePlan`) has timed work for every set, per-side
+entries include side 2. No broken entry was found; the only exercises without a timer were the two rep exercises without
+a tempo (19.1). The data test in `tests/logic-v54.test.js` guards all of this. Rowing stays without a timer (§18.5).
+
+### 19.3 One sling exercise per strength workout
+
+- New upgrade rules `low-row-band → sling-row` and `long-sit-row → sling-row` (sling row: 65°, within the limit).
+- `resolveExercise`: when an item falls back (equipment or shoulder limit), the fallback takes its own usable upgrade
+  (`{exerciseId: variant, upgradedFrom: fallback, chip, fallbackFrom: original}`; not for custom workouts; `taken` respected;
+  taper keeps the known fallback). Plan shows the chip + „statt <Original> (Schulter-Schutz | Gerät fehlt)“.
+- Result with sling + shoulder protection: p1-a sling-row · p1-b sling-pallof-press (dead bug → pallof press → sling) ·
+  p1-c sling-row (lat pulldown → low row → sling) · p2-a sling-row · p2-b sling-pallof-press (side plank → pallof →
+  sling) · p2-c sling-heel-bridge + sling-row. Without protection the plans keep their sling variants (unchanged).
+  Without the sling the exercise selection is unchanged (snapshot test). No extra items, budgets kept.
+
+### 19.4 No dips with shoulder protection — `shoulder.isDipExercise`
+
+- Data flag `shoulderDip: true` on `chair-dip` and `sling-dip-assisted` (every exercise named „Dip“, asserted).
+  `shoulderOk` returns false for them while `shoulderProtect(settings)` is on, at any elevation limit; without the
+  protection nothing changes.
+- Fallback chains: both → `sling-triceps-press` (only when the sling is owned and it passes the limit – its 170° data means
+  it normally does not with 65°) → `band-triceps-extension`. Library chip „🛡️ Dip – mit Schulter-Schutz aus“, custom
+  workout warning „… ist eine Dip-Übung (Schulter-Schutz) – stattdessen wird … trainiert“.

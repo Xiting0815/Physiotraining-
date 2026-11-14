@@ -2,7 +2,7 @@
 import { estimateWorkoutMinutes, MAX_SESSION_MIN } from './duration.js';
 import { exerciseAvailable, getWorkout, levelOf } from './progression.js';
 import { missingEquipment, availableEquipment, resolveExercise, EQUIPMENT_INFO } from './equipment.js';
-import { shoulderOk, shoulderLimit } from './shoulder.js';
+import { isDipExercise, shoulderOk, shoulderLimit } from './shoulder.js';
 
 export { getWorkout };
 export const CUSTOM_BLOCKS = [
@@ -105,7 +105,8 @@ export function validateCustomWorkout(custom, content, state, settings) {
         const label = miss.map((m) => EQUIPMENT_INFO[m]?.label ?? m).join(', ');
         warnings.push(fb ? `${ex.name} braucht: ${label} – ohne wird ${fb} trainiert.` : `${ex.name} braucht: ${label} (nicht in Meine Ausrüstung abgehakt) und wird beim Training übersprungen.`);
       } else {
-        warnings.push(`${ex.name} hebt die Arme über ${shoulderLimit(settings)}° (Schulter-Schutz) – ${fb ? `stattdessen wird ${fb} trainiert` : 'wird beim Training übersprungen'}.`);
+        const why = isDipExercise(ex) ? 'ist eine Dip-Übung' : `hebt die Arme über ${shoulderLimit(settings)}°`;
+        warnings.push(`${ex.name} ${why} (Schulter-Schutz) – ${fb ? `stattdessen wird ${fb} trainiert` : 'wird beim Training übersprungen'}.`);
       }
     }
   }

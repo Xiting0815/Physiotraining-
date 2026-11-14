@@ -184,7 +184,9 @@ export const fallbackList = (ex) => (Array.isArray(ex?.fallback) ? ex.fallback :
  *   (`{exerciseId: variant, upgradedFrom: base, chip}`);
  * - exercise equipment available and `usable` → itself;
  * - else the first fallback that is available, usable and not `taken` → `{exerciseId, fallbackFrom}`: the explicit
- *   chain (`exercise.fallback`, id or list, tried in order) first, then the base of an upgrade rule;
+ *   chain (`exercise.fallback`, id or list, tried in order) first, then the base of an upgrade rule; v5.4: with
+ *   `allowUpgrade` that fallback takes its own usable upgrade → `{exerciseId: variant, upgradedFrom: fallback, chip,
+ *   fallbackFrom}`;
  * - else `null` (drop it).
  * Without `usable` (legacy callers) only the equipment decides, as in v5.
  * @param {string} exerciseId
@@ -200,20 +202,28 @@ export function resolveExercise(exerciseId, ctx) {
   const avail = ctx.avail ?? null;
   const ex = byId(exerciseId);
   if (!ex) return null;
-  if (ctx.allowUpgrade !== false && avail) {
-    const rules = (ctx.rules || upgradeRules(exercises)).get(exerciseId) || [];
-    for (const r of rules) {
+  const allRules = ctx.allowUpgrade !== false && avail ? (ctx.rules || upgradeRules(exercises)) : null;
+  /** first usable upgrade variant of `base` (skipping `not`), or null */
+  const upgradeOf = (base, not) => {
+    for (const r of allRules?.get(base.id) || []) {
       const v = byId(r.exerciseId);
-      if (!v || !r.equipment.every((id) => avail.has(id)) || !hasEquipment(v, avail) || !usable(v) || taken(v.id)) continue;
-      return { exerciseId: v.id, upgradedFrom: ex.id, chip: upgradeChip(v, r) };
+      if (!v || v.id === not || !r.equipment.every((id) => avail.has(id)) || !hasEquipment(v, avail) || !usable(v) || taken(v.id)) continue;
+      return { exerciseId: v.id, upgradedFrom: base.id, chip: upgradeChip(v, r) };
     }
-  }
+    return null;
+  };
+  const up = upgradeOf(ex);
+  if (up) return up;
   if (hasEquipment(ex, avail) && usable(ex)) return { exerciseId: ex.id };
   const derived = (ctx.fallbacks || fallbackRules(exercises)).get(ex.id);
   const chain = [...fallbackList(ex), ...(derived ? [derived] : [])];
   for (const id of chain) {
     const fb = byId(id);
-    if (fb && fb.id !== ex.id && hasEquipment(fb, avail) && usable(fb) && !taken(fb.id)) return { exerciseId: fb.id, fallbackFrom: ex.id };
+    if (fb && fb.id !== ex.id && hasEquipment(fb, avail) && usable(fb) && !taken(fb.id)) {
+      // v5.4 (SPEC §19.3): the fallback itself takes its equipment upgrade (e.g. low row → sling row under the shoulder limit)
+      const fu = upgradeOf(fb, ex.id);
+      return fu ? { ...fu, fallbackFrom: ex.id } : { exerciseId: fb.id, fallbackFrom: ex.id };
+    }
   }
   return null;
 }

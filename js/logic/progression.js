@@ -298,7 +298,7 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
       : resolveExercise(it.exerciseId, { exercises: content?.exercises, avail, usable, allowUpgrade: kind !== 'custom', rules, fallbacks, taken });
     if (!r) continue;
     // taper week: no new exercises – keep the known base exercise instead of a never-done variant
-    if (r.upgradedFrom && taper && done.length && !performedBefore.has(r.exerciseId)) r = { exerciseId: r.upgradedFrom };
+    if (r.upgradedFrom && taper && done.length && !performedBefore.has(r.exerciseId)) r = { exerciseId: r.upgradedFrom, ...(r.fallbackFrom ? { fallbackFrom: r.fallbackFrom } : {}) };
     const ex = byId(r.exerciseId);
     if (!usable(ex)) continue;
     if (taper && done.length && !performedBefore.has(ex.id)) continue;

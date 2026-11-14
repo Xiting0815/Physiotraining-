@@ -139,7 +139,12 @@ test('session hardening in the browser (dark, 412×915)', { skip: !process.env.P
       await page.click('.ses-toast-action');
       await page.waitForTimeout(150);
       assert.equal(await page.getAttribute('.set-check[data-set="0"]', 'aria-pressed'), 'false');
-      // v5.3: big bottom button reads „Satz fertig“ (plain reps), double tap = one set
+      // v5.4: rep exercises with a tempo start with the Tempo-Coach („Satz starten“) in every section;
+      // „Lieber selbst zählen“ → the big bottom button reads „Satz fertig“, double tap = one set
+      assert.match(await page.textContent('[data-act="cta"]'), /Satz starten/);
+      await page.click('[data-act="tempo-manual"]');
+      await page.waitForTimeout(800);
+      assert.equal((await stored(page)).state.activeSession.exercises[0].manualTempo, true, 'manual choice stored on the entry');
       assert.match(await page.textContent('[data-act="cta"]'), /Satz fertig/);
       await tapTwice(page, '[data-act="cta"]', 150);
       await page.waitForTimeout(300);

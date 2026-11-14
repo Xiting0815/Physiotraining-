@@ -32,12 +32,22 @@ export function elevationOf(exercise, level = 0) {
 export const shoulderExempt = (exercise) => !!exercise?.archeryDraw || exercise?.block === 'cardio';
 
 /**
+ * v5.4 (SPEC §19.4): dip-type exercise (`exercise.shoulderDip: true` – lowering the body between the arms pushes the
+ * humeral head forward/up under load, typical impingement trigger even at 0° elevation). Not usable while the shoulder
+ * protection is on; buildSessionPlan then takes the exercise's fallback chain (triceps press / band triceps extension).
+ */
+export const isDipExercise = (exercise) => exercise?.shoulderDip === true;
+
+/**
  * Usable with the shoulder settings? Always true when the protection is off.
+ * With the protection on: no dip-type exercise (`shoulderDip`) and max. elevation ≤ limit (archery draw / rowing exempt).
  * @param {any} exercise @param {number} [level] @param {any} [settings]
  */
 export function shoulderOk(exercise, level, settings) {
   const lim = shoulderLimit(settings);
-  if (lim == null || !exercise || shoulderExempt(exercise)) return true;
+  if (lim == null || !exercise) return true;
+  if (isDipExercise(exercise)) return false;
+  if (shoulderExempt(exercise)) return true;
   return elevationOf(exercise, level) <= lim;
 }
 

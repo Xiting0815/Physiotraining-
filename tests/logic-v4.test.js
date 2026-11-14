@@ -230,11 +230,16 @@ test('v4 cue plan: reps with tempo — figure order con → pause → ecc, exerc
   // band default words, pull-apart override
   assert.equal(cueKind(ex('seated-row')), 'band');
   assert.deepEqual(exerciseCuePlan({ level: 0 }, ex('band-pull-apart'), {}).filter((p) => p.repIndex === 0 && p.setIndex === 0).map((p) => p.say), ['Auseinanderziehen', 'Halten', 'Zurück']);
-  // no tempo: one work block with the rep count
-  const walk = exerciseCuePlan({ level: 0 }, ex('lateral-band-walk'), {});
+  // no tempo (v5.4: no content exercise left without one): one work block with the rep count
+  const noTempo = { ...ex('lateral-band-walk'), side: 'both', levels: ex('lateral-band-walk').levels.map((l) => ({ ...l, tempo: null })) };
+  const walk = exerciseCuePlan({ level: 0 }, noTempo, {});
   assert.equal(walk[1].phase, 'work');
   assert.equal(walk[1].reps, 10);
   assert.match(walk[1].say, /10 Wiederholungen/);
+  // v5.4: lateral band walk with tempo, per direction: step words + „Richtung wechseln“
+  const walk2 = exerciseCuePlan({ level: 0 }, ex('lateral-band-walk'), {});
+  assert.deepEqual(walk2.filter((p) => p.setIndex === 0 && p.repIndex === 0 && p.side === 1).map((p) => p.say), ['Schritt zur Seite', 'Nachziehen']);
+  assert.ok(walk2.some((p) => p.phase === 'switch' && p.say === 'Richtung wechseln'));
 });
 
 test('v4 cue plan: timed flows speak each part; rowing phases carry targets', () => {
