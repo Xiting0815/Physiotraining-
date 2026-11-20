@@ -2017,6 +2017,153 @@
         }
       ],
       "cooldown": []
+    },
+    {
+      "id": "p1-balance",
+      "name": "Balance – Basis (10–15 Min.)",
+      "phaseId": "p1-basis",
+      "kind": "balance",
+      "durationMin": 14,
+      "maxMinutes": 15,
+      "maxSets": 2,
+      "description": "Gleichgewicht auf Schwingplatte oder Balance-Kissen – je nachdem, was du abgehakt hast. Beide Beine, links mit Ampel-Regel (Schmerz höchstens 3/10). Barfuß, Halt in Reichweite. Zählt nicht fürs Wochenziel.",
+      "warmup": [
+        {
+          "exerciseId": "ankle-circles-seated",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "leg-swing-front",
+          "maxSets": 1
+        }
+      ],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Balance",
+          "items": [
+            {
+              "exerciseId": "swing-stand-both"
+            },
+            {
+              "exerciseId": "swing-single-leg-stance"
+            },
+            {
+              "exerciseId": "swing-split-stance"
+            },
+            {
+              "exerciseId": "swing-mini-squat"
+            },
+            {
+              "exerciseId": "pad-step-on"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "calf-stretch-wall",
+          "maxSets": 1
+        }
+      ]
+    },
+    {
+      "id": "p2-balance",
+      "name": "Balance – Aufbau (10–15 Min.)",
+      "phaseId": "p2-aufbau",
+      "kind": "balance",
+      "durationMin": 15,
+      "maxMinutes": 15,
+      "maxSets": 2,
+      "description": "Gleichgewicht auf Schwingplatte oder Balance-Kissen – je nachdem, was du abgehakt hast. Beide Beine, links mit Ampel-Regel (Schmerz höchstens 3/10). Barfuß, Halt in Reichweite. Zählt nicht fürs Wochenziel.",
+      "warmup": [
+        {
+          "exerciseId": "ankle-circles-seated",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "leg-swing-front",
+          "maxSets": 1
+        }
+      ],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Balance",
+          "items": [
+            {
+              "exerciseId": "swing-single-leg-stance"
+            },
+            {
+              "exerciseId": "swing-split-stance"
+            },
+            {
+              "exerciseId": "swing-mini-squat"
+            },
+            {
+              "exerciseId": "swing-single-leg-perturbation"
+            },
+            {
+              "exerciseId": "pad-step-on"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "calf-stretch-wall",
+          "maxSets": 1
+        }
+      ]
+    },
+    {
+      "id": "p3-balance",
+      "name": "Balance – OP-Vorbereitung (10–15 Min.)",
+      "phaseId": "p3-op-vorbereitung",
+      "kind": "balance",
+      "durationMin": 15,
+      "maxMinutes": 15,
+      "maxSets": 2,
+      "description": "Gleichgewicht auf Schwingplatte oder Balance-Kissen – je nachdem, was du abgehakt hast. Beide Beine, links mit Ampel-Regel (Schmerz höchstens 3/10). Barfuß, Halt in Reichweite. Zählt nicht fürs Wochenziel.",
+      "warmup": [
+        {
+          "exerciseId": "ankle-circles-seated",
+          "maxSets": 1
+        },
+        {
+          "exerciseId": "leg-swing-front",
+          "maxSets": 1
+        }
+      ],
+      "blocks": [
+        {
+          "id": "knee",
+          "title": "Balance",
+          "items": [
+            {
+              "exerciseId": "swing-single-leg-stance"
+            },
+            {
+              "exerciseId": "swing-split-stance"
+            },
+            {
+              "exerciseId": "swing-mini-squat"
+            },
+            {
+              "exerciseId": "swing-single-leg-perturbation"
+            },
+            {
+              "exerciseId": "pad-step-on"
+            }
+          ]
+        }
+      ],
+      "cooldown": [
+        {
+          "exerciseId": "calf-stretch-wall",
+          "maxSets": 1
+        }
+      ]
     }
   ]
 }

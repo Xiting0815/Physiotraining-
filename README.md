@@ -1,7 +1,7 @@
 # Physiotraining – Knie & Bogen
 
 Mobile-first Offline-PWA als Trainingsbegleiter für die Knie-Prehab (Meniskus/Knorpel, Mikrofraktur-OP links
-voraussichtlich am **05.01.2027**) kombiniert mit Rücken-/Schultertraining für Compound-Bogenschießen.
+voraussichtlich am **19.01.2027** – ursprünglich 05.01.2027) kombiniert mit Rücken-/Schultertraining für Compound-Bogenschießen.
 3 Krafteinheiten pro Woche (max. 30 min, Workouts A/B/C) plus 3× Rudern (15–20 min), Kurztraining, eigene Workouts,
 Ampel-Logik für die Belastungssteuerung, Auswertung und viel Motivation. Die App konzentriert sich aufs Training –
 Gewicht und Gesundheitswerte bleiben in Samsung Health.
@@ -53,8 +53,9 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
   Plan-Workouts starten, duplizieren, löschen.
 - **Kalorien pro Einheit** – Rudergerät-Display, Watt-Formel oder MET × Körpergewicht × Dauer. Das Körpergewicht
   stellst du unter **Mehr → Trainingsziele** ein (ohne Angabe 80 kg) – **ausdrücklich eine Schätzung**.
-- **Phasen-Zeitplan bis zur OP am 05.01.2027** – Plan und Heute zeigen, in welcher Phase du laut Zeitplan sein
-  solltest (Phase 1 bis 27.11., Phase 2 bis 18.12., Phase 3 mit OP-Woche ab 29.12.). Der OP-Termin wird in der
+- **Phasen-Zeitplan bis zur OP am 19.01.2027** (verschoben vom 05.01.2027) – Plan und Heute zeigen, in welcher Phase
+  du laut Zeitplan sein solltest (Phase 1 bis 04.12., Phase 2 – jetzt 4 Wochen – bis 01.01., Phase 3 mit OP-Woche ab
+  12.01.). Ein bereits eingetragener OP-Termin 05.01.2027 wird beim Update einmalig auf den 19.01.2027 gesetzt. Der OP-Termin wird in der
   Willkommenskarte vorgeschlagen und muss bestätigt werden; Phasenwechsel bleiben kriterienbasiert und von dir bestätigt.
 - **Entlastungsphase nach der Mikrofraktur (Phase 4, 6 Wochen)** – Übungen im Sitzen und Liegen ohne Belastung des
   linken Beins (Fußpumpe, Quadrizeps anspannen, Kniescheiben-Mobilisation, Fersengleiten im erlaubten Bereich,
@@ -64,6 +65,19 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
   werden Rötung/Überwärmung und Fieber abgefragt – bei Warnzeichen heißt es „Bitte Arzt kontaktieren“.
 - **Vorbereitung auf die Krücken** – Stütz-Dips, Trizeps, Abstützen im Sitz und Einbeinstand bereits vor der OP.
 - **Offline** – nach dem ersten Laden komplett offline nutzbar, installierbar als App.
+
+### Neu in Version 5.5 – Schwingplatte, Balance-Kissen, neuer OP-Termin
+
+- **Schwingplatte und Balance-Kissen** unter **Meine Ausrüstung** („Schwingplatte (an Federn)“ – Tragkraft beachten –
+  und „Balance-Kissen / Balance-Pad“). Erst wenn du sie abhakst, kommen je 5 neue Übungen dazu: Stand beidbeinig,
+  **Einbeinstand** (links und rechts, mit Halt am Rahmen bzw. an der Wand), Mini-Kniebeuge (30–45°, nie tief),
+  Schrittstand bzw. Schritt aufs Kissen und ab Phase 2 Einbeinstand mit Band-Störimpuls (Arme tief, schulterfreundlich).
+  Links gilt die Ampel-Regel: Schmerz höchstens 3/10, sonst abbrechen. Nach der OP (Phase 4) sind alle gesperrt.
+- **Im Krafttraining** wird der Einbeinstand automatisch zur Schwingplatten-Variante (oder Kissen-Variante, wenn du nur
+  das Kissen hast) – gleiche Übungsanzahl, gleiche Zeit.
+- **Neue Balance-Einheit (10–15 Min.)** in Phase 1–3, startbar über Heute → Schnellstart und im Plan: kurz aufwärmen,
+  4–5 Gleichgewichtsübungen mit dem, was du hast, Wadendehnung. Zählt nicht fürs Wochenziel.
+- **OP am 19.01.2027:** Die zwei gewonnenen Wochen verlängern Basis und Aufbau um je eine Woche.
 
 ### Neu in Version 5.3 – sicher sitzen, Knie entlasten, Schulter schonen
 
@@ -123,7 +137,7 @@ Gewicht und Gesundheitswerte bleiben in Samsung Health.
 
 - **Meine Ausrüstung** (Mehr → Meine Ausrüstung) – oben die Schalter mit Symbol für alles, was über die
   Grundausstattung (TheraBänder, Loops, Matte, Stufe, Wand, Tür; ab 5.3 ist der Stuhl abhakbar) hinausgeht: Rudergerät, Schlingentrainer,
-  Türanker, Bandgriffe, Gewichtsmanschetten, Balance-Pad, Kurzhanteln, Pedaltrainer, Release-Trainer, Kühlpack,
+  Türanker, Bandgriffe, Gewichtsmanschetten, Balance-Pad (seit 5.5 „Balance-Kissen / Balance-Pad“), Kurzhanteln, Pedaltrainer, Release-Trainer, Kühlpack,
   Maßband. Darunter Einkaufsideen nur noch für das, was fehlt. Nach jedem Umschalten sagt die App, was sich ändert:
   „Neu in deinem Plan: Rudern am Schlingentrainer, Stütz-Dips am Schlingentrainer …“ bzw. „Entfernt: …“.
 - **Schlingentrainer (an der Tür)** – 14 neue Übungen, dosiert über den Körperwinkel statt über ein Bein:

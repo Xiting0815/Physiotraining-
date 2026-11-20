@@ -1,7 +1,7 @@
 // Generates data/poses.json: grounded root heights + IK helpers. Run: node gen-poses.mjs <repo>
 import { writeFileSync } from 'node:fs';
 const repo = process.argv[2];
-const { computePoints, DEFAULT_SEGMENTS: SEG, FLOOR, MAT_H, SEAT_Y, STEP_H } = await import(`${repo}/js/components/pt-figure.js`);
+const { computePoints, DEFAULT_SEGMENTS: SEG, FLOOR, MAT_H, SEAT_Y, STEP_H, PAD_H, SWING_H } = await import(`${repo}/js/components/pt-figure.js`);
 const RAD = Math.PI / 180;
 const MAT = FLOOR - MAT_H + 1; // body sinks 1px into the mat
 const STEP = FLOOR - STEP_H;
@@ -1659,6 +1659,160 @@ add('band-dislocate-high', ground(front('standing', { shoulderL: 158, shoulderR:
   const knee = (o = {}) => ({ view: 'front', ground: 'lying', camera: 'above', closeup: 'knee', root: { x: 100, y: 100 }, trunk: 0, hipL: 0, hipR: 0, kneeL: 0, kneeR: 0, shoulderL: 0, shoulderR: 0, elbowL: 0, elbowR: 0, patellaX: 0, patellaY: 0, gripX: -9, ...o });
   add('knee-closeup-rest', knee());
   add('knee-closeup-down', knee({ patellaX: 8 }));
+}
+
+// ================================================================ v5.5: balance cushion (pad) & swing platform (swing)
+{
+  const PADTOP = FLOOR - PAD_H;
+  const SWTOP = FLOOR - SWING_H;
+  const withP = (p, props) => { p.props = props; return p; };
+  /** front view stance on a surface at y; lift → stands on the left leg, right thigh lifted forward */
+  const frontOn = (y, lift, o = {}) => {
+    const p = front('standing', { hipL: 3, hipR: 4, kneeR: lift ? 4 : 0, thighLenR: lift ? 0.45 : 1, shoulderL: 14, shoulderR: 14, elbowL: 6, elbowR: 6, ...o });
+    return ground(p, y, lift ? ['legL'] : ['legL', 'legR']);
+  };
+  /** front view: both hands on the grips of the swing frame (posts at the board ends) */
+  const grip = (p, sw, sides = ['L', 'R']) => {
+    const P = pts(p);
+    for (const s of sides) {
+      const sg = s === 'L' ? 1 : -1; // person's left = viewer's right
+      const px = sw.x + sg * (sw.w / 2 + 7);
+      aim(p, 'arm' + s, { x: px - sg * 1.5, y: sw.rail }, (j2, e) => sg * (e.x - P['shoulder' + s].x) >= 0);
+    }
+    return p;
+  };
+  const swingAt = (P, o = {}) => ({ type: 'swing', x: r1(P.hip.x), w: 44, top: SWTOP, rail: r1(P.hip.y + 6), ...o });
+  // ---- swing platform, front view: both feet / left leg, hands on the frame
+  {
+    const a = frontOn(SWTOP, false);
+    const sw = swingAt(pts(a));
+    add('swing-front-stand', withP(grip(a, sw), [sw]));
+    const b = frontOn(SWTOP, true);
+    b.root.x = a.root.x;
+    add('swing-front-single', withP(grip(b, sw), [sw]));
+    // free: hands hover just inside the grips (ready to grab)
+    const c = frontOn(SWTOP, false, { shoulderL: 22, shoulderR: 22, elbowL: 4, elbowR: 4 });
+    c.root.x = a.root.x;
+    add('swing-front-stand-free', withP(c, [sw]));
+    // single leg with a band in front of the belly: hands together → pulled apart (arms low, ≤ 50°)
+    const bandIn = frontOn(SWTOP, true, { shoulderL: 18, shoulderR: 18, upperArmLenL: 0.55, upperArmLenR: 0.55, forearmLenL: 0.55, forearmLenR: 0.55, elbowL: 0, elbowR: 0 });
+    bandIn.root.x = a.root.x;
+    add('swing-front-band-in', withP(bandIn, [sw]));
+    const bandOut = frontOn(SWTOP, true, { shoulderL: 34, shoulderR: 34, elbowL: 0, elbowR: 0 });
+    bandOut.root.x = a.root.x;
+    add('swing-front-band-out', withP(bandOut, [sw]));
+  }
+  // ---- swing platform, side view: mini squat (0–30°) holding the front grip
+  {
+    const sq = (k, y) => {
+      const shin = -k * 0.42;
+      const hip = k + shin;
+      const p = side('standing', { trunk: k * 0.4, hipL: hip, hipR: hip, kneeL: k, kneeR: k, shoulderL: 30, shoulderR: 30, elbowL: 20, elbowR: 20 });
+      flat(p);
+      return ground(p, y);
+    };
+    const a = sq(0, SWTOP);
+    const P = pts(a);
+    const sw = { type: 'swing', x: r1((P.footR.x + P.toeR.x) / 2), w: 48, top: SWTOP, rail: r1(P.hip.y - 4) };
+    const gx = sw.x + sw.w / 2 + 7 - 1.5;
+    aim(a, 'armR', { x: gx, y: sw.rail }, (j2) => j2 >= 0); sameArms(a);
+    add('swing-side-squat-up', withP(a, [sw]));
+    const b = sq(30, SWTOP);
+    atFoot(b, a, 'R');
+    aim(b, 'armR', { x: gx, y: sw.rail }, (j2) => j2 >= 0); sameArms(b);
+    add('swing-side-squat-down', withP(b, [sw]));
+  }
+  // ---- swing platform, side view: split stance – left foot on the board, right foot behind on the floor (open side)
+  {
+    const fx = 130; // left ankle on the board
+    const FL = { x: fx, y: SWTOP - 4.25 };
+    const FR = { x: fx - 40, y: FLOOR - 4.25 };
+    // hip = intersection of the circles around both ankles (radius = leg reach), the upper one
+    const mk = (rL, rR, fr, o) => {
+      const d = Math.hypot(FL.x - fr.x, FL.y - fr.y);
+      const a0 = (rR * rR - rL * rL + d * d) / (2 * d);
+      const h = Math.sqrt(Math.max(0, rR * rR - a0 * a0));
+      const ux = (FL.x - fr.x) / d; const uy = (FL.y - fr.y) / d;
+      const m = { x: fr.x + ux * a0, y: fr.y + uy * a0 };
+      const hip = [{ x: m.x - uy * h, y: m.y + ux * h }, { x: m.x + uy * h, y: m.y - ux * h }].sort((q, w) => q.y - w.y)[0];
+      const p = side('standing', { trunk: 2, shoulderL: 24, shoulderR: 24, elbowL: 20, elbowR: 20, ...o });
+      p.root = { x: r1(hip.x), y: r1(hip.y) };
+      aim(p, 'legR', fr, (k) => k >= 0);
+      aim(p, 'legL', FL, (k) => k >= 0);
+      return flat(p);
+    };
+    const sw = { type: 'swing', x: fx + 3, w: 40, top: SWTOP, open: -1 };
+    const a = mk(78, 83.5, FR);
+    sw.rail = r1(a.root.y + 4);
+    const gx = sw.x + sw.w / 2 + 7 - 1.5;
+    aim(a, 'armL', { x: gx, y: sw.rail }, (j2) => j2 >= 0); a.shoulderR = a.shoulderL; a.elbowR = a.elbowL;
+    add('swing-side-split-back', withP(a, [sw]));
+    const b = mk(81, 83.8, { x: FR.x + 3, y: FR.y - 5 }, { trunk: 5 });
+    b.ankleR = r1(b.hipR - b.kneeR + 32); // back heel lifted, toes on the floor
+    solve(b, 'ankleR', 0, 70, (q) => pts(q).toeR.y + 3 - FLOOR);
+    aim(b, 'armL', { x: gx, y: sw.rail }, (j2) => j2 >= 0); b.shoulderR = b.shoulderL; b.elbowR = b.elbowL;
+    add('swing-side-split-front', withP(b, [sw]));
+  }
+  // ---- balance cushion, front view: left hand at the wall (wall at the person's left), both feet / left leg on the cushion
+  {
+    const mk = (lift, o) => {
+      const p = frontOn(PADTOP, lift, o);
+      return p;
+    };
+    const a = mk(false);
+    const P = pts(a);
+    const wx = r1(P.hipJL.x + 26);
+    const wall = { type: 'wall', x: wx, facing: -1 };
+    const pad = { type: 'pad', x: r1(P.hip.x), w: 30, top: PADTOP };
+    aim(a, 'armL', { x: wx - 4, y: P.hip.y + 2 }, (j2, e) => e.x > P.shoulderL.x);
+    add('pad-front-stand', withP(a, [pad, wall]));
+    const b = mk(true);
+    b.root.x = a.root.x;
+    const Q = pts(b);
+    aim(b, 'armL', { x: wx - 4, y: Q.hip.y + 2 }, (j2, e) => e.x > Q.shoulderL.x);
+    add('pad-front-single', withP(b, [{ ...pad, x: r1(Q.footL.x) , w: 24 }, wall]));
+    const bandIn = mk(true, { shoulderL: 18, shoulderR: 18, upperArmLenL: 0.55, upperArmLenR: 0.55, forearmLenL: 0.55, forearmLenR: 0.55, elbowL: 0, elbowR: 0 });
+    bandIn.root.x = a.root.x;
+    add('pad-front-band-in', withP(bandIn, [{ ...pad, x: r1(Q.footL.x), w: 24 }, wall]));
+    const bandOut = mk(true, { shoulderL: 34, shoulderR: 34, elbowL: 0, elbowR: 0 });
+    bandOut.root.x = a.root.x;
+    add('pad-front-band-out', withP(bandOut, [{ ...pad, x: r1(Q.footL.x), w: 24 }, wall]));
+  }
+  // ---- balance cushion, side view: mini squat facing the wall (fingertips on the wall), 0–30°
+  {
+    const sq = (k) => {
+      const shin = -k * 0.42;
+      const hip = k + shin;
+      const p = side('standing', { trunk: k * 0.45, hipL: hip, hipR: hip, kneeL: k, kneeR: k, shoulderL: 50, shoulderR: 50, elbowL: 10, elbowR: 10 });
+      flat(p);
+      return ground(p, PADTOP);
+    };
+    const a = sq(0);
+    const P = pts(a);
+    const H = P.handR;
+    const wall = { type: 'wall', x: r1(H.x + 4.5), facing: -1 };
+    const pad = { type: 'pad', x: r1((P.footR.x + P.toeR.x) / 2 - 1), w: 32, top: PADTOP };
+    add('pad-side-squat-up', withP(a, [pad, wall]));
+    const b = sq(30);
+    atFoot(b, a, 'R');
+    aim(b, 'armR', { x: H.x, y: H.y + 8 }, (j2) => j2 >= 0); sameArms(b);
+    add('pad-side-squat-down', withP(b, [pad, wall]));
+  }
+  // ---- balance cushion, side view: step on – from the floor, the left foot steps forward onto the cushion
+  {
+    const a = flat(side('standing', { shoulderL: 12, shoulderR: 12, elbowL: 12, elbowR: 12 }));
+    ground(a, FLOOR);
+    const P = pts(a);
+    const padX = r1(P.footL.x + 34);
+    const pad = { type: 'pad', x: padX, w: 30, top: PADTOP };
+    const b = side('standing', { trunk: 4, hipL: 10, kneeL: 14, hipR: -24, kneeR: 4, shoulderL: 16, shoulderR: 8, elbowL: 14, elbowR: 14 });
+    flat(b, 'L'); ground(b, PADTOP, ['legL']);
+    b.root.x = r1(b.root.x + padX - 2 - pts(b).footL.x);
+    aim(b, 'legR', { x: P.footR.x, y: P.footR.y }, (k) => k >= 0);
+    b.ankleR = r1(b.hipR - b.kneeR);
+    add('pad-side-step-floor', withP(a, [pad]));
+    add('pad-side-step-on', withP(b, [pad]));
+  }
 }
 
 // lying with the neck lower than the hips (bridges): tilt the head back to the mat

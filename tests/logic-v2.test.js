@@ -280,18 +280,23 @@ test('energy: strength kcal falls back to the duration estimate when the clock i
   assert.equal(kr.kcal, Math.round(700 * estimateExerciseSeconds({ level: 0 }, ex('row-steady')) / 3600));
 });
 
-test('schedule: phases planned backwards from the surgery date (2027-01-05)', () => {
-  const sched = phaseSchedule(content.phases, '2027-01-05', { prehabStart: '2026-11-07' });
+test('schedule: phases planned backwards from the surgery date (v5.5: 2027-01-19, p2 = 4 weeks)', () => {
+  const sched = phaseSchedule(content.phases, '2027-01-19', { prehabStart: '2026-11-07' });
   const by = Object.fromEntries(sched.map((x) => [x.phaseId, x]));
-  assert.deepEqual([by['p1-basis'].start, by['p1-basis'].end], ['2026-11-07', '2026-11-27']);
-  assert.deepEqual([by['p2-aufbau'].start, by['p2-aufbau'].end], ['2026-11-28', '2026-12-18']);
-  assert.deepEqual([by['p3-op-vorbereitung'].start, by['p3-op-vorbereitung'].end], ['2026-12-19', '2027-01-04']);
-  assert.deepEqual([by['p4-entlastung'].start, by['p4-entlastung'].end, by['p4-entlastung'].days], ['2027-01-05', '2027-02-15', 42]);
+  assert.deepEqual([by['p1-basis'].start, by['p1-basis'].end, by['p1-basis'].days], ['2026-11-07', '2026-12-04', 28]);
+  assert.deepEqual([by['p2-aufbau'].start, by['p2-aufbau'].end, by['p2-aufbau'].days], ['2026-12-05', '2027-01-01', 28]);
+  assert.deepEqual([by['p3-op-vorbereitung'].start, by['p3-op-vorbereitung'].end, by['p3-op-vorbereitung'].days], ['2027-01-02', '2027-01-18', 17]);
+  assert.deepEqual([by['p4-entlastung'].start, by['p4-entlastung'].end, by['p4-entlastung'].days], ['2027-01-19', '2027-03-01', 42]);
+  assert.equal(taperStart('2027-01-19'), '2027-01-12');
+  // the old date still plans backwards the same way (p2 now 4 weeks)
+  const old = Object.fromEntries(phaseSchedule(content.phases, '2027-01-05', { prehabStart: '2026-11-07' }).map((x) => [x.phaseId, x]));
+  assert.deepEqual([old['p2-aufbau'].start, old['p2-aufbau'].end], ['2026-11-21', '2026-12-18']);
   assert.equal(taperStart('2027-01-05'), '2026-12-29');
   assert.equal(phaseSchedule(content.phases, null), null);
-  const s = { surgeryDate: '2027-01-05', prehabStart: '2026-11-07' };
+  const s = { surgeryDate: '2027-01-19', prehabStart: '2026-11-07' };
   assert.equal(scheduleHint(content.phases, s, { phaseId: 'p1-basis' }, '2026-11-10').status, 'onTrack');
-  const behind = scheduleHint(content.phases, s, { phaseId: 'p1-basis' }, '2026-12-01');
+  assert.equal(scheduleHint(content.phases, s, { phaseId: 'p1-basis' }, '2026-12-01').status, 'onTrack', 'p1 now until 12-04');
+  const behind = scheduleHint(content.phases, s, { phaseId: 'p1-basis' }, '2026-12-10');
   assert.equal(behind.status, 'behind');
   assert.equal(behind.expectedPhaseId, 'p2-aufbau');
   assert.match(behind.text, /Kriterien/);
@@ -299,6 +304,7 @@ test('schedule: phases planned backwards from the surgery date (2027-01-05)', ()
   assert.equal(scheduleHint(content.phases, {}, { phaseId: 'p1-basis' }, '2026-11-10').status, 'none');
   assert.equal(suggestedSurgeryDate({ surgeryDate: null, surgeryDateSuggested: '2027-01-05' }), '2027-01-05');
   assert.equal(suggestedSurgeryDate({ surgeryDate: '2027-02-01' }), null);
+  assert.equal(suggestedSurgeryDate({ surgeryDate: null }), '2027-01-19', 'v5.5 default');
 });
 
 test('post-op gate: surgery date passed + clearance; ends after 6 weeks or release', () => {
@@ -403,7 +409,7 @@ test('store v2 defaults: additive keys, no schema bump, surgery date never set s
   assert.equal(store.SCHEMA_VERSION, 1);
   assert.equal(d.settings.cardioGoalPerWeek, 3);
   assert.equal(d.settings.surgeryDate, null);
-  assert.equal(d.settings.surgeryDateSuggested, '2027-01-05');
+  assert.equal(d.settings.surgeryDateSuggested, '2027-01-19'); // v5.5: OP moved
   assert.deepEqual(d.settings.profile, { weightKg: null });
   assert.equal('weightGoal' in d.settings, false, 'v3.1: no weight goal for new users');
   assert.deepEqual(d.state.customWorkouts, []);

@@ -5,7 +5,7 @@
       "id": "p1-basis",
       "name": "Phase 1 – Basis",
       "order": 1,
-      "description": "Ca. 3–4 Wochen. Reizarm aktivieren: Quadrizeps anschalten, volle Streckung sichern, Routine aufbauen. Post-OP-Übungen (Quad Set, Fersengleiten, gestrecktes Beinheben) jetzt lernen. Unter Last max. 60° Kniebeugung, langsames Tempo, kein Springen, keine Drehung.",
+      "description": "Ca. 4 Wochen. Reizarm aktivieren: Quadrizeps anschalten, volle Streckung sichern, Routine aufbauen. Post-OP-Übungen (Quad Set, Fersengleiten, gestrecktes Beinheben) jetzt lernen. Unter Last max. 60° Kniebeugung, langsames Tempo, kein Springen, keine Drehung.",
       "exitCriteria": [
         "Linkes Knie ganz streckbar (kein Streckdefizit)",
         "1 Woche keine Schwellung nach dem Training",
@@ -26,7 +26,8 @@
         "p1-row-long"
       ],
       "rowFinisher": "row-finisher-short",
-      "relief": "p1-relief"
+      "relief": "p1-relief",
+      "balance": "p1-balance"
     },
     {
       "id": "p2-aufbau",
@@ -47,7 +48,7 @@
         "C": "p2-c"
       },
       "kind": "prehab",
-      "plannedWeeks": 3,
+      "plannedWeeks": 4,
       "short": "p2-short",
       "cardio": [
         "p2-row",
@@ -55,7 +56,8 @@
         "p2-row-long"
       ],
       "rowFinisher": "row-finisher-intervals",
-      "relief": "p2-relief"
+      "relief": "p2-relief",
+      "balance": "p2-balance"
     },
     {
       "id": "p3-op-vorbereitung",
@@ -83,7 +85,8 @@
         "p3-row-long"
       ],
       "rowFinisher": "row-finisher-intervals",
-      "relief": "p3-relief"
+      "relief": "p3-relief",
+      "balance": "p3-balance"
     },
     {
       "id": "p4-entlastung",

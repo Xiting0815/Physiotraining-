@@ -20,7 +20,7 @@ export const SECTION_LABELS = { warmup: 'Aufwärmen', knee: 'Knie-Block', archer
 export const SWELLING_LABELS = ['keine', 'leicht', 'deutlich'];
 export const RECORD_LABELS = { longestHold: 'Längster Hold', mostReps: 'Meiste Wdh.', strongestBand: 'Stärkstes Band' };
 export const ROW_RECORD_LABELS = { distanceM: 'Längste Strecke', avgWatt: 'Beste Ø-Leistung', durationSec: 'Längste Ruderzeit' };
-export const KIND_LABELS = { strength: 'Krafttraining', short: 'Kurztraining', cardio: 'Rudern', custom: 'Eigenes Workout', relief: 'Knie-Entlastung' };
+export const KIND_LABELS = { strength: 'Krafttraining', short: 'Kurztraining', cardio: 'Rudern', custom: 'Eigenes Workout', relief: 'Knie-Entlastung', balance: 'Balance' };
 /** Post-op red flag reason prefix used by the traffic light (SPEC §12.10). */
 export const DOC_PREFIX = 'Entlastungsphase: bitte Arzt kontaktieren';
 export { LIGHT_LABELS };

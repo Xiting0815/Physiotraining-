@@ -765,6 +765,68 @@ export const TEXTS = {
     feel: "Du spürst Hüfte, Rücken und Schulterblätter warm werden.",
     mistakes: { set: ["Wippen in die Endposition", "Arme über Schulterhöhe heben"] },
   },
+
+  // ---------------------------------------------------------------- v5.5 Schwingplatte & Balance-Kissen
+  'swing-stand-both': {
+    short: "Beidbeinig auf der Schwingplatte stehen und sie ruhig halten – schult schnelle Ausgleichsreaktionen.",
+    setup: "Stell die Schwingplatte auf ebenen Boden und prüf kurz Federn und Rahmen (Tragkraft beachten, z. B. max. 100 kg). Barfuß oder in rutschfesten Socken. Steig mittig auf die Platte und fass mit beiden Händen die Griffe des Rahmens – am Anfang immer festhalten.",
+    steps: ["Barfuß mittig auf die Platte, beide Hände an den Rahmen.", "Füße hüftbreit, Knie weich, Blick auf einen Punkt.", "Halte die Platte so ruhig wie möglich.", "Zum Absteigen erst wieder beide Hände an den Rahmen."],
+    feel: "Du spürst viele kleine Ausgleichsbewegungen in Füßen, Waden und Oberschenkeln.",
+  },
+  'swing-single-leg-stance': {
+    short: "Einbeinstand auf der Schwingplatte, links und rechts – wie beim Physio, mit Halt am Rahmen.",
+    setup: "Schwingplatte auf ebenem Boden, Federn und Rahmen kurz prüfen (Tragkraft beachten). Barfuß mittig auf die Platte steigen und mit beiden Händen die Griffe am Rahmen fassen. Erst wenn es ruhig klappt, eine Hand lösen, später freihändig – die Hände bleiben dann dicht über dem Rahmen.",
+    steps: ["Mittig auf die Platte, Hände an den Rahmen.", "Gewicht aufs linke Bein, Knie leicht gebeugt, rechten Fuß lösen.", "Platte ruhig halten, Becken waagerecht, Blick auf einen Punkt.", "Absetzen, dann das rechte Bein."],
+    feel: "Du spürst Fuß, Oberschenkel und Gesäß des Standbeins ständig nachregeln – das ist gewollt.",
+  },
+  'swing-mini-squat': {
+    short: "Kleine Kniebeuge auf der Schwingplatte – Kraft und Gleichgewicht, Tiefe streng begrenzt.",
+    setup: "Schwingplatte auf ebenem Boden, Federn und Rahmen prüfen (Tragkraft beachten). Barfuß mittig auf die Platte, Füße hüftbreit, beide Hände an den Griffen des Rahmens. Tiefe: höchstens 30°, ab Stufe 4 bis 45° – nie tiefer.",
+    steps: ["Mittig auf die Platte, Füße hüftbreit, Hände am Rahmen.", "Gesäß leicht nach hinten, Knie nur bis zur Stufen-Tiefe beugen.", "Platte ruhig halten, Knie bleiben über den Füßen.", "Über die Fersen wieder aufrichten."],
+    feel: "Du spürst Oberschenkel und Gesäß arbeiten, die Füße regeln ständig nach.",
+  },
+  'swing-split-stance': {
+    short: "Ein Fuß auf der Schwingplatte, einer am Boden – Platte ruhig halten, später Gewicht verlagern.",
+    setup: "Schwingplatte auf ebenem Boden, Federn und Rahmen prüfen (Tragkraft beachten). Stell dich an die Seite der Platte, wo der Rahmen Platz lässt. Linken Fuß barfuß mittig auf die Platte, rechter Fuß bleibt einen kleinen Schritt dahinter auf dem Boden. Eine Hand am Rahmen.",
+    steps: ["Linken Fuß auf die Platte, rechten Fuß hinten auf den Boden.", "Eine Hand am Rahmen, Knie weich.", "Platte ruhig halten – ab Stufe 3 Gewicht langsam vor und zurück.", "Danach Seite wechseln: rechter Fuß auf die Platte."],
+    feel: "Du spürst das vordere Bein die schwingende Platte bremsen und führen.",
+  },
+  'swing-single-leg-perturbation': {
+    short: "Einbeinstand auf der Schwingplatte, die Arme ziehen tief ein Band – Kniekontrolle unter Störung.",
+    setup: "Schwingplatte auf ebenem Boden, Federn und Rahmen prüfen (Tragkraft beachten). Barfuß mittig auf die Platte, das Band vor dem Bauch in beiden Händen. Die Arme bleiben tief (unter Brusthöhe, schulterfreundlich). Wird es zu wacklig: Band loslassen und an den Rahmen greifen.",
+    steps: ["Mittig auf die Platte, Band vor dem Bauch.", "Aufs linke Bein, Knie leicht gebeugt, rechten Fuß lösen.", "Band rhythmisch auseinanderziehen, Ellbogen tief, Platte ruhig.", "Absetzen, dann das rechte Bein."],
+    feel: "Du spürst bei jedem Zug, wie Fuß, Knie und Hüfte das Standbein neu ausrichten.",
+  },
+  'pad-stand-both': {
+    short: "Beidbeinig auf dem Balance-Kissen stehen – der sanfte Einstieg ins Gleichgewichtstraining.",
+    setup: "Leg das Kissen auf rutschfesten Boden und stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, sodass deine Hand sie jederzeit erreicht. Barfuß oder in Socken. Das Kissen nicht ganz prall aufpumpen.",
+    steps: ["Seitlich an die Wand, Kissen eine Unterarmlänge davor.", "Mit beiden Füßen mittig aufs Kissen, Hand nah an der Wand.", "Knie weich, Blick auf einen Punkt, ruhig stehen.", "Mit Hand an der Wand wieder absteigen."],
+    feel: "Du spürst Füße und Waden ständig fein ausgleichen.",
+  },
+  'pad-single-leg-stance': {
+    short: "Einbeinstand auf dem Balance-Kissen, links und rechts – die Wand gibt Sicherheit.",
+    setup: "Leg das Kissen auf rutschfesten Boden und stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, die Hand an der Wand. Barfuß oder in Socken. Erst wenn es ruhig klappt, nur noch Fingerspitzen, später freihändig mit der Hand nah an der Wand.",
+    steps: ["Seitlich an die Wand, barfuß aufs Kissen.", "Gewicht aufs linke Bein, Knie leicht gebeugt, rechten Fuß lösen.", "Becken waagerecht, Blick auf einen Punkt, halten.", "Absetzen, umdrehen und das rechte Bein."],
+    feel: "Du spürst Fuß, Oberschenkel und Gesäß des Standbeins nachregeln.",
+  },
+  'pad-mini-squat': {
+    short: "Kleine Kniebeuge auf dem Balance-Kissen – das Wackeln fordert die Beinachse.",
+    setup: "Leg das Kissen eine Armlänge vor die Wand und stell dich mit dem Gesicht zur Wand barfuß darauf. Fingerspitzen leicht auf Bauchhöhe an der Wand. Füße hüftbreit. Tiefe: höchstens 30°, ab Stufe 3 bis 45° – nie tiefer.",
+    steps: ["Gesicht zur Wand, barfuß aufs Kissen, Fingerspitzen an der Wand.", "Gesäß nach hinten, Knie nur bis zur Stufen-Tiefe beugen.", "Knie bleiben über den Füßen, Gewicht mittig.", "Über die Fersen aufrichten."],
+    feel: "Du spürst Oberschenkel und Gesäß arbeiten, die Füße gleichen aus.",
+  },
+  'pad-step-on': {
+    short: "Mit einem Fuß aufs Kissen treten, stabilisieren, zurück – übt das sichere Auffangen.",
+    setup: "Stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, die Hand in Reichweite. Leg das Kissen einen kleinen Schritt (ca. 30 cm) vor deine Füße. Barfuß oder in Socken.",
+    steps: ["Seitlich an die Wand, Kissen einen kleinen Schritt vor dir.", "Mit dem linken Fuß aufs Kissen treten, Knie leicht gebeugt.", "Kurz stabilisieren, dann zurück auf den Boden.", "Danach mit dem rechten Bein."],
+    feel: "Du spürst das vordere Bein beim Auffangen arbeiten, vor allem Oberschenkel und Gesäß.",
+  },
+  'pad-single-leg-perturbation': {
+    short: "Einbeinstand auf dem Kissen, die Arme ziehen tief ein Band – Kniekontrolle unter Störung.",
+    setup: "Leg das Kissen auf rutschfesten Boden und stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt. Band vor dem Bauch in beiden Händen, Arme bleiben tief (unter Brusthöhe). Wird es zu wacklig: Band loslassen und an die Wand fassen.",
+    steps: ["Seitlich an die Wand, barfuß aufs Kissen, Band vor dem Bauch.", "Aufs linke Bein, Knie leicht gebeugt, rechten Fuß lösen.", "Band rhythmisch auseinanderziehen, Ellbogen tief.", "Absetzen, umdrehen und das rechte Bein."],
+    feel: "Du spürst bei jedem Zug, wie das Standbein neu ausgleicht.",
+  },
 };
 
 // ---------------------------------------------------------------- apply (node tools/exercise-texts.mjs [--check])

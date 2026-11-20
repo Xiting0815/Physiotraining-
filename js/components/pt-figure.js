@@ -29,6 +29,10 @@
 //   (default: above and beyond the first target point), straps run to the named points (default both hands;
 //   e.g. footL/footR for heel cradles) with a handle/cradle every frame; `door: false` hides the door edge,
 //   `behind: true` draws the straps behind the body (anchor behind the figure).
+//   pad — v5.5 balance cushion ({x, w, h, top}): flat rounded air cushion on the floor under the feet (default: under
+//   both feet, top = FLOOR - PAD_H); standing poses ground their soles on `top`.
+//   swing — v5.5 swing platform ({x, w, top, rail}): board hanging on four springs between two tubular frames
+//   (posts left/right of the board with a grip at `rail` height); the prop's anchor is the board centre (for sway arrows).
 //   stick — v5.3 massage stick (z. B. Blackroll): a short roller follows the hands every frame, lying on the thigh
 //   (`along`: limb the stick rests on, default thighL).
 // Figure option `loop: true`: keyframes play as a cycle (k0 → … → kn-1 → k0) instead of ping-pong; the first
@@ -48,6 +52,9 @@ export const FLOOR = 185;
 export const MAT_H = 4;
 export const SEAT_Y = 144; // chair seat top
 export const STEP_H = 18;
+/** v5.5: balance cushion height and swing-platform board height above the floor (figure px ≈ cm). */
+export const PAD_H = 7;
+export const SWING_H = 16;
 export const BODY = { trunk: 13, trunkFront: 10, leg: 8.5, arm: 6.5, foot: 6, outline: 3 };
 export const DEFAULT_BAND_COLORS = {
   yellow: '#F2D43D', red: '#D9443B', green: '#3BA55C', blue: '#2F6FD6', 'loop-orange': '#F08A24', 'loop-blue': '#2456B8',
@@ -372,6 +379,22 @@ export function layoutProps(props, pose0, P, band) {
         }
         break;
       }
+      case 'pad': {
+        p.h ??= PAD_H;
+        p.top ??= FLOOR - p.h;
+        p.w ??= 34;
+        p.x ??= (P.footL.x + P.footR.x) / 2;
+        p.anchor = { x: p.x, y: p.top + p.h / 2 };
+        break;
+      }
+      case 'swing': {
+        p.top ??= FLOOR - SWING_H;
+        p.w ??= 62;
+        p.x ??= (P.footL.x + P.footR.x) / 2;
+        p.rail ??= P.hip.y + 6;
+        p.anchor = { x: p.x, y: p.top + 2 };
+        break;
+      }
       case 'bow': break; // follows the hands every frame
       case 'stick': break; // v5.3: follows the hands every frame
       case 'sling': {
@@ -415,6 +438,8 @@ function propBounds(p) {
     case 'step': return [{ x: p.x - p.w / 2, y: p.top }, { x: p.x + p.w / 2, y: FLOOR }];
     case 'towel': return [{ x: p.x - p.r, y: p.y - p.r }, { x: p.x + p.r, y: p.y + p.r }];
     case 'cushion': return [{ x: p.x - p.w / 2, y: p.y - p.h / 2 }, { x: p.x + p.w / 2, y: p.y + p.h / 2 }];
+    case 'pad': return [{ x: p.x - p.w / 2, y: p.top }, { x: p.x + p.w / 2, y: FLOOR }];
+    case 'swing': return [{ x: p.x - p.w / 2 - 12, y: p.rail - 4 }, { x: p.x + p.w / 2 + 12, y: FLOOR }];
     default: return [];
   }
 }
@@ -484,6 +509,8 @@ function propSvg(p, frame, front) {
       return `<g class="fig-prop"><circle class="fig-towel" cx="${f(p.x)}" cy="${f(p.y)}" r="${f(p.r)}"/><circle class="fig-towel-in" cx="${f(p.x)}" cy="${f(p.y)}" r="${f(p.r * 0.45)}"/></g>`;
     case 'cushion':
       return `<rect class="fig-cushion" x="${f(p.x - p.w / 2)}" y="${f(p.y - p.h / 2)}" width="${f(p.w)}" height="${f(p.h)}" rx="${f(p.h / 2)}"/>`;
+    case 'pad': return padSvg(p);
+    case 'swing': return swingSvg(p);
     case 'rower':
       return rowerSvg(p);
     case 'sling': {
@@ -495,6 +522,50 @@ function propSvg(p, frame, front) {
     default:
       return '';
   }
+}
+
+/** v5.5 balance cushion: flat pad with rounded edges and a slightly domed top, small nubs on the surface. */
+function padSvg(p) {
+  const x0 = p.x - p.w / 2;
+  const x1 = p.x + p.w / 2;
+  const r = Math.min(3.5, p.h / 2);
+  const d = `M${f(x0)} ${FLOOR}V${f(p.top + r)}Q${f(x0)} ${f(p.top)} ${f(x0 + r + 1)} ${f(p.top)}Q${f(p.x)} ${f(p.top - 1.6)} ${f(x1 - r - 1)} ${f(p.top)}Q${f(x1)} ${f(p.top)} ${f(x1)} ${f(p.top + r)}V${FLOOR}Z`;
+  let nubs = '';
+  for (let x = x0 + 5; x <= x1 - 4; x += 5.5) nubs += `<circle class="fig-pad-nub" cx="${f(x)}" cy="${f(p.top + p.h * 0.55)}" r="0.9"/>`;
+  return `<g class="fig-prop fig-pad-prop"><path class="fig-pad" d="${d}"/>${nubs}</g>`;
+}
+
+/** Zigzag spring from a to b (n coils). */
+function springPath(a, b, n = 5, amp = 2.2) {
+  const L = dist(a, b);
+  if (L < 1) return '';
+  const u = { x: (b.x - a.x) / L, y: (b.y - a.y) / L };
+  const nn = { x: -u.y, y: u.x };
+  const pts = [a];
+  const seg = L / (n * 2 + 2);
+  pts.push(add(a, mul(u, seg)));
+  for (let i = 1; i <= n * 2; i++) pts.push(add(add(a, mul(u, seg * (i + 0.5))), mul(nn, i % 2 ? amp : -amp)));
+  pts.push(add(b, mul(u, -seg)), b);
+  return 'M' + pts.map((q) => `${f(q.x)} ${f(q.y)}`).join('L');
+}
+
+/** v5.5 swing platform: two tubular frames (posts with grips at rail height), board hanging on four springs. */
+function swingSvg(p) {
+  const bx0 = p.x - p.w / 2;
+  const bx1 = p.x + p.w / 2;
+  const px0 = bx0 - 7;
+  const px1 = bx1 + 7;
+  const hang = Math.max(p.rail + 8, p.top - 30); // spring anchors on the posts
+  // `open: -1|1` leaves out the frame on that side (viewer coordinates) – the free side for a split stance
+  const sides = [[-1, px0, bx0 + 3], [1, px1, bx1 - 3]].filter(([sg]) => p.open !== sg);
+  const springs = sides.map(([, px, bx]) => `<path class="fig-spring" d="${springPath({ x: px, y: hang }, { x: bx, y: p.top + 1 })}"/>`).join('');
+  const posts = sides.map(([, px]) => `M${f(px)} ${FLOOR - 1}V${f(p.rail)}M${f(px - 5)} ${FLOOR - 1}H${f(px + 5)}`).join('');
+  const grips = sides.map(([, px]) => `M${f(px - 3)} ${f(p.rail)}H${f(px + 3)}`).join('');
+  return `<g class="fig-prop fig-swing">
+    <path class="fig-prop-line fig-swing-frame" d="${posts}"/>
+    <path class="fig-swing-grip" d="${grips}"/>
+    ${springs}
+    <rect class="fig-prop-solid fig-swing-board" x="${f(bx0)}" y="${f(p.top)}" width="${f(p.w)}" height="4" rx="2"/></g>`;
 }
 
 /** Static parts of the rowing machine (side view): rail, stands, flywheel housing, monitor, foot stretcher. */
@@ -954,6 +1025,7 @@ export function buildScene(spec) {
   const hasMat = props.some((p) => p.type === 'mat');
   const rower = props.find((p) => p.type === 'rower') || null;
   const sling = props.find((p) => p.type === 'sling') || null;
+  const raised = props.some((p) => p.type === 'pad' || p.type === 'swing'); // v5.5: no floor shadow under a cushion / platform
 
   // body bounds over all keyframes
   let bb = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
@@ -1034,7 +1106,7 @@ export function buildScene(spec) {
     if (rower) pose = lockFeet(pose, rower.foot, segments);
     const P = computePoints(pose, segments);
     let s = '';
-    if (!top && pose.ground === 'standing') {
+    if (!top && pose.ground === 'standing' && !raised) {
       const fx = (P.footL.x + P.footR.x) / 2;
       const sw = Math.max(16, Math.abs(P.toeL.x - P.toeR.x) / 2 + 12);
       const onFloor = Math.max(P.footL.y, P.footR.y) > FLOOR - 9;
@@ -1123,6 +1195,10 @@ export const FIGURE_CSS = `
   pt-figure .fig-mat{fill:var(--fig-mat,var(--primary,#0E7C86));opacity:.22}
   pt-figure .fig-towel{fill:var(--fig-towel,var(--accent,#E07A1F));opacity:.55}
   pt-figure .fig-towel-in{fill:none;stroke:var(--fig-bg);stroke-width:1.2;opacity:.8}
+  pt-figure .fig-pad{fill:var(--fig-pad,var(--primary,#0E7C86));opacity:.38}
+  pt-figure .fig-pad-nub{fill:var(--fig-bg);opacity:.7}
+  pt-figure .fig-spring{fill:none;stroke:currentColor;stroke-width:1.2;stroke-linejoin:round;opacity:.8}
+  pt-figure .fig-swing-grip{fill:none;stroke:currentColor;stroke-width:4.6;stroke-linecap:round;opacity:.9}
   pt-figure .fig-cushion{fill:var(--fig-towel,var(--accent,#E07A1F));opacity:.4}
   pt-figure .fig-band-out{fill:none;stroke:var(--fig-bg);stroke-width:6;stroke-linecap:round;opacity:.9}
   pt-figure .fig-band-line{fill:none;stroke:var(--band);stroke-width:3.4;stroke-linecap:round}

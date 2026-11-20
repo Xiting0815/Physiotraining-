@@ -136,7 +136,8 @@ test('poses: standing figures touch the floor or a step, lying figures the mat',
       const supported = low >= FLOOR - MAT_H - SUPPORT_TOL || (p.props || []).some((x) => x.type === 'step' || x.type === 'chair');
       assert.ok(supported, `${id} floats above the mat (${low.toFixed(1)})`);
     } else if (p.ground === 'standing') {
-      const step = (p.props || []).find((x) => x.type === 'step');
+      // v5.5: a balance cushion (pad) or swing platform board carries the soles like a step
+      const step = (p.props || []).find((x) => x.type === 'step' || x.type === 'pad' || x.type === 'swing');
       const top = step ? (step.top ?? FLOOR - 18) : null;
       const P = computePoints(p, segments);
       const soles = ['L', 'R'].map((s) => Math.max(P['foot' + s].y + 4.25, P['toe' + s].y + 3));

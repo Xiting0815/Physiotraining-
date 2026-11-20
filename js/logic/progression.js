@@ -2,13 +2,15 @@
 import { addDays, daysBetween, startOfIsoWeek, todayISO } from '../util/date.js';
 import { dayOf, doneSessions, sessionLight, sessionsPerWeek, streak } from './stats.js';
 import { cappedSets, estimateWorkoutMinutes, fitPlanToMinutes, workoutItems, MAX_SESSION_MIN, MAX_SESSION_WITH_ROW_MIN } from './duration.js';
-import { availableEquipment, diffNames, fallbackRules, hasEquipment, ownsRowingMachine, resolveExercise, upgradeRules } from './equipment.js';
+import { availableEquipment, diffNames, fallbackRules, hasEquipment, ownsBalanceGear, ownsRowingMachine, resolveExercise, upgradeRules } from './equipment.js';
 import { shoulderOk, shoulderProtect } from './shoulder.js';
 
 /** Workout kinds (v2). Missing `kind` = "strength". */
-export const WORKOUT_KINDS = ['strength', 'short', 'cardio', 'custom', 'relief'];
+export const WORKOUT_KINDS = ['strength', 'short', 'cardio', 'custom', 'relief', 'balance'];
 /** v5.3: short knee relief routine – startable any day, not counted for the weekly strength goal. */
 export const isReliefKind = (w) => w?.kind === 'relief';
+/** v5.5: Balance unit (Schwingplatte / Balance-Kissen, 10–15 min) – extra unit, not counted for the weekly strength goal. */
+export const isBalanceKind = (w) => w?.kind === 'balance';
 /** @param {{kind?: string}|null|undefined} w */
 export const workoutKind = (w) => w?.kind ?? 'strength';
 
@@ -34,7 +36,7 @@ export function currentPhase(state, phases) {
   return (phases || []).find((p) => p.id === state?.phaseId) ?? (phases || [])[0];
 }
 
-/** Workouts of a phase by kind: `{ rotation: [A,B,C], short: Workout|null, cardio: Workout[], relief: Workout|null }`. */
+/** Workouts of a phase by kind: `{ rotation: [A,B,C], short, cardio: Workout[], relief, balance }` (null when missing). */
 export function phaseWorkouts(phase, workouts) {
   const find = (id) => (workouts || []).find((w) => w.id === id);
   return {
@@ -42,7 +44,18 @@ export function phaseWorkouts(phase, workouts) {
     short: phase?.short ? find(phase.short) ?? null : null,
     cardio: (phase?.cardio || []).map(find).filter(Boolean),
     relief: phase?.relief ? find(phase.relief) ?? null : null,
+    balance: phase?.balance ? find(phase.balance) ?? null : null,
   };
+}
+
+/**
+ * v5.5 (SPEC §20): the phase's Balance unit when the Schwingplatte or the Balance-Kissen is owned (no settings → shown,
+ * legacy behaviour); never in post-op phases (the content has none in p4 and every balance exercise is blocked there).
+ * @returns {import('../types.js').Workout|null}
+ */
+export function balanceWorkoutFor(phase, workouts, settings) {
+  if (!phase || phase.kind === 'postop' || !ownsBalanceGear(settings)) return null;
+  return phaseWorkouts(phase, workouts).balance;
 }
 
 /**
@@ -302,7 +315,8 @@ export function buildSessionPlan(workout, state, content, { taper = false, histo
     const ex = byId(r.exerciseId);
     if (!usable(ex)) continue;
     if (taper && done.length && !performedBefore.has(ex.id)) continue;
-    if ((r.upgradedFrom || r.fallbackFrom) && exercises.some((e) => e.exerciseId === ex.id && e.section === it.section)) continue;
+    // v5.5: the Balance unit never repeats an exercise (its items fall back onto each other: platform ↔ cushion)
+    if ((r.upgradedFrom || r.fallbackFrom || kind === 'balance') && exercises.some((e) => e.exerciseId === ex.id && e.section === it.section)) continue;
     const level = levelOf(state, ex.id, ex);
     const sets = kind === 'cardio' || it.section === 'cardio' ? (ex.levels[level]?.sets ?? 1) : cappedSets(ex.levels[level]?.sets ?? 1, it, workout);
     const isNew = !!r.upgradedFrom && !performedBefore.has(ex.id) && !Number.isInteger(state?.exerciseLevels?.[ex.id]);
@@ -491,7 +505,8 @@ export function phasePlanExerciseIds(state, content, settings) {
   const ids = new Set();
   if (!phase) return ids;
   const pw = phaseWorkouts(phase, content.workouts);
-  for (const w of [...pw.rotation, ...(pw.short ? [pw.short] : []), ...(pw.relief ? [pw.relief] : [])]) {
+  const bal = balanceWorkoutFor(phase, content.workouts, settings);
+  for (const w of [...pw.rotation, ...(pw.short ? [pw.short] : []), ...(pw.relief ? [pw.relief] : []), ...(bal ? [bal] : [])]) {
     const plan = buildSessionPlan(w, state, content, { settings, rowFinisher: false, fit: false });
     for (const e of plan.exercises) ids.add(e.exerciseId);
     const f = finisherPlan(w, state, content, { settings });

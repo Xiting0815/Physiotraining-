@@ -42,7 +42,7 @@ export const fmtPace = (sec) => (sec == null ? '–' : `${fmtClock(sec)} /500 m`
 /** Session kind for filters: 'cardio' | 'short' | 'custom' | 'strength'. */
 export function sessionKind(s) {
   if (isCardioSession(s)) return 'cardio';
-  if (s?.kind === 'short' || s?.kind === 'custom') return s.kind;
+  if (['short', 'custom', 'relief', 'balance'].includes(s?.kind)) return s.kind;
   return 'strength';
 }
 

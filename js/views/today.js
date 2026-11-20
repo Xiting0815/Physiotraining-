@@ -8,7 +8,7 @@
 // The view re-renders when the app becomes visible on a new calendar day (P2-3).
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE, daysBetween, addDays, parseISODate } from '../util/date.js';
-import { nextWorkout, applyRecommendation, getWorkout, phaseWorkouts, plannedWorkoutMinutes, cardioWorkoutsFor } from '../logic/progression.js';
+import { nextWorkout, applyRecommendation, getWorkout, phaseWorkouts, plannedWorkoutMinutes, cardioWorkoutsFor, balanceWorkoutFor } from '../logic/progression.js';
 import { ownsRowingMachine } from '../logic/equipment.js';
 import { weeklyProgress, streak, sessionLight, dayOf, cardioProgress, sameDayLoadHint, isCardioSession } from '../logic/stats.js';
 import { XP, levelFor, LEVELS, dailyQuote, opCountdown, reminderText } from '../logic/motivation.js';
@@ -152,7 +152,7 @@ export function render(root, { store, content }) {
     const recentBadgeAt = badgeEntries[0]?.[1];
     const goalMet = wk.goal > 0 && wk.done >= wk.goal;
     const todays = done.filter((s) => dayOf(s) === today);
-    const trainedToday = todays.some((s) => !isCardioSession(s) && s?.kind !== 'relief');
+    const trainedToday = todays.some((s) => !isCardioSession(s) && s?.kind !== 'relief' && s?.kind !== 'balance');
     const rowedToday = todays.some(isCardioSession);
     const letter = w ? workoutLetter(w, content.phases) : '–';
     const opOver = op.stage === 'today' || op.stage === 'after';
@@ -409,7 +409,9 @@ export function render(root, { store, content }) {
     const shortMin = short ? estimateWorkoutMinutes(short, content, state, settings) : 0;
     const relief = pw.relief || phaseWorkouts(phase, content.workouts).relief;
     const reliefMin = relief ? plannedWorkoutMinutes(relief, state, content, settings).minutes : 0;
-    const shortCard = !active && showHero && (short || customs.length || relief) ? html`<section class="card pv-quickstart" aria-labelledby="qs-title">
+    const balance = balanceWorkoutFor(phase, content.workouts, settings);
+    const balanceMin = balance ? plannedWorkoutMinutes(balance, state, content, settings).minutes : 0;
+    const shortCard = !active && showHero && (short || customs.length || relief || balance) ? html`<section class="card pv-quickstart" aria-labelledby="qs-title">
         <div class="card__header mb-0">
           <div><h3 class="card__title" id="qs-title">Schnellstart</h3>
           <p class="card__sub">${short ? 'Wenig Zeit? Zählt trotzdem fürs Wochenziel.' : 'Deine eigenen Workouts'}</p></div>
@@ -427,6 +429,12 @@ export function render(root, { store, content }) {
             <span class="pv-start__body"><span class="pv-start__name">${relief.name}</span>
             <span class="pv-start__meta">ca. ${fmtMinutes(reliefMin || 5)} · bei Druck über der Kniescheibe · zählt nicht fürs Wochenziel</span></span>
             <a class="btn btn--soft btn--sm" href="#/session?workout=${encodeURIComponent(relief.id)}" aria-label="Knie-Entlastung starten">${raw(ICON.play)} Start</a>
+          </li>` : ''}
+          ${balance ? html`<li class="pv-start" data-balance-start>
+            <span class="pv-icon-badge pv-icon-badge--primary pv-icon-badge--sm" aria-hidden="true">🤸</span>
+            <span class="pv-start__body"><span class="pv-start__name">${balance.name}</span>
+            <span class="pv-start__meta">ca. ${fmtMinutes(balanceMin || 12)} · Schwingplatte/Kissen · zählt nicht fürs Wochenziel</span></span>
+            <a class="btn btn--soft btn--sm" href="#/session?workout=${encodeURIComponent(balance.id)}" aria-label="Balance starten">${raw(ICON.play)} Start</a>
           </li>` : ''}
           ${customs.map((cw) => {
             const wo = getWorkout(cw.id, content, state);

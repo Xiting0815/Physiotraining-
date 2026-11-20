@@ -2514,7 +2514,23 @@
         "hold": "Halten",
         "release": "Absetzen"
       },
-      "shoulderElevationDeg": 20
+      "shoulderElevationDeg": 20,
+      "upgrades": [
+        {
+          "equipment": [
+            "swing-platform"
+          ],
+          "exerciseId": "swing-single-leg-stance",
+          "chip": "Schwingplatten-Variante"
+        },
+        {
+          "equipment": [
+            "balance-pad"
+          ],
+          "exerciseId": "pad-single-leg-stance",
+          "chip": "Kissen-Variante"
+        }
+      ]
     },
     {
       "id": "band-pull-apart",
@@ -6436,7 +6452,37 @@
       "fallback": [
         "single-leg-stance"
       ],
-      "shoulderElevationDeg": 160
+      "shoulderElevationDeg": 160,
+      "upgrades": [
+        {
+          "equipment": [
+            "swing-platform"
+          ],
+          "exerciseId": "swing-single-leg-perturbation",
+          "chip": "Schwingplatten-Variante"
+        },
+        {
+          "equipment": [
+            "swing-platform"
+          ],
+          "exerciseId": "swing-single-leg-stance",
+          "chip": "Schwingplatten-Variante"
+        },
+        {
+          "equipment": [
+            "balance-pad"
+          ],
+          "exerciseId": "pad-single-leg-perturbation",
+          "chip": "Kissen-Variante"
+        },
+        {
+          "equipment": [
+            "balance-pad"
+          ],
+          "exerciseId": "pad-single-leg-stance",
+          "chip": "Kissen-Variante"
+        }
+      ]
     },
     {
       "id": "patella-mobilization",
@@ -12268,6 +12314,1355 @@
       "cueWords": {
         "work": "Locker bewegen"
       }
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "swing-stand-both",
+      "name": "Schwingplatte: Stand beidbeinig",
+      "description": "Beidbeinig auf der federnd aufgehängten Platte stehen und sie ruhig halten – schult die schnellen Ausgleichsreaktionen von Fuß, Knie und Hüfte. Tragkraft der Platte beachten.",
+      "short": "Beidbeinig auf der Schwingplatte stehen und sie ruhig halten – schult schnelle Ausgleichsreaktionen.",
+      "setup": "Stell die Schwingplatte auf ebenen Boden und prüf kurz Federn und Rahmen (Tragkraft beachten, z. B. max. 100 kg). Barfuß oder in rutschfesten Socken. Steig mittig auf die Platte und fass mit beiden Händen die Griffe des Rahmens – am Anfang immer festhalten.",
+      "steps": [
+        "Barfuß mittig auf die Platte, beide Hände an den Rahmen.",
+        "Füße hüftbreit, Knie weich, Blick auf einen Punkt.",
+        "Halte die Platte so ruhig wie möglich.",
+        "Zum Absteigen erst wieder beide Hände an den Rahmen."
+      ],
+      "feel": "Du spürst viele kleine Ausgleichsbewegungen in Füßen, Waden und Oberschenkeln.",
+      "equipment": [
+        "swing-platform"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Barfuß mittig auf die Platte steigen, beide Hände an den Rahmen.",
+        "Füße hüftbreit, Knie weich, Blick nach vorn.",
+        "Platte so ruhig wie möglich halten.",
+        "Zum Absteigen erst beide Hände an den Rahmen."
+      ],
+      "cues": [
+        "Knie weich",
+        "Gewicht auf beiden Füßen",
+        "Ruhig weiteratmen"
+      ],
+      "mistakes": [
+        "Knie durchgedrückt",
+        "Krampfhaft festhalten",
+        "Blick nach unten"
+      ],
+      "levels": [
+        {
+          "label": "Beide Hände am Rahmen · 2 × 30 s",
+          "sets": 2,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Eine Hand am Rahmen · 2 × 30 s",
+          "sets": 2,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Freihändig · 2 × 40 s",
+          "sets": 2,
+          "reps": 1,
+          "hold": 40,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Freihändig, Kopf langsam drehen · 2 × 40 s",
+          "sets": 2,
+          "reps": 1,
+          "hold": 40,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Augen kurz zu, Hände dicht am Rahmen · 3 × 20 s",
+          "sets": 3,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        }
+      ],
+      "tags": [
+        "balance",
+        "propriozeption",
+        "schwingplatte"
+      ],
+      "figure": {
+        "poses": [
+          "swing-front-stand"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "arrows": [
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": -5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": -19,
+              "dy": 10
+            }
+          },
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": 5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": 19,
+              "dy": 10
+            }
+          }
+        ]
+      },
+      "cueWords": {
+        "hold": "Platte ruhig halten",
+        "release": "Lockern"
+      },
+      "fallback": [
+        "pad-stand-both"
+      ],
+      "shoulderElevationDeg": 30
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "swing-single-leg-stance",
+      "name": "Schwingplatte: Einbeinstand",
+      "description": "Einbeinstand auf der schwingenden Platte, erst links, dann rechts – wie beim Physio, mit Halt am Rahmen. Tragkraft der Platte beachten.",
+      "short": "Einbeinstand auf der Schwingplatte, links und rechts – wie beim Physio, mit Halt am Rahmen.",
+      "setup": "Schwingplatte auf ebenem Boden, Federn und Rahmen kurz prüfen (Tragkraft beachten). Barfuß mittig auf die Platte steigen und mit beiden Händen die Griffe am Rahmen fassen. Erst wenn es ruhig klappt, eine Hand lösen, später freihändig – die Hände bleiben dann dicht über dem Rahmen.",
+      "steps": [
+        "Mittig auf die Platte, Hände an den Rahmen.",
+        "Gewicht aufs linke Bein, Knie leicht gebeugt, rechten Fuß lösen.",
+        "Platte ruhig halten, Becken waagerecht, Blick auf einen Punkt.",
+        "Absetzen, dann das rechte Bein."
+      ],
+      "feel": "Du spürst Fuß, Oberschenkel und Gesäß des Standbeins ständig nachregeln – das ist gewollt.",
+      "equipment": [
+        "swing-platform"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Barfuß mittig auf die Platte, beide Hände an den Rahmen.",
+        "Gewicht aufs linke Bein, Knie leicht gebeugt, rechten Fuß lösen.",
+        "Platte ruhig halten, Becken waagerecht.",
+        "Absetzen, dann das rechte Bein."
+      ],
+      "cues": [
+        "Knie über dem 2. Zeh",
+        "Becken waagerecht",
+        "Fuß breit und ruhig"
+      ],
+      "mistakes": [
+        "Knie fällt nach innen",
+        "Knie durchgedrückt",
+        "Hüfte kippt zur Seite"
+      ],
+      "levels": [
+        {
+          "label": "Beide Hände am Rahmen · 2 × 15 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 15,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Beide Hände am Rahmen · 2 × 20 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Eine Hand am Rahmen · 2 × 20 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Freihändig, Hände dicht am Rahmen · 2 × 20 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Freihändig, Kopf drehen / Blick wandern · 2 × 25 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 25,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Freihändig, Kopf drehen · 3 × 30 s je Bein",
+          "sets": 3,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        }
+      ],
+      "tags": [
+        "balance",
+        "propriozeption",
+        "standbein",
+        "schwingplatte"
+      ],
+      "figure": {
+        "poses": [
+          "swing-front-stand",
+          "swing-front-single"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "arrows": [
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "footR",
+              "dx": -9,
+              "dy": 8
+            },
+            "to": {
+              "at": "footR",
+              "dx": -9,
+              "dy": -12
+            }
+          },
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": -5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": -19,
+              "dy": 10
+            }
+          },
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": 5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": 19,
+              "dy": 10
+            }
+          }
+        ]
+      },
+      "cueWords": {
+        "hold": "Halten",
+        "release": "Absetzen"
+      },
+      "fallback": [
+        "pad-single-leg-stance",
+        "single-leg-stance"
+      ],
+      "shoulderElevationDeg": 30
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "swing-mini-squat",
+      "name": "Schwingplatte: Mini-Kniebeuge",
+      "description": "Kleine Kniebeuge auf der schwingenden Platte – Kraft und Gleichgewicht zugleich, Tiefe streng begrenzt. Tragkraft der Platte beachten.",
+      "short": "Kleine Kniebeuge auf der Schwingplatte – Kraft und Gleichgewicht, Tiefe streng begrenzt.",
+      "setup": "Schwingplatte auf ebenem Boden, Federn und Rahmen prüfen (Tragkraft beachten). Barfuß mittig auf die Platte, Füße hüftbreit, beide Hände an den Griffen des Rahmens. Tiefe: höchstens 30°, ab Stufe 4 bis 45° – nie tiefer.",
+      "steps": [
+        "Mittig auf die Platte, Füße hüftbreit, Hände am Rahmen.",
+        "Gesäß leicht nach hinten, Knie nur bis zur Stufen-Tiefe beugen.",
+        "Platte ruhig halten, Knie bleiben über den Füßen.",
+        "Über die Fersen wieder aufrichten."
+      ],
+      "feel": "Du spürst Oberschenkel und Gesäß arbeiten, die Füße regeln ständig nach.",
+      "equipment": [
+        "swing-platform"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Barfuß mittig auf die Platte, Füße hüftbreit, Hände am Rahmen.",
+        "Gesäß leicht nach hinten, Knie bis höchstens 30° beugen (ab Stufe 4 bis 45°).",
+        "Platte dabei ruhig halten, Knie über den Füßen.",
+        "Über die Fersen aufrichten."
+      ],
+      "cues": [
+        "Knie über den Füßen",
+        "Gesäß nach hinten",
+        "Platte ruhig"
+      ],
+      "mistakes": [
+        "Zu tief gehen",
+        "Knie nach innen",
+        "Schwung holen"
+      ],
+      "levels": [
+        {
+          "label": "Hände am Rahmen · 0–30° · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Hände am Rahmen · 0–30° · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Eine Hand am Rahmen · 0–30° · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "Freihändig · 0–45° · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45
+        }
+      ],
+      "tags": [
+        "balance",
+        "geschlossene-kette",
+        "beinachse",
+        "schwingplatte"
+      ],
+      "figure": {
+        "poses": [
+          "swing-side-squat-up",
+          "swing-side-squat-down"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "arrows": [
+          {
+            "kind": "move",
+            "from": {
+              "at": "hip",
+              "dx": -12
+            },
+            "to": {
+              "at": "hip",
+              "dx": -12
+            },
+            "bend": 0.2
+          },
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": -5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": -19,
+              "dy": 10
+            }
+          },
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": 5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": 19,
+              "dy": 10
+            }
+          }
+        ]
+      },
+      "cueWords": {
+        "up": "Beugen",
+        "hold": "Halten",
+        "down": "Strecken"
+      },
+      "fallback": [
+        "pad-mini-squat",
+        "mini-squat"
+      ],
+      "shoulderElevationDeg": 40
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "swing-split-stance",
+      "name": "Schwingplatte: Schrittstand",
+      "description": "Ein Fuß auf der Platte, der andere auf dem Boden: Platte ruhig halten, später das Gewicht verlagern. Guter Einstieg vor dem Einbeinstand. Tragkraft der Platte beachten.",
+      "short": "Ein Fuß auf der Schwingplatte, einer am Boden – Platte ruhig halten, später Gewicht verlagern.",
+      "setup": "Schwingplatte auf ebenem Boden, Federn und Rahmen prüfen (Tragkraft beachten). Stell dich an die Seite der Platte, wo der Rahmen Platz lässt. Linken Fuß barfuß mittig auf die Platte, rechter Fuß bleibt einen kleinen Schritt dahinter auf dem Boden. Eine Hand am Rahmen.",
+      "steps": [
+        "Linken Fuß auf die Platte, rechten Fuß hinten auf den Boden.",
+        "Eine Hand am Rahmen, Knie weich.",
+        "Platte ruhig halten – ab Stufe 3 Gewicht langsam vor und zurück.",
+        "Danach Seite wechseln: rechter Fuß auf die Platte."
+      ],
+      "feel": "Du spürst das vordere Bein die schwingende Platte bremsen und führen.",
+      "equipment": [
+        "swing-platform"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Linken Fuß mittig auf die Platte, rechten Fuß an der freien Seite auf den Boden.",
+        "Eine Hand am Rahmen, Knie weich.",
+        "Platte ruhig halten bzw. das Gewicht langsam vor und zurück verlagern.",
+        "Danach Füße tauschen: rechter Fuß auf die Platte."
+      ],
+      "cues": [
+        "Knie über dem Fuß",
+        "Langsam verlagern",
+        "Oberkörper aufrecht"
+      ],
+      "mistakes": [
+        "Platte wegschieben",
+        "Knie nach innen",
+        "Ruckartig verlagern"
+      ],
+      "levels": [
+        {
+          "label": "Platte ruhig halten, Hand am Rahmen · 2 × 20 s je Seite",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Platte ruhig halten, freihändig · 2 × 30 s je Seite",
+          "sets": 2,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Gewicht langsam vor und zurück verlagern · 2 × 30 s je Seite",
+          "sets": 2,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Gewicht verlagern, Kopf drehen · 3 × 30 s je Seite",
+          "sets": 3,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        }
+      ],
+      "tags": [
+        "balance",
+        "propriozeption",
+        "schwingplatte"
+      ],
+      "figure": {
+        "poses": [
+          "swing-side-split-back",
+          "swing-side-split-front"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "arrows": [
+          {
+            "kind": "move",
+            "from": {
+              "at": "hip",
+              "dy": -10
+            },
+            "to": {
+              "at": "hip",
+              "dy": -10
+            },
+            "bend": -0.15
+          },
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": -5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": -19,
+              "dy": 10
+            }
+          },
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": 5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": 19,
+              "dy": 10
+            }
+          }
+        ]
+      },
+      "cueWords": {
+        "hold": "Platte ruhig halten",
+        "release": "Lösen",
+        "switch": "Füße tauschen"
+      },
+      "fallback": [
+        "pad-step-on"
+      ],
+      "shoulderElevationDeg": 45
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "swing-single-leg-perturbation",
+      "name": "Schwingplatte: Einbeinstand mit Band-Störimpuls",
+      "description": "Einbeinstand auf der Platte, während die Arme vor dem Bauch ein Band rhythmisch auseinanderziehen – die Störung fordert die Kniekontrolle. Arme bleiben tief. Tragkraft der Platte beachten.",
+      "short": "Einbeinstand auf der Schwingplatte, die Arme ziehen tief ein Band – Kniekontrolle unter Störung.",
+      "setup": "Schwingplatte auf ebenem Boden, Federn und Rahmen prüfen (Tragkraft beachten). Barfuß mittig auf die Platte, das Band vor dem Bauch in beiden Händen. Die Arme bleiben tief (unter Brusthöhe, schulterfreundlich). Wird es zu wacklig: Band loslassen und an den Rahmen greifen.",
+      "steps": [
+        "Mittig auf die Platte, Band vor dem Bauch.",
+        "Aufs linke Bein, Knie leicht gebeugt, rechten Fuß lösen.",
+        "Band rhythmisch auseinanderziehen, Ellbogen tief, Platte ruhig.",
+        "Absetzen, dann das rechte Bein."
+      ],
+      "feel": "Du spürst bei jedem Zug, wie Fuß, Knie und Hüfte das Standbein neu ausrichten.",
+      "equipment": [
+        "swing-platform",
+        "theraband"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Barfuß mittig auf die Platte, Band vor dem Bauch in beiden Händen.",
+        "Aufs linke Bein stellen, Knie leicht gebeugt, rechten Fuß lösen.",
+        "Band rhythmisch auseinanderziehen, Ellbogen tief, Platte ruhig.",
+        "Absetzen, dann das rechte Bein."
+      ],
+      "cues": [
+        "Arme tief, unter Brusthöhe",
+        "Knie ruhig über dem Fuß",
+        "Rhythmisch ziehen"
+      ],
+      "mistakes": [
+        "Arme zu hoch",
+        "Knie wackelt nach innen",
+        "Luft anhalten"
+      ],
+      "levels": [
+        {
+          "label": "Arme vor dem Bauch hin und her führen · 2 × 20 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "Band gelb rhythmisch auseinanderziehen · 2 × 20 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": "yellow",
+          "rest": 20
+        },
+        {
+          "label": "Band rot · 2 × 25 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 25,
+          "tempo": null,
+          "band": "red",
+          "rest": 20
+        },
+        {
+          "label": "Band rot, dabei Kopf langsam drehen · 2 × 30 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": "red",
+          "rest": 20
+        }
+      ],
+      "tags": [
+        "balance",
+        "propriozeption",
+        "standbein",
+        "schwingplatte"
+      ],
+      "figure": {
+        "poses": [
+          "swing-front-band-in",
+          "swing-front-band-out"
+        ],
+        "props": [],
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": false,
+        "arrows": [
+          {
+            "kind": "move",
+            "from": "handL",
+            "to": "handL"
+          },
+          {
+            "kind": "move",
+            "from": "handR",
+            "to": "handR",
+            "bend": -0.18
+          },
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": -5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": -19,
+              "dy": 10
+            }
+          },
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "swing",
+              "dx": 5,
+              "dy": 10
+            },
+            "to": {
+              "at": "swing",
+              "dx": 19,
+              "dy": 10
+            }
+          }
+        ]
+      },
+      "cueWords": {
+        "hold": "Ziehen, Knie ruhig",
+        "release": "Absetzen"
+      },
+      "fallback": [
+        "pad-single-leg-perturbation",
+        "single-leg-stance"
+      ],
+      "shoulderElevationDeg": 50
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "pad-stand-both",
+      "name": "Balance-Kissen: Stand beidbeinig",
+      "description": "Beidbeinig auf dem Luftkissen stehen und ruhig werden – der sanfte Einstieg ins Gleichgewichtstraining.",
+      "short": "Beidbeinig auf dem Balance-Kissen stehen – der sanfte Einstieg ins Gleichgewichtstraining.",
+      "setup": "Leg das Kissen auf rutschfesten Boden und stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, sodass deine Hand sie jederzeit erreicht. Barfuß oder in Socken. Das Kissen nicht ganz prall aufpumpen.",
+      "steps": [
+        "Seitlich an die Wand, Kissen eine Unterarmlänge davor.",
+        "Mit beiden Füßen mittig aufs Kissen, Hand nah an der Wand.",
+        "Knie weich, Blick auf einen Punkt, ruhig stehen.",
+        "Mit Hand an der Wand wieder absteigen."
+      ],
+      "feel": "Du spürst Füße und Waden ständig fein ausgleichen.",
+      "equipment": [
+        "balance-pad",
+        "wall"
+      ],
+      "type": "hold",
+      "side": "both",
+      "instructions": [
+        "Kissen eine Unterarmlänge neben die Wand legen.",
+        "Barfuß mit beiden Füßen mittig aufs Kissen steigen, Hand nah an der Wand.",
+        "Knie weich, Blick auf einen Punkt, ruhig stehen.",
+        "Absteigen mit Hand an der Wand."
+      ],
+      "cues": [
+        "Knie weich",
+        "Gewicht mittig",
+        "Groß werden"
+      ],
+      "mistakes": [
+        "Knie durchgedrückt",
+        "Blick nach unten",
+        "Luft anhalten"
+      ],
+      "levels": [
+        {
+          "label": "Augen offen, Hand nah an der Wand · 2 × 30 s",
+          "sets": 2,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Freihändig, Kopf langsam drehen · 2 × 30 s",
+          "sets": 2,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Füße eng zusammen · 2 × 30 s",
+          "sets": 2,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Augen zu, Hand nah an der Wand · 2 × 20 s",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        }
+      ],
+      "tags": [
+        "balance",
+        "propriozeption",
+        "balance-kissen"
+      ],
+      "figure": {
+        "poses": [
+          "pad-front-stand"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "labels": [
+          {
+            "text": "Wand",
+            "at": "wall",
+            "dx": 4,
+            "dy": -40,
+            "anchor": "start"
+          },
+          {
+            "text": "Kissen",
+            "at": "pad",
+            "dx": -18,
+            "dy": 3,
+            "anchor": "end"
+          }
+        ],
+        "arrows": []
+      },
+      "cueWords": {
+        "hold": "Ruhig stehen",
+        "release": "Lockern"
+      },
+      "fallback": [],
+      "shoulderElevationDeg": 30
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "pad-single-leg-stance",
+      "name": "Balance-Kissen: Einbeinstand",
+      "description": "Einbeinstand auf dem Luftkissen, erst links, dann rechts – die Wand gibt Sicherheit.",
+      "short": "Einbeinstand auf dem Balance-Kissen, links und rechts – die Wand gibt Sicherheit.",
+      "setup": "Leg das Kissen auf rutschfesten Boden und stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, die Hand an der Wand. Barfuß oder in Socken. Erst wenn es ruhig klappt, nur noch Fingerspitzen, später freihändig mit der Hand nah an der Wand.",
+      "steps": [
+        "Seitlich an die Wand, barfuß aufs Kissen.",
+        "Gewicht aufs linke Bein, Knie leicht gebeugt, rechten Fuß lösen.",
+        "Becken waagerecht, Blick auf einen Punkt, halten.",
+        "Absetzen, umdrehen und das rechte Bein."
+      ],
+      "feel": "Du spürst Fuß, Oberschenkel und Gesäß des Standbeins nachregeln.",
+      "equipment": [
+        "balance-pad",
+        "wall"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Kissen eine Unterarmlänge neben die Wand legen.",
+        "Barfuß aufs Kissen, Gewicht aufs linke Bein, Knie leicht gebeugt.",
+        "Rechten Fuß lösen, Becken waagerecht, Blick auf einen Punkt.",
+        "Absetzen, umdrehen und das rechte Bein."
+      ],
+      "cues": [
+        "Knie über dem 2. Zeh",
+        "Becken waagerecht",
+        "Fuß breit und ruhig"
+      ],
+      "mistakes": [
+        "Knie fällt nach innen",
+        "Knie durchgedrückt",
+        "Becken kippt ab"
+      ],
+      "levels": [
+        {
+          "label": "Hand an der Wand · 2 × 15 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 15,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Fingerspitzen an der Wand · 2 × 20 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Freihändig · 2 × 20 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Freihändig, Kopf drehen · 2 × 25 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 25,
+          "tempo": null,
+          "band": null,
+          "rest": 15
+        },
+        {
+          "label": "Augen kurz zu, Hand nah an der Wand · 3 × 20 s je Bein",
+          "sets": 3,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        }
+      ],
+      "tags": [
+        "balance",
+        "propriozeption",
+        "standbein",
+        "balance-kissen"
+      ],
+      "figure": {
+        "poses": [
+          "pad-front-stand",
+          "pad-front-single"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "labels": [
+          {
+            "text": "Wand",
+            "at": "wall",
+            "dx": 4,
+            "dy": -40,
+            "anchor": "start"
+          }
+        ],
+        "arrows": [
+          {
+            "kind": "arrow",
+            "from": {
+              "at": "footR",
+              "dx": -9,
+              "dy": 8
+            },
+            "to": {
+              "at": "footR",
+              "dx": -9,
+              "dy": -12
+            }
+          }
+        ]
+      },
+      "cueWords": {
+        "hold": "Halten",
+        "release": "Absetzen"
+      },
+      "fallback": [
+        "single-leg-stance"
+      ],
+      "shoulderElevationDeg": 30
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "pad-mini-squat",
+      "name": "Balance-Kissen: Mini-Kniebeuge",
+      "description": "Kleine Kniebeuge auf dem Luftkissen – das Wackeln fordert die Beinachse, die Tiefe bleibt klein.",
+      "short": "Kleine Kniebeuge auf dem Balance-Kissen – das Wackeln fordert die Beinachse.",
+      "setup": "Leg das Kissen eine Armlänge vor die Wand und stell dich mit dem Gesicht zur Wand barfuß darauf. Fingerspitzen leicht auf Bauchhöhe an der Wand. Füße hüftbreit. Tiefe: höchstens 30°, ab Stufe 3 bis 45° – nie tiefer.",
+      "steps": [
+        "Gesicht zur Wand, barfuß aufs Kissen, Fingerspitzen an der Wand.",
+        "Gesäß nach hinten, Knie nur bis zur Stufen-Tiefe beugen.",
+        "Knie bleiben über den Füßen, Gewicht mittig.",
+        "Über die Fersen aufrichten."
+      ],
+      "feel": "Du spürst Oberschenkel und Gesäß arbeiten, die Füße gleichen aus.",
+      "equipment": [
+        "balance-pad",
+        "wall"
+      ],
+      "type": "reps",
+      "side": "both",
+      "instructions": [
+        "Kissen eine Armlänge vor die Wand legen, Gesicht zur Wand.",
+        "Barfuß aufs Kissen, Füße hüftbreit, Fingerspitzen leicht an der Wand.",
+        "Gesäß nach hinten, Knie bis höchstens 30° beugen (ab Stufe 3 bis 45°).",
+        "Über die Fersen aufrichten."
+      ],
+      "cues": [
+        "Knie über den Füßen",
+        "Gesäß nach hinten",
+        "Gewicht mittig"
+      ],
+      "mistakes": [
+        "Zu tief gehen",
+        "Knie nach innen",
+        "Fersen heben ab"
+      ],
+      "levels": [
+        {
+          "label": "0–30°, Fingerspitzen an der Wand · 2 × 8",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "0–30° · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "2-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "0–45° freihändig · 2 × 10",
+          "sets": 2,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45
+        },
+        {
+          "label": "0–45° freihändig · 3 × 10",
+          "sets": 3,
+          "reps": 10,
+          "tempo": "3-1-2",
+          "band": null,
+          "rest": 45
+        }
+      ],
+      "tags": [
+        "balance",
+        "geschlossene-kette",
+        "beinachse",
+        "balance-kissen"
+      ],
+      "figure": {
+        "poses": [
+          "pad-side-squat-up",
+          "pad-side-squat-down"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "labels": [
+          {
+            "text": "Wand",
+            "at": "wall",
+            "dx": 4,
+            "dy": -40,
+            "anchor": "start"
+          }
+        ],
+        "arrows": [
+          {
+            "kind": "move",
+            "from": {
+              "at": "hip",
+              "dx": -12
+            },
+            "to": {
+              "at": "hip",
+              "dx": -12
+            },
+            "bend": 0.2
+          }
+        ]
+      },
+      "cueWords": {
+        "up": "Beugen",
+        "hold": "Halten",
+        "down": "Strecken"
+      },
+      "fallback": [
+        "mini-squat"
+      ],
+      "shoulderElevationDeg": 50
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p1-basis",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "pad-step-on",
+      "name": "Balance-Kissen: Schritt aufs Kissen",
+      "description": "Mit einem Fuß nach vorn aufs Kissen treten, kurz stabilisieren und zurück – übt das sichere Auffangen des Körpergewichts.",
+      "short": "Mit einem Fuß aufs Kissen treten, stabilisieren, zurück – übt das sichere Auffangen.",
+      "setup": "Stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt, die Hand in Reichweite. Leg das Kissen einen kleinen Schritt (ca. 30 cm) vor deine Füße. Barfuß oder in Socken.",
+      "steps": [
+        "Seitlich an die Wand, Kissen einen kleinen Schritt vor dir.",
+        "Mit dem linken Fuß aufs Kissen treten, Knie leicht gebeugt.",
+        "Kurz stabilisieren, dann zurück auf den Boden.",
+        "Danach mit dem rechten Bein."
+      ],
+      "feel": "Du spürst das vordere Bein beim Auffangen arbeiten, vor allem Oberschenkel und Gesäß.",
+      "equipment": [
+        "balance-pad",
+        "wall"
+      ],
+      "type": "reps",
+      "side": "perSide",
+      "instructions": [
+        "Kissen einen kleinen Schritt vor dich legen, Wand seitlich in Reichweite.",
+        "Mit dem linken Fuß aufs Kissen treten, Knie leicht gebeugt.",
+        "Kurz stabilisieren, dann zurück auf den Boden.",
+        "Danach mit dem rechten Fuß."
+      ],
+      "cues": [
+        "Knie über dem Fuß",
+        "Weich auffangen",
+        "Oberkörper aufrecht"
+      ],
+      "mistakes": [
+        "Knie fällt nach innen",
+        "Zu großer Schritt",
+        "Hart aufsetzen"
+      ],
+      "levels": [
+        {
+          "label": "Hand an der Wand · 2 × 6 je Bein",
+          "sets": 2,
+          "reps": 6,
+          "tempo": "1-2-1",
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Freihändig · 2 × 8 je Bein",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "1-2-1",
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Freihändig, 3 s stabilisieren · 2 × 8 je Bein",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "1-3-1",
+          "band": null,
+          "rest": 30
+        },
+        {
+          "label": "Schritt seitlich aufs Kissen · 2 × 8 je Bein",
+          "sets": 2,
+          "reps": 8,
+          "tempo": "1-3-1",
+          "band": null,
+          "rest": 30
+        }
+      ],
+      "tags": [
+        "balance",
+        "propriozeption",
+        "balance-kissen"
+      ],
+      "figure": {
+        "poses": [
+          "pad-side-step-floor",
+          "pad-side-step-on"
+        ],
+        "props": [],
+        "band": null,
+        "mirror": false,
+        "labels": [
+          {
+            "text": "Kissen",
+            "at": "pad",
+            "dx": -18,
+            "dy": 3,
+            "anchor": "end"
+          }
+        ]
+      },
+      "cueWords": {
+        "up": "Aufs Kissen",
+        "hold": "Stabil halten",
+        "down": "Zurück"
+      },
+      "fallback": [
+        "swing-split-stance"
+      ],
+      "shoulderElevationDeg": 20
+    },
+    {
+      "category": "stabilitaet",
+      "block": "knee",
+      "regressTo": null,
+      "progressTo": null,
+      "phaseMin": "p2-aufbau",
+      "postOpAllowed": false,
+      "kneeNote": "Beide Beine üben, links mit Ampel-Regel: höchstens leichter Schmerz (≤ 3/10), darüber abbrechen. Linkes Knie weich, nie durchgedrückt, keine Drehung im Standbein; Kniebeugen links nur klein (30–45°, nie tief). Bei Wackeln sofort festhalten.",
+      "id": "pad-single-leg-perturbation",
+      "name": "Balance-Kissen: Einbeinstand mit Band-Störimpuls",
+      "description": "Einbeinstand auf dem Kissen, während die Arme vor dem Bauch ein Band auseinanderziehen – Kniekontrolle unter Störung, Arme bleiben tief.",
+      "short": "Einbeinstand auf dem Kissen, die Arme ziehen tief ein Band – Kniekontrolle unter Störung.",
+      "setup": "Leg das Kissen auf rutschfesten Boden und stell dich seitlich neben eine Wand, ca. eine Unterarmlänge entfernt. Band vor dem Bauch in beiden Händen, Arme bleiben tief (unter Brusthöhe). Wird es zu wacklig: Band loslassen und an die Wand fassen.",
+      "steps": [
+        "Seitlich an die Wand, barfuß aufs Kissen, Band vor dem Bauch.",
+        "Aufs linke Bein, Knie leicht gebeugt, rechten Fuß lösen.",
+        "Band rhythmisch auseinanderziehen, Ellbogen tief.",
+        "Absetzen, umdrehen und das rechte Bein."
+      ],
+      "feel": "Du spürst bei jedem Zug, wie das Standbein neu ausgleicht.",
+      "equipment": [
+        "balance-pad",
+        "wall",
+        "theraband"
+      ],
+      "type": "hold",
+      "side": "perSide",
+      "instructions": [
+        "Kissen eine Unterarmlänge neben die Wand legen, Band in beiden Händen.",
+        "Barfuß aufs Kissen, aufs linke Bein, Knie leicht gebeugt.",
+        "Band vor dem Bauch rhythmisch auseinanderziehen, Ellbogen tief.",
+        "Absetzen, umdrehen und das rechte Bein."
+      ],
+      "cues": [
+        "Arme tief, unter Brusthöhe",
+        "Knie ruhig über dem Fuß",
+        "Rhythmisch ziehen"
+      ],
+      "mistakes": [
+        "Arme zu hoch",
+        "Knie wackelt nach innen",
+        "Luft anhalten"
+      ],
+      "levels": [
+        {
+          "label": "Arme vor dem Bauch hin und her führen · 2 × 20 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": null,
+          "rest": 20
+        },
+        {
+          "label": "Band gelb rhythmisch auseinanderziehen · 2 × 20 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 20,
+          "tempo": null,
+          "band": "yellow",
+          "rest": 20
+        },
+        {
+          "label": "Band rot · 2 × 25 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 25,
+          "tempo": null,
+          "band": "red",
+          "rest": 20
+        },
+        {
+          "label": "Band rot, dabei Kopf langsam drehen · 2 × 30 s je Bein",
+          "sets": 2,
+          "reps": 1,
+          "hold": 30,
+          "tempo": null,
+          "band": "red",
+          "rest": 20
+        }
+      ],
+      "tags": [
+        "balance",
+        "propriozeption",
+        "standbein",
+        "balance-kissen"
+      ],
+      "figure": {
+        "poses": [
+          "pad-front-band-in",
+          "pad-front-band-out"
+        ],
+        "props": [],
+        "band": {
+          "from": "handL",
+          "to": "handR"
+        },
+        "mirror": false,
+        "labels": [
+          {
+            "text": "Wand",
+            "at": "wall",
+            "dx": 4,
+            "dy": -40,
+            "anchor": "start"
+          }
+        ],
+        "arrows": [
+          {
+            "kind": "move",
+            "from": "handL",
+            "to": "handL"
+          },
+          {
+            "kind": "move",
+            "from": "handR",
+            "to": "handR",
+            "bend": -0.18
+          }
+        ]
+      },
+      "cueWords": {
+        "hold": "Ziehen, Knie ruhig",
+        "release": "Absetzen"
+      },
+      "fallback": [
+        "single-leg-stance"
+      ],
+      "shoulderElevationDeg": 50
     }
   ]
 }

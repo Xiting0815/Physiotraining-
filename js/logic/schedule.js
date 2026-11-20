@@ -2,7 +2,7 @@
 // Phase changes stay criteria-based and user-confirmed; the schedule is only a recommendation.
 import { addDays, daysBetween } from '../util/date.js';
 
-export const DEFAULT_SURGERY_DATE = '2027-01-05';
+export const DEFAULT_SURGERY_DATE = '2027-01-19'; // v5.5: moved from 2027-01-05
 export const TAPER_DAYS = 7;
 export const POSTOP_DAYS = 42; // 6 weeks non-weight-bearing after microfracture
 

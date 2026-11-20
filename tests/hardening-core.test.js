@@ -107,7 +107,8 @@ test('sanitize: xp finite ≥ 0, surgeryDate YYYY-MM-DD, numbers/enums repaired'
   assert.equal(xp(Infinity), 0);
   assert.equal(xp(250), 250);
   const sd = (v) => store.migrate({ settings: { surgeryDate: v }, state: {}, sessions: [] }).settings.surgeryDate;
-  assert.equal(sd('2027-01-05'), '2027-01-05');
+  assert.equal(sd('2027-02-05'), '2027-02-05');
+  assert.equal(sd('2027-01-05'), '2027-01-19'); // v5.5: the old OP date is moved once (SPEC §20.6)
   assert.equal(sd('2027-02-31'), null);
   assert.equal(sd('05.01.2027'), null);
   assert.equal(sd(20270105), null);

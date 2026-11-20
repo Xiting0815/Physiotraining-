@@ -1,7 +1,7 @@
 // Plan – see docs/SPEC.md §3.4, §5.3, §12.9, §12.10, §12.12.
 import { html, raw, render as paint } from '../render.js';
 import { todayISO, formatDE } from '../util/date.js';
-import { phaseProgress, nextWorkout, levelOf, phaseWorkouts, exerciseAvailable, plannedWorkoutMinutes, buildSessionPlan, cardioWorkoutsFor } from '../logic/progression.js';
+import { phaseProgress, nextWorkout, levelOf, phaseWorkouts, exerciseAvailable, plannedWorkoutMinutes, buildSessionPlan, cardioWorkoutsFor, balanceWorkoutFor } from '../logic/progression.js';
 import { ownsRowingMachine, missingEquipment, EQUIPMENT_INFO } from '../logic/equipment.js';
 import { estimateWorkoutMinutes } from '../logic/duration.js';
 import { cardioMainLabel } from '../logic/cardio.js';
@@ -90,6 +90,9 @@ export function render(root, { store, content, navigate }) {
     const hasRower = ownsRowingMachine(settings);
     const rowingInPhase = pw.cardio.length > 0;
     pw.cardio = cardioWorkoutsFor(phase, content.workouts, settings);
+    // v5.5 (SPEC §20): Balance unit only with Schwingplatte or Balance-Kissen ticked
+    const balanceInPhase = !!pw.balance;
+    pw.balance = balanceWorkoutFor(phase, content.workouts, settings);
     // v4: as planned at the session start (rowing warm-up per default, fitted to the time budget)
     const minutes = (w) => (w.phaseId === state.phaseId ? plannedWorkoutMinutes(w, state, content, settings).minutes : estimateWorkoutMinutes(w, content, state, settings));
     const withRow = (w) => w.phaseId === state.phaseId && plannedWorkoutMinutes(w, state, content, settings).rowWarmup;
@@ -139,6 +142,7 @@ export function render(root, { store, content, navigate }) {
       const sub = kind === 'cardio'
         ? `ca. ${fmtMinutes(minutes(w))}${lbl ? ` · ${lbl}` : ''}`
         : kind === 'relief' ? `ca. ${fmtMinutes(minutes(w))} · sanft, jederzeit`
+        : kind === 'balance' ? `ca. ${fmtMinutes(minutes(w))} · ${split.knee} Balance-Übungen · zählt nicht fürs Wochenziel`
         : `ca. ${fmtMinutes(minutes(w))}${withRow(w) ? ' inkl. 10 min Rudern' : ''} · ${split.knee} Knie · ${split.archery} Bogen`;
       return html`<details class="card pv-workout" data-wid="${w.id}" ${open.has(w.id) ? 'open' : ''}>
         <summary class="pv-workout__head" style="margin:0;list-style:none">
@@ -156,7 +160,7 @@ export function render(root, { store, content, navigate }) {
             ${g.items.map(exRow)}`)}
           <div class="btn-row mt-4" style="flex-wrap:wrap">
             ${kind === 'strength' && !isNext ? html`<button class="btn btn--outline btn--sm" data-pick="${w.id}">Als nächstes setzen</button>` : ''}
-            ${kind !== 'cardio' && kind !== 'relief' ? html`<button class="btn btn--ghost btn--sm" data-copy="${w.id}">${raw(ICON.copy)} Als eigenes Workout kopieren</button>` : ''}
+            ${kind !== 'cardio' && kind !== 'relief' && kind !== 'balance' ? html`<button class="btn btn--ghost btn--sm" data-copy="${w.id}">${raw(ICON.copy)} Als eigenes Workout kopieren</button>` : ''}
             <a class="btn ${kind === 'cardio' ? 'btn--accent' : 'btn--primary'} btn--sm" href="#/session?workout=${encodeURIComponent(w.id)}">${raw(ICON.play)} Jetzt starten</a>
           </div>
         </div>
@@ -197,7 +201,7 @@ export function render(root, { store, content, navigate }) {
       ws.cardio = cardioWorkoutsFor(p, content.workouts, settings);
       const isCur = i === pIdx;
       const status = isCur ? 'Aktuelle Phase' : i < pIdx ? 'Abgeschlossen' : pk && !gate.ok ? 'Gesperrt bis nach der OP' : 'Kommt noch';
-      const all = [...ws.rotation.map((w) => [w, workoutLetter(w, phases)]), ...(ws.short ? [[ws.short, KIND_ICON.short]] : []), ...ws.cardio.map((w) => [w, KIND_ICON.cardio])];
+      const all = [...ws.rotation.map((w) => [w, workoutLetter(w, phases)]), ...(ws.short ? [[ws.short, KIND_ICON.short]] : []), ...ws.cardio.map((w) => [w, KIND_ICON.cardio]), ...(balanceWorkoutFor(p, content.workouts, settings) ? [[ws.balance, KIND_ICON.balance]] : [])];
       return html`<li><details class="pv-phase-item" data-pid="${p.id}" ${open.has(`ph:${p.id}`) ? 'open' : ''}>
         <summary class="list-item" style="list-style:none;cursor:pointer">
           <span class="list-item__icon ${isCur ? '' : 'list-item__icon--neutral'}">${pk && !gate.ok && !isCur ? raw(ICON.lock) : i < pIdx ? '✓' : i + 1}</span>
@@ -284,6 +288,11 @@ export function render(root, { store, content, navigate }) {
       ${pw.relief ? html`<h2 class="section-title">Knie-Entlastung <span class="chip chip--sm chip--outline">3–5 min</span></h2>
         <p class="pv-count mt-0">Jederzeit, auch an trainingsfreien Tagen – zählt nicht fürs Wochenziel. Ersetzt keine Behandlung; bei stärkerem Schmerz oder Schwellung Physio fragen.</p>
         ${workoutCard(pw.relief, KIND_ICON.relief)}` : ''}
+
+      ${pw.balance ? html`<h2 class="section-title">Balance <span class="chip chip--sm chip--outline">10–15 min</span></h2>
+        <p class="pv-count mt-0">Gleichgewicht auf deiner Schwingplatte bzw. dem Balance-Kissen – beide Beine, links mit Ampel-Regel (Schmerz höchstens 3/10). Zusätzlich zum Krafttraining, zählt nicht fürs Wochenziel.</p>
+        ${workoutCard(pw.balance, KIND_ICON.balance)}`
+        : balanceInPhase && !isPostOp ? html`<a class="pv-callout pv-callout--knee" href="#/ausruestung" data-balance-hint><span class="pv-callout__icon" aria-hidden="true">🤸</span><p class="text-sm">Balance-Einheit ausgeblendet. <strong>Schwingplatte oder Balance-Kissen in Ausrüstung abhaken</strong>, dann kommen die Balance-Einheit und die Balance-Varianten im Krafttraining dazu.</p></a>` : ''}
 
       ${pw.cardio.length ? html`<h2 class="section-title">Rudern</h2>
         <p class="pv-count mt-0">Separate Ausdauer-Einheiten, 3× pro Woche. Die Schmerz-Ampel gilt auch beim Rudern. „Grundlage lang“ (25–29 Min) hilft beim Abnehmen – die Kalorien kommen vor allem aus dem Wochenumfang, der größte Hebel bleibt die Ernährung.</p>

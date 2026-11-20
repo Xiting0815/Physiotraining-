@@ -1,8 +1,9 @@
 # Physiotraining – SPEC (single source of truth)
 
+Version 5.5 · 2026-11-20 (5.5: §20 „Schwingplatte & Balance-Kissen, Balance-Einheit, OP-Termin 2027-01-19“. Where §20 and earlier sections disagree, §20 wins.)
 Version 5.0 · 2026-11-08 (5.0: §16 „v5 – Ausrüstung steuert den Plan“ – owned equipment filters/upgrades exercises, sling trainer, rowing only with the rowing machine. Where §16 and earlier sections disagree, §16 wins.)
 Version 3.1 · 2026-11-08 (3.1: §14 „v3.1 – Fokus Training“ – imports (§13), health diary (§12.7) and weight goal / calorie target (parts of §12.6, §12.8, §12.11, §12.12) **removed**. Where §14 and earlier sections disagree, §14 wins.)
-Version 2.0 · 2026-11-07 (2.0: §12 „v2 – Rudern, Kurztraining, eigene Workouts, Gesundheit & Abnehmen“ incl. OP-Termin 2027-01-05, Krücken-Vorbereitung, Post-OP-Phase p4. Where §12 and §0–§11 disagree, §12 wins.)
+Version 2.0 · 2026-11-07 (2.0: §12 „v2 – Rudern, Kurztraining, eigene Workouts, Gesundheit & Abnehmen“ incl. OP-Termin 2027-01-05 (v5.5: moved to 2027-01-19, §20.6), Krücken-Vorbereitung, Post-OP-Phase p4. Where §12 and §0–§11 disagree, §12 wins.)
 Version 1.1 · 2026-10-31 (1.1: integration/QA – documented deviations from WP0 in §3, §4.2, §6.4, §6.7, §7.4, §7.5, §8)
 
 This document is binding for all work packages. If code and SPEC disagree, the SPEC wins
@@ -788,7 +789,7 @@ no exported signature from §7 was removed or renamed.
 
 ### 12.1 New context
 
-- **Surgery:** suggested date **2027-01-05** (microfracture, left knee), then **6 weeks non-weight-bearing**
+- **Surgery:** suggested date **2027-01-05** (v5.5: **2027-01-19**, see §20.6) (microfracture, left knee), then **6 weeks non-weight-bearing**
   (crutches). From 2026-11-07 ≈ 8.5 weeks of prehab.
 - **Rowing machine** (MERACH, magnetic, display: time, distance, SPM, watts, kcal, maybe pulse). Doctor/physio
   cleared **full rowing before surgery**, but the pain traffic light applies to rowing too. Rowing is **forbidden
@@ -805,7 +806,7 @@ no exported signature from §7 was removed or renamed.
 
 ```jsonc
 "cardioGoalPerWeek": 3,
-"surgeryDateSuggested": "2027-01-05",   // pre-fill only (welcome card / Mehr); NEVER copied into surgeryDate automatically
+"surgeryDateSuggested": "2027-01-19",   // v5.5 (was 2027-01-05); pre-fill only (welcome card / Mehr); NEVER copied into surgeryDate automatically
 "profile": { "heightCm": null, "birthYear": null, "sex": null /* "m"|"w"|"d" */, "activityLevel": "light" /* sedentary|light|moderate|active */ },
 "weightGoal": null                       // { targetKg, targetDate "YYYY-MM-DD", startKg, startDate }
 ```
@@ -974,10 +975,11 @@ XP: `motivation.healthLogXp(prevLog, date)` = 5 for the first entry of a date (c
 ### 12.9 Phase timing — `js/logic/schedule.js`
 
 Phase changes stay **criteria-based and user-confirmed**; the app only shows a time recommendation.
-`plannedWeeks`: p1 3, p2 3, p3 2.5 (taper = last 7 days, from 2026-12-29), p4 6.
+`plannedWeeks`: p1 3, p2 3 (v5.5: **4**), p3 2.5 (taper = last 7 days, from 2026-12-29; v5.5: from 2027-01-12), p4 6.
 `phaseSchedule(phases, surgeryDate, {prehabStart}) → [{phaseId, kind, start, end, days}]` plans backwards from
 surgery: with 2027-01-05 → p1 (prehabStart …) – 2026-11-27, p2 2026-11-28 – 12-18, p3 12-19 – 2027-01-04,
-p4 2027-01-05 – 02-15. `scheduleHint(phases, settings, state, today) → {expectedPhaseId, status:
+p4 2027-01-05 – 02-15 (v5.5 with 2027-01-19 and p2 = 4 weeks: p1 2026-11-07 – 12-04, p2 12-05 – 2027-01-01, p3 01-02 – 01-18,
+p4 01-19 – 03-01, see §20.6). `scheduleHint(phases, settings, state, today) → {expectedPhaseId, status:
 'none'|'onTrack'|'ahead'|'behind', daysLeftInPhase, text}` (Plan + Heute). `taperStart(date)`,
 `suggestedSurgeryDate(settings)` (= `surgeryDateSuggested` only while `surgeryDate` is null → pre-fill the date
 input in the welcome card and Mehr; the user must confirm), constants `DEFAULT_SURGERY_DATE`, `POSTOP_DAYS = 42`.
@@ -1799,3 +1801,96 @@ a tempo (19.1). The data test in `tests/logic-v54.test.js` guards all of this. R
 - Fallback chains: both → `sling-triceps-press` (only when the sling is owned and it passes the limit – its 170° data means
   it normally does not with 65°) → `band-triceps-extension`. Library chip „🛡️ Dip – mit Schulter-Schutz aus“, custom
   workout warning „… ist eine Dip-Übung (Schulter-Schutz) – stattdessen wird … trainiert“.
+
+## 20. v5.5 – Schwingplatte & Balance-Kissen, Balance-Einheit, OP-Termin 2027-01-19
+
+Feedback of the user (same profile as §18/§19; the physio trained single-leg stance balance with him, which loaded the whole
+leg intensely): he buys a **Schwingplatte** (board hanging on four springs between two tubular frames, swings horizontally in
+all directions, frame bars to hold on to, max. load 100 kg) and a **Balance-Kissen** (air cushion, Decathlon). Exercises with
+them appear only when the item is ticked under „Meine Ausrüstung“. The surgery moved to **2027-01-19**.
+`APP_VERSION` 5.5.0, `SCHEMA_VERSION` stays 1 (all additive; the OP-date migration runs inside `store.migrate`).
+Tests: `tests/logic-v55.test.js` (+ updated data/figure/schedule tests). Content source: `tools/balance-content.mjs`
+(idempotent upsert of exercises, upgrade rules, Balance units, `phase.balance`; texts in `tools/exercise-texts.mjs`).
+Debug: `node tools/sim-plans.mjs --balance`. Figure screenshots: `node tools/shot-figures.mjs <out.png> <ids>`.
+
+### 20.1 Equipment — `js/logic/equipment.js`
+
+- `balance-pad` keeps its id (stored settings, sync `_equipmentAt` and legacy id `balancepad` keep working), new label
+  „Balance-Kissen / Balance-Pad“ with hint (barefoot, wall in reach). New optional id **`swing-platform`** „Schwingplatte (an
+  Federn)“ 🏄, hint mentions the load limit („Tragkraft beachten (z. B. max. 100 kg)“), placed after `balance-pad`. Legacy ids
+  `balancekissen`, `schwingplatte`. `BALANCE_EQUIPMENT = ['swing-platform', 'balance-pad']`, `ownsBalanceGear(settings)` (no
+  settings → true). `upgradeChip`: „Schwingplatten-Variante“ / „Kissen-Variante“. `data/equipment.json`: balance item
+  updated for air cushions, new shopping item `swing-platform`.
+
+### 20.2 Exercises (block `knee`, category `stabilitaet`, `postOpAllowed: false`, elevation ≤ 50°)
+
+| id | type / side | levels (summary) | phaseMin |
+|---|---|---|---|
+| `swing-stand-both` | hold, both | both hands on the frame → one hand → free → head turns → eyes briefly closed (2–3 × 20–40 s) | p1 |
+| `swing-single-leg-stance` (core) | hold, perSide | both hands → one hand → free → head turns / gaze wanders (2 × 15 s … 3 × 30 s per leg) | p1 |
+| `swing-mini-squat` | reps + tempo, both | hands on the frame 0–30° 2 × 8 → … → free 0–45° 2 × 10 | p1 |
+| `swing-split-stance` | hold, perSide | one foot on the board, one on the floor: hold still → free → shift weight → + head turns | p1 |
+| `swing-single-leg-perturbation` | hold, perSide (+ theraband) | arms move in front of the belly → band yellow/red pulled apart (arms low) → + head turns | p2 |
+| `pad-stand-both` | hold, both | eyes open → head turns → feet together → eyes closed (hand near the wall) | p1 |
+| `pad-single-leg-stance` | hold, perSide | hand on the wall → fingertips → free → head turns → eyes briefly closed | p1 |
+| `pad-mini-squat` | reps + tempo, both | 0–30° fingertips on the wall → 0–45° free | p1 |
+| `pad-step-on` | reps + tempo „1-2-1“, perSide | step onto the cushion, stabilise, back (hand on the wall → free → 3 s → sideways) | p1 |
+| `pad-single-leg-perturbation` | hold, perSide (+ theraband) | as the swing version, on the cushion beside the wall | p2 |
+
+Every exercise: short/setup/steps/feel (where to stand, what to hold – frame / wall in reach –, barefoot, start holding on;
+swing texts mention the load limit), cues, mistakes, `cueWords`, `shoulderElevationDeg`, knee note (both legs; left leg with the
+traffic-light rule – stop above 3/10 –, soft knee, no twisting, mini squats 30–45°, never deep). Hold levels have `hold`
+(work timer), rep levels a `tempo` (Tempo-Coach). Fallback chains: swing → cushion variant → base exercise
+(`single-leg-stance`, `mini-squat`), `swing-split-stance` ↔ `pad-step-on`. In p4 all are blocked via `exerciseAvailable`
+(`postOpAllowed: false`; only a user toggle enables them).
+
+### 20.3 Upgrades in strength workouts
+
+`single-leg-stance.upgrades` = swing-single-leg-stance, pad-single-leg-stance; `single-leg-stance-reach.upgrades` =
+swing-single-leg-perturbation (p2+), swing-single-leg-stance, pad-single-leg-perturbation (p2+), pad-single-leg-stance
+(Schwingplatte first, cushion second; `resolveExercise` takes the first usable rule). Every p1–p3 strength workout and
+`p2-short` contain one of the two, so with balance gear each gets exactly one balance variant: the reach item (p2-a, p2-c,
+p3-a) → perturbation variant, every other item (and p1-b's reach, perturbation is p2+) → single-leg stance variant; with
+shoulder protection the reach item
+upgrades directly (no reach with 160° is planned). Item count unchanged, budgets kept (variant level 0 ≈ the base dose);
+without the gear the plans are byte-identical to v5.4 (snapshot `tests/fixtures/plans-v54.json`). Taper week: never-done
+variants fall back to the known base (§16.2).
+
+### 20.4 Balance unit — workouts `p1-balance`, `p2-balance`, `p3-balance` (kind **`"balance"`**)
+
+- 10–15 min (`maxMinutes: 15`, `maxSets: 2`): warm-up `ankle-circles-seated` + `leg-swing-front`, one knee block „Balance“
+  with 5 items, cool-down `calf-stretch-wall`. p1: swing-stand-both, swing-single-leg-stance, swing-split-stance,
+  swing-mini-squat, pad-step-on; p2/p3: swing-single-leg-stance, swing-split-stance, swing-mini-squat,
+  swing-single-leg-perturbation, pad-step-on. Items resolve by owned gear: only the cushion → pad versions (4 items), only
+  the platform → swing versions (4 items), both → 4 swing + pad-step-on. `buildSessionPlan` never repeats an exercise in a
+  balance plan. Not in p4. No rowing warm-up/finisher (strength only).
+- `phase.balance` (p1–p3), `phaseWorkouts().balance`, **`balanceWorkoutFor(phase, workouts, settings)`** (null without
+  gear / in post-op phases), `isBalanceKind`, `WORKOUT_KINDS` + `balance`; `phasePlanExerciseIds` includes it (toggle toast).
+- Stats: `stats.isBalanceSession`; `countsAsStrength` false (weekly strength goal, streak, OP-readiness regularity), normal
+  set XP, recommendations (levels progress), next-day check stays (knee load). `sameDayLoadHint` ignores it.
+- UI: Heute „Schnellstart“ entry 🤸 (with gear only), Plan section „Balance · 10–15 min“ or a hint linking to Meine Ausrüstung,
+  phase overview lists it, history filter „Balance“, `KIND_LABELS.balance` „Balance“, `KIND_ICON.balance` 🤸. Sanitised
+  sessions keep `kind: "relief" | "balance"`; `v2-shared.sessionKind` returns them (relief filter fixed).
+
+### 20.5 Figures
+
+New props in `pt-figure`: **`pad`** (`{x, w, h = PAD_H 7, top}` – flat rounded cushion with nubs, soles stand on `top`) and
+**`swing`** (`{x, w, top = FLOOR − SWING_H 16, rail, open?}` – board on four zigzag springs hanging from two tubular posts
+with grips at `rail` height; `open: -1|1` omits the frame on that side; anchor = board centre for sway arrows). No floor
+shadow under raised feet. Poses (`tools/gen-poses.mjs`): `swing-front-stand`, `swing-front-single`, `swing-front-stand-free`,
+`swing-front-band-in/out`, `swing-side-squat-up/down`, `swing-side-split-back/front`, `pad-front-stand`, `pad-front-single`,
+`pad-front-band-in/out`, `pad-side-squat-up/down`, `pad-side-step-floor/on`. Swing figures carry two small sway arrows under
+the board. Tests accept `pad`/`swing` as support like a step.
+
+### 20.6 Surgery moved to 2027-01-19, p2 = 4 weeks
+
+- The two extra weeks: one more week Basis, one more week Aufbau. `p2-aufbau.plannedWeeks` 3 → **4** (p1 takes the rest from
+  `prehabStart`), p3 2.5 (17 days), p4 6. With prehabStart 2026-11-07: p1 2026-11-07 – 12-04 (28 d), p2 12-05 – 2027-01-01
+  (28 d), p3 01-02 – 01-18 (17 d), p4 01-19 – 03-01 (42 d), taper from 2027-01-12.
+- `DEFAULT_SURGERY_DATE` and `store.defaults().settings.surgeryDateSuggested` = `"2027-01-19"`.
+- **Migration** `store.migrateSurgeryDate(data)` (inside `migrate`, no schema bump so older app versions keep syncing):
+  `surgeryDate` / `surgeryDateSuggested` equal to `"2027-01-05"` → `"2027-01-19"` unless `_updatedAt[key]` is newer than
+  `SURGERY_MOVE.stamp` (`2026-11-20T00:00:00.000Z` – a deliberate later choice). The key gets that fixed stamp: newer than the
+  old entry on any device (the moved date wins in `mergeSync`, also against a device still on the old app or with an untracked
+  value), older than any later real change (which always wins and is never migrated back), identical on every device (no
+  ping-pong). `store.load` writes the migrated data back once.

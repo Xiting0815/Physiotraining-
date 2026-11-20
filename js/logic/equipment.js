@@ -23,7 +23,9 @@ export const OPTIONAL_EQUIPMENT = [
   { id: 'door-anchor', label: 'Türanker', icon: '⚓', hint: 'Band sauber auf Knöchel-, Brust- oder Kopfhöhe befestigen' },
   { id: 'band-handles', label: 'Bandgriffe', icon: '🤏', hint: 'Griffe an den Bandenden – angenehmer für Zugübungen' },
   { id: 'ankle-weights', label: 'Gewichtsmanschetten', icon: '⚖️', hint: 'Für Beinheben und Hüftübungen ohne Kniebeugung' },
-  { id: 'balance-pad', label: 'Balance-Pad', icon: '🟦', hint: 'Gleichgewicht und Kniekontrolle' },
+  // v5.5 (SPEC §20): the id `balance-pad` stays (stored settings / sync keep working), relabelled for air cushions
+  { id: 'balance-pad', label: 'Balance-Kissen / Balance-Pad', icon: '🟦', hint: 'Luftkissen oder Pad: Einbeinstand, Mini-Kniebeuge und Schritt aufs Kissen – barfuß, Wand in Reichweite' },
+  { id: 'swing-platform', label: 'Schwingplatte (an Federn)', icon: '🏄', hint: 'Federnd aufgehängte Platte im Rohrrahmen: Einbeinstand & Co., Rahmen zum Festhalten – Tragkraft beachten (z. B. max. 100 kg)' },
   { id: 'dumbbells', label: 'Kurzhanteln', icon: '🏋️', hint: 'Konstanter Widerstand für Schulter und Arme' },
   { id: 'pedal-trainer', label: 'Pedaltrainer', icon: '🚲', hint: 'Gleichmäßiges Treten im Sitzen' },
   { id: 'release-trainer', label: 'Release-Trainer', icon: '🎯', hint: 'Schussablauf zu Hause üben' },
@@ -59,7 +61,12 @@ export const LEGACY_EQUIPMENT_IDS = {
   ruderergeraet: ['rowing-machine'],
   rudergeraet: ['rowing-machine'],
   schlingentrainer: ['sling-trainer'],
+  balancekissen: ['balance-pad'],
+  schwingplatte: ['swing-platform'],
 };
+
+/** v5.5 (SPEC §20): balance equipment – the Balance unit is offered when any of these is owned (Schwingplatte first). */
+export const BALANCE_EQUIPMENT = ['swing-platform', 'balance-pad'];
 
 /** Version of the equipment model stored in `settings.equipmentModel` (missing = legacy v1–v4 ids). */
 export const EQUIPMENT_MODEL = 3;
@@ -132,6 +139,9 @@ export const hasEquipment = (exercise, availOrSettings) => !!exercise && missing
 /** Rowing machine available (no settings → true, legacy behaviour). */
 export const ownsRowingMachine = (settings) => isAvailable('rowing-machine', settings);
 
+/** v5.5: Schwingplatte or Balance-Kissen available (no settings → true, legacy behaviour). */
+export const ownsBalanceGear = (settings) => BALANCE_EQUIPMENT.some((id) => isAvailable(id, settings));
+
 /**
  * Upgrade rules of the content: base exercise id → [{equipment[], exerciseId, chip}], from
  * `exercise.upgrades` on the base exercise and the reverse declaration `exercise.replaces` on the variant
@@ -171,6 +181,8 @@ export function upgradeChip(variant, rule) {
   if (rule?.chip) return rule.chip;
   const eq = (variant?.equipment || []).find((x) => OPTIONAL_IDS.has(x));
   if (eq === 'sling-trainer') return 'Sling-Variante';
+  if (eq === 'swing-platform') return 'Schwingplatten-Variante';
+  if (eq === 'balance-pad') return 'Kissen-Variante';
   return `${EQUIPMENT_INFO[eq]?.label ?? 'Neue'}-Variante`;
 }
 

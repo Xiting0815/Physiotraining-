@@ -43,8 +43,10 @@ function worstOf(lights) {
 export const isCardioSession = (s) => s?.kind === 'cardio' || (s?.kind == null && s?.rowing != null && typeof s.rowing === 'object');
 /** v5.3: short knee relief routine (kind "relief") – neither strength goal nor rowing goal. */
 export const isReliefSession = (s) => s?.kind === 'relief';
+/** v5.5: Balance unit (kind "balance") – extra unit, neither strength goal nor rowing goal. */
+export const isBalanceSession = (s) => s?.kind === 'balance';
 /** v5.3: counts for the weekly strength goal (strength, short, custom – not rowing, not relief). */
-export const countsAsStrength = (s) => !isCardioSession(s) && !isReliefSession(s);
+export const countsAsStrength = (s) => !isCardioSession(s) && !isReliefSession(s) && !isBalanceSession(s);
 
 const posNum = (v) => typeof v === 'number' && Number.isFinite(v) && v > 0;
 /** Σ seconds of done sets of performed cardio entries (finisher or not). */
@@ -175,7 +177,7 @@ export function cardioProgress(sessions, cardioGoal, today) {
 export function sameDayLoadHint(sessions, today, starting) {
   const todays = doneSessions(sessions).filter((s) => dayOf(s) === today);
   const hasCardio = todays.some(isCardioSession) || starting === 'cardio';
-  const hasStrength = todays.some(countsAsStrength) || (starting != null && starting !== 'cardio' && starting !== 'relief');
+  const hasStrength = todays.some(countsAsStrength) || (starting != null && starting !== 'cardio' && starting !== 'relief' && starting !== 'balance');
   if (!(hasCardio && hasStrength)) return null;
   return 'Rudern und Krafttraining am selben Tag: Gönn dem Knie danach genug Erholung – am nächsten Tag besser Pause oder nur Oberkörper. Bei Schmerz über 5/10 oder Schwellung: Ampel beachten.';
 }

@@ -39,7 +39,7 @@ export function defaults() {
       lastBackupAt: null,
       // v2 (additive, SPEC §12.2); v4: stays 3 separate rowing sessions (weight loss is an additional goal)
       cardioGoalPerWeek: 3,
-      surgeryDateSuggested: '2027-01-05', // pre-fill only – never copied into surgeryDate automatically
+      surgeryDateSuggested: '2027-01-19', // pre-fill only – never copied into surgeryDate automatically (v5.5: OP moved from 2027-01-05)
       // v3.1 (SPEC §14): only the body weight for the kcal estimate per session. Legacy keys of older versions
       // (heightCm, birthYear, sex, activityLevel; settings.weightGoal) stay untouched in stored data but are unused.
       profile: { weightKg: null },
@@ -313,6 +313,30 @@ export function prefillWeight(data) {
   return { ...data, settings };
 }
 
+/** v5.5: the planned surgery moved from 2027-01-05 to 2027-01-19. */
+export const SURGERY_MOVE = { from: '2027-01-05', to: '2027-01-19', stamp: '2026-11-20T00:00:00.000Z' };
+
+/**
+ * v5.5 one-time, sync-safe migration of the surgery date (pure; returns new data or the input unchanged):
+ * `settings.surgeryDate === "2027-01-05"` → "2027-01-19" (same for the pre-fill `surgeryDateSuggested`), unless the
+ * value was set after the move (`_updatedAt[key]` newer than SURGERY_MOVE.stamp – a deliberate choice of the user).
+ * The migrated key gets the fixed stamp SURGERY_MOVE.stamp: newer than the old entry on any other device (so the new
+ * date wins in mergeSync, also against a device still on the old app), older than every later real change (so a date
+ * the user sets afterwards always wins), and identical on every device (no ping-pong). No schema bump (older app
+ * versions keep syncing).
+ * @param {any} data
+ */
+export function migrateSurgeryDate(data) {
+  if (!isObj(data) || !isObj(data.settings)) return data;
+  const s = data.settings;
+  const at = isObj(s._updatedAt) ? s._updatedAt : {};
+  const keys = ['surgeryDate', 'surgeryDateSuggested'].filter((k) => s[k] === SURGERY_MOVE.from && !(typeof at[k] === 'string' && at[k] > SURGERY_MOVE.stamp));
+  if (!keys.length) return data;
+  const settings = { ...s, _updatedAt: { ...at } };
+  for (const k of keys) { settings[k] = SURGERY_MOVE.to; settings._updatedAt[k] = SURGERY_MOVE.stamp; }
+  return { ...data, settings };
+}
+
 /** @param {any} data @returns {import('./types.js').Data} */
 export function migrate(data) {
   lastFixes = [];
@@ -326,7 +350,7 @@ export function migrate(data) {
     v += 1;
     d.schemaVersion = v;
   }
-  d = mergeDefaults(defaults(), prefillWeight(migrateEquipment(sanitize(d))));
+  d = mergeDefaults(defaults(), prefillWeight(migrateSurgeryDate(migrateEquipment(sanitize(d)))));
   if (!Array.isArray(d.sessions)) d.sessions = [];
   d.schemaVersion = SCHEMA_VERSION;
   return d;
@@ -454,6 +478,7 @@ function needsPersist(raw, data) {
   try {
     const before = JSON.parse(raw);
     if (isObj(before?.settings) && !(before.settings.equipmentModel >= EQUIPMENT_MODEL)) return true; // v5 equipment migration
+    if (migrateSurgeryDate(before) !== before) return true; // v5.5 surgery date moved
     return !(isObj(before?.settings?.profile) && 'weightKg' in before.settings.profile) && 'weightKg' in (data.settings?.profile || {});
   } catch { return false; }
 }

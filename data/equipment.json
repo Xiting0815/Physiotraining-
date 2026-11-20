@@ -98,18 +98,35 @@
       "equipment": [
         "balance-pad"
       ],
-      "name": "Balance-Pad (Schaumstoffkissen)",
+      "name": "Balance-Kissen / Balance-Pad (Luftkissen oder Schaum)",
       "priority": "sinnvoll",
       "priceEur": "15–30 (No-Name) / 60–80 (Airex Elite)",
       "why": "Nach einer Meniskusverletzung ist die Propriozeption (Gelenkwahrnehmung) oft gestört. Stabilitätstraining im Stand mit nur leicht gebeugtem Knie verbessert die Kniekontrolle, und zwar ohne Stoß und ohne tiefe Beugung. Es hilft auch für einen ruhigen, stabilen Bogenstand.",
       "enables": [
-        "Beidbeiniger Stand, später Einbeinstand",
-        "Stand mit geschlossenen Augen",
-        "Gewichtsverlagerung",
-        "Bogenstand mit Bandzug auf dem Pad",
-        "Mini-Kniebeuge bis ca. 30°"
+        "Beidbeiniger Stand, später mit geschlossenen Augen",
+        "Einbeinstand rechts und links",
+        "Mini-Kniebeuge bis ca. 30–45°",
+        "Schritt aufs Kissen",
+        "Einbeinstand mit Band-Störimpuls"
       ],
-      "tips": "Ein Pad etwa 6 cm dick, ca. 40 × 50 cm, aus geschlossenzelligem TPE oder Schaum, mit rutschfester Unterseite. Zu weiche oder dicke Pads überfordern am Anfang. Neben einem Stuhl oder einer Wand üben. Eine Alternative für den Anfang ist ein gefaltetes Kissen oder die gefaltete Matte."
+      "tips": "Luftgefüllte Balance-Kissen (z. B. von Decathlon, ca. 33–35 cm Durchmesser) sind wackliger als ein Schaum-Pad; anfangs nur so viel Luft, dass das Kissen nicht ganz prall ist. Barfuß oder in Socken auf einer rutschfesten Unterlage üben, Wand oder Türrahmen in Reichweite. Eine Alternative für den Anfang ist die gefaltete Matte."
+    },
+    {
+      "id": "swing-platform",
+      "equipment": [
+        "swing-platform"
+      ],
+      "name": "Schwingplatte (federnd aufgehängte Balanceplatte mit Rahmen)",
+      "priority": "optional",
+      "priceEur": "ca. 150–400 (Heimgeräte) / deutlich mehr (Therapiegeräte wie Posturomed)",
+      "why": "Die Platte hängt an Federn und schwingt bei jeder kleinen Gewichtsverlagerung waagerecht mit. Das trainiert die schnellen Ausgleichsreaktionen von Fuß, Knie und Hüfte – wie beim Einbeinstand beim Physio, aber mit sicherem Halt am Rahmen.",
+      "enables": [
+        "Beidbeiniger Stand und Einbeinstand mit Halt am Rahmen",
+        "Mini-Kniebeuge auf der schwingenden Platte",
+        "Schrittstand: ein Fuß auf der Platte",
+        "Einbeinstand mit Band-Störimpuls"
+      ],
+      "tips": "Tragkraft beachten (bei vielen Heimgeräten max. 100 kg). Gerät auf ebenen Boden stellen, Federn und Rahmen vor jedem Training kurz prüfen. Barfuß oder mit rutschfesten Socken üben und am Anfang immer mit beiden Händen am Rahmen."
     },
     {
       "id": "release-trainer",
